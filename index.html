@@ -246,6 +246,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
   <button class="tab" onclick="sw('verlauf',this)">📋 Verlauf</button>
   <button class="tab" onclick="sw('settings',this)">⚙ Einstellungen</button>
   <button class="tab" onclick="sw('dienstplan',this)">📅 Dienstplan</button>
+  <button class="tab" onclick="sw('km',this)">🚗 Kilometerstand</button>
 </div>
 
 <!-- ===== KRANKMELDUNG ===== -->
@@ -552,10 +553,14 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
       <div id="csv-preview-content"></div>
     </div>
   </div>
+  <div id="emp-notif-card" class="card" style="display:none">
+    <div class="card-title">⚠️ Hinweise <span class="badge badge-amb" id="emp-notif-count">0</span></div>
+    <div id="emp-notif-list"></div>
+  </div>
   <div class="card">
     <div class="card-title">Mitarbeiterliste <span class="badge badge-blu" id="emp-count-badge">0 Einträge</span></div>
     <table class="emp-table">
-      <thead><tr><th>Name</th><th>Personalnr.</th><th>Filiale</th><th>Status</th><th></th></tr></thead>
+      <thead><tr><th>Name</th><th>Personalnr.</th><th>Filiale</th><th>Eintritt</th><th>Austritt</th><th>Status</th><th></th></tr></thead>
       <tbody id="emp-tbody"></tbody>
     </table>
     <div class="btn-row" style="margin-top:14px">
@@ -725,10 +730,21 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
     </div>
   </div>
   <div class="card">
+    <div class="card-title">📧 Gespeicherte E-Mail-Adressen <span class="badge badge-grn" id="saved-emails-count">0</span></div>
+    <div class="info">Häufig verwendete Adressen speichern. Sie erscheinen als Schnellauswahl beim Erstellen von Nachrichten.</div>
+    <div id="saved-emails-list" style="margin-bottom:10px"></div>
+    <div class="row2">
+      <div><label>Name / Beschreibung</label><input type="text" id="se-label" placeholder="z.B. a.marx (KFZ)"></div>
+      <div><label>E-Mail-Adresse</label><input type="text" id="se-email" placeholder="a.marx@sushi-circle.de"></div>
+    </div>
+    <button class="btn btn-red" onclick="addSavedEmail()" style="margin-top:8px;width:100%;justify-content:center">+ Adresse speichern</button>
+  </div>
+  <div class="card">
     <div class="card-title">🚗 Fahrtplan-Gruppen <span class="badge badge-grn" id="rp-grp-count">0</span></div>
     <div class="info">Filialen in Tagesgruppen aufteilen (max. 2 pro Gruppe). Erscheinen im Dienstplan → Fahrtplan.</div>
     <div id="rp-grp-list" style="margin-bottom:10px"></div>
-    <div style="display:flex;gap:8px;margin-top:0"><button class="btn btn-red" onclick="openRpGrpModal(null)" style="flex:1;justify-content:center">+ Neue Gruppe</button><button class="btn" onclick="rpImportFromEmps()" style="flex:1;justify-content:center" title="Filialen aus importierter Mitarbeiterliste übernehmen">📥 Aus MA-Liste</button></div>
+    <div style="display:flex;gap:8px;margin-top:0"><button class="btn btn-red" onclick="openRpGrpModal(null)" style="flex:1;justify-content:center">+ Neue Gruppe</button><button class="btn" onclick="rpImportFromEmps()" style="flex:1;justify-content:center" title="Filialen aus importierter Mitarbeiterliste übernehmen">📥 Aus MA-Liste</button><button class="btn" onclick="document.getElementById('mk-csv-file').click()" style="flex:1;justify-content:center" title="Marktsuche CSV importieren">📍 Marktsuche CSV</button></div>
+    <input type="file" id="mk-csv-file" style="display:none" accept=".csv,text/csv" onchange="importMarktsuche(event)">
   </div>
   <div class="card">
     <div class="card-title">✍️ Unterschrift hochladen</div>
@@ -744,6 +760,42 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
   <div class="card">
     <div class="card-title">📋 Signatur-Vorschau</div>
     <div style="font-size:12px;line-height:1.8;color:var(--mut);background:var(--bg);border:1px solid var(--brd);border-radius:var(--rs);padding:10px 13px;white-space:pre-wrap;" id="sig-display"></div>
+  </div>
+</div>
+
+
+<!-- ===== KILOMETERSTAND ===== -->
+<div id="panel-km" class="panel">
+  <div class="card">
+    <div class="card-title">🚗 Kilometerstand Bericht <span class="badge badge-amb">Montag wöchentlich</span></div>
+    <div class="info">Foto des Kilometerstands hochladen → E-Mail-Entwurf an a.marx@sushi-circle.de erstellen.</div>
+    <div class="row2">
+      <div><label>Aktueller Kilometerstand</label><input type="number" id="km-stand" placeholder="z.B. 45321" oninput="updateKM()"></div>
+      <div><label>Datum / Woche</label><input type="date" id="km-datum" oninput="updateKM()"></div>
+    </div>
+    <div class="row2">
+      <div><label>Fahrzeug (Kennzeichen)</label><input type="text" id="km-kfz" placeholder="z.B. H-AB 1234" oninput="updateKM()"></div>
+      <div><label>Kommentar (optional)</label><input type="text" id="km-kommentar" placeholder="z.B. Tankfüllung, Inspektion..." oninput="updateKM()"></div>
+    </div>
+    <label style="margin-top:14px">Foto des Kilometerstands</label>
+    <div class="drop" id="km-drop" onclick="document.getElementById('km-file').click()">
+      <div class="drop-icon">📸</div>Foto hier ablegen oder klicken<br><small>JPG oder PNG vom Tacho</small>
+      <input type="file" id="km-file" style="display:none" accept="image/*" onchange="kmLoadPhoto(event)">
+    </div>
+    <div id="km-photo-preview" style="display:none;margin-top:10px">
+      <img id="km-photo-img" style="max-width:100%;max-height:200px;border-radius:var(--rs);border:1px solid var(--brd)">
+    </div>
+  </div>
+  <div class="result" id="km-res">
+    <div class="e-meta"><strong>An:</strong> <span id="km-to-disp">a.marx@sushi-circle.de</span></div>
+    <div class="e-subj" id="km-subj"></div>
+    <div class="e-body" id="km-body"></div>
+    <div class="btn-row">
+      <button class="btn btn-red" onclick="copyMail('km')">📋 Kopieren</button>
+      <button class="btn" onclick="kmMailto()">✉️ Mail-App</button>
+      <button class="btn btn-grn" onclick="kmShare()">📤 Teilen + Foto</button>
+      <button class="btn" onclick="saveVerlauf('km')" style="margin-left:auto">✅ Gespeichert</button>
+    </div>
   </div>
 </div>
 
@@ -850,6 +902,8 @@ avPopulateDropdown();
 initOrtDatumFields();
 applySettings();
 checkFirstStart();
+  renderSavedEmails();
+  renderEmpNotif();
 renderRpGrpList();
 RP_CL=getRPCL();
   if(id==='av') avPopulateDropdown();
@@ -1197,13 +1251,26 @@ function renderEmpTable() {
     tbody.innerHTML='<tr><td colspan="5" style="color:var(--mut);font-size:13px;padding:16px 10px">Noch keine Mitarbeiter. CSV importieren oder manuell hinzufügen.</td></tr>';
     return;
   }
+  const today2=new Date();
   emps.forEach((e,i)=>{
     const isActive=e.active!==false;
     const tr=document.createElement('tr');
     tr.style.opacity=isActive?'1':'0.5';
-    tr.innerHTML=`<td style="font-weight:500">${e.name}</td>
+    // check upcoming Austritt
+    let ausBadge='';
+    if(e.austritt&&e.austritt!=='31.12.9999'){
+      const [dd,mm,yy]=e.austritt.split('.').map(Number);
+      if(!isNaN(dd)){
+        const ausDt=new Date(yy,mm-1,dd);
+        const diffDays=Math.round((ausDt-today2)/(1000*60*60*24));
+        if(diffDays>=0&&diffDays<=45) ausBadge=`<span class="badge badge-amb" style="font-size:10px;margin-left:4px">⚠️ ${diffDays}T</span>`;
+      }
+    }
+    tr.innerHTML=`<td style="font-weight:500">${e.name}${ausBadge}</td>
 <td><span class="id-chip">${e.id}</span></td>
 <td style="color:var(--mut);font-size:12px">${e.filiale||'—'}</td>
+<td style="font-size:11px;color:var(--mut)">${e.eintritt||'—'}</td>
+<td style="font-size:11px;color:var(--mut)">${e.austritt||'—'}</td>
 <td><span class="badge ${isActive?'badge-grn':'badge-gray'}">${isActive?'Aktiv':'Inaktiv'}</span></td>
 <td style="display:flex;gap:6px;white-space:nowrap">
   <button class="btn btn-sm" onclick="openEditModal(${i})">✏</button>
@@ -1211,6 +1278,7 @@ function renderEmpTable() {
 </td>`;
     tbody.appendChild(tr);
   });
+  renderEmpNotif();
 }
 
 function importCSV(ev) {
@@ -1227,7 +1295,7 @@ function importCSV(ev) {
     const header=lines[0].split(sep).map(h=>h.replace(/"/g,'').trim());
     const col=name=>header.indexOf(name);
     const iNr=col('Personalnr.'), iName=col('Name'), iVname=col('Vorname');
-    const iAustritt=col('Austritt'), iOrt=col('Letzter Einsatzort');
+    const iAustritt=col('Austritt'), iEintritt=col('Eintritt'), iOrt=col('Letzter Einsatzort');
     if(iNr<0||iName<0){alert('Spalten "Personalnr." und "Name" nicht gefunden.');return;}
 
     function parseField(row,i){
@@ -1263,7 +1331,9 @@ function importCSV(ev) {
         if(m2) filiale=m2[1].trim();
         else filiale=ort.split('-').slice(1).join('-').trim();
       }
-      return{id:pid,name,filiale,active};
+      const eintritt=iEintritt>=0?parseField(row,iEintritt):'';
+      const austritt=iAustritt>=0?parseField(row,iAustritt):'';
+      return{id:pid,name,filiale,active,eintritt,austritt};
     }).filter(e=>e.id&&e.name);
 
     // merge with existing
@@ -2696,6 +2766,229 @@ var _origUpdateStunden = typeof updateStunden==='function' ? updateStunden : nul
 // ── DIENSTPLAN PDF WITH SIGNATURE ────────────────────────────
 // Patched into dpExportPDF via flag check (dp-sig-check)
 
+
+// ── KM STAND ──────────────────────────────────────────────────────────
+var kmPhotoData=null;
+function kmLoadPhoto(ev){
+  const file=ev.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    kmPhotoData=e.target.result;
+    const img=document.getElementById('km-photo-img');
+    img.src=kmPhotoData;
+    document.getElementById('km-photo-preview').style.display='block';
+    const drop=document.getElementById('km-drop');
+    drop.classList.add('ok');
+    drop.innerHTML='✅ '+file.name;
+    updateKM();
+  };
+  reader.readAsDataURL(file);
+}
+function updateKM(){
+  const stand=document.getElementById('km-stand').value;
+  const datum=document.getElementById('km-datum').value;
+  const kfz=document.getElementById('km-kfz').value;
+  const komm=document.getElementById('km-kommentar').value;
+  if(!stand&&!datum){document.getElementById('km-res').style.display='none';return;}
+  const s=loadSettings();
+  const datumFmt=datum?new Date(datum+'T12:00:00').toLocaleDateString('de-DE'):'—';
+  const kw=datum?'KW'+getKW(new Date(datum+'T12:00:00')):'';
+  const subj=`Kilometerstand ${kfz?kfz+' ':''}- ${datumFmt} ${kw}`.trim();
+  let body=`Sehr geehrte Damen und Herren,\n\nhiermit übermittle ich den aktuellen Kilometerstand:\n\n`;
+  body+=`Fahrzeug:         ${kfz||'—'}\n`;
+  body+=`Datum:            ${datumFmt} ${kw}\n`;
+  body+=`Kilometerstand:   ${stand?Number(stand).toLocaleString('de-DE')+' km':'—'}\n`;
+  if(komm) body+=`Hinweis:          ${komm}\n`;
+  body+=`\nMit freundlichen Grüßen\n${s.name||''}\n${s.titel||''}\n${s.phone||''}`;
+  document.getElementById('km-subj').textContent=subj;
+  document.getElementById('km-body').textContent=body;
+  document.getElementById('km-res').style.display='block';
+}
+function kmMailto(){
+  const subj=document.getElementById('km-subj').textContent;
+  const body=document.getElementById('km-body').textContent;
+  window.location.href='mailto:a.marx@sushi-circle.de?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+}
+async function kmShare(){
+  const subj=document.getElementById('km-subj').textContent;
+  const body=document.getElementById('km-body').textContent;
+  if(kmPhotoData&&navigator.canShare){
+    try{
+      const res=await fetch(kmPhotoData);
+      const blob=await res.blob();
+      const file=new File([blob],'Kilometerstand.jpg',{type:blob.type});
+      if(navigator.canShare({files:[file]})){
+        await navigator.share({title:subj,text:body,files:[file]});
+        return;
+      }
+    }catch(ex){console.warn(ex);}
+  }
+  if(navigator.share){navigator.share({title:subj,text:body});}
+  else{navigator.clipboard.writeText(subj+'\n\n'+body);toast('Text kopiert');}
+}
+function kmSetDate(){
+  // Default: next Monday
+  const d=new Date();
+  const day=d.getDay();
+  const diff=(1+(7-day))%7||(day===1?0:7-(day-1));
+  d.setDate(d.getDate()+(day===1?0:diff));
+  const iso=d.toISOString().split('T')[0];
+  document.getElementById('km-datum').value=iso;
+  // prefill KFZ from settings
+  const s=loadSettings();
+  if(s.kfz) document.getElementById('km-kfz').value=s.kfz;
+  updateKM();
+}
+function getKW(d){
+  const t=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  t.setDate(t.getDate()+(4-((t.getDay()||7))));
+  const y=t.getFullYear();
+  const start=new Date(y,0,1);
+  return Math.ceil(((t-start)/86400000+1)/7);
+}
+
+// ── MITARBEITER NOTIFICATIONS ─────────────────────────────────────────
+function renderEmpNotif(){
+  const emps=loadEmps();
+  const today=new Date();
+  const todayYM=today.getFullYear()+'-'+(today.getMonth()+1).toString().padStart(2,'0');
+  const todayD=today.getDate();
+  const notifs=[];
+
+  // 1. Austritt within 45 days
+  emps.filter(e=>e.active!==false).forEach(e=>{
+    if(e.austritt&&e.austritt!=='31.12.9999'){
+      const [d,m,y]=e.austritt.split('.').map(Number);
+      if(!isNaN(d)){
+        const dt=new Date(y,m-1,d);
+        const diff=Math.round((dt-today)/(1000*60*60*24));
+        if(diff>=0&&diff<=45){
+          notifs.push({icon:'⚠️',type:'amber',msg:`<strong>${e.name}</strong> — Vertrag endet am ${e.austritt} (in ${diff} Tagen)`});
+        }
+      }
+    }
+  });
+
+  // 2. Currently Krank / Urlaub (from Dienstplan today)
+  const dpKeys=Object.keys(localStorage).filter(k=>k.startsWith('sc_dp_'));
+  const krankHeute=[], urlaubHeute=[];
+  dpKeys.forEach(k=>{
+    try{
+      const data=JSON.parse(localStorage.getItem(k));
+      if(data&&data.rows){
+        data.rows.forEach(row=>{
+          const cell=row.cells&&row.cells[todayD];
+          if(cell==='Krank') krankHeute.push(row.name);
+          if(cell==='Urlaub') urlaubHeute.push(row.name);
+        });
+      }
+    }catch(ex){}
+  });
+  const krankUniq=[...new Set(krankHeute)];
+  const urlaubUniq=[...new Set(urlaubHeute)];
+  if(krankUniq.length) notifs.push({icon:'🏥',type:'red',msg:`Heute krank: <strong>${krankUniq.join(', ')}</strong>`});
+  if(urlaubUniq.length) notifs.push({icon:'🌴',type:'grn',msg:`Heute im Urlaub: <strong>${urlaubUniq.join(', ')}</strong>`});
+
+  const card=document.getElementById('emp-notif-card');
+  const list=document.getElementById('emp-notif-list');
+  const cnt=document.getElementById('emp-notif-count');
+  if(!notifs.length){card.style.display='none';return;}
+  card.style.display='block';
+  cnt.textContent=notifs.length;
+  list.innerHTML=notifs.map(n=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--brd)">
+    <span style="font-size:18px">${n.icon}</span>
+    <span style="font-size:13px;flex:1">${n.msg}</span>
+  </div>`).join('');
+}
+
+// ── MARKTSUCHE CSV IMPORT ─────────────────────────────────────────────
+const MK_TYPES={'R':'Rewe','E':'Edeka','M':'Marktkauf','MK':'Marktkauf','K':'Kaufland','T':'Tegut','RA':'Ratio'};
+function importMarktsuche(ev){
+  const file=ev.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const text=e.target.result;
+    const lines=text.split(/\r?\n/).filter(l=>l.trim());
+    if(lines.length<2){alert('Datei scheint leer.');return;}
+    const sep=';';
+    const header=lines[0].split(sep).map(h=>h.replace(/^"|"$/g,'').trim());
+    const ci=n=>header.indexOf(n);
+    const iName=ci('Marktname'), iStr=ci('Strasse'), iPLZ=ci('PLZ'), iOrt=ci('Ort');
+    if(iName<0||iOrt<0){alert('Spalten "Marktname" und "Ort" nicht gefunden.');return;}
+    const pf=r=>((r||'').replace(/^"|"$/g,'')).trim();
+    const stores=[];
+    lines.slice(1).forEach(line=>{
+      if(!line.trim())return;
+      const row=line.split(sep);
+      const marktname=pf(row[iName]);
+      const strasse=iPLZ>=0?pf(row[iStr]):'';
+      const plz=iPLZ>=0?pf(row[iPLZ]):'';
+      const ort=iOrt>=0?pf(row[iOrt]):'';
+      // parse type and display name from marktname
+      // format: "NR: TypeCode-City-..."; extract TypeCode
+      const m=marktname.match(/:\s*([A-Z]+)-(.+)/);
+      let typeCode='',displayName='',addr='';
+      if(m){
+        typeCode=m[1];
+        const typeFull=MK_TYPES[typeCode]||typeCode;
+        displayName=typeFull+' '+ort;
+      } else {
+        displayName=ort;
+      }
+      if(strasse&&plz&&ort) addr=strasse+', '+plz+' '+ort;
+      else if(strasse&&ort) addr=strasse+', '+ort;
+      stores.push({name:displayName,s1name:displayName,s1addr:addr,s1open:'08:00',dep:'07:00',bk:'14:00',km:0});
+    });
+    if(!stores.length){alert('Keine Filialen gefunden.');return;}
+    const existing=loadRpGroups();
+    const existingNames=existing.map(g=>g.name.toLowerCase());
+    let added=0;
+    stores.forEach(s=>{
+      if(!existingNames.includes(s.name.toLowerCase())){existing.push(s);added++;}
+    });
+    saveRpGroups(existing);renderRpGrpList();
+    RP_CL=getRPCL();rpSchedule=[];
+    if(document.getElementById('rp-grid'))rpRender();
+    document.getElementById('mk-csv-file').value='';
+    toast('✓ '+added+' Filiale(n) aus Marktsuche importiert');
+  };
+  reader.readAsText(file,'windows-1252');
+}
+
+// ── SAVED EMAIL ADDRESSES ─────────────────────────────────────────────
+function loadSavedEmails(){try{return JSON.parse(localStorage.getItem('sc_saved_emails')||'[]');}catch(e){return[];}}
+function saveSavedEmails(list){localStorage.setItem('sc_saved_emails',JSON.stringify(list));}
+function renderSavedEmails(){
+  const list=loadSavedEmails();
+  const el=document.getElementById('saved-emails-list');
+  const cnt=document.getElementById('saved-emails-count');
+  if(cnt) cnt.textContent=list.length;
+  if(!el)return;
+  if(!list.length){el.innerHTML='<div style="font-size:12px;color:var(--mut)">Noch keine Adressen gespeichert.</div>';return;}
+  el.innerHTML=list.map((item,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--brd)">
+    <span style="flex:1;font-size:13px"><strong>${item.label}</strong> &mdash; ${item.email}</span>
+    <button class="btn-del" onclick="delSavedEmail(${i})">🗑</button>
+  </div>`).join('');
+}
+function addSavedEmail(){
+  const label=document.getElementById('se-label').value.trim();
+  const email=document.getElementById('se-email').value.trim();
+  if(!email){alert('Bitte E-Mail eingeben.');return;}
+  const list=loadSavedEmails();
+  list.push({label:label||email,email});
+  saveSavedEmails(list);
+  document.getElementById('se-label').value='';
+  document.getElementById('se-email').value='';
+  renderSavedEmails();
+  toast('✓ E-Mail gespeichert');
+}
+function delSavedEmail(i){
+  const list=loadSavedEmails();
+  list.splice(i,1);
+  saveSavedEmails(list);
+  renderSavedEmails();
+}
+
 // ─── INIT ────────────────────────────────────────────────────
 restoreSig();
 populateDropdowns();
@@ -2708,6 +3001,8 @@ avPopulateDropdown();
 initOrtDatumFields();
 applySettings();
 checkFirstStart();
+  renderSavedEmails();
+  renderEmpNotif();
 renderRpGrpList();
 RP_CL=getRPCL();
 </script>
