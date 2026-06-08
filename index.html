@@ -27,11 +27,16 @@ header .logo{font-size:20px;font-weight:700;letter-spacing:-.5px;}
 header .sub{font-size:12px;opacity:.85;}
 .wrap{max-width:820px;margin:0 auto;padding:20px 14px;}
 
-/* TABS */
-.tabs{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;}
-.tab{padding:8px 16px;border-radius:30px;border:1.5px solid var(--brd);background:var(--surf);color:var(--mut);cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;display:flex;align-items:center;gap:5px;}
-.tab:hover{border-color:var(--red);color:var(--red);}
-.tab.active{background:var(--red);color:#fff;border-color:var(--red);}
+/* APP-NAVIGATION (iOS-Style) */
+.nav-wrap{background:var(--surf);border-bottom:1px solid var(--brd);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:10px 12px 12px;margin-bottom:18px;}
+.nav-wrap::-webkit-scrollbar{display:none;}
+.nav-grid{display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:auto auto;gap:8px;min-width:340px;}
+.app-ico{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:9px 4px 7px;border-radius:18px;border:none;background:#EEEAE5;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;user-select:none;width:100%;}
+.app-ico:active{transform:scale(0.88);}
+.app-ico.active{background:var(--red);box-shadow:0 4px 12px rgba(197,26,54,.3);}
+.ico-e{font-size:24px;line-height:1.1;margin-bottom:4px;display:block;}
+.ico-l{font-size:9px;font-weight:700;color:#555;line-height:1.25;text-align:center;word-break:break-word;hyphens:auto;display:block;}
+.app-ico.active .ico-l{color:#fff;}
 .panel{display:none;}.panel.active{display:block;animation:fi .2s ease;}
 @keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 
@@ -160,24 +165,14 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
   font-size:16px !important;
 }
 
-/* Fluid tabs - always wrap nicely */
-.tabs{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:6px;
-}
-.tab{
-  padding:10px 6px;
-  font-size:12px;
-  border-radius:10px;
-  justify-content:center;
-  text-align:center;
-}
-.tab.active{font-weight:700;}
+/* App-Navigation mobile */
+.nav-grid{grid-template-columns:repeat(5,1fr);}
+.ico-e{font-size:22px;}
+.ico-l{font-size:8.5px;}
 
-@media(min-width:600px){
-  .tabs{display:flex;flex-wrap:wrap;}
-  .tab{padding:8px 16px;font-size:13px;}
+@media(min-width:480px){
+  .ico-e{font-size:24px;}
+  .ico-l{font-size:9px;}
 }
 
 /* Fluid buttons */
@@ -236,17 +231,39 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 </header>
 
 <div class="wrap">
-<div class="tabs">
-  <button class="tab active" onclick="sw('krank',this)">🏥 Krankmeldung</button>
-  <button class="tab" onclick="sw('urlaub',this)">🌴 Urlaubsantrag</button>
-  <button class="tab" onclick="sw('stunden',this)">⏱ Stundennachweis</button>
-  <button class="tab" onclick="sw('dt',this)">🚆 Deutschlandticket</button>
-  <button class="tab" onclick="sw('emp',this)">👥 Mitarbeiter</button>
-  <button class="tab" onclick="sw('av',this)">📝 Änderungsvereinbarung</button>
-  <button class="tab" onclick="sw('verlauf',this)">📋 Verlauf</button>
-  <button class="tab" onclick="sw('settings',this)">⚙ Einstellungen</button>
-  <button class="tab" onclick="sw('dienstplan',this)">📅 Dienstplan</button>
-  <button class="tab" onclick="sw('km',this)">🚗 Kilometerstand</button>
+<div class="nav-wrap">
+  <div class="nav-grid">
+    <button class="app-ico active" onclick="sw('krank',this)">
+      <span class="ico-e">🏥</span><span class="ico-l">Krankmeldung</span>
+    </button>
+    <button class="app-ico" onclick="sw('urlaub',this)">
+      <span class="ico-e">🌴</span><span class="ico-l">Urlaubs&shy;antrag</span>
+    </button>
+    <button class="app-ico" onclick="sw('stunden',this)">
+      <span class="ico-e">⏱</span><span class="ico-l">Stunden&shy;nachweis</span>
+    </button>
+    <button class="app-ico" onclick="sw('dt',this)">
+      <span class="ico-e">🚆</span><span class="ico-l">D-Ticket</span>
+    </button>
+    <button class="app-ico" onclick="sw('emp',this)">
+      <span class="ico-e">👥</span><span class="ico-l">Mitarbeiter</span>
+    </button>
+    <button class="app-ico" onclick="sw('av',this)">
+      <span class="ico-e">📝</span><span class="ico-l">Änderungs&shy;vereinb.</span>
+    </button>
+    <button class="app-ico" onclick="sw('verlauf',this)">
+      <span class="ico-e">📋</span><span class="ico-l">Verlauf</span>
+    </button>
+    <button class="app-ico" onclick="sw('settings',this)">
+      <span class="ico-e">⚙️</span><span class="ico-l">Einstellungen</span>
+    </button>
+    <button class="app-ico" onclick="sw('dienstplan',this)">
+      <span class="ico-e">📅</span><span class="ico-l">Dienstplan</span>
+    </button>
+    <button class="app-ico" onclick="sw('km',this)">
+      <span class="ico-e">🚗</span><span class="ico-l">Kilometer&shy;stand</span>
+    </button>
+  </div>
 </div>
 
 <!-- ===== KRANKMELDUNG ===== -->
@@ -908,7 +925,7 @@ function saveEmps(arr) { localStorage.setItem('sc_emps', JSON.stringify(arr)); }
 
 // ─── TABS ─────────────────────────────────────────────────────
 function sw(id, el) {
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.app-ico').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('panel-'+id).classList.add('active');
@@ -2974,26 +2991,41 @@ function _parseMkText(text){
   if(text.charCodeAt(0)===0xFEFF) text=text.slice(1);
   const lines=text.split(/\r?\n/).map(l=>l.trimEnd()).filter(l=>l.trim());
   if(lines.length<2) return null;
-  const sep=';';
-  const header=lines[0].split(sep).map(h=>h.replace(/^"|"$/g,'').trim());
-  // case-insensitive index lookup
-  const ci=n=>{const nl=n.toLowerCase();return header.findIndex(h=>h.toLowerCase()===nl);};
-  const iName=ci('marktname'),iStr=ci('strasse'),iPLZ=ci('plz'),iOrt=ci('ort');
-  if(iName<0||iOrt<0) return {error:'Spalten nicht gefunden: '+header.slice(0,10).join(' | ')};
+  // auto-detect separator (; vs ,)
+  const fl=lines[0];
+  const sep=(fl.split(';').length>=fl.split(',').length)?';':',';
+  const header=lines[0].split(sep).map(h=>h.replace(/^"|"$/g,'').trim().toLowerCase());
+  // flexible column matching – accepts multiple aliases
+  const ci=(aliases)=>{for(const a of aliases){const idx=header.findIndex(h=>h===a.toLowerCase());if(idx>=0)return idx;}return -1;};
+  const iName=ci(['marktname','name','filialname','filiale','betrieb','markt','bezeichnung','storename']);
+  const iStr =ci(['strasse','straße','street','adresse','address']);
+  const iPLZ =ci(['plz','postleitzahl','zipcode','zip']);
+  const iOrt =ci(['ort','stadt','city','standort','gemeinde']);
+  const iTyp =ci(['typ','type','markttyp','marktart','kette','betreiber']);
+  if(iName<0) return {error:'Namensspalte nicht gefunden. Gefundene Spalten: '+lines[0].split(sep).slice(0,8).join(' | ')};
   const pf=(row,i)=>i>=0?((row[i]||'').replace(/^"|"$/g,'').trim()):'';
   const imported=[];
   lines.slice(1).forEach(line=>{
     if(!line.trim())return;
     const row=line.split(sep);
-    const marktname=pf(row,iName);if(!marktname)return;
+    const rawName=pf(row,iName);if(!rawName)return;
     const strasse=pf(row,iStr),plz=pf(row,iPLZ),ort=pf(row,iOrt);
-    const m=marktname.match(/:\s*([A-Z]+)-(.+)/);
+    const rawTyp=pf(row,iTyp);
+    // try to extract type from Marktsuche pattern "402297: REWE-Hannover"
+    const m=rawName.match(/:\s*([A-Z]+)-(.+)/);
     let type='',displayName='';
-    if(m){type=MK_TYPES[m[1]]||m[1];displayName=type+' '+ort;}
-    else{displayName=ort||marktname.substring(0,30);}
-    if(!displayName)return;
+    if(m){
+      type=MK_TYPES[m[1]]||m[1];
+      displayName=(type+' '+(ort||m[2].trim())).trim();
+    } else {
+      if(rawTyp) type=MK_TYPES[rawTyp.toUpperCase()]||rawTyp;
+      const parts=[type,ort].filter(Boolean);
+      displayName=parts.length>0?parts.join(' '):(rawName.substring(0,40));
+    }
+    if(!displayName) displayName=rawName.substring(0,40);
+    if(!displayName) return;
     const addr=[strasse,plz&&ort?(plz+' '+ort):ort].filter(Boolean).join(', ');
-    imported.push({name:displayName,type,addr,marktname});
+    imported.push({name:displayName,type,addr,marktname:rawName});
   });
   return imported;
 }
