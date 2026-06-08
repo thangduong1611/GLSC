@@ -275,7 +275,8 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
     </div>
   </div>
   <div class="result" id="k-res">
-    <div class="e-meta"><strong>An:</strong> teamsushi@zahlenwerk.de &nbsp;·&nbsp; <strong>CC:</strong> hr@sushi-circle.de</div>
+    <div class="e-meta" id="k-meta-to"><strong>An:</strong> <span id="k-to-disp">teamsushi@zahlenwerk.de</span> &nbsp;·&nbsp; <strong>CC:</strong> hr@sushi-circle.de</div>
+    <div id="k-email-chips" style="display:none;flex-wrap:wrap;gap:5px;margin-bottom:8px"></div>
     <div class="e-subj" id="k-subj"></div>
     <div class="e-body" id="k-body"></div>
     <div class="btn-row">
@@ -363,6 +364,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
     </div>
 
     <div class="result" id="u-res">
+    <div id="u-email-chips" style="display:none;flex-wrap:wrap;gap:5px;margin-bottom:8px"></div>
       <div class="e-meta"><strong>An:</strong> teamsushi@zahlenwerk.de &nbsp;·&nbsp; <strong>CC:</strong> hr@sushi-circle.de</div>
       <div class="e-subj" id="u-subj"></div>
       <div class="e-body" id="u-body"></div>
@@ -493,7 +495,8 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
     </div>
   </div>
   <div id="s-sig-opt" style="display:none;margin:0 0 10px"><label style="display:flex;align-items:center;gap:9px;cursor:pointer;padding:9px 12px;background:var(--bg);border:1px solid var(--brd);border-radius:var(--rs)"><input type="checkbox" id="s-sig-check" style="width:16px;height:16px;accent-color:var(--red)" onchange="updateStunden()"><span style="font-size:13px">✍️ <strong>Unterschrift des Gebietsleiters</strong> als Bestätigung anfügen</span></label></div>  <div class="result" id="s-res">
-    <div class="e-meta"><strong>An:</strong> teamsushi@zahlenwerk.de &nbsp;·&nbsp; <strong>CC:</strong> hr@sushi-circle.de</div>
+    <div class="e-meta" id="s-meta-to"><strong>An:</strong> <span id="s-to-disp">teamsushi@zahlenwerk.de</span> &nbsp;·&nbsp; <strong>CC:</strong> hr@sushi-circle.de</div>
+    <div id="s-email-chips" style="display:none;flex-wrap:wrap;gap:5px;margin-bottom:8px"></div>
     <div class="e-subj" id="s-subj"></div>
     <div class="e-body" id="s-body"></div>
     <div class="btn-row">
@@ -526,7 +529,8 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
     <div class="dt-list" id="dt-list"></div>
   </div>
   <div class="result" id="dt-res" style="display:none">
-    <div class="e-meta"><strong>An:</strong> teamsushi@zahlenwerk.de &nbsp;·&nbsp; <strong>CC:</strong> hr@sushi-circle.de</div>
+    <div class="e-meta" id="dt-meta-to"><strong>An:</strong> <span id="dt-to-disp">teamsushi@zahlenwerk.de</span> &nbsp;·&nbsp; <strong>CC:</strong> hr@sushi-circle.de</div>
+    <div id="dt-email-chips" style="display:none;flex-wrap:wrap;gap:5px;margin-bottom:8px"></div>
     <div class="e-subj" id="dt-subj"></div>
     <div class="e-body" id="dt-body"></div>
     <div class="btn-row">
@@ -739,6 +743,17 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
     </div>
     <button class="btn btn-red" onclick="addSavedEmail()" style="margin-top:8px;width:100%;justify-content:center">+ Adresse speichern</button>
   </div>
+  <div id="mk-cluster-card" class="card" style="display:none">
+    <div class="card-title">📍 Marktsuche-Filialen <span class="badge badge-grn" id="mk-stores-count">0</span></div>
+    <div class="info">Filialen aus Marktsuche-CSV. 1–2 anklicken → <strong>Cluster erstellen</strong> → wird als Fahrtplan-Gruppe gespeichert.</div>
+    <div id="mk-cluster-hint" style="font-size:12px;color:var(--mut);margin-bottom:8px">Filialen anklicken zum Auswählen (max. 2 pro Cluster)</div>
+    <div id="mk-stores-list"></div>
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn btn-red" onclick="mkCreateCluster()" style="flex:1;justify-content:center">🗂 Cluster erstellen</button>
+      <button class="btn" onclick="mkClearSel()">↺ Auswahl</button>
+      <button class="btn-del" onclick="mkClearAll()">🗑</button>
+    </div>
+  </div>
   <div class="card">
     <div class="card-title">🚗 Fahrtplan-Gruppen <span class="badge badge-grn" id="rp-grp-count">0</span></div>
     <div class="info">Filialen in Tagesgruppen aufteilen (max. 2 pro Gruppe). Erscheinen im Dienstplan → Fahrtplan.</div>
@@ -788,6 +803,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
   </div>
   <div class="result" id="km-res">
     <div class="e-meta"><strong>An:</strong> <span id="km-to-disp">a.marx@sushi-circle.de</span></div>
+    <div id="km-email-chips" style="display:none;flex-wrap:wrap;gap:5px;margin-bottom:8px"></div>
     <div class="e-subj" id="km-subj"></div>
     <div class="e-body" id="km-body"></div>
     <div class="btn-row">
@@ -979,6 +995,7 @@ function updateKrank() {
   const pidStr = pid ? ` (Personalnr. ${pid})` : '';
   const subj = `Krankmeldung – ${name}${pidStr} – ${fil}`;
   document.getElementById('k-res').style.display = 'block';
+  renderEmailChipsFor('k');
   document.getElementById('k-subj').textContent = 'Betreff: '+subj;
   document.getElementById('k-body').textContent =
 `Sehr geehrte Damen und Herren,
@@ -1006,6 +1023,7 @@ function updateUrlaub() {
   document.getElementById('u-body').textContent =
 'Sehr geehrte Damen und Herren,\n\nanbei übersende ich den genehmigten Urlaubsantrag von Herrn/Frau ' + name + pidStr + ' für den Zeitraum vom ' + von + ' bis ' + bis + '.\n\nDer Antrag wurde von mir als Gebietsleiter genehmigt und liegt mit meiner Unterschrift versehen dieser E-Mail bei.\n\nBitte nehmen Sie den Urlaub entsprechend in der Personalverwaltung auf.\n\nBei Rückfragen stehe ich Ihnen gerne zur Verfügung.\n\n' + SIG;
   document.getElementById('u-res').style.display = 'block';
+  renderEmailChipsFor('u');
 }
 
 // ─── CANVAS / SIGNATURE ──────────────────────────────────────
@@ -1133,6 +1151,7 @@ function updateStunden() {
   const pidStr=pid?` (Personalnr. ${pid})`:'';
   const subj=`Stundennachweis – ${name}${pidStr} – ${mon}`;
     document.getElementById('s-res').style.display = 'block';
+    renderEmailChipsFor('s');
   document.getElementById('s-subj').textContent='Betreff: '+subj;
   document.getElementById('s-body').textContent=
 `Sehr geehrte Damen und Herren,
@@ -1149,6 +1168,7 @@ Bei Rückfragen stehe ich Ihnen gerne zur Verfügung.
 
 ${SIG}`;
   document.getElementById('s-res').style.display='block';
+  renderEmailChipsFor('s');
   toggleSigOption('stunden','s-sig-opt');
   // Show/hide sig preview in result
   var sSigCheck=document.getElementById('s-sig-check');
@@ -1236,6 +1256,7 @@ Bei Rückfragen stehe ich Ihnen gerne zur Verfügung.
 
 ${SIG}`;
   document.getElementById('dt-res').style.display='block';
+  renderEmailChipsFor('dt');
 }
 
 // ─── EMPLOYEE MANAGEMENT ─────────────────────────────────────
@@ -1581,9 +1602,48 @@ function copyMail(p) {
       document.body.removeChild(ta);toast('✓ Kopiert!');
     });
 }
+
+// ── EMAIL CHIPS (saved emails in result panels) ───────────────────────
+var _mailToOverride={}; // panel-prefix -> email override
+
+function renderEmailChipsFor(p){
+  const list=loadSavedEmails();
+  const el=document.getElementById(p+'-email-chips');
+  if(!el)return;
+  if(!list.length){el.style.display='none';return;}
+  el.style.display='flex';
+  const cur=_mailToOverride[p]||null;
+  el.innerHTML='<span style="font-size:11px;color:var(--mut);align-self:center">Empfänger:</span>'+
+    list.map((item,i)=>`<button onclick="setMailToFor('${p}','${item.email.replace(/'/g,"\\'")}','${item.label.replace(/'/g,"\\'")}',this)" `+
+      `style="padding:4px 9px;border-radius:12px;font-size:11px;border:1px solid ${cur===item.email?'var(--red)':'var(--brd)'};`+
+      `background:${cur===item.email?'#ffeeee':'var(--bg)'};cursor:pointer;font-family:inherit">${item.label}</button>`).join('');
+}
+
+function setMailToFor(p,email,label,btnEl){
+  if(_mailToOverride[p]===email){
+    // toggle off
+    delete _mailToOverride[p];
+    // reset display
+    const dispEl=document.getElementById(p+'-to-disp');
+    if(dispEl)dispEl.textContent=TO;
+  } else {
+    _mailToOverride[p]=email;
+    const dispEl=document.getElementById(p+'-to-disp');
+    if(dispEl)dispEl.textContent=email+' ('+label+')';
+  }
+  renderEmailChipsFor(p);
+  toast('Empfänger: '+(p in _mailToOverride?_mailToOverride[p]:TO));
+}
+
+function getMailTo(p){return _mailToOverride[p]||TO;}
+
+// Patch mailto to use per-panel override
+const _origMailto=window.mailto;
+
 function mailto(p) {
   const {subj,body}=getEmail(p);
-  window.location.href=`mailto:${TO}?cc=${encodeURIComponent(CC)}&subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
+  const toAddr=_mailToOverride[p]||TO;
+  window.location.href=`mailto:${toAddr}?cc=${encodeURIComponent(CC)}&subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(body)}`;
 }
 
 // ─── SHARED SIGNATURE UTILITIES ─────────────────────────────
@@ -2803,11 +2863,13 @@ function updateKM(){
   document.getElementById('km-subj').textContent=subj;
   document.getElementById('km-body').textContent=body;
   document.getElementById('km-res').style.display='block';
+  renderEmailChipsFor('km');
 }
 function kmMailto(){
   const subj=document.getElementById('km-subj').textContent;
   const body=document.getElementById('km-body').textContent;
-  window.location.href='mailto:a.marx@sushi-circle.de?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
+  const toAddr=_mailToOverride['km']||'a.marx@sushi-circle.de';
+  window.location.href='mailto:'+toAddr+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);
 }
 async function kmShare(){
   const subj=document.getElementById('km-subj').textContent;
@@ -2851,8 +2913,8 @@ function getKW(d){
 function renderEmpNotif(){
   const emps=loadEmps();
   const today=new Date();
-  const todayYM=today.getFullYear()+'-'+(today.getMonth()+1).toString().padStart(2,'0');
-  const todayD=today.getDate();
+  // use ISO date string for Dienstplan key lookup
+  const todayStr=today.toISOString().split('T')[0]; // YYYY-MM-DD
   const notifs=[];
 
   // 1. Austritt within 45 days
@@ -2863,39 +2925,40 @@ function renderEmpNotif(){
         const dt=new Date(y,m-1,d);
         const diff=Math.round((dt-today)/(1000*60*60*24));
         if(diff>=0&&diff<=45){
-          notifs.push({icon:'⚠️',type:'amber',msg:`<strong>${e.name}</strong> — Vertrag endet am ${e.austritt} (in ${diff} Tagen)`});
+          notifs.push({icon:'⚠️',msg:`<strong>${e.name}</strong> — Vertrag endet am ${e.austritt} (in ${diff} Tagen)`});
         }
       }
     }
   });
 
-  // 2. Currently Krank / Urlaub (from Dienstplan today)
+  // 2. Krank / Urlaub today — Dienstplan structure: {employees:[{name,id}], shifts:{empKey:{dateStr:value}}}
   const dpKeys=Object.keys(localStorage).filter(k=>k.startsWith('sc_dp_'));
   const krankHeute=[], urlaubHeute=[];
   dpKeys.forEach(k=>{
     try{
       const data=JSON.parse(localStorage.getItem(k));
-      if(data&&data.rows){
-        data.rows.forEach(row=>{
-          const cell=row.cells&&row.cells[todayD];
-          if(cell==='Krank') krankHeute.push(row.name);
-          if(cell==='Urlaub') urlaubHeute.push(row.name);
+      if(data&&data.employees&&data.shifts){
+        data.employees.forEach(emp=>{
+          const ek=(emp.id||'x')+'-'+emp.name;
+          const shift=data.shifts[ek]&&data.shifts[ek][todayStr];
+          if(shift==='Krank') krankHeute.push(emp.name);
+          if(shift==='Urlaub') urlaubHeute.push(emp.name);
         });
       }
     }catch(ex){}
   });
   const krankUniq=[...new Set(krankHeute)];
   const urlaubUniq=[...new Set(urlaubHeute)];
-  if(krankUniq.length) notifs.push({icon:'🏥',type:'red',msg:`Heute krank: <strong>${krankUniq.join(', ')}</strong>`});
-  if(urlaubUniq.length) notifs.push({icon:'🌴',type:'grn',msg:`Heute im Urlaub: <strong>${urlaubUniq.join(', ')}</strong>`});
+  if(krankUniq.length) notifs.push({icon:'🏥',msg:`Heute krank: <strong>${krankUniq.join(', ')}</strong>`});
+  if(urlaubUniq.length) notifs.push({icon:'🌴',msg:`Heute im Urlaub: <strong>${urlaubUniq.join(', ')}</strong>`});
 
   const card=document.getElementById('emp-notif-card');
   const list=document.getElementById('emp-notif-list');
   const cnt=document.getElementById('emp-notif-count');
-  if(!notifs.length){card.style.display='none';return;}
-  card.style.display='block';
-  cnt.textContent=notifs.length;
-  list.innerHTML=notifs.map(n=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--brd)">
+  if(!notifs.length){if(card)card.style.display='none';return;}
+  if(card)card.style.display='block';
+  if(cnt)cnt.textContent=notifs.length;
+  if(list)list.innerHTML=notifs.map(n=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--brd)">
     <span style="font-size:18px">${n.icon}</span>
     <span style="font-size:13px;flex:1">${n.msg}</span>
   </div>`).join('');
@@ -2903,6 +2966,10 @@ function renderEmpNotif(){
 
 // ── MARKTSUCHE CSV IMPORT ─────────────────────────────────────────────
 const MK_TYPES={'R':'Rewe','E':'Edeka','M':'Marktkauf','MK':'Marktkauf','K':'Kaufland','T':'Tegut','RA':'Ratio'};
+const MK_COLORS={Rewe:'#cc0000',Edeka:'#e7a800',Kaufland:'#e30513',Tegut:'#005ca8',Ratio:'#7a3b8e',Marktkauf:'#e30513'};
+function loadMkStores(){try{return JSON.parse(localStorage.getItem('sc_mk_stores')||'[]');}catch(e){return[];}}
+function saveMkStores(d){localStorage.setItem('sc_mk_stores',JSON.stringify(d));}
+
 function importMarktsuche(ev){
   const file=ev.target.files[0]; if(!file)return;
   const reader=new FileReader();
@@ -2911,48 +2978,120 @@ function importMarktsuche(ev){
     const lines=text.split(/\r?\n/).filter(l=>l.trim());
     if(lines.length<2){alert('Datei scheint leer.');return;}
     const sep=';';
+    // handle quoted headers
     const header=lines[0].split(sep).map(h=>h.replace(/^"|"$/g,'').trim());
     const ci=n=>header.indexOf(n);
     const iName=ci('Marktname'), iStr=ci('Strasse'), iPLZ=ci('PLZ'), iOrt=ci('Ort');
-    if(iName<0||iOrt<0){alert('Spalten "Marktname" und "Ort" nicht gefunden.');return;}
-    const pf=r=>((r||'').replace(/^"|"$/g,'')).trim();
-    const stores=[];
+    if(iName<0||iOrt<0){
+      alert('Spalten "Marktname" und "Ort" nicht gefunden.\nGefunden: '+header.join(', '));return;
+    }
+    const pf=(row,i)=>i>=0?((row[i]||'').replace(/^"|"$/g,'').trim()):'';
+    const imported=[];
     lines.slice(1).forEach(line=>{
       if(!line.trim())return;
       const row=line.split(sep);
-      const marktname=pf(row[iName]);
-      const strasse=iPLZ>=0?pf(row[iStr]):'';
-      const plz=iPLZ>=0?pf(row[iPLZ]):'';
-      const ort=iOrt>=0?pf(row[iOrt]):'';
-      // parse type and display name from marktname
-      // format: "NR: TypeCode-City-..."; extract TypeCode
+      const marktname=pf(row,iName);
+      if(!marktname)return;
+      const strasse=pf(row,iStr);
+      const plz=pf(row,iPLZ);
+      const ort=pf(row,iOrt);
+      // "NR: TypeCode-City-Street - Operator"
       const m=marktname.match(/:\s*([A-Z]+)-(.+)/);
-      let typeCode='',displayName='',addr='';
+      let type='',displayName='';
       if(m){
-        typeCode=m[1];
-        const typeFull=MK_TYPES[typeCode]||typeCode;
-        displayName=typeFull+' '+ort;
+        type=MK_TYPES[m[1]]||m[1];
+        displayName=type+' '+ort;
       } else {
         displayName=ort;
       }
-      if(strasse&&plz&&ort) addr=strasse+', '+plz+' '+ort;
-      else if(strasse&&ort) addr=strasse+', '+ort;
-      stores.push({name:displayName,s1name:displayName,s1addr:addr,s1open:'08:00',dep:'07:00',bk:'14:00',km:0});
+      const addr=[strasse,plz&&ort?(plz+' '+ort):ort].filter(Boolean).join(', ');
+      imported.push({name:displayName,type,addr,marktname});
     });
-    if(!stores.length){alert('Keine Filialen gefunden.');return;}
-    const existing=loadRpGroups();
-    const existingNames=existing.map(g=>g.name.toLowerCase());
+    if(!imported.length){alert('Keine Filialen gefunden.');return;}
+    // merge with existing stored mk stores
+    const existing=loadMkStores();
+    const existingNames=new Set(existing.map(s=>s.name.toLowerCase()));
     let added=0;
-    stores.forEach(s=>{
-      if(!existingNames.includes(s.name.toLowerCase())){existing.push(s);added++;}
+    imported.forEach(s=>{
+      if(!existingNames.has(s.name.toLowerCase())){existing.push(s);added++;}
     });
-    saveRpGroups(existing);renderRpGrpList();
-    RP_CL=getRPCL();rpSchedule=[];
-    if(document.getElementById('rp-grid'))rpRender();
+    saveMkStores(existing);
     document.getElementById('mk-csv-file').value='';
-    toast('✓ '+added+' Filiale(n) aus Marktsuche importiert');
+    renderMkStores();
+    // switch to settings panel and scroll to cluster card
+    toast('✓ '+added+' Filiale(n) importiert. Jetzt Cluster auswählen ↓');
   };
-  reader.readAsText(file,'windows-1252');
+  // try iso-8859-1 (same as windows-1252 for German chars, more browser-compatible)
+  reader.readAsText(file,'iso-8859-1');
+}
+
+function renderMkStores(){
+  const stores=loadMkStores();
+  const card=document.getElementById('mk-cluster-card');
+  const list=document.getElementById('mk-stores-list');
+  const cnt=document.getElementById('mk-stores-count');
+  if(!card)return;
+  if(!stores.length){card.style.display='none';return;}
+  card.style.display='block';
+  if(cnt)cnt.textContent=stores.length;
+  if(!list)return;
+  const sel=stores.filter(s=>s._sel);
+  list.innerHTML=stores.map((s,i)=>{
+    const bg=s._sel?'#fff0ee':'var(--bg)';
+    const brd=s._sel?'var(--red)':'var(--brd)';
+    const clr=MK_COLORS[s.type]||'#666';
+    return `<div onclick="mkToggleSel(${i})" style="cursor:pointer;padding:8px 12px;margin-bottom:5px;border:2px solid ${brd};border-radius:var(--rs);background:${bg};display:flex;align-items:center;gap:10px">
+      <span style="font-size:16px">${s._sel?'✅':'⬜'}</span>
+      <span style="display:inline-block;padding:2px 7px;border-radius:10px;background:${clr};color:#fff;font-size:11px;font-weight:700;min-width:52px;text-align:center">${s.type||'?'}</span>
+      <div style="flex:1"><div style="font-size:13px;font-weight:600">${s.name}</div><div style="font-size:11px;color:var(--mut)">📍 ${s.addr||'—'}</div></div>
+    </div>`;
+  }).join('');
+  // show create-cluster hint
+  const hint=document.getElementById('mk-cluster-hint');
+  if(hint) hint.textContent=sel.length===0?'Filialen anklicken zum Auswählen (max. 2 pro Cluster)':
+    sel.length===1?`1 ausgewählt — 1 weitere wählen oder jetzt als Einzel-Cluster speichern`:
+    `${sel.length} ausgewählt — Als Cluster speichern`;
+}
+
+function mkToggleSel(i){
+  const stores=loadMkStores();
+  const sel=stores.filter(s=>s._sel);
+  if(!stores[i]._sel&&sel.length>=2){toast('Max. 2 pro Cluster.');return;}
+  stores[i]._sel=!stores[i]._sel;
+  saveMkStores(stores);renderMkStores();
+}
+
+function mkClearSel(){
+  const stores=loadMkStores();
+  stores.forEach(s=>delete s._sel);
+  saveMkStores(stores);renderMkStores();
+}
+
+function mkClearAll(){
+  if(!confirm('Alle Marktsuche-Filialen löschen?'))return;
+  localStorage.removeItem('sc_mk_stores');
+  renderMkStores();toast('✓ Gelöscht');
+}
+
+function mkCreateCluster(){
+  const stores=loadMkStores();
+  const sel=stores.filter(s=>s._sel);
+  if(!sel.length){toast('Bitte 1–2 Filialen auswählen.');return;}
+  const grpName=sel.map(s=>s.name).join(' + ');
+  const g={
+    name:grpName,
+    s1name:sel[0].name,s1addr:sel[0].addr||'',s1open:'08:00',
+    s2name:sel[1]?sel[1].name:'',s2addr:sel[1]?sel[1].addr||'':'',s2open:'08:00',
+    dep:'07:00',bk:'14:00',km:0
+  };
+  const grps=loadRpGroups();
+  grps.push(g);
+  saveRpGroups(grps);renderRpGrpList();
+  RP_CL=getRPCL();rpSchedule=[];
+  // clear selection
+  stores.forEach(s=>delete s._sel);
+  saveMkStores(stores);renderMkStores();
+  toast('✓ Cluster "'+grpName+'" zu Fahrtplan hinzugefügt');
 }
 
 // ── SAVED EMAIL ADDRESSES ─────────────────────────────────────────────
