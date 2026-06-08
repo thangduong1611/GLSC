@@ -5,11 +5,11 @@
 <link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Gebietsleiter Assistent">
+<meta name="apple-mobile-web-app-title" content="HR Sushi">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
 <meta name="theme-color" content="#C0392B">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Gebietsleiter Assistent – by Thang Duong</title>
+<title>HR Assistant – Sushi Circle</title>
 <style>
 :root {
   --red:#C0392B;--red-d:#922B21;--red-l:#FADBD8;
@@ -228,8 +228,8 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 
 <header>
   <div>
-    <div class="logo">🍣GLSC</div>
-    <div class="sub" id="header-sub">Gebietsleiter Assistent – by <a href="https://www.linkedin.com/in/duong-duc-thang-240611a0?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app">Thang Duong</a></div>
+    <div class="logo">🍣 HR Assistant</div>
+    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH</div>
   </div>
 </header>
 
@@ -489,7 +489,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
       <span>Gesamtstunden</span><strong id="s-tot-val">0 Std.</strong>
     </div>
   </div>
-  <div class="result" id="s-res">
+  <div id="s-sig-opt" style="display:none;margin:0 0 10px"><label style="display:flex;align-items:center;gap:9px;cursor:pointer;padding:9px 12px;background:var(--bg);border:1px solid var(--brd);border-radius:var(--rs)"><input type="checkbox" id="s-sig-check" style="width:16px;height:16px;accent-color:var(--red)" onchange="updateStunden()"><span style="font-size:13px">✍️ <strong>Unterschrift des Gebietsleiters</strong> als Bestätigung anfügen</span></label></div>  <div class="result" id="s-res">
     <div class="e-meta"><strong>An:</strong> teamsushi@zahlenwerk.de &nbsp;·&nbsp; <strong>CC:</strong> hr@sushi-circle.de</div>
     <div class="e-subj" id="s-subj"></div>
     <div class="e-body" id="s-body"></div>
@@ -726,7 +726,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
     <div class="card-title">🚗 Fahrtplan-Gruppen <span class="badge badge-grn" id="rp-grp-count">0</span></div>
     <div class="info">Filialen in Tagesgruppen aufteilen (max. 2 pro Gruppe). Erscheinen im Dienstplan → Fahrtplan.</div>
     <div id="rp-grp-list" style="margin-bottom:10px"></div>
-    <button class="btn btn-red" onclick="openRpGrpModal(null)" style="width:100%;justify-content:center">+ Neue Gruppe hinzufügen</button>
+    <div style="display:flex;gap:8px;margin-top:0"><button class="btn btn-red" onclick="openRpGrpModal(null)" style="flex:1;justify-content:center">+ Neue Gruppe</button><button class="btn" onclick="rpImportFromEmps()" style="flex:1;justify-content:center" title="Filialen aus importierter Mitarbeiterliste übernehmen">📥 Aus MA-Liste</button></div>
   </div>
   <div class="card">
     <div class="card-title">✍️ Unterschrift hochladen</div>
@@ -778,7 +778,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
       </div>
       <datalist id="dp-presets"><option value="Frei"><option value="Urlaub"><option value="Krank"><option value="05:30-11:30"><option value="07:00-13:00"><option value="07:00-14:00"><option value="09:00-15:00"><option value="12:00-18:00"><option value="16:00-19:00"><option value="08:00-14:00"></datalist>
       <div id="dp-weeks-wrap"></div>
-      <div class="btn-row">
+      <div id="dp-sig-opt" style="margin-bottom:10px"><label style="display:flex;align-items:center;gap:9px;cursor:pointer;padding:9px 12px;background:var(--bg);border:1px solid var(--brd);border-radius:var(--rs)"><input type="checkbox" id="dp-sig-check" style="width:16px;height:16px;accent-color:var(--red)"><span style="font-size:13px">✍️ <strong>Unterschrift des Gebietsleiters</strong> auf PDF anfügen</span></label></div>      <div class="btn-row">
         <button class="btn btn-red" onclick="dpExportPDF()" style="flex:1;justify-content:center">⬇ PDF herunterladen</button>
         <button class="btn btn-grn" onclick="dpSharePDF()">📤 WhatsApp</button>
         <button class="btn" onclick="dpSave()">💾 Speichern</button>
@@ -789,7 +789,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
   <div id="dp-mode-route" style="display:none">
     <div class="card">
       <div class="card-title">🚗 Wöchentlicher Fahrtplan <span class="badge badge-grn" id="rp-filial-count"></span></div>
-      <div class="info">Jede Woche neu würfeln. Eigene Filialen unter ⚙ Einstellungen → Fahrtplan-Gruppen eintragen.</div>
+      <div class="info">Jede Woche neu würfeln. Filialen werden automatisch aus der importierten Mitarbeiterliste erkannt – oder manuell unter ⚙ Einstellungen → Fahrtplan-Gruppen konfigurieren.</div>
       <div style="margin-bottom:12px">
         <div style="font-size:11px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">Home Office</div>
         <div id="rp-ho-chips" style="display:flex;gap:5px;flex-wrap:wrap"></div>
@@ -1092,6 +1092,23 @@ Bei Rückfragen stehe ich Ihnen gerne zur Verfügung.
 
 ${SIG}`;
   document.getElementById('s-res').style.display='block';
+  toggleSigOption('stunden','s-sig-opt');
+  // Show/hide sig preview in result
+  var sSigCheck=document.getElementById('s-sig-check');
+  var sSigImg=document.getElementById('s-sig-img-preview');
+  if(!sSigImg){
+    sSigImg=document.createElement('div');sSigImg.id='s-sig-img-preview';
+    sSigImg.style.cssText='margin:10px 0;padding:10px;background:#fff;border:1px solid var(--brd);border-radius:var(--rs);display:none;text-align:right';
+    var sResEl=document.getElementById('s-res');
+    var sBtns=sResEl.querySelector('.btn-row');
+    if(sBtns)sResEl.insertBefore(sSigImg,sBtns);
+  }
+  var sigD=localStorage.getItem('sc_sig');
+  var st2=loadSettings();
+  if(sSigCheck&&sSigCheck.checked&&sigD){
+    sSigImg.style.display='block';
+    sSigImg.innerHTML='<div style="font-size:11px;color:var(--mut);margin-bottom:4px">Unterschrift: '+(st2.name||'')+'</div><img src="'+sigD+'" style="max-height:45px;max-width:180px">';
+  } else if(sSigImg){sSigImg.style.display='none';}
 }
 
 // ─── DEUTSCHLANDTICKET ───────────────────────────────────────
@@ -2378,13 +2395,22 @@ function loadRpGroups(){try{return JSON.parse(localStorage.getItem('sc_rp_groups
 function saveRpGroups(d){localStorage.setItem('sc_rp_groups',JSON.stringify(d));}
 function getRPCL(){
   var grps=loadRpGroups();
-  if(!grps.length)return RP_CL_DEFAULT;
-  return grps.map(function(g,i){
+  if(grps.length) return grps.map(function(g,i){
     var ci=i%RP_COLORS.length,stores=[];
     if(g.s1name)stores.push({n:g.s1name,a:g.s1addr||'',o:g.s1open||'08:00'});
     if(g.s2name)stores.push({n:g.s2name,a:g.s2addr||'',o:g.s2open||'08:00'});
-    return{id:'grp'+i,name:g.name,c:RP_COLORS[ci],bg:RP_BKGS[ci],txt:RP_COLORS[ci],stores:stores,km:g.km||0,dep:g.dep||'07:00',bk:g.bk||'14:00',wt:'ok',warn:g.warn||''};
+    return{id:'grp'+i,name:g.name,c:RP_COLORS[ci],bg:RP_BKGS[ci],txt:RP_COLORS[ci],
+      stores:stores,km:g.km||0,dep:g.dep||'07:00',bk:g.bk||'14:00',wt:'ok',warn:g.warn||''};
   });
+  // Auto-generate from employee filialen (CSV import)
+  var emps=loadEmps().filter(function(e){return e.active!==false;});
+  var filialen=[...new Set(emps.map(function(e){return e.filiale||'';}).filter(Boolean))].sort();
+  if(filialen.length) return filialen.map(function(f,i){
+    var ci=i%RP_COLORS.length;
+    return{id:'auto'+i,name:f,c:RP_COLORS[ci],bg:RP_BKGS[ci],txt:RP_COLORS[ci],
+      stores:[{n:f,a:'',o:'08:00'}],km:0,dep:'07:00',bk:'14:00',wt:'ok',warn:''};
+  });
+  return RP_CL_DEFAULT;
 }
 function renderRpGrpList(){
   var grps=loadRpGroups(),c=document.getElementById('rp-grp-list'),cnt=document.getElementById('rp-grp-count');
@@ -2463,6 +2489,7 @@ function dpInit(){
   var f=dpGetFiliale(),m=document.getElementById('dp-month').value;
   if(!f||!m){document.getElementById('dp-editor').style.display='none';return;}
   document.getElementById('dp-editor').style.display='block';
+  toggleSigOption('dienstplan','dp-sig-opt');
   var saved=dpLoadLS(dpKey());
   if(saved){dpEmployees=saved.employees||[];dpShifts=saved.shifts||{};}
   else{if(!dpEmployees.length){var emps=loadEmps().filter(function(e){return e.active!==false&&(e.filiale||'')===(f);});dpEmployees=emps.map(function(e){return{name:e.name,id:e.id};});}dpShifts={};}
@@ -2536,6 +2563,21 @@ function dpExportPDF(){
     });
     y+=4;
   });
+  // Optional: signature
+  var dpSigEl=document.getElementById('dp-sig-check');
+  if(dpSigEl&&dpSigEl.checked){
+    var sigData=localStorage.getItem('sc_sig');
+    if(sigData){
+      var s2=loadSettings();
+      var sigLabel=(s2.name||'Gebietsleiter')+(s2.titel?', '+s2.titel:'');
+      try{
+        if(y+20>pH){doc.addPage();y=MT;}
+        doc.addImage(sigData,'PNG',ML+PW-52,y,40,14);
+        doc.setFontSize(7);doc.setFont('helvetica','normal');
+        doc.text(sigLabel,ML+PW-52+20,y+18,{align:'center'});
+      }catch(ex){console.warn('Sig image error',ex);}
+    }
+  }
   var fname='Dienstplan_'+f.replace(/\s+/g,'_')+'_'+m+'.pdf';
   doc.save(fname);dpLastDoc=doc;dpLastFname=fname;
   st.textContent='\u2705 PDF: '+fname;toast('\uD83D\uDCC4 PDF erstellt!');
@@ -2582,7 +2624,7 @@ function rpRender(){
       +'<div class="rp-day-lbl">'+(RP_DAYS[i]||('T'+(i+1)))+'</div>'
       +(isHO?'<div style="font-size:12px;color:var(--mut)">🏠 Home Office</div>'
       :'<div class="rp-day-name" style="color:'+cl.txt+'">'+cl.name+'</div>'
-      +'<div class="rp-day-meta" style="color:'+cl.txt+'">⏰ '+cl.dep+' · '+cl.km+' km</div>')+'</div>';
+      +(cl.km>0?'<div class="rp-day-meta" style="color:'+cl.txt+'">⏰ '+cl.dep+' · '+cl.km+' km</div>':'<div class="rp-day-meta" style="color:'+cl.txt+'">⏰ Abfahrt: '+cl.dep+'</div>'))+'</div>';
   }).join('');
   document.getElementById('rp-grid').innerHTML=g;
   rpRenderDetail();
@@ -2595,7 +2637,7 @@ function rpRenderDetail(){
   var h='<div style="border:1.5px solid '+cl.c+'40;border-radius:10px;overflow:hidden;margin-bottom:8px">'
     +'<div style="background:'+cl.bg+'80;padding:10px 14px;display:flex;justify-content:space-between;align-items:center">'
     +'<div><div style="font-size:14px;font-weight:600;color:'+cl.txt+'">'+RP_DAYF[rpSelDay]+' \u2014 '+cl.name+'</div>'
-    +'<div style="font-size:12px;color:var(--mut);margin-top:2px">Abfahrt '+cl.dep+' · Rückkehr '+cl.bk+(cl.km?' · '+cl.km+' km':'')+'</div></div>'
+    +'<div style="font-size:12px;color:var(--mut);margin-top:2px">Abfahrt '+cl.dep+(cl.bk?' · Rückkehr '+cl.bk:'')+(cl.km>0?' · '+cl.km+' km':'')+'</div></div>'
     +'<button onclick="rpSelD(-1)" style="background:none;border:none;color:var(--mut);cursor:pointer;font-size:18px">×</button></div>';
   cl.stores.forEach(function(s){
     h+='<div class="rp-store-row" style="padding:9px 14px">'
@@ -2614,6 +2656,42 @@ function rpCopyText(){
   var txt=Array.from({length:RP_CL.length+1},function(_,i){if(i===rpHoDayIdx)return (RP_DAYF[i]||('Tag '+(i+1)))+': Home Office';var cl=RP_CL[rpSchedule[i]];return(RP_DAYF[i]||('Tag '+(i+1)))+' (Abfahrt '+cl.dep+'): '+cl.stores.map(function(s){return s.n;}).join(' + ');}).join('\n');
   if(navigator.clipboard)navigator.clipboard.writeText(txt).then(function(){toast('✓ Fahrtplan kopiert!');});else prompt('Kopieren:',txt);
 }
+
+
+// ── AUTO-IMPORT FILIALEN FROM EMPLOYEE LIST ───────────────────
+function rpImportFromEmps(){
+  var emps=loadEmps().filter(function(e){return e.active!==false;});
+  var filialen=[...new Set(emps.map(function(e){return e.filiale||'';}).filter(Boolean))].sort();
+  if(!filialen.length){alert('Keine Filialen in der Mitarbeiterliste gefunden. Bitte zuerst CSV importieren.');return;}
+  var existing=loadRpGroups();
+  var existingNames=existing.map(function(g){return g.name.toLowerCase();});
+  var added=0;
+  filialen.forEach(function(f){
+    if(!existingNames.includes(f.toLowerCase())){
+      existing.push({name:f,s1name:f,s1addr:'',s1open:'08:00',s2name:'',s2addr:'',s2open:'',dep:'07:00',bk:'14:00',km:0});
+      added++;
+    }
+  });
+  if(!added){toast('Alle Filialen bereits vorhanden.');return;}
+  saveRpGroups(existing);renderRpGrpList();
+  RP_CL=getRPCL();rpSchedule=[];
+  if(document.getElementById('rp-grid'))rpRender();
+  toast('✓ '+added+' Filiale(n) importiert');
+}
+
+// ── SHOW/HIDE SIGNATURE OPTIONS ───────────────────────────────
+function toggleSigOption(panelId,optId){
+  var sig=localStorage.getItem('sc_sig');
+  var opt=document.getElementById(optId);
+  if(opt) opt.style.display=sig?'block':'none';
+}
+
+// ── STUNDENNACHWEIS WITH SIGNATURE ───────────────────────────
+// Patch into updateStunden to show/hide sig option
+var _origUpdateStunden = typeof updateStunden==='function' ? updateStunden : null;
+
+// ── DIENSTPLAN PDF WITH SIGNATURE ────────────────────────────
+// Patched into dpExportPDF via flag check (dp-sig-check)
 
 // ─── INIT ────────────────────────────────────────────────────
 restoreSig();
