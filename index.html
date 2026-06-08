@@ -924,9 +924,8 @@ renderRpGrpList();
 RP_CL=getRPCL();
   if(id==='av') avPopulateDropdown();
   if(id==='dienstplan'){RP_CL=getRPCL();dpOnShow();}
-  if(id==='settings'){renderRpGrpList();applySettings();}
   if(id==='dienstplan'){RP_CL=getRPCL();dpOnShow();}
-  if(id==='settings'){renderRpGrpList();applySettings();}
+  if(id==='settings'){renderRpGrpList();applySettings();renderMkStores();renderSavedEmails();}
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────
@@ -2970,59 +2969,67 @@ const MK_COLORS={Rewe:'#cc0000',Edeka:'#e7a800',Kaufland:'#e30513',Tegut:'#005ca
 function loadMkStores(){try{return JSON.parse(localStorage.getItem('sc_mk_stores')||'[]');}catch(e){return[];}}
 function saveMkStores(d){localStorage.setItem('sc_mk_stores',JSON.stringify(d));}
 
+function _parseMkText(text){
+  // strip BOM
+  if(text.charCodeAt(0)===0xFEFF) text=text.slice(1);
+  const lines=text.split(/\r?\n/).map(l=>l.trimEnd()).filter(l=>l.trim());
+  if(lines.length<2) return null;
+  const sep=';';
+  const header=lines[0].split(sep).map(h=>h.replace(/^"|"$/g,'').trim());
+  // case-insensitive index lookup
+  const ci=n=>{const nl=n.toLowerCase();return header.findIndex(h=>h.toLowerCase()===nl);};
+  const iName=ci('marktname'),iStr=ci('strasse'),iPLZ=ci('plz'),iOrt=ci('ort');
+  if(iName<0||iOrt<0) return {error:'Spalten nicht gefunden: '+header.slice(0,10).join(' | ')};
+  const pf=(row,i)=>i>=0?((row[i]||'').replace(/^"|"$/g,'').trim()):'';
+  const imported=[];
+  lines.slice(1).forEach(line=>{
+    if(!line.trim())return;
+    const row=line.split(sep);
+    const marktname=pf(row,iName);if(!marktname)return;
+    const strasse=pf(row,iStr),plz=pf(row,iPLZ),ort=pf(row,iOrt);
+    const m=marktname.match(/:\s*([A-Z]+)-(.+)/);
+    let type='',displayName='';
+    if(m){type=MK_TYPES[m[1]]||m[1];displayName=type+' '+ort;}
+    else{displayName=ort||marktname.substring(0,30);}
+    if(!displayName)return;
+    const addr=[strasse,plz&&ort?(plz+' '+ort):ort].filter(Boolean).join(', ');
+    imported.push({name:displayName,type,addr,marktname});
+  });
+  return imported;
+}
+
 function importMarktsuche(ev){
   const file=ev.target.files[0]; if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    const text=e.target.result;
-    const lines=text.split(/\r?\n/).filter(l=>l.trim());
-    if(lines.length<2){alert('Datei scheint leer.');return;}
-    const sep=';';
-    // handle quoted headers
-    const header=lines[0].split(sep).map(h=>h.replace(/^"|"$/g,'').trim());
-    const ci=n=>header.indexOf(n);
-    const iName=ci('Marktname'), iStr=ci('Strasse'), iPLZ=ci('PLZ'), iOrt=ci('Ort');
-    if(iName<0||iOrt<0){
-      alert('Spalten "Marktname" und "Ort" nicht gefunden.\nGefunden: '+header.join(', '));return;
-    }
-    const pf=(row,i)=>i>=0?((row[i]||'').replace(/^"|"$/g,'').trim()):'';
-    const imported=[];
-    lines.slice(1).forEach(line=>{
-      if(!line.trim())return;
-      const row=line.split(sep);
-      const marktname=pf(row,iName);
-      if(!marktname)return;
-      const strasse=pf(row,iStr);
-      const plz=pf(row,iPLZ);
-      const ort=pf(row,iOrt);
-      // "NR: TypeCode-City-Street - Operator"
-      const m=marktname.match(/:\s*([A-Z]+)-(.+)/);
-      let type='',displayName='';
-      if(m){
-        type=MK_TYPES[m[1]]||m[1];
-        displayName=type+' '+ort;
-      } else {
-        displayName=ort;
-      }
-      const addr=[strasse,plz&&ort?(plz+' '+ort):ort].filter(Boolean).join(', ');
-      imported.push({name:displayName,type,addr,marktname});
-    });
-    if(!imported.length){alert('Keine Filialen gefunden.');return;}
-    // merge with existing stored mk stores
+  // try UTF-8 first, fallback to iso-8859-1
+  const tryParse=enc=>new Promise(res=>{
+    const r=new FileReader();
+    r.onload=e=>{const result=_parseMkText(e.target.result);res(result);};
+    r.onerror=()=>res(null);
+    r.readAsText(file,enc);
+  });
+  Promise.all([tryParse('utf-8'),tryParse('iso-8859-1')]).then(([r1,r2])=>{
+    // pick the result with more entries (or whichever worked)
+    let imported=null;
+    if(Array.isArray(r1)&&r1.length) imported=r1;
+    else if(Array.isArray(r2)&&r2.length) imported=r2;
+    else if(r1&&r1.error) {alert(r1.error);return;}
+    else if(r2&&r2.error) {alert(r2.error);return;}
+    else {alert('Keine Filialen gefunden. Bitte Dateiformat prüfen.');return;}
+
     const existing=loadMkStores();
     const existingNames=new Set(existing.map(s=>s.name.toLowerCase()));
     let added=0;
-    imported.forEach(s=>{
-      if(!existingNames.has(s.name.toLowerCase())){existing.push(s);added++;}
-    });
+    imported.forEach(s=>{if(!existingNames.has(s.name.toLowerCase())){existing.push(s);added++;}});
     saveMkStores(existing);
     document.getElementById('mk-csv-file').value='';
     renderMkStores();
-    // switch to settings panel and scroll to cluster card
-    toast('✓ '+added+' Filiale(n) importiert. Jetzt Cluster auswählen ↓');
-  };
-  // try iso-8859-1 (same as windows-1252 for German chars, more browser-compatible)
-  reader.readAsText(file,'iso-8859-1');
+    // scroll cluster card into view
+    setTimeout(()=>{
+      const card=document.getElementById('mk-cluster-card');
+      if(card) card.scrollIntoView({behavior:'smooth',block:'center'});
+    },150);
+    toast('✓ '+imported.length+' Filiale(n) erkannt, '+added+' neu. Jetzt Cluster auswählen ↓');
+  });
 }
 
 function renderMkStores(){
@@ -3037,20 +3044,25 @@ function renderMkStores(){
   if(!list)return;
   const sel=stores.filter(s=>s._sel);
   list.innerHTML=stores.map((s,i)=>{
-    const bg=s._sel?'#fff0ee':'var(--bg)';
-    const brd=s._sel?'var(--red)':'var(--brd)';
-    const clr=MK_COLORS[s.type]||'#666';
-    return `<div onclick="mkToggleSel(${i})" style="cursor:pointer;padding:8px 12px;margin-bottom:5px;border:2px solid ${brd};border-radius:var(--rs);background:${bg};display:flex;align-items:center;gap:10px">
-      <span style="font-size:16px">${s._sel?'✅':'⬜'}</span>
-      <span style="display:inline-block;padding:2px 7px;border-radius:10px;background:${clr};color:#fff;font-size:11px;font-weight:700;min-width:52px;text-align:center">${s.type||'?'}</span>
-      <div style="flex:1"><div style="font-size:13px;font-weight:600">${s.name}</div><div style="font-size:11px;color:var(--mut)">📍 ${s.addr||'—'}</div></div>
-    </div>`;
+    const isSel=!!s._sel;
+    const clr=MK_COLORS[s.type]||'#555';
+    return '<div onclick="mkToggleSel('+i+')" style="cursor:pointer;padding:8px 12px;margin-bottom:5px;'
+      +'border:2px solid '+(isSel?'var(--red)':'var(--brd)')
+      +';border-radius:var(--rs);background:'+(isSel?'#fff0ee':'var(--bg)')
+      +';display:flex;align-items:center;gap:10px">'
+      +'<span style="font-size:18px;min-width:24px">'+(isSel?'✅':'⬜')+'</span>'
+      +'<span style="display:inline-block;padding:3px 8px;border-radius:10px;background:'+clr
+      +';color:#fff;font-size:11px;font-weight:700;min-width:56px;text-align:center">'+(s.type||'?')+'</span>'
+      +'<div style="flex:1"><div style="font-size:13px;font-weight:600">'+s.name+'</div>'
+      +'<div style="font-size:11px;color:var(--mut)">📍 '+(s.addr||'—')+'</div></div>'
+      +'</div>';
   }).join('');
-  // show create-cluster hint
   const hint=document.getElementById('mk-cluster-hint');
-  if(hint) hint.textContent=sel.length===0?'Filialen anklicken zum Auswählen (max. 2 pro Cluster)':
-    sel.length===1?`1 ausgewählt — 1 weitere wählen oder jetzt als Einzel-Cluster speichern`:
-    `${sel.length} ausgewählt — Als Cluster speichern`;
+  if(hint){
+    if(!sel.length) hint.textContent='Filialen antippen zum Auswählen (max. 2 pro Cluster)';
+    else if(sel.length===1) hint.innerHTML='<strong>1 ausgewählt</strong> — noch eine wählen oder direkt als Einzelcluster speichern';
+    else hint.innerHTML='<strong>'+sel.length+' ausgewählt</strong> — Cluster erstellen';
+  }
 }
 
 function mkToggleSel(i){
