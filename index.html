@@ -2564,8 +2564,9 @@ function getRPCL(){
 function renderRpGrpList(){
   var grps=loadRpGroups(),c=document.getElementById('rp-grp-list'),cnt=document.getElementById('rp-grp-count');
   if(cnt)cnt.textContent=grps.length;
+  var totalFil=grps.reduce(function(s,g){return s+(g.s1name?1:0)+(g.s2name?1:0);},0);
   var fc=document.getElementById('rp-filial-count');
-  if(fc)fc.textContent=(grps.length?grps.length+' Gruppen':'Standard');
+  if(fc)fc.textContent=(totalFil>0?totalFil+' Filialen':(grps.length?grps.length+' Gruppen':'Standard'));
   if(!c)return;
   if(!grps.length){c.innerHTML='<p style="font-size:13px;color:var(--mut)">Noch keine Gruppen. Ohne eigene Gruppen wird die Standardregion Göttingen verwendet.</p>';return;}
   c.innerHTML=grps.map(function(g,i){
@@ -2583,16 +2584,60 @@ function openRpGrpModal(idx){
   document.getElementById('rp-grp-idx').value=idx!==null?idx:'';
   document.getElementById('rp-grp-modal-title').textContent=idx!==null?'Gruppe bearbeiten':'Neue Fahrgruppe';
   var fn=function(id,v){var el=document.getElementById(id);if(el)el.value=v||'';};
-  fn('rp-grp-name',g.name);fn('rp-s1-name',g.s1name);fn('rp-s1-addr',g.s1addr);fn('rp-s1-open',g.s1open);
-  fn('rp-s2-name',g.s2name);fn('rp-s2-addr',g.s2addr);fn('rp-s2-open',g.s2open);
-  fn('rp-grp-dep',g.dep);fn('rp-grp-bk',g.bk);
+  fn('rp-grp-name',g.name);fn('rp-s1-name',g.s1name);fn('rp-s1-addr',g.s1addr);fn('rp-s1-open',g.s1open||'07:00');
+  fn('rp-s2-name',g.s2name);fn('rp-s2-addr',g.s2addr);fn('rp-s2-open',g.s2open||'08:00');
+  fn('rp-grp-dep',g.dep||'07:00');fn('rp-grp-bk',g.bk||'14:00');
+  var kmEl=document.getElementById('rp-grp-km');if(kmEl)kmEl.value=g.km||'';
+  // Clear "manually edited" flag on name
+  var nameEl=document.getElementById('rp-grp-name');if(nameEl)delete nameEl.dataset.manual;
+  // Populate store selectors from imported Marktsuche CSV
+  var mkStores=loadMkStores();
+  var s1pick=document.getElementById('rp-s1-pick'),s2pick=document.getElementById('rp-s2-pick');
+  if(s1pick){s1pick.style.display=mkStores.length?'block':'none';}
+  if(s2pick){s2pick.style.display=mkStores.length?'block':'none';}
+  if(mkStores.length){
+    var opts1='<option value="">— Filiale wählen —</option>';
+    var opts2='<option value="">— keine (optional) —</option>';
+    mkStores.forEach(function(s,i){
+      opts1+='<option value="'+i+'">'+s.name+'</option>';
+      opts2+='<option value="'+i+'">'+s.name+'</option>';
+    });
+    var s1sel=document.getElementById('rp-s1-sel'),s2sel=document.getElementById('rp-s2-sel');
+    if(s1sel)s1sel.innerHTML=opts1;
+    if(s2sel)s2sel.innerHTML=opts2;
+  }
   document.getElementById('rp-grp-modal').classList.add('open');
 }
 function closeRpGrpModal(){document.getElementById('rp-grp-modal').classList.remove('open');}
+function rpStoreSelect(slot,idxStr){
+  if(idxStr==='')return;
+  var stores=loadMkStores(),s=stores[parseInt(idxStr)];
+  if(!s)return;
+  document.getElementById('rp-s'+slot+'-name').value=s.name;
+  document.getElementById('rp-s'+slot+'-addr').value=s.addr||'';
+  var openEl=document.getElementById('rp-s'+slot+'-open');
+  if(openEl&&!openEl.value) openEl.value=slot===1?'07:00':'08:00';
+  rpUpdateGrpName();
+}
+function rpStoreCity(name){
+  var stores=loadMkStores();
+  var found=stores.find(function(s){return s.name===name;});
+  if(found&&found.type) return name.replace(found.type+' ','').trim();
+  return name.split(' ').slice(1).join(' ')||name;
+}
+function rpUpdateGrpName(){
+  var nameEl=document.getElementById('rp-grp-name');
+  if(!nameEl||nameEl.dataset.manual)return;
+  var s1=document.getElementById('rp-s1-name').value.trim();
+  var s2=document.getElementById('rp-s2-name').value.trim();
+  var c1=s1?rpStoreCity(s1):'',c2=s2?rpStoreCity(s2):'';
+  nameEl.value=(c1&&c2&&c1!==c2)?(c1+' / '+c2):(c1||c2||'');
+}
 function saveRpGrp(){
   var name=document.getElementById('rp-grp-name').value.trim(),s1=document.getElementById('rp-s1-name').value.trim();
   if(!name||!s1){alert('Gruppenname und Filiale 1 sind Pflicht.');return;}
-  var g={name:name,s1name:s1,s1addr:document.getElementById('rp-s1-addr').value.trim(),s1open:document.getElementById('rp-s1-open').value.trim()||'08:00',s2name:document.getElementById('rp-s2-name').value.trim(),s2addr:document.getElementById('rp-s2-addr').value.trim(),s2open:document.getElementById('rp-s2-open').value.trim()||'08:00',dep:document.getElementById('rp-grp-dep').value.trim()||'07:00',bk:document.getElementById('rp-grp-bk').value.trim()||'14:00'};
+  var kmEl=document.getElementById('rp-grp-km'),km=kmEl?parseInt(kmEl.value)||0:0;
+  var g={name:name,s1name:s1,s1addr:document.getElementById('rp-s1-addr').value.trim(),s1open:document.getElementById('rp-s1-open').value.trim()||'07:00',s2name:document.getElementById('rp-s2-name').value.trim(),s2addr:document.getElementById('rp-s2-addr').value.trim(),s2open:document.getElementById('rp-s2-open').value.trim()||'08:00',dep:document.getElementById('rp-grp-dep').value.trim()||'07:00',bk:document.getElementById('rp-grp-bk').value.trim()||'14:00',km:km};
   var grps=loadRpGroups(),idxStr=document.getElementById('rp-grp-idx').value;
   if(idxStr!=='')grps[parseInt(idxStr)]=g;else grps.push(g);
   saveRpGroups(grps);closeRpGrpModal();renderRpGrpList();
@@ -2987,22 +3032,18 @@ function loadMkStores(){try{return JSON.parse(localStorage.getItem('sc_mk_stores
 function saveMkStores(d){localStorage.setItem('sc_mk_stores',JSON.stringify(d));}
 
 function _parseMkText(text){
-  // strip BOM
   if(text.charCodeAt(0)===0xFEFF) text=text.slice(1);
   const lines=text.split(/\r?\n/).map(l=>l.trimEnd()).filter(l=>l.trim());
   if(lines.length<2) return null;
-  // auto-detect separator (; vs ,)
   const fl=lines[0];
   const sep=(fl.split(';').length>=fl.split(',').length)?';':',';
   const header=lines[0].split(sep).map(h=>h.replace(/^"|"$/g,'').trim().toLowerCase());
-  // flexible column matching – accepts multiple aliases
   const ci=(aliases)=>{for(const a of aliases){const idx=header.findIndex(h=>h===a.toLowerCase());if(idx>=0)return idx;}return -1;};
   const iName=ci(['marktname','name','filialname','filiale','betrieb','markt','bezeichnung','storename']);
   const iStr =ci(['strasse','straße','street','adresse','address']);
   const iPLZ =ci(['plz','postleitzahl','zipcode','zip']);
   const iOrt =ci(['ort','stadt','city','standort','gemeinde']);
-  const iTyp =ci(['typ','type','markttyp','marktart','kette','betreiber']);
-  if(iName<0) return {error:'Namensspalte nicht gefunden. Gefundene Spalten: '+lines[0].split(sep).slice(0,8).join(' | ')};
+  if(iName<0) return {error:'Namensspalte nicht gefunden. Spalten: '+lines[0].split(sep).slice(0,8).join(' | ')};
   const pf=(row,i)=>i>=0?((row[i]||'').replace(/^"|"$/g,'').trim()):'';
   const imported=[];
   lines.slice(1).forEach(line=>{
@@ -3010,22 +3051,24 @@ function _parseMkText(text){
     const row=line.split(sep);
     const rawName=pf(row,iName);if(!rawName)return;
     const strasse=pf(row,iStr),plz=pf(row,iPLZ),ort=pf(row,iOrt);
-    const rawTyp=pf(row,iTyp);
-    // try to extract type from Marktsuche pattern "402297: REWE-Hannover"
-    const m=rawName.match(/:\s*([A-Z]+)-(.+)/);
+    const m=rawName.match(/:\s*([A-Z]+)-([^-]+)-(.+)/);   // "Nr: TYPE-City-Location"
+    const m2=rawName.match(/:\s*([A-Z]+)-(.+)/);           // fallback "Nr: TYPE-Rest"
     let type='',displayName='';
     if(m){
       type=MK_TYPES[m[1]]||m[1];
-      displayName=(type+' '+(ort||m[2].trim())).trim();
+      const city=ort||m[2].trim();
+      const loc=m[3].split(' - ')[0].trim();
+      displayName=(type+' '+city+' '+loc).trim();
+    } else if(m2){
+      type=MK_TYPES[m2[1]]||m2[1];
+      const city=ort||m2[2].split('-')[0].trim();
+      displayName=(type+' '+city).trim();
     } else {
-      if(rawTyp) type=MK_TYPES[rawTyp.toUpperCase()]||rawTyp;
-      const parts=[type,ort].filter(Boolean);
-      displayName=parts.length>0?parts.join(' '):(rawName.substring(0,40));
+      displayName=ort||rawName.substring(0,40);
     }
-    if(!displayName) displayName=rawName.substring(0,40);
     if(!displayName) return;
     const addr=[strasse,plz&&ort?(plz+' '+ort):ort].filter(Boolean).join(', ');
-    imported.push({name:displayName,type,addr,marktname:rawName});
+    imported.push({name:displayName,type,addr,marktname:rawName,ort:ort||''});
   });
   return imported;
 }
@@ -3042,8 +3085,10 @@ function importMarktsuche(ev){
   Promise.all([tryParse('utf-8'),tryParse('iso-8859-1')]).then(([r1,r2])=>{
     // pick the result with more entries (or whichever worked)
     let imported=null;
-    if(Array.isArray(r1)&&r1.length) imported=r1;
-    else if(Array.isArray(r2)&&r2.length) imported=r2;
+    // prefer ISO-8859-1 (r2) which handles German umlauts (ä,ö,ü,ß) correctly
+    const r1ok=Array.isArray(r1)&&r1.length, r2ok=Array.isArray(r2)&&r2.length;
+    if(r2ok) imported=r2;          // ISO-8859-1 first
+    else if(r1ok) imported=r1;     // UTF-8 fallback
     else if(r1&&r1.error) {alert(r1.error);return;}
     else if(r2&&r2.error) {alert(r2.error);return;}
     else {alert('Keine Filialen gefunden. Bitte Dateiformat prüfen.');return;}
@@ -3121,7 +3166,9 @@ function mkCreateCluster(){
   const stores=loadMkStores();
   const sel=stores.filter(s=>s._sel);
   if(!sel.length){toast('Bitte 1–2 Filialen auswählen.');return;}
-  const grpName=sel.map(s=>s.name).join(' + ');
+  // Use city names (strip type prefix) for cleaner group names
+  function selCity(s){return s.type?s.name.replace(s.type+' ','').trim():(s.ort||s.name);}
+  const grpName=sel.length>1?(selCity(sel[0])+' / '+selCity(sel[1])):selCity(sel[0]);
   const g={
     name:grpName,
     s1name:sel[0].name,s1addr:sel[0].addr||'',s1open:'08:00',
@@ -3187,6 +3234,7 @@ checkFirstStart();
   renderSavedEmails();
   renderEmpNotif();
 renderRpGrpList();
+renderMkStores();
 RP_CL=getRPCL();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -3224,22 +3272,39 @@ if("serviceWorker" in navigator){
     <button class="modal-close" onclick="closeRpGrpModal()" title="Schließen">&#x2715;</button>
     <h3 id="rp-grp-modal-title">Neue Fahrgruppe</h3>
     <input type="hidden" id="rp-grp-idx" value="">
-    <label>Gruppenname *</label><input type="text" id="rp-grp-name" placeholder="z.B. Hannover Nord">
+    <label>Gruppenname *</label>
+    <input type="text" id="rp-grp-name" placeholder="z.B. Kassel / Baunatal" oninput="this.dataset.manual='1'">
     <div style="background:var(--bg);border-radius:var(--rs);border:1px solid var(--brd);padding:12px;margin-top:10px">
       <div style="font-size:13px;font-weight:600;margin-bottom:8px">Filiale 1 *</div>
-      <label>Name</label><input type="text" id="rp-s1-name" placeholder="Edeka Mustermarkt">
+      <div id="rp-s1-pick" style="display:none">
+        <label>Aus CSV wählen</label>
+        <select id="rp-s1-sel" onchange="rpStoreSelect(1,this.value)" style="margin-bottom:6px">
+          <option value="">— Filiale wählen —</option>
+        </select>
+      </div>
+      <label>Name</label><input type="text" id="rp-s1-name" placeholder="Edeka Mustermarkt" oninput="rpUpdateGrpName()">
       <label>Adresse</label><input type="text" id="rp-s1-addr" placeholder="Musterstr. 1, 30159 Hannover">
       <label>Öffnungszeit</label><input type="text" id="rp-s1-open" placeholder="07:00">
     </div>
     <div style="background:var(--bg);border-radius:var(--rs);border:1px solid var(--brd);padding:12px;margin-top:8px">
       <div style="font-size:13px;font-weight:600;margin-bottom:8px">Filiale 2 <span style="font-weight:400;color:var(--mut)">(optional)</span></div>
-      <label>Name</label><input type="text" id="rp-s2-name" placeholder="Rewe Beispielstadt">
+      <div id="rp-s2-pick" style="display:none">
+        <label>Aus CSV wählen</label>
+        <select id="rp-s2-sel" onchange="rpStoreSelect(2,this.value)" style="margin-bottom:6px">
+          <option value="">— keine —</option>
+        </select>
+      </div>
+      <label>Name</label><input type="text" id="rp-s2-name" placeholder="Rewe Beispielstadt" oninput="rpUpdateGrpName()">
       <label>Adresse</label><input type="text" id="rp-s2-addr" placeholder="Beispielstr. 5, 30159 Hannover">
       <label>Öffnungszeit</label><input type="text" id="rp-s2-open" placeholder="08:00">
     </div>
     <div class="row2" style="margin-top:10px">
       <div><label>Abfahrt</label><input type="text" id="rp-grp-dep" placeholder="07:00"></div>
       <div><label>Rückkehr ca.</label><input type="text" id="rp-grp-bk" placeholder="14:00"></div>
+    </div>
+    <div style="margin-top:6px">
+      <label>Entfernung Hin+Rück (km) <span style="font-weight:400;color:var(--mut)">optional</span></label>
+      <input type="number" id="rp-grp-km" placeholder="z.B. 350" min="0">
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeRpGrpModal()">Abbrechen</button>
