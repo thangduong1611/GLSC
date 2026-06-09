@@ -226,7 +226,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 <header>
   <div>
     <div class="logo">🍣 HR Assistant</div>
-    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH</div>
+    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v4.7</span></div>
   </div>
 </header>
 
@@ -2622,6 +2622,7 @@ function rpStoreSelect(slot,idxStr){
 function rpStoreCity(name){
   var stores=loadMkStores();
   var found=stores.find(function(s){return s.name===name;});
+  if(found&&found.ort) return found.ort;                       // cleanest: city from CSV
   if(found&&found.type) return name.replace(found.type+' ','').trim();
   return name.split(' ').slice(1).join(' ')||name;
 }
@@ -2650,7 +2651,7 @@ function delRpGrp(i){
   var grps=loadRpGroups();grps.splice(i,1);saveRpGroups(grps);renderRpGrpList();
   RP_CL=getRPCL();rpSchedule=[];toast('✓ Gelöscht');
 }
-document.getElementById('rp-grp-modal').addEventListener('click',function(e){if(e.target===this)closeRpGrpModal();});
+(function(){function _bindRp(){var m=document.getElementById('rp-grp-modal');if(m)m.addEventListener('click',function(e){if(e.target===this)closeRpGrpModal();});}if(document.getElementById('rp-grp-modal'))_bindRp();else document.addEventListener('DOMContentLoaded',_bindRp);})();
 
 // ═══════════════════════════════════════════════════════════
 // ── DIENSTPLAN ────────────────────────────────────────────
@@ -3075,38 +3076,51 @@ function _parseMkText(text){
 
 function importMarktsuche(ev){
   const file=ev.target.files[0]; if(!file)return;
-  // try UTF-8 first, fallback to iso-8859-1
-  const tryParse=enc=>new Promise(res=>{
-    const r=new FileReader();
-    r.onload=e=>{const result=_parseMkText(e.target.result);res(result);};
-    r.onerror=()=>res(null);
-    r.readAsText(file,enc);
-  });
-  Promise.all([tryParse('utf-8'),tryParse('iso-8859-1')]).then(([r1,r2])=>{
-    // pick the result with more entries (or whichever worked)
-    let imported=null;
-    // prefer ISO-8859-1 (r2) which handles German umlauts (ä,ö,ü,ß) correctly
-    const r1ok=Array.isArray(r1)&&r1.length, r2ok=Array.isArray(r2)&&r2.length;
-    if(r2ok) imported=r2;          // ISO-8859-1 first
-    else if(r1ok) imported=r1;     // UTF-8 fallback
-    else if(r1&&r1.error) {alert(r1.error);return;}
-    else if(r2&&r2.error) {alert(r2.error);return;}
-    else {alert('Keine Filialen gefunden. Bitte Dateiformat prüfen.');return;}
+  const r=new FileReader();
+  r.onerror=function(){alert('Datei konnte nicht gelesen werden.');};
+  r.onload=function(e){
+    try{
+      const buf=e.target.result;
+      let imported=null;
+      // Decode with TextDecoder (reliable on iPhone Safari + Windows)
+      if(buf && typeof buf!=='string' && typeof TextDecoder!=='undefined'){
+        const bytes=new Uint8Array(buf);
+        // Try ISO-8859-1 (windows-1252) FIRST — company CSV uses it (ä,ö,ü,ß)
+        let txtIso='',txtUtf='';
+        try{txtIso=new TextDecoder('windows-1252').decode(bytes);}catch(x){try{txtIso=new TextDecoder('iso-8859-1').decode(bytes);}catch(y){}}
+        try{txtUtf=new TextDecoder('utf-8',{fatal:false}).decode(bytes);}catch(x){}
+        const rIso=txtIso?_parseMkText(txtIso):null;
+        const rUtf=txtUtf?_parseMkText(txtUtf):null;
+        // Prefer ISO result if it parsed stores; mojibake check: if UTF has replacement chars, use ISO
+        if(Array.isArray(rIso)&&rIso.length) imported=rIso;
+        else if(Array.isArray(rUtf)&&rUtf.length) imported=rUtf;
+        else if(rIso&&rIso.error){alert(rIso.error);return;}
+        else if(rUtf&&rUtf.error){alert(rUtf.error);return;}
+      } else {
+        // Fallback: treat result as text string
+        const res=_parseMkText(typeof buf==='string'?buf:String(buf));
+        if(Array.isArray(res)&&res.length) imported=res;
+        else if(res&&res.error){alert(res.error);return;}
+      }
+      if(!imported||!imported.length){alert('Keine Filialen gefunden. Bitte prüfen, ob die CSV eine Spalte "Marktname" enthält.');return;}
 
-    const existing=loadMkStores();
-    const existingNames=new Set(existing.map(s=>s.name.toLowerCase()));
-    let added=0;
-    imported.forEach(s=>{if(!existingNames.has(s.name.toLowerCase())){existing.push(s);added++;}});
-    saveMkStores(existing);
-    document.getElementById('mk-csv-file').value='';
-    renderMkStores();
-    // scroll cluster card into view
-    setTimeout(()=>{
-      const card=document.getElementById('mk-cluster-card');
-      if(card) card.scrollIntoView({behavior:'smooth',block:'center'});
-    },150);
-    toast('✓ '+imported.length+' Filiale(n) erkannt, '+added+' neu. Jetzt Cluster auswählen ↓');
-  });
+      const existing=loadMkStores();
+      const existingNames=new Set(existing.map(s=>s.name.toLowerCase()));
+      let added=0;
+      imported.forEach(s=>{if(!existingNames.has(s.name.toLowerCase())){existing.push(s);added++;}});
+      saveMkStores(existing);
+      const fi=document.getElementById('mk-csv-file');if(fi)fi.value='';
+      renderMkStores();
+      setTimeout(function(){
+        const card=document.getElementById('mk-cluster-card');
+        if(card&&card.scrollIntoView) card.scrollIntoView({behavior:'smooth',block:'center'});
+      },150);
+      toast('✓ '+imported.length+' Filiale(n) erkannt, '+added+' neu. Jetzt Cluster auswählen ↓');
+    }catch(err){
+      alert('Fehler beim Import: '+err.message);
+    }
+  };
+  r.readAsArrayBuffer(file);   // read raw bytes — encoding handled by TextDecoder above
 }
 
 function renderMkStores(){
@@ -3167,7 +3181,7 @@ function mkCreateCluster(){
   const sel=stores.filter(s=>s._sel);
   if(!sel.length){toast('Bitte 1–2 Filialen auswählen.');return;}
   // Use city names (strip type prefix) for cleaner group names
-  function selCity(s){return s.type?s.name.replace(s.type+' ','').trim():(s.ort||s.name);}
+  function selCity(s){return s.ort||(s.type?s.name.replace(s.type+' ','').trim():s.name);}
   const grpName=sel.length>1?(selCity(sel[0])+' / '+selCity(sel[1])):selCity(sel[0]);
   const g={
     name:grpName,
