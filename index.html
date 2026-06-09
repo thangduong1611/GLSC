@@ -234,7 +234,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 <header>
   <div>
     <div class="logo">🍣 HR Assistant</div>
-    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v4.8</span></div>
+    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v4.9</span></div>
   </div>
 </header>
 
@@ -734,6 +734,17 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 <!-- ===== EINSTELLUNGEN ===== -->
 <div id="panel-settings" class="panel">
   <div class="card">
+    <div class="card-title">📲 Mitarbeiter-App <span class="badge badge-grn">Export</span></div>
+    <div class="info">Erzeugt einen Daten-Code (Mitarbeiterliste + veröffentlichte Dienstpläne + genehmigter Urlaub) für die Mitarbeiter-App. Code per WhatsApp/Datei an die Mitarbeiter geben — sie fügen ihn einmalig in der App ein.</div>
+    <label>Deine WhatsApp-Nummer (für Rückmeldungen der Mitarbeiter)</label>
+    <input type="text" id="st-manager-wa" placeholder="z.B. +49 173 1234567" oninput="localStorage.setItem('sc_manager_wa',this.value)">
+    <div class="btn-row">
+      <button class="btn btn-grn" onclick="exportMaBundle('file')" style="flex:1;justify-content:center">💾 Datei exportieren</button>
+      <button class="btn" onclick="exportMaBundle('copy')" style="flex:1;justify-content:center">📋 Code kopieren</button>
+    </div>
+    <div id="ma-export-stat" style="font-size:12px;color:var(--mut);margin-top:8px"></div>
+  </div>
+  <div class="card">
     <div class="card-title">👤 Persönliche Daten <span class="badge badge-red">Pflicht</span></div>
     <div class="info">Name und Kontakt erscheinen in allen E-Mails, PDFs und Formularen.</div>
     <div class="row2">
@@ -961,7 +972,7 @@ RP_CL=getRPCL();
   if(id==='av') avPopulateDropdown();
   if(id==='dienstplan'){RP_CL=getRPCL();dpOnShow();}
   if(id==='dienstplan'){RP_CL=getRPCL();dpOnShow();}
-  if(id==='settings'){renderRpGrpList();applySettings();renderMkStores();renderSavedEmails();}
+  if(id==='settings'){renderRpGrpList();applySettings();renderMkStores();renderSavedEmails();var wa=document.getElementById('st-manager-wa');if(wa)wa.value=localStorage.getItem('sc_manager_wa')||'';}
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────
@@ -3391,6 +3402,63 @@ applySettings();
 checkFirstStart();
   renderSavedEmails();
   renderEmpNotif();
+// ════════ MITARBEITER-APP EXPORT ════════
+function maGroupConsecutive(dates){
+  if(!dates.length)return [];
+  var out=[],start=dates[0],prev=dates[0];
+  for(var i=1;i<dates.length;i++){
+    var d=new Date(dates[i]+'T12:00'),p=new Date(prev+'T12:00');
+    if(Math.round((d-p)/86400000)===1){prev=dates[i];continue;}
+    out.push({from:start,to:prev});start=dates[i];prev=dates[i];
+  }
+  out.push({from:start,to:prev});return out;
+}
+function buildMaBundle(){
+  var emps=loadEmps().filter(function(e){return e.active!==false;}).map(function(e){return{id:e.id,name:e.name,filiale:e.filiale||'',active:true};});
+  var filialen=[...new Set(emps.map(function(e){return e.filiale;}).filter(Boolean))];
+  var dienstplan={},urlaubMap={};
+  var dpKeys=Object.keys(localStorage).filter(function(k){return k.indexOf('sc_dp_')===0;});
+  filialen.forEach(function(f){
+    var slug='sc_dp_'+f.replace(/\s+/g,'_').toLowerCase()+'_';
+    dpKeys.filter(function(k){return k.indexOf(slug)===0;}).forEach(function(k){
+      var month=k.slice(slug.length);
+      var data;try{data=JSON.parse(localStorage.getItem(k));}catch(e){return;}
+      if(!data)return;
+      if(!dienstplan[f])dienstplan[f]={};
+      dienstplan[f][month]=data;
+      var shifts=data.shifts||{};
+      Object.keys(shifts).forEach(function(ek){
+        var dates=Object.keys(shifts[ek]).filter(function(d){return shifts[ek][d]==='Urlaub';}).sort();
+        if(!dates.length)return;
+        var dash=ek.indexOf('-'),eid=ek.slice(0,dash),enm=ek.slice(dash+1);
+        maGroupConsecutive(dates).forEach(function(rg){
+          urlaubMap[eid+'|'+f+'|'+rg.from]={id:eid,name:enm,filiale:f,from:rg.from,to:rg.to,status:'approved'};
+        });
+      });
+    });
+  });
+  return {v:1,exported:new Date().toISOString(),managerWa:(localStorage.getItem('sc_manager_wa')||''),
+    employees:emps,dienstplan:dienstplan,urlaub:Object.keys(urlaubMap).map(function(k){return urlaubMap[k];})};
+}
+function exportMaBundle(mode){
+  var b=buildMaBundle();
+  if(!b.employees.length){alert('Keine aktiven Mitarbeiter gefunden. Bitte zuerst die Mitarbeiter-CSV importieren.');return;}
+  var json=JSON.stringify(b);
+  var nDp=Object.keys(b.dienstplan).reduce(function(s,f){return s+Object.keys(b.dienstplan[f]).length;},0);
+  var stat='✓ '+b.employees.length+' Mitarbeiter · '+nDp+' Dienstplan-Monate · '+b.urlaub.length+' Urlaubseinträge';
+  var statEl=document.getElementById('ma-export-stat');if(statEl)statEl.textContent=stat;
+  if(mode==='copy'){
+    if(navigator.clipboard)navigator.clipboard.writeText(json).then(function(){toast('✓ Code kopiert — an Mitarbeiter senden');});
+    else prompt('Code kopieren:',json);
+  } else {
+    var blob=new Blob([json],{type:'application/json'});
+    var url=URL.createObjectURL(blob);var a=document.createElement('a');
+    a.href=url;a.download='sushi-mitarbeiter-daten.json';document.body.appendChild(a);a.click();
+    document.body.removeChild(a);URL.revokeObjectURL(url);
+    toast('✓ Datei exportiert');
+  }
+}
+
 renderRpGrpList();
 renderMkStores();
 RP_CL=getRPCL();
