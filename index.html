@@ -210,6 +210,14 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 .dp-emp-tag button{background:none;border:none;cursor:pointer;color:var(--mut);font-size:13px;padding:0 1px;line-height:1;}
 .rp-chip{display:inline-flex;align-items:center;padding:4px 11px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--brd);background:var(--surf);color:var(--mut);transition:all .12s;}
 .rp-chip.on{background:var(--red);color:#fff;border-color:var(--red);}
+.mk-cl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 14px;}
+@media(min-width:520px){.mk-cl-grid{grid-template-columns:repeat(4,1fr);}}
+.mk-cl-ico{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:12px 6px 10px;border-radius:18px;border:none;cursor:pointer;transition:transform .15s;-webkit-tap-highlight-color:transparent;user-select:none;text-align:center;color:#fff;}
+.mk-cl-ico:active{transform:scale(0.9);}
+.mk-cl-ico .cl-emoji{font-size:22px;line-height:1;}
+.mk-cl-ico .cl-name{font-size:11px;font-weight:700;line-height:1.2;word-break:break-word;}
+.mk-cl-ico .cl-sub{font-size:9px;opacity:.85;font-weight:500;}
+.mk-cl-ico .cl-x{position:absolute;top:-5px;right:-5px;width:20px;height:20px;border-radius:50%;background:#fff;color:#444;border:1px solid var(--brd);font-size:12px;line-height:18px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.2);}
 .rp-day{border:1.5px solid var(--brd);border-radius:10px;padding:10px 12px;cursor:pointer;transition:border .12s;min-height:72px;}
 .rp-day.ho{background:var(--bg);cursor:default;}
 .rp-day-lbl{font-size:10px;font-weight:700;color:var(--mut);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em;}
@@ -226,7 +234,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 <header>
   <div>
     <div class="logo">🍣 HR Assistant</div>
-    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v4.7</span></div>
+    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v4.8</span></div>
   </div>
 </header>
 
@@ -762,13 +770,23 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
   </div>
   <div id="mk-cluster-card" class="card" style="display:none">
     <div class="card-title">📍 Marktsuche-Filialen <span class="badge badge-grn" id="mk-stores-count">0</span></div>
-    <div class="info">Filialen aus Marktsuche-CSV. 1–2 anklicken → <strong>Cluster erstellen</strong> → wird als Fahrtplan-Gruppe gespeichert.</div>
-    <div id="mk-cluster-hint" style="font-size:12px;color:var(--mut);margin-bottom:8px">Filialen anklicken zum Auswählen (max. 2 pro Cluster)</div>
-    <div id="mk-stores-list"></div>
-    <div class="btn-row" style="margin-top:8px">
-      <button class="btn btn-red" onclick="mkCreateCluster()" style="flex:1;justify-content:center">🗂 Cluster erstellen</button>
-      <button class="btn" onclick="mkClearSel()">↺ Auswahl</button>
-      <button class="btn-del" onclick="mkClearAll()">🗑</button>
+    <div class="info">1–2 Filialen anklicken → <strong>Cluster erstellen</strong>. Cluster werden als Fahrtplan-Gruppen genutzt. Tippe auf einen Cluster zum Bearbeiten/Auflösen.</div>
+    <div id="mk-cl-section" style="display:none">
+      <div style="font-size:13px;font-weight:600;margin:2px 0 2px">🗂 Cluster <span class="badge badge-grn" id="mk-cl-count">0</span></div>
+      <div class="mk-cl-grid" id="mk-cl-grid"></div>
+    </div>
+    <div id="mk-avail-section">
+      <div id="mk-avail-title" style="font-size:13px;font-weight:600;margin:2px 0 6px">Verfügbare Filialen</div>
+      <div id="mk-cluster-hint" style="font-size:12px;color:var(--mut);margin-bottom:8px">Filialen anklicken zum Auswählen (max. 2 pro Cluster)</div>
+      <div id="mk-stores-list"></div>
+      <div class="btn-row" style="margin-top:8px">
+        <button class="btn btn-red" onclick="mkCreateCluster()" style="flex:1;justify-content:center">🗂 Cluster erstellen</button>
+        <button class="btn" onclick="mkClearSel()">↺ Auswahl</button>
+      </div>
+    </div>
+    <div id="mk-all-clustered" style="display:none;font-size:13px;color:var(--mut);padding:10px 0">✅ Alle Filialen sind Clustern zugeordnet. Tippe oben auf einen Cluster zum Auflösen.</div>
+    <div class="btn-row" style="margin-top:10px;border-top:1px solid var(--brd);padding-top:10px">
+      <button class="btn-del" onclick="mkClearAll()" style="flex:1;justify-content:center">🗑 Alle Filialen & Cluster zurücksetzen</button>
     </div>
   </div>
   <div class="card">
@@ -886,6 +904,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
         <button onclick="rpCopyText()" class="btn" style="flex:1;justify-content:center">📋 Kopieren</button>
       </div>
       <div id="rp-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px"></div>
+      <div id="rp-overflow-note" style="display:none;font-size:12px;color:#8a6d00;background:#fff8e1;border:1px solid #f0e0a0;border-radius:8px;padding:8px 10px;margin-bottom:12px"></div>
       <div id="rp-detail"></div>
     </div>
   </div>
@@ -2587,6 +2606,7 @@ function openRpGrpModal(idx){
   fn('rp-grp-name',g.name);fn('rp-s1-name',g.s1name);fn('rp-s1-addr',g.s1addr);fn('rp-s1-open',g.s1open||'07:00');
   fn('rp-s2-name',g.s2name);fn('rp-s2-addr',g.s2addr);fn('rp-s2-open',g.s2open||'08:00');
   fn('rp-grp-dep',g.dep||'07:00');fn('rp-grp-bk',g.bk||'14:00');
+  fn('rp-s1-id',g.s1id);fn('rp-s2-id',g.s2id);
   var kmEl=document.getElementById('rp-grp-km');if(kmEl)kmEl.value=g.km||'';
   // Clear "manually edited" flag on name
   var nameEl=document.getElementById('rp-grp-name');if(nameEl)delete nameEl.dataset.manual;
@@ -2606,15 +2626,19 @@ function openRpGrpModal(idx){
     if(s1sel)s1sel.innerHTML=opts1;
     if(s2sel)s2sel.innerHTML=opts2;
   }
+  var dis=document.getElementById('rp-grp-dissolve');
+  if(dis){if(idx!==null){dis.style.display='block';dis.setAttribute('data-idx',idx);}else{dis.style.display='none';}}
   document.getElementById('rp-grp-modal').classList.add('open');
 }
 function closeRpGrpModal(){document.getElementById('rp-grp-modal').classList.remove('open');}
 function rpStoreSelect(slot,idxStr){
-  if(idxStr==='')return;
+  var idEl=document.getElementById('rp-s'+slot+'-id');
+  if(idxStr===''){if(idEl)idEl.value='';rpUpdateGrpName();return;}
   var stores=loadMkStores(),s=stores[parseInt(idxStr)];
   if(!s)return;
   document.getElementById('rp-s'+slot+'-name').value=s.name;
   document.getElementById('rp-s'+slot+'-addr').value=s.addr||'';
+  if(idEl)idEl.value=s.id||'';
   var openEl=document.getElementById('rp-s'+slot+'-open');
   if(openEl&&!openEl.value) openEl.value=slot===1?'07:00':'08:00';
   rpUpdateGrpName();
@@ -2638,18 +2662,38 @@ function saveRpGrp(){
   var name=document.getElementById('rp-grp-name').value.trim(),s1=document.getElementById('rp-s1-name').value.trim();
   if(!name||!s1){alert('Gruppenname und Filiale 1 sind Pflicht.');return;}
   var kmEl=document.getElementById('rp-grp-km'),km=kmEl?parseInt(kmEl.value)||0:0;
-  var g={name:name,s1name:s1,s1addr:document.getElementById('rp-s1-addr').value.trim(),s1open:document.getElementById('rp-s1-open').value.trim()||'07:00',s2name:document.getElementById('rp-s2-name').value.trim(),s2addr:document.getElementById('rp-s2-addr').value.trim(),s2open:document.getElementById('rp-s2-open').value.trim()||'08:00',dep:document.getElementById('rp-grp-dep').value.trim()||'07:00',bk:document.getElementById('rp-grp-bk').value.trim()||'14:00',km:km};
+  var s1idEl=document.getElementById('rp-s1-id'),s2idEl=document.getElementById('rp-s2-id');
+  var s2nameVal=document.getElementById('rp-s2-name').value.trim();
+  var g={name:name,s1id:s1idEl?s1idEl.value:'',s1name:s1,s1addr:document.getElementById('rp-s1-addr').value.trim(),s1open:document.getElementById('rp-s1-open').value.trim()||'07:00',s2id:(s2nameVal&&s2idEl)?s2idEl.value:'',s2name:s2nameVal,s2addr:document.getElementById('rp-s2-addr').value.trim(),s2open:document.getElementById('rp-s2-open').value.trim()||'08:00',dep:document.getElementById('rp-grp-dep').value.trim()||'07:00',bk:document.getElementById('rp-grp-bk').value.trim()||'14:00',km:km};
   var grps=loadRpGroups(),idxStr=document.getElementById('rp-grp-idx').value;
   if(idxStr!=='')grps[parseInt(idxStr)]=g;else grps.push(g);
   saveRpGroups(grps);closeRpGrpModal();renderRpGrpList();
   RP_CL=getRPCL();rpSchedule=[];
+  if(typeof renderMkStores==='function')renderMkStores();
   if(document.getElementById('rp-grid'))rpRender();
   toast('✓ Gruppe gespeichert');
 }
 function delRpGrp(i){
   if(!confirm('Gruppe löschen?'))return;
   var grps=loadRpGroups();grps.splice(i,1);saveRpGroups(grps);renderRpGrpList();
-  RP_CL=getRPCL();rpSchedule=[];toast('✓ Gelöscht');
+  RP_CL=getRPCL();rpSchedule=[];
+  if(typeof renderMkStores==='function')renderMkStores();
+  if(document.getElementById('rp-grid'))rpRender();
+  toast('✓ Gelöscht');
+}
+function rpDissolveFromModal(){
+  var dis=document.getElementById('rp-grp-dissolve');
+  var idx=dis?parseInt(dis.getAttribute('data-idx')):-1;
+  if(isNaN(idx)||idx<0)return;
+  var grps=loadRpGroups();
+  if(!grps[idx])return;
+  if(!confirm('Cluster "'+grps[idx].name+'" auflösen? Die Filialen erscheinen wieder in der Liste.'))return;
+  grps.splice(idx,1);saveRpGroups(grps);
+  closeRpGrpModal();renderRpGrpList();
+  RP_CL=getRPCL();rpSchedule=[];
+  if(typeof renderMkStores==='function')renderMkStores();
+  if(document.getElementById('rp-grid'))rpRender();
+  toast('✓ Cluster aufgelöst');
 }
 (function(){function _bindRp(){var m=document.getElementById('rp-grp-modal');if(m)m.addEventListener('click',function(e){if(e.target===this)closeRpGrpModal();});}if(document.getElementById('rp-grp-modal'))_bindRp();else document.addEventListener('DOMContentLoaded',_bindRp);})();
 
@@ -2798,35 +2842,63 @@ var RP_CL_DEFAULT=[
 ];
 var RP_CL=RP_CL_DEFAULT;
 var RP_DAYS=['Mo','Di','Mi','Do','Fr','Sa'],RP_DAYF=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
-var rpHoDay=-1,rpSchedule=[],rpHoDayIdx=-1,rpSelDay=-1;
+var RP_NUM_DAYS=6;  // fixed Mo–Sa working week
+var rpHoDay=-1,rpSchedule=[],rpSelDay=-1;
 function rpShuffle(a){var b=[...a];for(var i=b.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
-function rpGen(){var ord=rpShuffle(RP_CL.map(function(_,i){return i;}));rpHoDayIdx=rpHoDay===-1?Math.floor(Math.random()*RP_CL.length):Math.min(rpHoDay,RP_CL.length-1);rpSchedule=new Array(RP_CL.length+1).fill(null);rpSchedule[rpHoDayIdx]=-1;var ci=0;for(var d=0;d<=RP_CL.length;d++)if(rpSchedule[d]===null)rpSchedule[d]=ord[ci++];rpSelDay=-1;}
-function rpInit(){RP_CL=getRPCL();if(!rpSchedule.length||rpSchedule.length!==RP_CL.length+1)rpGen();rpRender();}
+function rpGen(){
+  var n=RP_CL.length;
+  var order=rpShuffle(RP_CL.map(function(_,i){return i;}));
+  rpSchedule=new Array(RP_NUM_DAYS).fill(null);
+  // Home-office day: forced if user picked one; random only if there is a free day
+  var hoIdx=-1;
+  if(rpHoDay>=0&&rpHoDay<RP_NUM_DAYS) hoIdx=rpHoDay;
+  else if(rpHoDay===-1 && n<RP_NUM_DAYS) hoIdx=Math.floor(Math.random()*RP_NUM_DAYS);
+  if(hoIdx>=0) rpSchedule[hoIdx]=-1;
+  // Fill remaining days with route groups; leftover days become Home Office / frei
+  var ci=0;
+  for(var d=0;d<RP_NUM_DAYS;d++){
+    if(rpSchedule[d]===null){
+      if(ci<order.length) rpSchedule[d]=order[ci++];
+      else rpSchedule[d]=-1;
+    }
+  }
+  rpSelDay=-1;
+}
+function rpInit(){RP_CL=getRPCL();if(!rpSchedule.length||rpSchedule.length!==RP_NUM_DAYS)rpGen();rpRender();}
 function rpRegen(){RP_CL=getRPCL();rpGen();rpRender();}
 function rpSetHO(d){rpHoDay=d;rpGen();rpRender();}
 function rpMapA(s){return 'https://maps.apple.com/?daddr='+encodeURIComponent(s.a)+'&dirflg=d';}
 function rpMapG(s){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(s.a);}
 function rpSelD(i){rpSelDay=(rpSelDay===i?-1:i);rpRender();}
 function rpRender(){
-  var totalDays=RP_CL.length+1;
-  var chips=['Zufällig',...RP_DAYS.slice(0,totalDays)].map(function(d,i){return '<button class="rp-chip'+(rpHoDay===(i-1)?' on':'')+'" onclick="rpSetHO('+(i-1)+')">'+d+'</button>';}).join('');
+  // Day chips: Zufällig + Mo..Sa (always 6)
+  var chips=['Zufällig'].concat(RP_DAYS).map(function(d,i){return '<button class="rp-chip'+(rpHoDay===(i-1)?' on':'')+'\" onclick="rpSetHO('+(i-1)+')">'+d+'</button>';}).join('');
   document.getElementById('rp-ho-chips').innerHTML=chips;
-  var g=Array.from({length:totalDays},function(_,i){
-    var isHO=i===rpHoDayIdx,cl=isHO?null:RP_CL[rpSchedule[i]],isSel=rpSelDay===i;
+  // Count how many extra groups did not fit this week
+  var shownGroups=rpSchedule.filter(function(v){return v>=0;}).length;
+  var extra=Math.max(0,RP_CL.length-shownGroups);
+  var g=Array.from({length:RP_NUM_DAYS},function(_,i){
+    var isHO=rpSchedule[i]===-1, cl=isHO?null:RP_CL[rpSchedule[i]], isSel=rpSelDay===i;
     if(!isHO&&!cl)return '';
-    var bc=isSel?cl.c:'var(--brd)',bw=isSel?'2px':'1.5px',bg=isHO?'var(--bg)':(cl.bg+'33');
-    return '<div class="rp-day'+(isHO?' ho':'')+'" style="background:'+bg+';border-color:'+bc+';border-width:'+bw+'" onclick="'+(isHO?'':'rpSelD('+i+')')+'\">'
-      +'<div class="rp-day-lbl">'+(RP_DAYS[i]||('T'+(i+1)))+'</div>'
+    var bc=isSel&&cl?cl.c:'var(--brd)',bw=isSel?'2px':'1.5px',bg=isHO?'var(--bg)':(cl.bg+'33');
+    return '<div class="rp-day'+(isHO?' ho':'')+'\" style="background:'+bg+';border-color:'+bc+';border-width:'+bw+'" onclick="'+(isHO?'':'rpSelD('+i+')')+'\">'
+      +'<div class="rp-day-lbl">'+RP_DAYS[i]+'</div>'
       +(isHO?'<div style="font-size:12px;color:var(--mut)">🏠 Home Office</div>'
       :'<div class="rp-day-name" style="color:'+cl.txt+'">'+cl.name+'</div>'
       +(cl.km>0?'<div class="rp-day-meta" style="color:'+cl.txt+'">⏰ '+cl.dep+' · '+cl.km+' km</div>':'<div class="rp-day-meta" style="color:'+cl.txt+'">⏰ Abfahrt: '+cl.dep+'</div>'))+'</div>';
   }).join('');
   document.getElementById('rp-grid').innerHTML=g;
+  // Note about groups that didn't fit this week
+  var note=document.getElementById('rp-overflow-note');
+  if(note){
+    if(extra>0){note.style.display='block';note.innerHTML='ℹ️ '+extra+' weitere Gruppe(n) passen nicht in diese Woche — beim nächsten Würfeln drankommen. Tipp: Filialen zu max. 5 Clustern zusammenfassen.';}
+    else note.style.display='none';
+  }
   rpRenderDetail();
 }
 function rpRenderDetail(){
   var a=document.getElementById('rp-detail');
-  if(rpSelDay===-1||!rpSchedule[rpSelDay]||rpSchedule[rpSelDay]===-1){a.innerHTML='';return;}
+  if(rpSelDay===-1||rpSchedule[rpSelDay]===undefined||rpSchedule[rpSelDay]===-1){a.innerHTML='';return;}
   var cl=RP_CL[rpSchedule[rpSelDay]];if(!cl){a.innerHTML='';return;}
   var wbg=cl.wt==='warn'?'#fff8e1':'#f0faf0',wc=cl.wt==='warn'?'#e65100':'#2e7d32';
   var h='<div style="border:1.5px solid '+cl.c+'40;border-radius:10px;overflow:hidden;margin-bottom:8px">'
@@ -2848,7 +2920,11 @@ function rpRenderDetail(){
   h+='</div>';a.innerHTML=h;
 }
 function rpCopyText(){
-  var txt=Array.from({length:RP_CL.length+1},function(_,i){if(i===rpHoDayIdx)return (RP_DAYF[i]||('Tag '+(i+1)))+': Home Office';var cl=RP_CL[rpSchedule[i]];return(RP_DAYF[i]||('Tag '+(i+1)))+' (Abfahrt '+cl.dep+'): '+cl.stores.map(function(s){return s.n;}).join(' + ');}).join('\n');
+  var txt=Array.from({length:RP_NUM_DAYS},function(_,i){
+    if(rpSchedule[i]===-1)return RP_DAYF[i]+': Home Office';
+    var cl=RP_CL[rpSchedule[i]];if(!cl)return RP_DAYF[i]+': —';
+    return RP_DAYF[i]+' (Abfahrt '+cl.dep+(cl.km>0?', '+cl.km+' km':'')+'): '+cl.stores.map(function(s){return s.n;}).join(' + ');
+  }).join('\n');
   if(navigator.clipboard)navigator.clipboard.writeText(txt).then(function(){toast('✓ Fahrtplan kopiert!');});else prompt('Kopieren:',txt);
 }
 
@@ -3029,7 +3105,7 @@ function renderEmpNotif(){
 // ── MARKTSUCHE CSV IMPORT ─────────────────────────────────────────────
 const MK_TYPES={'R':'Rewe','E':'Edeka','M':'Marktkauf','MK':'Marktkauf','K':'Kaufland','T':'Tegut','RA':'Ratio'};
 const MK_COLORS={Rewe:'#cc0000',Edeka:'#e7a800',Kaufland:'#e30513',Tegut:'#005ca8',Ratio:'#7a3b8e',Marktkauf:'#e30513'};
-function loadMkStores(){try{return JSON.parse(localStorage.getItem('sc_mk_stores')||'[]');}catch(e){return[];}}
+function loadMkStores(){try{var a=JSON.parse(localStorage.getItem('sc_mk_stores')||'[]');a.forEach(function(s){if(!s.id)s.id=((s.marktname||'').match(/^\s*(\d{3,})/)||[])[1]||s.name;});return a;}catch(e){return[];}}
 function saveMkStores(d){localStorage.setItem('sc_mk_stores',JSON.stringify(d));}
 
 function _parseMkText(text){
@@ -3069,7 +3145,8 @@ function _parseMkText(text){
     }
     if(!displayName) return;
     const addr=[strasse,plz&&ort?(plz+' '+ort):ort].filter(Boolean).join(', ');
-    imported.push({name:displayName,type,addr,marktname:rawName,ort:ort||''});
+    const sid=(rawName.match(/^\s*(\d{3,})/)||[])[1]||displayName;
+    imported.push({id:sid,name:displayName,type,addr,marktname:rawName,ort:ort||''});
   });
   return imported;
 }
@@ -3123,41 +3200,89 @@ function importMarktsuche(ev){
   r.readAsArrayBuffer(file);   // read raw bytes — encoding handled by TextDecoder above
 }
 
+function mkGetClusteredIds(){
+  var ids=new Set();
+  loadRpGroups().forEach(function(g){if(g.s1id)ids.add(String(g.s1id));if(g.s2id)ids.add(String(g.s2id));});
+  return ids;
+}
+function mkClusterEmoji(type){
+  var map={Rewe:'🛒',Edeka:'🛒',Kaufland:'🏬',Tegut:'🥬',Ratio:'🏪',Marktkauf:'🏪'};
+  return map[type]||'🏪';
+}
 function renderMkStores(){
   const stores=loadMkStores();
   const card=document.getElementById('mk-cluster-card');
-  const list=document.getElementById('mk-stores-list');
-  const cnt=document.getElementById('mk-stores-count');
   if(!card)return;
-  if(!stores.length){card.style.display='none';return;}
+  const groups=loadRpGroups();
+  // a cluster icon = any group that references mk-store ids (created from Marktsuche)
+  const mkGroups=groups.map(function(g,i){return {g:g,i:i};}).filter(function(x){return x.g.s1id;});
+  if(!stores.length && !mkGroups.length){card.style.display='none';return;}
   card.style.display='block';
-  if(cnt)cnt.textContent=stores.length;
-  if(!list)return;
-  const sel=stores.filter(s=>s._sel);
-  list.innerHTML=stores.map((s,i)=>{
-    const isSel=!!s._sel;
-    const clr=MK_COLORS[s.type]||'#555';
-    return '<div onclick="mkToggleSel('+i+')" style="cursor:pointer;padding:8px 12px;margin-bottom:5px;'
-      +'border:2px solid '+(isSel?'var(--red)':'var(--brd)')
-      +';border-radius:var(--rs);background:'+(isSel?'#fff0ee':'var(--bg)')
-      +';display:flex;align-items:center;gap:10px">'
-      +'<span style="font-size:18px;min-width:24px">'+(isSel?'✅':'⬜')+'</span>'
-      +'<span style="display:inline-block;padding:3px 8px;border-radius:10px;background:'+clr
-      +';color:#fff;font-size:11px;font-weight:700;min-width:56px;text-align:center">'+(s.type||'?')+'</span>'
-      +'<div style="flex:1"><div style="font-size:13px;font-weight:600">'+s.name+'</div>'
-      +'<div style="font-size:11px;color:var(--mut)">📍 '+(s.addr||'—')+'</div></div>'
-      +'</div>';
-  }).join('');
-  const hint=document.getElementById('mk-cluster-hint');
-  if(hint){
-    if(!sel.length) hint.textContent='Filialen antippen zum Auswählen (max. 2 pro Cluster)';
-    else if(sel.length===1) hint.innerHTML='<strong>1 ausgewählt</strong> — noch eine wählen oder direkt als Einzelcluster speichern';
-    else hint.innerHTML='<strong>'+sel.length+' ausgewählt</strong> — Cluster erstellen';
+
+  // ── Cluster icons ──
+  const clSec=document.getElementById('mk-cl-section');
+  const clGrid=document.getElementById('mk-cl-grid');
+  const clCnt=document.getElementById('mk-cl-count');
+  if(clCnt)clCnt.textContent=mkGroups.length;
+  if(clSec)clSec.style.display=mkGroups.length?'block':'none';
+  if(clGrid){
+    clGrid.innerHTML=mkGroups.map(function(x){
+      var g=x.g, ci=x.i%RP_COLORS.length, col=RP_COLORS[ci];
+      var n2=g.s2name?2:1;
+      var emoji=mkClusterEmoji((stores.find(function(s){return String(s.id)===String(g.s1id);})||{}).type);
+      return '<button class="mk-cl-ico" style="background:'+col+'" onclick="mkClusterTap('+x.i+')">'
+        +'<span class="cl-x" onclick="event.stopPropagation();mkDissolveCluster('+x.i+')" title="Auflösen">&#x2715;</span>'
+        +'<span class="cl-emoji">'+emoji+'</span>'
+        +'<span class="cl-name">'+g.name+'</span>'
+        +'<span class="cl-sub">'+n2+' Filiale'+(n2>1?'n':'')+'</span>'
+        +'</button>';
+    }).join('');
+  }
+
+  // ── Available stores (not in any cluster) ──
+  const clustered=mkGetClusteredIds();
+  const available=stores.filter(function(s){return !clustered.has(String(s.id));});
+  const cnt=document.getElementById('mk-stores-count');
+  if(cnt)cnt.textContent=available.length;
+  const availSec=document.getElementById('mk-avail-section');
+  const allDone=document.getElementById('mk-all-clustered');
+  const list=document.getElementById('mk-stores-list');
+  if(!available.length){
+    if(availSec)availSec.style.display='none';
+    if(allDone)allDone.style.display=stores.length?'block':'none';
+  } else {
+    if(availSec)availSec.style.display='block';
+    if(allDone)allDone.style.display='none';
+    const sel=available.filter(function(s){return s._sel;});
+    if(list){
+      list.innerHTML=available.map(function(s){
+        var realIdx=stores.indexOf(s);
+        var isSel=!!s._sel;
+        var clr=MK_COLORS[s.type]||'#555';
+        return '<div onclick="mkToggleSel('+realIdx+')" style="cursor:pointer;padding:8px 12px;margin-bottom:5px;'
+          +'border:2px solid '+(isSel?'var(--red)':'var(--brd)')
+          +';border-radius:var(--rs);background:'+(isSel?'#fff0ee':'var(--bg)')
+          +';display:flex;align-items:center;gap:10px">'
+          +'<span style="font-size:18px;min-width:24px">'+(isSel?'✅':'⬜')+'</span>'
+          +'<span style="display:inline-block;padding:3px 8px;border-radius:10px;background:'+clr
+          +';color:#fff;font-size:11px;font-weight:700;min-width:56px;text-align:center">'+(s.type||'?')+'</span>'
+          +'<div style="flex:1"><div style="font-size:13px;font-weight:600">'+s.name+'</div>'
+          +'<div style="font-size:11px;color:var(--mut)">📍 '+(s.addr||'—')+'</div></div>'
+          +'</div>';
+      }).join('');
+    }
+    const hint=document.getElementById('mk-cluster-hint');
+    if(hint){
+      if(!sel.length) hint.textContent='Filialen antippen zum Auswählen (max. 2 pro Cluster)';
+      else if(sel.length===1) hint.innerHTML='<strong>1 ausgewählt</strong> — noch eine wählen oder direkt als Einzel-Cluster speichern';
+      else hint.innerHTML='<strong>'+sel.length+' ausgewählt</strong> — Cluster erstellen';
+    }
   }
 }
 
 function mkToggleSel(i){
   const stores=loadMkStores();
+  if(!stores[i])return;
   const sel=stores.filter(s=>s._sel);
   if(!stores[i]._sel&&sel.length>=2){toast('Max. 2 pro Cluster.');return;}
   stores[i]._sel=!stores[i]._sel;
@@ -3171,32 +3296,51 @@ function mkClearSel(){
 }
 
 function mkClearAll(){
-  if(!confirm('Alle Marktsuche-Filialen löschen?'))return;
+  if(!confirm('Alle Marktsuche-Filialen UND daraus erstellte Cluster löschen?'))return;
+  // remove mk-store-backed groups
+  var grps=loadRpGroups().filter(function(g){return !g.s1id;});
+  saveRpGroups(grps);
   localStorage.removeItem('sc_mk_stores');
-  renderMkStores();toast('✓ Gelöscht');
+  renderRpGrpList();RP_CL=getRPCL();rpSchedule=[];
+  renderMkStores();toast('✓ Zurückgesetzt');
+}
+
+function mkClusterTap(idx){
+  // open the edit modal for this cluster
+  openRpGrpModal(idx);
+}
+
+function mkDissolveCluster(idx){
+  var grps=loadRpGroups();
+  if(!grps[idx])return;
+  if(!confirm('Cluster "'+grps[idx].name+'" auflösen? Die Filialen erscheinen wieder in der Liste.'))return;
+  grps.splice(idx,1);
+  saveRpGroups(grps);renderRpGrpList();
+  RP_CL=getRPCL();rpSchedule=[];
+  renderMkStores();
+  if(document.getElementById('rp-grid'))rpRender();
+  toast('✓ Cluster aufgelöst');
 }
 
 function mkCreateCluster(){
   const stores=loadMkStores();
   const sel=stores.filter(s=>s._sel);
   if(!sel.length){toast('Bitte 1–2 Filialen auswählen.');return;}
-  // Use city names (strip type prefix) for cleaner group names
   function selCity(s){return s.ort||(s.type?s.name.replace(s.type+' ','').trim():s.name);}
   const grpName=sel.length>1?(selCity(sel[0])+' / '+selCity(sel[1])):selCity(sel[0]);
   const g={
     name:grpName,
-    s1name:sel[0].name,s1addr:sel[0].addr||'',s1open:'08:00',
-    s2name:sel[1]?sel[1].name:'',s2addr:sel[1]?sel[1].addr||'':'',s2open:'08:00',
+    s1id:sel[0].id, s1name:sel[0].name,s1addr:sel[0].addr||'',s1open:'07:00',
+    s2id:sel[1]?sel[1].id:'', s2name:sel[1]?sel[1].name:'',s2addr:sel[1]?sel[1].addr||'':'',s2open:'08:00',
     dep:'07:00',bk:'14:00',km:0
   };
   const grps=loadRpGroups();
   grps.push(g);
   saveRpGroups(grps);renderRpGrpList();
   RP_CL=getRPCL();rpSchedule=[];
-  // clear selection
   stores.forEach(s=>delete s._sel);
   saveMkStores(stores);renderMkStores();
-  toast('✓ Cluster "'+grpName+'" zu Fahrtplan hinzugefügt');
+  toast('✓ Cluster "'+grpName+'" erstellt');
 }
 
 // ── SAVED EMAIL ADDRESSES ─────────────────────────────────────────────
@@ -3286,6 +3430,8 @@ if("serviceWorker" in navigator){
     <button class="modal-close" onclick="closeRpGrpModal()" title="Schließen">&#x2715;</button>
     <h3 id="rp-grp-modal-title">Neue Fahrgruppe</h3>
     <input type="hidden" id="rp-grp-idx" value="">
+    <input type="hidden" id="rp-s1-id" value="">
+    <input type="hidden" id="rp-s2-id" value="">
     <label>Gruppenname *</label>
     <input type="text" id="rp-grp-name" placeholder="z.B. Kassel / Baunatal" oninput="this.dataset.manual='1'">
     <div style="background:var(--bg);border-radius:var(--rs);border:1px solid var(--brd);padding:12px;margin-top:10px">
@@ -3320,6 +3466,7 @@ if("serviceWorker" in navigator){
       <label>Entfernung Hin+Rück (km) <span style="font-weight:400;color:var(--mut)">optional</span></label>
       <input type="number" id="rp-grp-km" placeholder="z.B. 350" min="0">
     </div>
+    <button id="rp-grp-dissolve" class="btn-del" style="display:none;width:100%;justify-content:center;margin-top:10px" onclick="rpDissolveFromModal()">🗑 Cluster auflösen</button>
     <div class="modal-footer">
       <button class="btn" onclick="closeRpGrpModal()">Abbrechen</button>
       <button class="btn btn-red" onclick="saveRpGrp()">Speichern</button>
