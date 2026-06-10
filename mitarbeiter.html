@@ -252,8 +252,9 @@ header{padding-top:max(14px,env(safe-area-inset-top));}
       </div>
       <div class="btn-row">
         <button class="btn" onclick="maUrlaubPdf('save')">💾 PDF speichern</button>
-        <button class="btn btn-grn" onclick="maUrlaubPdf('wa')">📲 WhatsApp</button>
+        <button class="btn btn-grn" onclick="maSendAntrag()">📨 An Chef senden</button>
       </div>
+      <p style="font-size:12px;color:var(--mut);margin-top:8px;line-height:1.5">„An Chef senden" lädt eine kleine Antrag-Datei (mit deiner Unterschrift) herunter und öffnet WhatsApp – die Datei dort anhängen 📎. Der Gebietsleiter unterschreibt als Arbeitgeber und reicht das fertige PDF ein.</p>
     </div>
   </div>
 
@@ -659,6 +660,36 @@ function maUrlaubPdf(mode){
   };
   img.onerror=function(){toast('Formular-Bild konnte nicht geladen werden.',true);};
   img.src=URLAUB_IMG;
+}
+
+// Sendet ein Antrag-Datenpaket (Felder + AN-Unterschrift) an den Gebietsleiter zum Gegenzeichnen
+function maSendAntrag(){
+  var sess=maSession();if(!sess)return;
+  var from=document.getElementById('up-from').value, to=document.getElementById('up-to').value;
+  if(!from||!to){toast('Bitte Von und Bis wählen.',true);return;}
+  if(maSig.empty){toast('Bitte als Arbeitnehmer unterschreiben.',true);return;}
+  var ort=document.getElementById('up-ort').value.trim();
+  var packet={
+    typ:'urlaubsantrag', v:1,
+    name:sess.name, id:sess.id, filiale:sess.filiale,
+    vorg:document.getElementById('up-vorg').value.trim(),
+    von:from, bis:to,
+    einsatz:document.getElementById('up-einsatz').value,
+    ruf:document.getElementById('up-ruf').value.trim(),
+    anOrtDatum:(ort?ort+', ':'')+maFmtDE(maTodayISO()),
+    anSig:document.getElementById('sig-canvas').toDataURL('image/png')
+  };
+  try{
+    var blob=new Blob([JSON.stringify(packet)],{type:'application/json'});
+    var url=URL.createObjectURL(blob);var a=document.createElement('a');
+    a.href=url;a.download='Urlaubsantrag_'+sess.name.replace(/\s+/g,'_')+'.antrag.json';
+    document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  }catch(e){toast('Fehler beim Erstellen: '+e.message,true);return;}
+  var wa=maWaNumber();
+  var msg='\uD83C\uDF34 Urlaubsantrag von '+sess.name+' (Pers.Nr. '+sess.id+'), '+sess.filiale+', '+maFmtDE(from)+'\u2013'+maFmtDE(to)+'. Antrag-Datei ist im Anhang \uD83D\uDCCE (bitte als Arbeitgeber gegenzeichnen).';
+  if(wa)window.open('https://wa.me/'+wa+'?text='+encodeURIComponent(msg),'_blank');
+  else prompt('WhatsApp-Nummer fehlt. Nachricht kopieren:',msg);
+  toast('\u2713 Antrag-Datei gespeichert \u2013 in WhatsApp anh\u00e4ngen \uD83D\uDCCE');
 }
 
 /* ════════════════════════════════════════════════

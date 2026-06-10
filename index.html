@@ -234,7 +234,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 <header>
   <div>
     <div class="logo">🍣 HR Assistant</div>
-    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v4.9</span></div>
+    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v5.0</span></div>
   </div>
 </header>
 
@@ -330,7 +330,12 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
   <div id="u-mode-auto">
     <div class="card">
       <div class="card-title">📋 Formular ausfüllen <span class="badge badge-blu">PDF-Export</span></div>
-      <div class="info">Mitarbeiter wählen → Daten ausfüllen → Unterschrift zeichnen → PDF herunterladen.</div>
+      <div class="info">Mitarbeiter wählen → Daten ausfüllen → Unterschrift zeichnen → PDF herunterladen.<br>Oder: <strong>Mitarbeiter-Antrag laden</strong> → nur noch als Arbeitgeber unterschreiben → fertiges PDF für Zahlenwerk.</div>
+      <div class="btn-row" style="margin-bottom:12px">
+        <button class="btn btn-grn" onclick="document.getElementById('u-antrag-file').click()" style="flex:1;justify-content:center">📥 Mitarbeiter-Antrag laden</button>
+      </div>
+      <input type="file" id="u-antrag-file" accept=".json,application/json" style="display:none" onchange="importMaAntragFile(event)">
+      <div id="u-antrag-stat" style="font-size:12px;color:var(--grn);margin-bottom:10px"></div>
 
       <label>Mitarbeiter</label>
       <select id="u-emp" onchange="uFillEmp()">
@@ -3402,6 +3407,46 @@ applySettings();
 checkFirstStart();
   renderSavedEmails();
   renderEmpNotif();
+// ════════ MITARBEITER-ANTRAG IMPORT (Urlaubsantrag fertig unterschreiben) ════════
+function importMaAntragFile(ev){
+  var f=ev.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(e){
+    var data; try{ data=JSON.parse(e.target.result); }catch(err){ alert('Ungültige Antrag-Datei.'); return; }
+    importMaAntrag(data);
+  };
+  r.readAsText(f);
+  ev.target.value='';
+}
+function importMaAntrag(data){
+  if(!data || data.typ!=='urlaubsantrag'){ alert('Keine gültige Urlaubsantrag-Datei.'); return; }
+  var nav=document.querySelector('.app-ico[onclick*="urlaub"]');
+  if(nav) sw('urlaub', nav);
+  function set(id,v){ var el=document.getElementById(id); if(el) el.value=(v||''); }
+  set('u-name', data.name);
+  set('u-id', data.id);
+  set('u-vorgesetzter', data.vorg);
+  set('u-von', data.von);
+  set('u-bis', data.bis);
+  set('u-einsatz', data.einsatz);
+  set('u-rufnummer', data.ruf);
+  set('u-ort-an', data.anOrtDatum);
+  // Mitarbeiter-Unterschrift (AN) auf u-sig-an zeichnen
+  if(data.anSig){
+    var c=document.getElementById('u-sig-an');
+    if(c){
+      var ctx=c.getContext('2d'); ctx.clearRect(0,0,c.width,c.height);
+      var img=new Image();
+      img.onload=function(){ ctx.drawImage(img,0,0,c.width,c.height); };
+      img.src=data.anSig;
+    }
+  }
+  if(typeof updateUrlaub==='function') updateUrlaub();
+  var stat=document.getElementById('u-antrag-stat');
+  if(stat) stat.textContent='✓ Antrag von '+(data.name||'?')+' ('+(data.von||'')+'–'+(data.bis||'')+') geladen. Jetzt als Arbeitgeber unterschreiben → PDF erstellen.';
+  if(typeof toast==='function') toast('✓ Mitarbeiter-Antrag geladen');
+}
+
 // ════════ MITARBEITER-APP EXPORT ════════
 function maGroupConsecutive(dates){
   if(!dates.length)return [];
