@@ -234,7 +234,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 <header>
   <div>
     <div class="logo">🍣 HR Assistant</div>
-    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v5.2</span></div>
+    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v5.4</span></div>
   </div>
 </header>
 
@@ -319,6 +319,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
   <div class="card" id="fb-pending-card" style="display:none">
     <div class="card-title">📨 Urlaubs-Anträge (Live) <span class="badge badge-red" id="fb-pending-count">0</span></div>
     <div class="info">Neue Anträge aus der Mitarbeiter-App erscheinen hier automatisch. Genehmigen/Ablehnen → der Mitarbeiter sieht die Entscheidung sofort (grün/rot).</div>
+    <div id="fb-pending-status" style="font-size:13px;margin-bottom:8px;font-weight:600;display:none"></div>
     <div id="fb-pending-list"></div>
   </div>
 
@@ -3418,24 +3419,45 @@ checkFirstStart();
   renderEmpNotif();
 // ════════ FIREBASE (Realtime Urlaub-Freigabe) ════════
 const FB_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
+  apiKey: "AIzaSyBzuk8yEBbBf6Thp0Lu76pXarw2IkHJXNw",
+  authDomain: "glsc-eabb6.firebaseapp.com",
+  projectId: "glsc-eabb6",
+  storageBucket: "glsc-eabb6.firebasestorage.app",
+  messagingSenderId: "565990660261",
+  appId: "1:565990660261:web:5607161b999f1c88a9954c",
+  measurementId: "G-ZT96K2D4TQ"
 };
 var fbReady=false, fbDb=null, fbPending=[];
 function fbEnabled(){ return !!(FB_CONFIG && FB_CONFIG.apiKey && typeof firebase!=='undefined'); }
+function fbPendingCardShow(msg, color){
+  var card=document.getElementById('fb-pending-card');
+  if(card) card.style.display='block';
+  var st=document.getElementById('fb-pending-status');
+  if(st){ st.textContent=msg||''; st.style.color=color||'#6B6860'; st.style.display=msg?'block':'none'; }
+}
+// Zeigt die Karte immer an + diagnostiziert den Firebase-Status
+function fbBootStatus(){
+  fbPendingCardShow('', '#6B6860');
+  if(!FB_CONFIG || !FB_CONFIG.apiKey){
+    fbPendingCardShow('⚙️ Firebase ist in dieser Datei (index.html) noch nicht konfiguriert. FB_CONFIG oben im Code ausfüllen → dann erscheinen Anträge live.', '#B7860B');
+    return;
+  }
+  if(typeof firebase==='undefined'){
+    fbPendingCardShow('⚠️ Firebase-Bibliothek nicht geladen. Internet/Adblocker prüfen und Seite neu laden.', '#C0392B');
+    return;
+  }
+  fbInit(function(){ fbStartPending(); });
+}
 function fbInit(onReady){
   if(!fbEnabled()) return false;
+  fbPendingCardShow('🔄 Verbinde mit Firebase…', '#6B6860');
   try{
     if(!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
     fbDb=firebase.firestore();
     firebase.auth().signInAnonymously().then(function(){ fbReady=true; if(onReady)onReady(); })
-      .catch(function(e){ console.warn('FB auth', e); });
+      .catch(function(e){ console.warn('FB auth', e); fbPendingCardShow('⚠️ Firebase-Login fehlgeschlagen. In der Firebase Console unter Authentication → Anonymous aktivieren. ('+e.code+')', '#C0392B'); });
     return true;
-  }catch(e){ console.warn('FB init', e); return false; }
+  }catch(e){ console.warn('FB init', e); fbPendingCardShow('⚠️ Firebase-Fehler: '+e.message, '#C0392B'); return false; }
 }
 // Firestore-Docs -> Liste (testbar)
 function maMapPendingSnapshot(rawDocs){
@@ -3449,7 +3471,7 @@ function fbStartPending(){
     .onSnapshot(function(snap){
       var raw=[]; snap.forEach(function(doc){ raw.push({id:doc.id, data:doc.data()}); });
       fbPending=maMapPendingSnapshot(raw); fbRenderPending();
-    }, function(err){ console.warn('FB pending', err); });
+    }, function(err){ console.warn('FB pending', err); fbPendingCardShow('⚠️ Kein Datenbank-Zugriff. Firestore-Regeln prüfen. ('+err.code+')', '#C0392B'); });
 }
 function fbRenderPending(){
   var card=document.getElementById('fb-pending-card');
@@ -3457,6 +3479,7 @@ function fbRenderPending(){
   var cnt=document.getElementById('fb-pending-count');
   if(!card||!list) return;
   card.style.display='block';
+  fbPendingCardShow('', '#1E8449'); // verbunden → Status ausblenden
   if(cnt) cnt.textContent=fbPending.length;
   if(!fbPending.length){ list.innerHTML='<div style="color:#6B6860;font-size:13px;padding:6px 0">Keine offenen Anträge.</div>'; return; }
   list.innerHTML=fbPending.map(function(r){
@@ -3579,7 +3602,7 @@ function exportMaBundle(mode){
 renderRpGrpList();
 renderMkStores();
 RP_CL=getRPCL();
-if(fbEnabled()) fbInit(function(){ fbStartPending(); });
+fbBootStatus();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
