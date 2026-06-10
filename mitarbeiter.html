@@ -302,8 +302,57 @@ header{padding-top:max(14px,env(safe-area-inset-top));}
 
 <div class="toast" id="toast"></div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
+/* ════════════════════════════════════════════════
+   FIREBASE (Realtime Urlaub).  Konfiguration unten einfügen.
+   Leer lassen → App läuft im Offline-Modus (Bundle/lokal).
+   ════════════════════════════════════════════════ */
+const FB_CONFIG = {
+  apiKey: "AIzaSyBzuk8yEBbBf6Thp0Lu76pXarw2IkHJXNw",
+  authDomain: "glsc-eabb6.firebaseapp.com",
+  projectId: "glsc-eabb6",
+  storageBucket: "glsc-eabb6.firebasestorage.app",
+  messagingSenderId: "565990660261",
+  appId: "1:565990660261:web:5607161b999f1c88a9954c",
+  measurementId: "G-ZT96K2D4TQ"
+};
+var fbReady=false, fbDb=null, fbUnsub=null, maFbUrlaub=[];
+function fbEnabled(){ return !!(FB_CONFIG && FB_CONFIG.apiKey && typeof firebase!=='undefined'); }
+function fbInit(onReady){
+  if(!fbEnabled()) return false;
+  try{
+    if(!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+    fbDb=firebase.firestore();
+    firebase.auth().signInAnonymously().then(function(){ fbReady=true; if(onReady)onReady(); })
+      .catch(function(e){ console.warn('FB auth fehlgeschlagen', e); });
+    return true;
+  }catch(e){ console.warn('FB init fehlgeschlagen', e); return false; }
+}
+// Baut das Firestore-Dokument für einen Urlaubsantrag (testbar)
+function maBuildUrlaubDoc(sess, from, to){
+  return { empId:sess.id, name:sess.name, filiale:sess.filiale||'',
+    from:from, to:to, status:'pending', created:new Date().toISOString() };
+}
+// Wandelt Firestore-Docs in App-Einträge (testbar)
+function maMapUrlaubSnapshot(rawDocs){
+  return rawDocs.map(function(d){ var v=d.data||{};
+    return { docId:d.id, id:v.empId, name:v.name, filiale:v.filiale, from:v.from, to:v.to, status:v.status||'pending' };
+  });
+}
+function maStartFbUrlaub(sess){
+  if(!fbReady||!fbDb||!sess) return;
+  if(fbUnsub){ try{fbUnsub();}catch(e){} fbUnsub=null; }
+  fbUnsub = fbDb.collection('urlaub').where('filiale','==',sess.filiale||'')
+    .onSnapshot(function(snap){
+      var raw=[]; snap.forEach(function(doc){ raw.push({id:doc.id, data:doc.data()}); });
+      maFbUrlaub = maMapUrlaubSnapshot(raw);
+      maRenderCal(); maRenderUlList();
+    }, function(err){ console.warn('FB listen', err); });
+}
 /* ════════════════════════════════════════════════
    STORAGE
    ════════════════════════════════════════════════ */
@@ -335,6 +384,7 @@ function maFindEmp(persnr){var b=maLoadBundle();if(!b)return null;var id=(''+per
 
 // All urlaub entries for a filiale: approved (from bundle) + local pending/rejected requests
 function maFilialeUrlaub(filiale){
+  if(fbReady) return maFbUrlaub.slice();  // Live aus Firestore (bereits Filiale-gefiltert)
   var b=maLoadBundle(),out=[];
   if(b&&b.urlaub)b.urlaub.filter(function(u){return u.filiale===filiale;}).forEach(function(u){
     out.push({id:u.id,name:u.name,filiale:u.filiale,from:u.from,to:u.to,status:u.status||'approved'});
@@ -415,6 +465,11 @@ function maShowApp(sess){
   maNav('dp');
   maRenderDP();maRenderCal();maRenderUlList();
   maInitSig();
+  // Firebase realtime (falls konfiguriert)
+  if(fbEnabled()){
+    if(fbReady) maStartFbUrlaub(sess);
+    else fbInit(function(){ maStartFbUrlaub(sess); });
+  }
 }
 function maNav(t){
   ['dp','ul','kr'].forEach(function(x){
@@ -557,6 +612,16 @@ function maRequestUrlaub(){
   var existing=maFilialeUrlaub(sess.filiale);
   var v=maValidateUrlaub(from,to,existing,maTodayISO(),sess.id);
   if(!v.ok){fb.style.display='block';fb.style.color='var(--red)';fb.textContent='✗ '+v.reason;return;}
+  if(fbReady&&fbDb){
+    fbDb.collection('urlaub').add(maBuildUrlaubDoc(sess,from,to))
+      .then(function(){
+        fb.style.display='block';fb.style.color='var(--grn)';
+        fb.textContent='✓ Antrag gesendet (🟧 wartet auf Freigabe). Der Gebietsleiter sieht ihn sofort – die Freigabe erscheint hier automatisch.';
+        document.getElementById('ul-from').value='';document.getElementById('ul-to').value='';
+      })
+      .catch(function(e){ fb.style.display='block';fb.style.color='var(--red)';fb.textContent='✗ Senden fehlgeschlagen: '+e.message; });
+    return;
+  }
   var reqs=maLoadReqs();
   reqs.push({id:sess.id,name:sess.name,filiale:sess.filiale,from:from,to:to,status:'pending',created:maTodayISO()});
   maSaveReqs(reqs);

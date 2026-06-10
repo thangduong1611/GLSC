@@ -234,7 +234,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 <header>
   <div>
     <div class="logo">🍣 HR Assistant</div>
-    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v5.0</span></div>
+    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v5.1</span></div>
   </div>
 </header>
 
@@ -315,6 +315,12 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 
 <!-- ===== URLAUBSANTRAG ===== -->
 <div id="panel-urlaub" class="panel">
+
+  <div class="card" id="fb-pending-card" style="display:none">
+    <div class="card-title">📨 Urlaubs-Anträge (Live) <span class="badge badge-red" id="fb-pending-count">0</span></div>
+    <div class="info">Neue Anträge aus der Mitarbeiter-App erscheinen hier automatisch. Genehmigen/Ablehnen → der Mitarbeiter sieht die Entscheidung sofort (grün/rot).</div>
+    <div id="fb-pending-list"></div>
+  </div>
 
   <!-- Mode switcher -->
   <div style="display:flex;gap:8px;margin-bottom:14px">
@@ -3407,6 +3413,70 @@ applySettings();
 checkFirstStart();
   renderSavedEmails();
   renderEmpNotif();
+// ════════ FIREBASE (Realtime Urlaub-Freigabe) ════════
+const FB_CONFIG = {
+  apiKey: "AIzaSyBzuk8yEBbBf6Thp0Lu76pXarw2IkHJXNw",
+  authDomain: "glsc-eabb6.firebaseapp.com",
+  projectId: "glsc-eabb6",
+  storageBucket: "glsc-eabb6.firebasestorage.app",
+  messagingSenderId: "565990660261",
+  appId: "1:565990660261:web:5607161b999f1c88a9954c",
+  measurementId: "G-ZT96K2D4TQ"
+};
+var fbReady=false, fbDb=null, fbPending=[];
+function fbEnabled(){ return !!(FB_CONFIG && FB_CONFIG.apiKey && typeof firebase!=='undefined'); }
+function fbInit(onReady){
+  if(!fbEnabled()) return false;
+  try{
+    if(!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+    fbDb=firebase.firestore();
+    firebase.auth().signInAnonymously().then(function(){ fbReady=true; if(onReady)onReady(); })
+      .catch(function(e){ console.warn('FB auth', e); });
+    return true;
+  }catch(e){ console.warn('FB init', e); return false; }
+}
+// Firestore-Docs -> Liste (testbar)
+function maMapPendingSnapshot(rawDocs){
+  return rawDocs.map(function(d){ var v=d.data||{};
+    return {docId:d.id, empId:v.empId, name:v.name, filiale:v.filiale, from:v.from, to:v.to, status:v.status, created:v.created};
+  }).sort(function(a,b){ return (a.created||'')<(b.created||'')?-1:1; });
+}
+function fbStartPending(){
+  if(!fbReady||!fbDb) return;
+  fbDb.collection('urlaub').where('status','==','pending')
+    .onSnapshot(function(snap){
+      var raw=[]; snap.forEach(function(doc){ raw.push({id:doc.id, data:doc.data()}); });
+      fbPending=maMapPendingSnapshot(raw); fbRenderPending();
+    }, function(err){ console.warn('FB pending', err); });
+}
+function fbRenderPending(){
+  var card=document.getElementById('fb-pending-card');
+  var list=document.getElementById('fb-pending-list');
+  var cnt=document.getElementById('fb-pending-count');
+  if(!card||!list) return;
+  card.style.display='block';
+  if(cnt) cnt.textContent=fbPending.length;
+  if(!fbPending.length){ list.innerHTML='<div style="color:#6B6860;font-size:13px;padding:6px 0">Keine offenen Anträge.</div>'; return; }
+  list.innerHTML=fbPending.map(function(r){
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #E8E4E0;border-left:4px solid #E67E22;border-radius:6px;margin-bottom:8px;flex-wrap:wrap">'
+      +'<div style="flex:1;min-width:150px"><strong>'+r.name+'</strong> · '+(r.filiale||'')+'<br><span style="font-size:13px;color:#6B6860">'+fmtDate(r.from)+' – '+fmtDate(r.to)+'</span></div>'
+      +'<button class="btn btn-sm" style="background:#1E8449;color:#fff;border-color:#1E8449" onclick="fbApprove(\''+r.docId+'\')">✓ Genehmigen</button>'
+      +'<button class="btn btn-sm" style="background:#C0392B;color:#fff;border-color:#C0392B" onclick="fbReject(\''+r.docId+'\')">✗ Ablehnen</button>'
+      +'</div>';
+  }).join('');
+}
+function fbApprove(docId){
+  if(!fbDb) return;
+  fbDb.collection('urlaub').doc(docId).update({status:'approved', decidedAt:new Date().toISOString()})
+    .then(function(){ toast('✓ Urlaub genehmigt'); }).catch(function(e){ alert('Fehler: '+e.message); });
+}
+function fbReject(docId){
+  if(!fbDb) return;
+  if(!confirm('Antrag wirklich ablehnen?')) return;
+  fbDb.collection('urlaub').doc(docId).update({status:'rejected', decidedAt:new Date().toISOString()})
+    .then(function(){ toast('✗ Antrag abgelehnt'); }).catch(function(e){ alert('Fehler: '+e.message); });
+}
+
 // ════════ MITARBEITER-ANTRAG IMPORT (Urlaubsantrag fertig unterschreiben) ════════
 function importMaAntragFile(ev){
   var f=ev.target.files[0]; if(!f) return;
@@ -3507,7 +3577,11 @@ function exportMaBundle(mode){
 renderRpGrpList();
 renderMkStores();
 RP_CL=getRPCL();
+if(fbEnabled()) fbInit(function(){ fbStartPending(); });
 </script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 if("serviceWorker" in navigator){
