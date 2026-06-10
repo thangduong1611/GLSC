@@ -234,7 +234,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 <header>
   <div>
     <div class="logo">🍣 HR Assistant</div>
-    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v5.1</span></div>
+    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v5.2</span></div>
   </div>
 </header>
 
@@ -954,6 +954,9 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 
 <div class="toast" id="toast">✓ Kopiert!</div>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
 // ─── CONSTANTS ───────────────────────────────────────────────
 var TO = 'teamsushi@zahlenwerk.de', CC = 'hr@sushi-circle.de';
@@ -3415,13 +3418,12 @@ checkFirstStart();
   renderEmpNotif();
 // ════════ FIREBASE (Realtime Urlaub-Freigabe) ════════
 const FB_CONFIG = {
-  apiKey: "AIzaSyBzuk8yEBbBf6Thp0Lu76pXarw2IkHJXNw",
-  authDomain: "glsc-eabb6.firebaseapp.com",
-  projectId: "glsc-eabb6",
-  storageBucket: "glsc-eabb6.firebasestorage.app",
-  messagingSenderId: "565990660261",
-  appId: "1:565990660261:web:5607161b999f1c88a9954c",
-  measurementId: "G-ZT96K2D4TQ"
+  apiKey: "",
+  authDomain: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: ""
 };
 var fbReady=false, fbDb=null, fbPending=[];
 function fbEnabled(){ return !!(FB_CONFIG && FB_CONFIG.apiKey && typeof firebase!=='undefined'); }
@@ -3579,9 +3581,6 @@ renderMkStores();
 RP_CL=getRPCL();
 if(fbEnabled()) fbInit(function(){ fbStartPending(); });
 </script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 if("serviceWorker" in navigator){
