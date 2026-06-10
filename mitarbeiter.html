@@ -320,7 +320,8 @@ const FB_CONFIG = {
   appId: "1:565990660261:web:5607161b999f1c88a9954c",
   measurementId: "G-ZT96K2D4TQ"
 };
-var fbReady=false, fbDb=null, fbUnsub=null, maFbUrlaub=[];
+var fbReady=false, fbDb=null, fbUnsub=null, maFbUrlaub=[], maFbPlans={};
+function fbSlug(f){ return (''+f).replace(/\s+/g,'_').toLowerCase(); }
 function fbEnabled(){ return !!(FB_CONFIG && FB_CONFIG.apiKey && typeof firebase!=='undefined'); }
 function fbInit(onReady){
   if(!fbEnabled()) return false;
@@ -346,7 +347,7 @@ function maMapUrlaubSnapshot(rawDocs){
 function maStartFbUrlaub(sess){
   if(!fbReady||!fbDb||!sess) return;
   if(fbUnsub){ try{fbUnsub();}catch(e){} fbUnsub=null; }
-  fbUnsub = fbDb.collection('urlaub').where('filiale','==',sess.filiale||'')
+  fbUnsub = fbDb.collection('filialen').doc(fbSlug(sess.filiale||'')).collection('urlaub')
     .onSnapshot(function(snap){
       var raw=[]; snap.forEach(function(doc){ raw.push({id:doc.id, data:doc.data()}); });
       maFbUrlaub = maMapUrlaubSnapshot(raw);
@@ -439,13 +440,31 @@ function maInit(){
 function maShowLogin(){
   document.getElementById('login-screen').style.display='flex';
   document.getElementById('app').style.display='none';
-  document.getElementById('login-nodata').style.display=maLoadBundle()?'none':'block';
+  document.getElementById('login-nodata').style.display=(fbEnabled()||maLoadBundle())?'none':'block';
 }
 function maDoLogin(){
   var pid=document.getElementById('login-pid').value.trim();
   var err=document.getElementById('login-err');
-  if(!maLoadBundle()){err.textContent='Keine Daten geladen. Bitte zuerst Daten laden.';err.style.display='block';return;}
   if(!pid){err.textContent='Bitte Personalnummer eingeben.';err.style.display='block';return;}
+  if(fbEnabled()){
+    err.textContent='';err.style.display='none';
+    var btnErr=function(msg){err.textContent=msg;err.style.display='block';};
+    var proceed=function(){
+      fbDb.collection('emps').doc(pid).get().then(function(doc){
+        if(!doc.exists){btnErr('Personalnummer nicht gefunden. Bitte prüfen.');return;}
+        var d=doc.data()||{};
+        var sess={id:pid,name:d.name||'',filiale:d.filiale||''};
+        maSetSession(sess);
+        fbDb.collection('meta').doc('config').get().then(function(cfg){
+          if(cfg.exists && cfg.data().managerWa) localStorage.setItem('ma_wa', cfg.data().managerWa);
+        }).catch(function(){});
+        maShowApp(sess);
+      }).catch(function(e){btnErr('Verbindungsfehler: '+e.message);});
+    };
+    if(fbReady) proceed(); else fbInit(proceed);
+    return;
+  }
+  if(!maLoadBundle()){err.textContent='Keine Daten geladen. Bitte zuerst Daten laden.';err.style.display='block';return;}
   var emp=maFindEmp(pid);
   if(!emp){err.textContent='Personalnummer nicht gefunden. Bitte prüfen.';err.style.display='block';return;}
   err.style.display='none';
@@ -508,9 +527,23 @@ function maDoImport(){
 function maRenderDP(){
   var sess=maSession();if(!sess)return;
   var month=document.getElementById('dp-month').value;
-  var b=maLoadBundle();
   var out=document.getElementById('dp-out');
-  var plan=b&&b.dienstplan&&b.dienstplan[sess.filiale]&&b.dienstplan[sess.filiale][month];
+  var plan=null;
+  if(fbReady&&fbDb){
+    var key=fbSlug(sess.filiale)+'__'+month;
+    if(maFbPlans[key]!==undefined){ plan=maFbPlans[key]; }
+    else{
+      out.innerHTML='<div style="color:var(--mut);font-size:13px;padding:8px 0">⏳ Lade Dienstplan…</div>';
+      fbDb.collection('plan').doc(key).get().then(function(doc){
+        maFbPlans[key]=doc.exists?doc.data():null;
+        maRenderDP();
+      }).catch(function(e){ out.innerHTML='<div class="warnbox">Fehler beim Laden: '+e.message+'</div>'; });
+      return;
+    }
+  } else {
+    var b=maLoadBundle();
+    plan=b&&b.dienstplan&&b.dienstplan[sess.filiale]&&b.dienstplan[sess.filiale][month];
+  }
   if(!plan){out.innerHTML='<div class="warnbox">Der Dienstplan für '+(month?maMonthLabel(month):'diesen Monat')+' wurde noch nicht veröffentlicht.</div>';return;}
   var shifts=plan.shifts||{};
   var emps=plan.employees||[];
@@ -613,7 +646,7 @@ function maRequestUrlaub(){
   var v=maValidateUrlaub(from,to,existing,maTodayISO(),sess.id);
   if(!v.ok){fb.style.display='block';fb.style.color='var(--red)';fb.textContent='✗ '+v.reason;return;}
   if(fbReady&&fbDb){
-    fbDb.collection('urlaub').add(maBuildUrlaubDoc(sess,from,to))
+    fbDb.collection('filialen').doc(fbSlug(sess.filiale||'')).collection('urlaub').add(maBuildUrlaubDoc(sess,from,to))
       .then(function(){
         fb.style.display='block';fb.style.color='var(--grn)';
         fb.textContent='✓ Antrag gesendet (🟧 wartet auf Freigabe). Der Gebietsleiter sieht ihn sofort – die Freigabe erscheint hier automatisch.';

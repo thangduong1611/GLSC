@@ -234,7 +234,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 <header>
   <div>
     <div class="logo">🍣 HR Assistant</div>
-    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v5.4</span></div>
+    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v6.0</span></div>
   </div>
 </header>
 
@@ -746,15 +746,30 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 <!-- ===== EINSTELLUNGEN ===== -->
 <div id="panel-settings" class="panel">
   <div class="card">
-    <div class="card-title">📲 Mitarbeiter-App <span class="badge badge-grn">Export</span></div>
-    <div class="info">Erzeugt einen Daten-Code (Mitarbeiterliste + veröffentlichte Dienstpläne + genehmigter Urlaub) für die Mitarbeiter-App. Code per WhatsApp/Datei an die Mitarbeiter geben — sie fügen ihn einmalig in der App ein.</div>
+    <div class="card-title">📲 Mitarbeiter-App <span class="badge badge-grn">Cloud</span></div>
+    <div class="info"><strong>Datenschutz-Modus:</strong> Daten werden direkt in die Cloud veröffentlicht — keine Datei mehr an Mitarbeiter senden. Mitarbeiter melden sich nur mit ihrer Personalnummer an und sehen ausschließlich die eigene Filiale.</div>
+    <label>Manager-Login (Firebase)</label>
+    <div class="row2">
+      <div><input type="text" id="fb-mail" placeholder="E-Mail" autocomplete="username"></div>
+      <div><input type="password" id="fb-pass" placeholder="Passwort" autocomplete="current-password"></div>
+    </div>
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn" onclick="fbManagerLogin()" style="flex:1;justify-content:center">🔐 Anmelden</button>
+      <button class="btn" onclick="fbManagerLogout()" style="flex:1;justify-content:center">Abmelden</button>
+    </div>
+    <div id="fb-login-stat" style="font-size:12px;margin-top:8px;font-weight:600;color:var(--mut)">Nicht angemeldet.</div>
     <label>Deine WhatsApp-Nummer (für Rückmeldungen der Mitarbeiter)</label>
     <input type="text" id="st-manager-wa" placeholder="z.B. +49 173 1234567" oninput="localStorage.setItem('sc_manager_wa',this.value)">
     <div class="btn-row">
-      <button class="btn btn-grn" onclick="exportMaBundle('file')" style="flex:1;justify-content:center">💾 Datei exportieren</button>
-      <button class="btn" onclick="exportMaBundle('copy')" style="flex:1;justify-content:center">📋 Code kopieren</button>
+      <button class="btn btn-grn" onclick="fbPublish()" style="flex:1;justify-content:center">☁️ Veröffentlichen (Mitarbeiter + Dienstpläne)</button>
     </div>
     <div id="ma-export-stat" style="font-size:12px;color:var(--mut);margin-top:8px"></div>
+    <details style="margin-top:10px"><summary style="font-size:12px;color:var(--mut);cursor:pointer">Alt: Datei-Export (ohne Cloud)</summary>
+      <div class="btn-row">
+        <button class="btn" onclick="exportMaBundle('file')" style="flex:1;justify-content:center">💾 Datei exportieren</button>
+        <button class="btn" onclick="exportMaBundle('copy')" style="flex:1;justify-content:center">📋 Code kopieren</button>
+      </div>
+    </details>
   </div>
   <div class="card">
     <div class="card-title">👤 Persönliche Daten <span class="badge badge-red">Pflicht</span></div>
@@ -3427,7 +3442,7 @@ const FB_CONFIG = {
   appId: "1:565990660261:web:5607161b999f1c88a9954c",
   measurementId: "G-ZT96K2D4TQ"
 };
-var fbReady=false, fbDb=null, fbPending=[];
+var fbReady=false, fbDb=null, fbPending=[], fbDecided=[], fbManager=false;
 function fbEnabled(){ return !!(FB_CONFIG && FB_CONFIG.apiKey && typeof firebase!=='undefined'); }
 function fbPendingCardShow(msg, color){
   var card=document.getElementById('fb-pending-card');
@@ -3448,29 +3463,81 @@ function fbBootStatus(){
   }
   fbInit(function(){ fbStartPending(); });
 }
+function fbSlug(f){ return (''+f).replace(/\s+/g,'_').toLowerCase(); }
 function fbInit(onReady){
   if(!fbEnabled()) return false;
   fbPendingCardShow('🔄 Verbinde mit Firebase…', '#6B6860');
   try{
     if(!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
     fbDb=firebase.firestore();
-    firebase.auth().signInAnonymously().then(function(){ fbReady=true; if(onReady)onReady(); })
-      .catch(function(e){ console.warn('FB auth', e); fbPendingCardShow('⚠️ Firebase-Login fehlgeschlagen. In der Firebase Console unter Authentication → Anonymous aktivieren. ('+e.code+')', '#C0392B'); });
+    firebase.auth().onAuthStateChanged(function(user){
+      if(user && user.email){
+        fbReady=true; fbManager=true;
+        var st=document.getElementById('fb-login-stat');
+        if(st){ st.textContent='✓ Angemeldet als '+user.email; st.style.color='#1E8449'; }
+        if(onReady) onReady();
+      } else {
+        fbManager=false;
+        fbPendingCardShow('🔐 Bitte in den Einstellungen mit dem Manager-Konto anmelden (E-Mail/Passwort).', '#B7860B');
+        var st=document.getElementById('fb-login-stat');
+        if(st){ st.textContent='Nicht angemeldet.'; st.style.color='#6B6860'; }
+      }
+    });
     return true;
   }catch(e){ console.warn('FB init', e); fbPendingCardShow('⚠️ Firebase-Fehler: '+e.message, '#C0392B'); return false; }
+}
+function fbManagerLogin(){
+  if(!fbEnabled()){ alert('Firebase ist nicht konfiguriert.'); return; }
+  if(!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+  var mail=document.getElementById('fb-mail').value.trim();
+  var pass=document.getElementById('fb-pass').value;
+  if(!mail||!pass){ alert('E-Mail und Passwort eingeben.'); return; }
+  firebase.auth().signInWithEmailAndPassword(mail,pass)
+    .then(function(){ toast('✓ Angemeldet'); document.getElementById('fb-pass').value=''; })
+    .catch(function(e){ alert('Login fehlgeschlagen: '+e.message); });
+}
+function fbManagerLogout(){
+  if(typeof firebase==='undefined'||!firebase.apps.length) return;
+  firebase.auth().signOut().then(function(){ toast('Abgemeldet'); });
+}
+function fbPublish(){
+  if(!fbReady||!fbDb||!fbManager){ alert('Bitte zuerst als Manager anmelden (Einstellungen).'); return; }
+  var b=buildMaBundle();
+  if(!b.employees.length){ alert('Keine aktiven Mitarbeiter gefunden. Bitte zuerst die Mitarbeiter-CSV importieren.'); return; }
+  var jobs=[];
+  b.employees.forEach(function(e){
+    jobs.push(fbDb.collection('emps').doc(''+e.id).set({name:e.name, filiale:e.filiale||'', active:true}));
+  });
+  var nPlan=0;
+  Object.keys(b.dienstplan).forEach(function(f){
+    Object.keys(b.dienstplan[f]).forEach(function(month){
+      nPlan++;
+      jobs.push(fbDb.collection('plan').doc(fbSlug(f)+'__'+month).set(b.dienstplan[f][month]));
+    });
+  });
+  jobs.push(fbDb.collection('meta').doc('config').set({managerWa:(localStorage.getItem('sc_manager_wa')||'')}));
+  var stat=document.getElementById('ma-export-stat');
+  if(stat) stat.textContent='⏳ Veröffentliche…';
+  Promise.all(jobs).then(function(){
+    if(stat) stat.textContent='✓ Veröffentlicht: '+b.employees.length+' Mitarbeiter · '+nPlan+' Dienstplan-Monate';
+    toast('☁️ Veröffentlicht');
+  }).catch(function(e){ if(stat) stat.textContent='⚠️ Fehler: '+e.message; alert('Veröffentlichen fehlgeschlagen: '+e.message); });
 }
 // Firestore-Docs -> Liste (testbar)
 function maMapPendingSnapshot(rawDocs){
   return rawDocs.map(function(d){ var v=d.data||{};
-    return {docId:d.id, empId:v.empId, name:v.name, filiale:v.filiale, from:v.from, to:v.to, status:v.status, created:v.created};
+    return {docId:d.id, ref:d.ref||null, empId:v.empId, name:v.name, filiale:v.filiale, from:v.from, to:v.to, status:v.status, created:v.created};
   }).sort(function(a,b){ return (a.created||'')<(b.created||'')?-1:1; });
 }
 function fbStartPending(){
   if(!fbReady||!fbDb) return;
-  fbDb.collection('urlaub').where('status','==','pending')
+  fbDb.collectionGroup('urlaub')
     .onSnapshot(function(snap){
-      var raw=[]; snap.forEach(function(doc){ raw.push({id:doc.id, data:doc.data()}); });
-      fbPending=maMapPendingSnapshot(raw); fbRenderPending();
+      var raw=[]; snap.forEach(function(doc){ raw.push({id:doc.id, data:doc.data(), ref:doc.ref}); });
+      var all=maMapPendingSnapshot(raw);
+      fbPending=all.filter(function(r){ return r.status==='pending'; });
+      fbDecided=all.filter(function(r){ return r.status!=='pending'; });
+      fbRenderPending();
     }, function(err){ console.warn('FB pending', err); fbPendingCardShow('⚠️ Kein Datenbank-Zugriff. Firestore-Regeln prüfen. ('+err.code+')', '#C0392B'); });
 }
 function fbRenderPending(){
@@ -3481,25 +3548,54 @@ function fbRenderPending(){
   card.style.display='block';
   fbPendingCardShow('', '#1E8449'); // verbunden → Status ausblenden
   if(cnt) cnt.textContent=fbPending.length;
-  if(!fbPending.length){ list.innerHTML='<div style="color:#6B6860;font-size:13px;padding:6px 0">Keine offenen Anträge.</div>'; return; }
-  list.innerHTML=fbPending.map(function(r){
+  var html='';
+  if(!fbPending.length) html='<div style="color:#6B6860;font-size:13px;padding:6px 0">Keine offenen Anträge.</div>';
+  else html=fbPending.map(function(r){
     return '<div style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #E8E4E0;border-left:4px solid #E67E22;border-radius:6px;margin-bottom:8px;flex-wrap:wrap">'
       +'<div style="flex:1;min-width:150px"><strong>'+r.name+'</strong> · '+(r.filiale||'')+'<br><span style="font-size:13px;color:#6B6860">'+fmtDate(r.from)+' – '+fmtDate(r.to)+'</span></div>'
       +'<button class="btn btn-sm" style="background:#1E8449;color:#fff;border-color:#1E8449" onclick="fbApprove(\''+r.docId+'\')">✓ Genehmigen</button>'
       +'<button class="btn btn-sm" style="background:#C0392B;color:#fff;border-color:#C0392B" onclick="fbReject(\''+r.docId+'\')">✗ Ablehnen</button>'
       +'</div>';
   }).join('');
+  // Entschiedene Anträge (genehmigt/abgelehnt) – löschbar
+  if(fbDecided.length){
+    var now=new Date(); now.setHours(0,0,0,0);
+    var items=fbDecided.slice().sort(function(a,b){ return (a.from||'')<(b.from||'')?-1:1; });
+    html+='<div style="font-size:13px;font-weight:700;margin:14px 0 6px;color:#6B6860">Entschiedene Anträge</div>';
+    html+=items.map(function(r){
+      var col=r.status==='approved'?'#1E8449':'#C0392B';
+      var lbl=r.status==='approved'?'✓ genehmigt':'✗ abgelehnt';
+      return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #E8E4E0;border-left:4px solid '+col+';border-radius:6px;margin-bottom:6px;flex-wrap:wrap">'
+        +'<div style="flex:1;min-width:150px"><strong>'+r.name+'</strong> · '+(r.filiale||'')+' · <span style="color:'+col+';font-weight:600">'+lbl+'</span><br><span style="font-size:13px;color:#6B6860">'+fmtDate(r.from)+' – '+fmtDate(r.to)+'</span></div>'
+        +'<button class="btn btn-sm" onclick="fbRevert(\''+r.docId+'\')" title="zurück auf Wartend">↩</button>'
+        +'<button class="btn btn-sm" style="color:#C0392B;border-color:#C0392B" onclick="fbDelete(\''+r.docId+'\',\''+(r.name||'').replace(/'/g,'')+'\')">🗑 Löschen</button>'
+        +'</div>';
+    }).join('');
+  }
+  list.innerHTML=html;
 }
+function fbFind(docId){ return fbPending.concat(fbDecided).find(function(r){return r.docId===docId;}); }
 function fbApprove(docId){
-  if(!fbDb) return;
-  fbDb.collection('urlaub').doc(docId).update({status:'approved', decidedAt:new Date().toISOString()})
+  var r=fbFind(docId); if(!r||!r.ref) return;
+  r.ref.update({status:'approved', decidedAt:new Date().toISOString()})
     .then(function(){ toast('✓ Urlaub genehmigt'); }).catch(function(e){ alert('Fehler: '+e.message); });
 }
 function fbReject(docId){
-  if(!fbDb) return;
+  var r=fbFind(docId); if(!r||!r.ref) return;
   if(!confirm('Antrag wirklich ablehnen?')) return;
-  fbDb.collection('urlaub').doc(docId).update({status:'rejected', decidedAt:new Date().toISOString()})
+  r.ref.update({status:'rejected', decidedAt:new Date().toISOString()})
     .then(function(){ toast('✗ Antrag abgelehnt'); }).catch(function(e){ alert('Fehler: '+e.message); });
+}
+function fbDelete(docId, name){
+  var r=fbFind(docId); if(!r||!r.ref) return;
+  if(!confirm('Urlaub von '+(name||'?')+' wirklich löschen? Der Eintrag verschwindet auch beim Mitarbeiter.')) return;
+  r.ref.delete()
+    .then(function(){ toast('🗑 Eintrag gelöscht'); }).catch(function(e){ alert('Fehler: '+e.message); });
+}
+function fbRevert(docId){
+  var r=fbFind(docId); if(!r||!r.ref) return;
+  r.ref.update({status:'pending', decidedAt:null})
+    .then(function(){ toast('↩ Zurück auf Wartend'); }).catch(function(e){ alert('Fehler: '+e.message); });
 }
 
 // ════════ MITARBEITER-ANTRAG IMPORT (Urlaubsantrag fertig unterschreiben) ════════
