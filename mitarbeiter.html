@@ -29,7 +29,9 @@ header .hbtn{background:rgba(255,255,255,.18);border:none;color:#fff;font-size:1
 
 /* NAV (iOS-Style) */
 .nav-wrap{background:var(--surf);border-bottom:1px solid var(--brd);padding:12px;margin-bottom:18px;}
-.nav-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.nav-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.nw-dot{position:absolute;top:8px;right:14px;width:10px;height:10px;border-radius:50%;background:#E67E22;display:none;}
+.app-ico{position:relative;}
 .app-ico{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:14px 6px 11px;border-radius:18px;border:none;background:#EEEAE5;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;user-select:none;width:100%;}
 .app-ico:active{transform:scale(0.92);}
 .app-ico.active{background:var(--red);box-shadow:0 4px 12px rgba(197,26,54,.3);}
@@ -147,12 +149,19 @@ header{padding-top:max(14px,env(safe-area-inset-top));}
 </style>
 </head>
 <body>
+<div id="js-err-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#C0392B;color:#fff;font:600 13px/1.5 system-ui;padding:10px 14px"></div>
+<script>
+window.onerror=function(msg,src,line){
+  try{var b=document.getElementById('js-err-banner');b.style.display='block';
+  b.textContent='⚠️ Fehler: '+msg+' ('+(src||'').split('/').pop()+':'+line+')';}catch(e){}
+};
+</script>
 
 <!-- ══════════ LOGIN GATE ══════════ -->
 <div id="login-screen" class="login-screen">
   <div class="login-card">
     <div class="em">🍣</div>
-    <h1>Mitarbeiter-Portal</h1>
+    <h1>Mitarbeiter-Portal <span style="font-size:11px;color:var(--mut);font-weight:400">v6.2</span></h1>
     <p>Sushi Circle · Bitte mit deiner Personalnummer anmelden.</p>
     <label>Personalnummer</label>
     <input type="tel" id="login-pid" inputmode="numeric" placeholder="z.B. 1042" autocomplete="off">
@@ -180,6 +189,7 @@ header{padding-top:max(14px,env(safe-area-inset-top));}
     <button class="app-ico active" id="ico-dp" onclick="maNav('dp')"><span class="ico-e">📅</span><span class="ico-l">Dienstplan</span></button>
     <button class="app-ico" id="ico-ul" onclick="maNav('ul')"><span class="ico-e">🌴</span><span class="ico-l">Urlaub</span></button>
     <button class="app-ico" id="ico-kr" onclick="maNav('kr')"><span class="ico-e">🏥</span><span class="ico-l">Krank&shy;meldung</span></button>
+    <button class="app-ico" id="ico-nw" onclick="maNav('nw')"><span class="nw-dot" id="nw-dot"></span><span class="ico-e">📢</span><span class="ico-l">Infos</span></button>
   </div>
 </div>
 
@@ -282,6 +292,14 @@ header{padding-top:max(14px,env(safe-area-inset-top));}
     </div>
   </div>
 
+  <!-- ── INFOS / MITTEILUNGEN ── -->
+  <div class="panel" id="p-nw">
+    <div class="card">
+      <div class="card-title">📢 Infos vom Gebietsleiter</div>
+      <div id="nw-feed"><div style="font-size:13px;color:var(--mut)">Noch keine Mitteilungen.</div></div>
+    </div>
+  </div>
+
 </div>
 </div>
 
@@ -302,6 +320,7 @@ header{padding-top:max(14px,env(safe-area-inset-top));}
 
 <div class="toast" id="toast"></div>
 
+<script src="fb-config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -311,16 +330,9 @@ header{padding-top:max(14px,env(safe-area-inset-top));}
    FIREBASE (Realtime Urlaub).  Konfiguration unten einfügen.
    Leer lassen → App läuft im Offline-Modus (Bundle/lokal).
    ════════════════════════════════════════════════ */
-const FB_CONFIG = {
-  apiKey: "AIzaSyBzuk8yEBbBf6Thp0Lu76pXarw2IkHJXNw",
-  authDomain: "glsc-eabb6.firebaseapp.com",
-  projectId: "glsc-eabb6",
-  storageBucket: "glsc-eabb6.firebasestorage.app",
-  messagingSenderId: "565990660261",
-  appId: "1:565990660261:web:5607161b999f1c88a9954c",
-  measurementId: "G-ZT96K2D4TQ"
-};
+var FB_CONFIG = (typeof window!=='undefined' && window.FB_CONFIG) ? window.FB_CONFIG : null;
 var fbReady=false, fbDb=null, fbUnsub=null, maFbUrlaub=[], maFbPlans={};
+var maNews=[], maNewsUnsub=null;
 function fbSlug(f){ return (''+f).replace(/\s+/g,'_').toLowerCase(); }
 function fbEnabled(){ return !!(FB_CONFIG && FB_CONFIG.apiKey && typeof firebase!=='undefined'); }
 function fbInit(onReady){
@@ -353,6 +365,38 @@ function maStartFbUrlaub(sess){
       maFbUrlaub = maMapUrlaubSnapshot(raw);
       maRenderCal(); maRenderUlList();
     }, function(err){ console.warn('FB listen', err); });
+}
+function maStartFbNews(){
+  if(!fbReady||!fbDb) return;
+  if(maNewsUnsub){ try{maNewsUnsub();}catch(e){} }
+  maNewsUnsub=fbDb.collection('news').onSnapshot(function(snap){
+    var raw=[]; snap.forEach(function(doc){ raw.push({id:doc.id, data:doc.data()}); });
+    maNews=raw.map(function(d){ return {id:d.id, text:(d.data||{}).text||'', img:(d.data||{}).img||null, created:(d.data||{}).created||''}; })
+      .sort(function(a,b){ return a.created<b.created?1:-1; });
+    maRenderNews(); maNewsDot();
+  }, function(err){ console.warn('FB news', err); });
+}
+function maRenderNews(){
+  var box=document.getElementById('nw-feed'); if(!box) return;
+  if(!maNews.length){ box.innerHTML='<div style="font-size:13px;color:var(--mut)">Noch keine Mitteilungen.</div>'; return; }
+  box.innerHTML=maNews.map(function(n){
+    var dt=n.created?new Date(n.created).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'}):'';
+    return '<div style="border:1px solid var(--brd);border-radius:var(--rs);padding:14px;margin-bottom:12px;background:var(--surf)">'
+      +'<div style="font-size:12px;color:var(--mut);font-weight:600;margin-bottom:6px">'+dt+'</div>'
+      +(n.text?'<div style="font-size:15px;line-height:1.6;white-space:pre-wrap">'+n.text.replace(/</g,'&lt;')+'</div>':'')
+      +(n.img?'<img src="'+n.img+'" style="max-width:100%;border-radius:6px;margin-top:10px">':'')
+      +'</div>';
+  }).join('');
+}
+function maNewsDot(){
+  var dot=document.getElementById('nw-dot'); if(!dot) return;
+  var seen=localStorage.getItem('ma_news_seen')||'';
+  var newest=maNews.length?maNews[0].created:'';
+  dot.style.display=(newest && newest>seen)?'block':'none';
+}
+function maNewsMarkRead(){
+  if(maNews.length) localStorage.setItem('ma_news_seen', maNews[0].created);
+  var dot=document.getElementById('nw-dot'); if(dot) dot.style.display='none';
 }
 /* ════════════════════════════════════════════════
    STORAGE
@@ -486,16 +530,17 @@ function maShowApp(sess){
   maInitSig();
   // Firebase realtime (falls konfiguriert)
   if(fbEnabled()){
-    if(fbReady) maStartFbUrlaub(sess);
-    else fbInit(function(){ maStartFbUrlaub(sess); });
+    if(fbReady){ maStartFbUrlaub(sess); maStartFbNews(); }
+    else fbInit(function(){ maStartFbUrlaub(sess); maStartFbNews(); });
   }
 }
 function maNav(t){
-  ['dp','ul','kr'].forEach(function(x){
+  ['dp','ul','kr','nw'].forEach(function(x){
     document.getElementById('p-'+x).classList.toggle('active',x===t);
     document.getElementById('ico-'+x).classList.toggle('active',x===t);
   });
   if(t==='ul'){maRenderCal();maRenderUlList();}
+  if(t==='nw'){maNewsMarkRead();}
 }
 
 /* ════════════════════════════════════════════════

@@ -230,11 +230,18 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 </style>
 </head>
 <body>
+<div id="js-err-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:9999;background:#C0392B;color:#fff;font:600 13px/1.5 system-ui;padding:10px 14px"></div>
+<script>
+window.onerror=function(msg,src,line){
+  try{var b=document.getElementById('js-err-banner');b.style.display='block';
+  b.textContent='⚠️ Fehler: '+msg+' ('+(src||'').split('/').pop()+':'+line+')';}catch(e){}
+};
+</script>
 
 <header>
   <div>
     <div class="logo">🍣 HR Assistant</div>
-    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v6.1</span></div>
+    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v6.2</span></div>
   </div>
 </header>
 
@@ -989,6 +996,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 
 <div class="toast" id="toast">✓ Kopiert!</div>
 
+<script src="fb-config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -3452,15 +3460,7 @@ checkFirstStart();
   renderSavedEmails();
   renderEmpNotif();
 // ════════ FIREBASE (Realtime Urlaub-Freigabe) ════════
-const FB_CONFIG = {
-  apiKey: "AIzaSyBzuk8yEBbBf6Thp0Lu76pXarw2IkHJXNw",
-  authDomain: "glsc-eabb6.firebaseapp.com",
-  projectId: "glsc-eabb6",
-  storageBucket: "glsc-eabb6.firebasestorage.app",
-  messagingSenderId: "565990660261",
-  appId: "1:565990660261:web:5607161b999f1c88a9954c",
-  measurementId: "G-ZT96K2D4TQ""
-};
+var FB_CONFIG = (typeof window!=='undefined' && window.FB_CONFIG) ? window.FB_CONFIG : null;
 var fbReady=false, fbDb=null, fbPending=[], fbDecided=[], fbManager=false;
 function fbEnabled(){ return !!(FB_CONFIG && FB_CONFIG.apiKey && typeof firebase!=='undefined'); }
 function fbPendingCardShow(msg, color){
