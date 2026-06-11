@@ -165,7 +165,7 @@ window.onerror=function(msg,src,line){
 <div id="login-screen" class="login-screen">
   <div class="login-card">
     <div class="em">🍣</div>
-    <h1>Mitarbeiter-Portal <span style="font-size:11px;color:var(--mut);font-weight:400">v6.5</span></h1>
+    <h1>Mitarbeiter-Portal <span style="font-size:11px;color:var(--mut);font-weight:400">v6.6</span></h1>
     <p data-i18n="login_sub">Sushi Circle · Bitte mit deiner Personalnummer anmelden.</p>
     <div class="lang-row">
       <button class="lang-btn" data-lang="de" onclick="setLang('de')">🇩🇪 DE</button>
@@ -451,9 +451,9 @@ de:{_name:'Deutsch',
  t_dates:'Bitte Von und Bis wählen.',t_sign:'Bitte als Arbeitnehmer unterschreiben.',t_pdf_ok:'✓ PDF gespeichert',
  t_attach:'✓ PDF gespeichert – bitte in WhatsApp anhängen 📎',t_packet:'✓ Antrag-Datei gespeichert – in WhatsApp anhängen 📎',
  img_fail:'Formular-Bild konnte nicht geladen werden.',t_err:'Fehler beim Erstellen: ',
- kr_title:'🏥 Krankmeldung',kr_info:'Krankheitstage eintragen, Foto der Krankschreibung (gelber Schein) hochladen und per WhatsApp an den Gebietsleiter senden.',
+ kr_title:'🏥 Krankmeldung',kr_info:'Krankheitstage eintragen, Foto der Krankschreibung (gelber Schein) hochladen — die Meldung geht direkt an den Gebietsleiter.',kr_sent:'✓ Krankmeldung an den Gebietsleiter gesendet. Gute Besserung!',kr_fail:'✗ Senden fehlgeschlagen: ',
  lbl_kr_von:'Krank von',lbl_kr_bis:'Voraussichtlich bis',lbl_foto:'Krankschreibung (Foto)',drop_txt:'Foto hochladen oder Kamera öffnen',
- btn_kr:'📲 Krankmeldung per WhatsApp senden',
+ btn_kr:'📤 Krankmeldung senden',
  kr_hint:'ℹ️ WhatsApp öffnet sich mit der Nachricht. Das Foto wird im Gerät gespeichert/angezeigt — bitte in WhatsApp noch anhängen (📎).',
  t_kr_from:'Bitte mindestens das Startdatum wählen.',t_wa:'✓ WhatsApp geöffnet',t_wa_attach:' – Foto noch anhängen 📎',
  nw_title:'📢 Infos vom Gebietsleiter',nw_none:'Noch keine Mitteilungen.',
@@ -489,9 +489,9 @@ vi:{_name:'Tiếng Việt',
  t_dates:'Vui lòng chọn Từ ngày và Đến ngày.',t_sign:'Vui lòng ký tên.',t_pdf_ok:'✓ Đã lưu PDF',
  t_attach:'✓ Đã lưu PDF – nhớ đính kèm vào WhatsApp 📎',t_packet:'✓ Đã lưu file đơn – đính kèm vào WhatsApp 📎',
  img_fail:'Không tải được mẫu đơn.',t_err:'Lỗi khi tạo: ',
- kr_title:'🏥 Báo ốm',kr_info:'Nhập ngày ốm, tải ảnh giấy ốm (gelber Schein) và gửi WhatsApp cho Gebietsleiter.',
+ kr_title:'🏥 Báo ốm',kr_info:'Nhập ngày ốm, tải ảnh giấy ốm (gelber Schein) — đơn được gửi thẳng đến Gebietsleiter.',kr_sent:'✓ Đã gửi báo ốm đến Gebietsleiter. Chúc mau khoẻ!',kr_fail:'✗ Gửi thất bại: ',
  lbl_kr_von:'Ốm từ ngày',lbl_kr_bis:'Dự kiến đến',lbl_foto:'Giấy ốm (ảnh)',drop_txt:'Tải ảnh lên hoặc mở camera',
- btn_kr:'📲 Gửi báo ốm qua WhatsApp',
+ btn_kr:'📤 Gửi báo ốm',
  kr_hint:'ℹ️ WhatsApp sẽ mở với tin nhắn soạn sẵn. Ảnh đã lưu trong máy — nhớ đính kèm trong WhatsApp (📎).',
  t_kr_from:'Vui lòng chọn ít nhất ngày bắt đầu.',t_wa:'✓ Đã mở WhatsApp',t_wa_attach:' – nhớ đính kèm ảnh 📎',
  nw_title:'📢 Thông báo từ Gebietsleiter',nw_none:'Chưa có thông báo nào.',
@@ -527,9 +527,9 @@ en:{_name:'English',
  t_dates:'Please choose From and To.',t_sign:'Please sign as employee.',t_pdf_ok:'✓ PDF saved',
  t_attach:'✓ PDF saved – attach it in WhatsApp 📎',t_packet:'✓ Request file saved – attach it in WhatsApp 📎',
  img_fail:'Form image could not be loaded.',t_err:'Error creating: ',
- kr_title:'🏥 Sick report',kr_info:'Enter sick days, upload a photo of the sick note (gelber Schein) and send it via WhatsApp to the area manager.',
+ kr_title:'🏥 Sick report',kr_info:'Enter sick days and upload a photo of the sick note (gelber Schein) — the report goes directly to the area manager.',kr_sent:'✓ Sick report sent to the area manager. Get well soon!',kr_fail:'✗ Sending failed: ',
  lbl_kr_von:'Sick from',lbl_kr_bis:'Expected until',lbl_foto:'Sick note (photo)',drop_txt:'Upload photo or open camera',
- btn_kr:'📲 Send sick report via WhatsApp',
+ btn_kr:'📤 Send sick report',
  kr_hint:'ℹ️ WhatsApp opens with the message. The photo is saved on your device — please attach it in WhatsApp (📎).',
  t_kr_from:'Please choose at least the start date.',t_wa:'✓ WhatsApp opened',t_wa_attach:' – attach the photo 📎',
  nw_title:'📢 News from the area manager',nw_none:'No news yet.',
@@ -565,9 +565,9 @@ th:{_name:'ไทย',
  t_dates:'กรุณาเลือกวันเริ่มและวันสิ้นสุด',t_sign:'กรุณาเซ็นชื่อ',t_pdf_ok:'✓ บันทึก PDF แล้ว',
  t_attach:'✓ บันทึก PDF แล้ว – แนบใน WhatsApp 📎',t_packet:'✓ บันทึกไฟล์คำขอแล้ว – แนบใน WhatsApp 📎',
  img_fail:'โหลดแบบฟอร์มไม่สำเร็จ',t_err:'เกิดข้อผิดพลาด: ',
- kr_title:'🏥 แจ้งป่วย',kr_info:'กรอกวันป่วย อัปโหลดรูปใบรับรองแพทย์ (gelber Schein) และส่งทาง WhatsApp ให้ผู้จัดการเขต',
+ kr_title:'🏥 แจ้งป่วย',kr_info:'กรอกวันป่วย อัปโหลดรูปใบรับรองแพทย์ (gelber Schein) — รายงานจะส่งตรงถึงผู้จัดการเขต',kr_sent:'✓ ส่งแจ้งป่วยถึงผู้จัดการแล้ว หายไวๆ นะ!',kr_fail:'✗ ส่งไม่สำเร็จ: ',
  lbl_kr_von:'ป่วยตั้งแต่',lbl_kr_bis:'คาดว่าถึง',lbl_foto:'ใบรับรองแพทย์ (รูป)',drop_txt:'อัปโหลดรูปหรือเปิดกล้อง',
- btn_kr:'📲 ส่งแจ้งป่วยทาง WhatsApp',
+ btn_kr:'📤 ส่งแจ้งป่วย',
  kr_hint:'ℹ️ WhatsApp จะเปิดพร้อมข้อความ รูปถูกบันทึกในเครื่อง — กรุณาแนบใน WhatsApp (📎)',
  t_kr_from:'กรุณาเลือกวันเริ่มอย่างน้อย',t_wa:'✓ เปิด WhatsApp แล้ว',t_wa_attach:' – อย่าลืมแนบรูป 📎',
  nw_title:'📢 ข่าวจากผู้จัดการเขต',nw_none:'ยังไม่มีประกาศ',
@@ -1060,13 +1060,42 @@ var maKrImg=null;
 function maKrPhoto(ev){
   var f=ev.target.files[0];if(!f)return;
   var r=new FileReader();
-  r.onload=function(e){maKrImg=e.target.result;var p=document.getElementById('kr-prev');p.src=maKrImg;p.style.display='block';document.getElementById('kr-drop').classList.add('ok');document.getElementById('kr-hint').style.display='block';};
+  r.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var maxW=1100, sc=Math.min(1, maxW/img.width);
+      var cv=document.createElement('canvas');
+      cv.width=Math.round(img.width*sc); cv.height=Math.round(img.height*sc);
+      cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+      maKrImg=cv.toDataURL('image/jpeg',0.75);
+      if(maKrImg.length>900000){ // zu groß → stärker komprimieren
+        maKrImg=cv.toDataURL('image/jpeg',0.5);
+      }
+      var p=document.getElementById('kr-prev');p.src=maKrImg;p.style.display='block';
+      document.getElementById('kr-drop').classList.add('ok');
+      if(!fbReady)document.getElementById('kr-hint').style.display='block';
+    };
+    img.src=e.target.result;
+  };
   r.readAsDataURL(f);
 }
 function maSendKrank(){
   var sess=maSession();if(!sess)return;
   var from=document.getElementById('kr-from').value,to=document.getElementById('kr-to').value;
   if(!from){toast(t('t_kr_from'),true);return;}
+  if(fbReady&&fbDb){
+    fbDb.collection('krank').add({
+      empId:''+sess.id, name:sess.name, filiale:sess.filiale||'',
+      from:from, to:(to||''), img:(maKrImg||null), created:new Date().toISOString()
+    }).then(function(){
+      toast(t('kr_sent'));
+      document.getElementById('kr-from').value='';document.getElementById('kr-to').value='';
+      maKrImg=null;var p=document.getElementById('kr-prev');p.style.display='none';
+      document.getElementById('kr-drop').classList.remove('ok');
+      document.getElementById('kr-hint').style.display='none';
+    }).catch(function(e){ toast(t('kr_fail')+e.message,true); });
+    return;
+  }
   var bisTxt=to?(' bis '+maFmtDE(to)):'';
   var wa=maWaNumber();
   var msg='🏥 *Krankmeldung*\n\nName: '+sess.name+'\nPersonalnr.: '+sess.id+'\nFiliale: '+sess.filiale+'\nKrank ab: '+maFmtDE(from)+bisTxt+'\n\n'+(maKrImg?'Krankschreibung im Anhang (bitte Foto anhängen 📎).':'Krankschreibung folgt.');

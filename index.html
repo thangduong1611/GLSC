@@ -241,7 +241,7 @@ window.onerror=function(msg,src,line){
 <header>
   <div>
     <div class="logo">🍣 HR Assistant</div>
-    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v6.4</span></div>
+    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v6.6</span></div>
   </div>
 </header>
 
@@ -283,6 +283,11 @@ window.onerror=function(msg,src,line){
 
 <!-- ===== KRANKMELDUNG ===== -->
 <div id="panel-krank" class="panel active">
+  <div class="card" id="kr-live-card" style="display:none">
+    <div class="card-title">📨 Krankmeldungen (Live) <span class="badge badge-red" id="kr-live-count">0</span></div>
+    <div class="info">Krankmeldungen aus der Mitarbeiter-App erscheinen hier sofort — inkl. Foto der Krankschreibung. Nach Bearbeitung bitte löschen (Gesundheitsdaten).</div>
+    <div id="kr-live-list"></div>
+  </div>
   <div class="card">
     <div class="card-title">Krankmeldung weiterleiten <span class="badge badge-amb">Kein Ký erforderlich</span></div>
     <div class="info">Formular ausfüllen → E-Mail-Entwurf erscheint automatisch → In Mail-App öffnen und Attest anhängen.</div>
@@ -3363,7 +3368,7 @@ function fbBootStatus(){
     fbPendingCardShow('⚠️ Firebase-Bibliothek nicht geladen. Internet/Adblocker prüfen und Seite neu laden.', '#C0392B');
     return;
   }
-  fbInit(function(){ fbStartPending(); nwStartListener(); });
+  fbInit(function(){ fbStartPending(); nwStartListener(); krStartListener(); });
 }
 function fbSlug(f){ return (''+f).replace(/\s+/g,'_').toLowerCase(); }
 function fbInit(onReady){
@@ -3498,6 +3503,55 @@ function fbRevert(docId){
   var r=fbFind(docId); if(!r||!r.ref) return;
   r.ref.update({status:'pending', decidedAt:null})
     .then(function(){ toast('↩ Zurück auf Wartend'); }).catch(function(e){ alert('Fehler: '+e.message); });
+}
+
+// ════════ KRANKMELDUNGEN (Live aus Mitarbeiter-App) ════════
+var fbKrank=[];
+function krStartListener(){
+  if(!fbReady||!fbDb) return;
+  fbDb.collection('krank').onSnapshot(function(snap){
+    var raw=[]; snap.forEach(function(doc){ raw.push({docId:doc.id, ref:doc.ref, d:doc.data()||{}}); });
+    fbKrank=raw.sort(function(a,b){ return (a.d.created||'')<(b.d.created||'')?1:-1; });
+    krRender();
+  }, function(err){ console.warn('FB krank', err); });
+}
+function krRender(){
+  var card=document.getElementById('kr-live-card'), list=document.getElementById('kr-live-list'), cnt=document.getElementById('kr-live-count');
+  if(!card||!list) return;
+  card.style.display='block';
+  if(cnt) cnt.textContent=fbKrank.length;
+  if(!fbKrank.length){ list.innerHTML='<div style="color:#6B6860;font-size:13px;padding:6px 0">Keine offenen Krankmeldungen.</div>'; return; }
+  list.innerHTML=fbKrank.map(function(k){
+    var d=k.d;
+    var dt=d.created?new Date(d.created).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+    return '<div style="display:flex;gap:12px;align-items:flex-start;padding:10px;border:1px solid #E8E4E0;border-left:4px solid #C0392B;border-radius:6px;margin-bottom:8px;flex-wrap:wrap">'
+      +(d.img?'<img src="'+d.img+'" style="width:84px;height:84px;object-fit:cover;border-radius:6px;border:1px solid #E8E4E0;cursor:pointer" onclick="krOpenImg(\''+k.docId+'\')" title="Foto ansehen">':'<div style="width:84px;height:84px;display:flex;align-items:center;justify-content:center;background:#F5F3F0;border-radius:6px;font-size:11px;color:#6B6860;text-align:center">kein<br>Foto</div>')
+      +'<div style="flex:1;min-width:170px"><strong>'+(d.name||'?')+'</strong> · '+(d.filiale||'')+'<br>'
+      +'<span style="font-size:13px;color:#6B6860">Krank: '+fmtDate(d.from)+(d.to?' – '+fmtDate(d.to):'')+'</span><br>'
+      +'<span style="font-size:12px;color:#6B6860">'+dt+'</span></div>'
+      +'<div style="display:flex;flex-direction:column;gap:6px">'
+      +(d.img?'<button class="btn btn-sm" onclick="krDownload(\''+k.docId+'\')">💾 Foto</button>':'')
+      +'<button class="btn btn-sm" style="color:#C0392B;border-color:#C0392B" onclick="krDelete(\''+k.docId+'\')">🗑 Erledigt</button>'
+      +'</div></div>';
+  }).join('');
+}
+function krFind(id){ return fbKrank.find(function(x){return x.docId===id;}); }
+function krOpenImg(id){
+  var k=krFind(id); if(!k||!k.d.img) return;
+  var w=window.open('','_blank');
+  if(w){ w.document.write('<title>Krankschreibung '+(k.d.name||'')+'</title><img src="'+k.d.img+'" style="max-width:100%">'); }
+}
+function krDownload(id){
+  var k=krFind(id); if(!k||!k.d.img) return;
+  var a=document.createElement('a');
+  a.href=k.d.img;
+  a.download='Krankschreibung_'+((k.d.name||'x').replace(/\s+/g,'_'))+'_'+(k.d.from||'')+'.jpg';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+function krDelete(id){
+  var k=krFind(id); if(!k) return;
+  if(!confirm('Krankmeldung von '+(k.d.name||'?')+' als erledigt löschen?')) return;
+  k.ref.delete().then(function(){ toast('🗑 Gelöscht'); }).catch(function(e){ alert('Fehler: '+e.message); });
 }
 
 // ════════ FILIAL-VERTEILUNG (Haupt + Zweitfilialen) ════════
