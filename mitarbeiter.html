@@ -165,7 +165,7 @@ window.onerror=function(msg,src,line){
 <div id="login-screen" class="login-screen">
   <div class="login-card">
     <div class="em">🍣</div>
-    <h1>Mitarbeiter-Portal <span style="font-size:11px;color:var(--mut);font-weight:400">v6.4</span></h1>
+    <h1>Mitarbeiter-Portal <span style="font-size:11px;color:var(--mut);font-weight:400">v6.5</span></h1>
     <p data-i18n="login_sub">Sushi Circle · Bitte mit deiner Personalnummer anmelden.</p>
     <div class="lang-row">
       <button class="lang-btn" data-lang="de" onclick="setLang('de')">🇩🇪 DE</button>
@@ -601,6 +601,23 @@ function applyLang(){
     if(typeof maRenderNews==='function') maRenderNews();
   }
 }
+// Holt das eigene Profil (Filiale/Zweitfilialen) frisch aus der Cloud und aktualisiert Session + Anzeige
+function maRefreshProfile(){
+  var sess=maSession();
+  if(!sess||!fbReady||!fbDb) return;
+  fbDb.collection('emps').doc(''+sess.id).get().then(function(doc){
+    if(!doc.exists) return;
+    var d=doc.data()||{};
+    var filialeChanged = (d.filiale||'')!==(sess.filiale||'');
+    sess.name=d.name||sess.name;
+    sess.filiale=d.filiale||'';
+    sess.zweit=d.zweit||[];
+    maSetSession(sess);
+    maAllocInfo(sess);
+    document.getElementById('hdr-sub').textContent=sess.name+' · '+(sess.filiale||t('no_fil'));
+    if(filialeChanged){ maFbPlans={}; maStartFbUrlaub(sess); maRenderDP(); maRenderCal(); maRenderUlList(); }
+  }).catch(function(e){ console.warn('profile refresh', e); });
+}
 function maAllocInfo(sess){
   var el=document.getElementById('dp-filiale-info'); if(!el) return;
   var html='🏪 <strong>'+t('alloc_main')+':</strong> '+(sess.filiale||'—');
@@ -677,7 +694,7 @@ function maParseEmpCSV(text){
    ════════════════════════════════════════════════ */
 function maInit(){
   var sess=maSession();
-  if(sess&&maLoadBundle()){maShowApp(sess);}
+  if(sess&&(maLoadBundle()||fbEnabled())){maShowApp(sess);}
   else{maShowLogin();}
 }
 function maShowLogin(){
@@ -729,8 +746,8 @@ function maShowApp(sess){
   maInitSig();
   // Firebase realtime (falls konfiguriert)
   if(fbEnabled()){
-    if(fbReady){ maStartFbUrlaub(sess); maStartFbNews(); }
-    else fbInit(function(){ maStartFbUrlaub(sess); maStartFbNews(); });
+    if(fbReady){ maStartFbUrlaub(sess); maStartFbNews(); maRefreshProfile(); }
+    else fbInit(function(){ maStartFbUrlaub(sess); maStartFbNews(); maRefreshProfile(); });
   }
 }
 function maNav(t){
@@ -738,6 +755,7 @@ function maNav(t){
     document.getElementById('p-'+x).classList.toggle('active',x===t);
     document.getElementById('ico-'+x).classList.toggle('active',x===t);
   });
+  if(t==='dp'){maRefreshProfile();}
   if(t==='ul'){maRenderCal();maRenderUlList();}
   if(t==='nw'){maNewsMarkRead();}
 }
