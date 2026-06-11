@@ -142,6 +142,10 @@ canvas{display:block;max-width:100%;touch-action:none;}
 .modal h3{font-size:16px;font-weight:600;margin-bottom:14px;padding-right:28px;}
 .modal-close{position:absolute;top:14px;right:14px;background:none;border:none;font-size:22px;cursor:pointer;color:var(--mut);}
 
+.lang-row{display:flex;gap:6px;justify-content:center;margin-bottom:14px;flex-wrap:wrap;}
+.lang-btn{border:1.5px solid var(--brd);background:var(--bg);border-radius:20px;padding:6px 13px;font-size:13px;font-weight:600;cursor:pointer;}
+.lang-btn.on{background:var(--red);color:#fff;border-color:var(--red);}
+header select{background:rgba(255,255,255,.18);border:none;color:#fff;font-size:12px;padding:6px 8px;border-radius:16px;font-weight:600;}
 html{-webkit-text-size-adjust:100%;}
 body{padding-bottom:env(safe-area-inset-bottom);}
 header{padding-top:max(14px,env(safe-area-inset-top));}
@@ -161,11 +165,17 @@ window.onerror=function(msg,src,line){
 <div id="login-screen" class="login-screen">
   <div class="login-card">
     <div class="em">🍣</div>
-    <h1>Mitarbeiter-Portal <span style="font-size:11px;color:var(--mut);font-weight:400">v6.2</span></h1>
-    <p>Sushi Circle · Bitte mit deiner Personalnummer anmelden.</p>
-    <label>Personalnummer</label>
+    <h1>Mitarbeiter-Portal <span style="font-size:11px;color:var(--mut);font-weight:400">v6.4</span></h1>
+    <p data-i18n="login_sub">Sushi Circle · Bitte mit deiner Personalnummer anmelden.</p>
+    <div class="lang-row">
+      <button class="lang-btn" data-lang="de" onclick="setLang('de')">🇩🇪 DE</button>
+      <button class="lang-btn" data-lang="vi" onclick="setLang('vi')">🇻🇳 VI</button>
+      <button class="lang-btn" data-lang="en" onclick="setLang('en')">🇬🇧 EN</button>
+      <button class="lang-btn" data-lang="th" onclick="setLang('th')">🇹🇭 TH</button>
+    </div>
+    <label data-i18n="lbl_pid">Personalnummer</label>
     <input type="tel" id="login-pid" inputmode="numeric" placeholder="z.B. 1042" autocomplete="off">
-    <div style="margin-top:16px"><button class="btn btn-red" onclick="maDoLogin()">Anmelden</button></div>
+    <div style="margin-top:16px"><button class="btn btn-red" onclick="maDoLogin()" data-i18n="btn_login">Anmelden</button></div>
     <div class="login-err" id="login-err"></div>
     <div id="login-nodata" style="display:none;margin-top:18px;font-size:12px;color:var(--mut);line-height:1.6">
       ⚠️ Es sind noch keine Daten geladen.<br>Bitte den Daten-Code vom Gebietsleiter einfügen:
@@ -181,15 +191,20 @@ window.onerror=function(msg,src,line){
     <div class="logo">🍣 Mein Dienstplan</div>
     <div class="sub" id="hdr-sub">—</div>
   </div>
-  <button class="hbtn" onclick="maLogout()">Abmelden</button>
+  <div style="display:flex;gap:8px;align-items:center">
+    <select id="lang-sel" onchange="setLang(this.value)">
+      <option value="de">DE</option><option value="vi">VI</option><option value="en">EN</option><option value="th">TH</option>
+    </select>
+    <button class="hbtn" onclick="maLogout()" data-i18n="btn_logout">Abmelden</button>
+  </div>
 </header>
 
 <div class="nav-wrap">
   <div class="nav-grid">
-    <button class="app-ico active" id="ico-dp" onclick="maNav('dp')"><span class="ico-e">📅</span><span class="ico-l">Dienstplan</span></button>
-    <button class="app-ico" id="ico-ul" onclick="maNav('ul')"><span class="ico-e">🌴</span><span class="ico-l">Urlaub</span></button>
-    <button class="app-ico" id="ico-kr" onclick="maNav('kr')"><span class="ico-e">🏥</span><span class="ico-l">Krank&shy;meldung</span></button>
-    <button class="app-ico" id="ico-nw" onclick="maNav('nw')"><span class="nw-dot" id="nw-dot"></span><span class="ico-e">📢</span><span class="ico-l">Infos</span></button>
+    <button class="app-ico active" id="ico-dp" onclick="maNav('dp')"><span class="ico-e">📅</span><span class="ico-l" data-i18n="nav_dp">Dienstplan</span></button>
+    <button class="app-ico" id="ico-ul" onclick="maNav('ul')"><span class="ico-e">🌴</span><span class="ico-l" data-i18n="nav_ul">Urlaub</span></button>
+    <button class="app-ico" id="ico-kr" onclick="maNav('kr')"><span class="ico-e">🏥</span><span class="ico-l" data-i18n="nav_kr">Krankmeldung</span></button>
+    <button class="app-ico" id="ico-nw" onclick="maNav('nw')"><span class="nw-dot" id="nw-dot"></span><span class="ico-e">📢</span><span class="ico-l" data-i18n="nav_nw">Infos</span></button>
   </div>
 </div>
 
@@ -198,9 +213,9 @@ window.onerror=function(msg,src,line){
   <!-- ── DIENSTPLAN ── -->
   <div class="panel active" id="p-dp">
     <div class="card">
-      <div class="card-title">📅 Mein Dienstplan</div>
+      <div class="card-title" data-i18n="dp_title">📅 Mein Dienstplan</div>
       <div class="info" id="dp-filiale-info">—</div>
-      <label>Monat</label>
+      <label data-i18n="lbl_month">Monat</label>
       <input type="month" id="dp-month" onchange="maRenderDP()">
       <div id="dp-out" style="margin-top:14px"></div>
     </div>
@@ -209,11 +224,11 @@ window.onerror=function(msg,src,line){
   <!-- ── URLAUB ── -->
   <div class="panel" id="p-ul">
     <div class="card">
-      <div class="card-title">🌴 Urlaub – Filiale</div>
+      <div class="card-title" data-i18n="ul_title">🌴 Urlaub – Filiale</div>
       <div class="legend">
-        <span><span class="dot g"></span>Genehmigt</span>
-        <span><span class="dot o"></span>Wartet auf Freigabe</span>
-        <span><span class="dot r"></span>Abgelehnt</span>
+        <span><span class="dot g"></span><span data-i18n="leg_ok">Genehmigt</span></span>
+        <span><span class="dot o"></span><span data-i18n="leg_wait">Wartet auf Freigabe</span></span>
+        <span><span class="dot r"></span><span data-i18n="leg_no">Abgelehnt</span></span>
       </div>
       <div class="mon-nav">
         <button onclick="maCalMove(-1)">‹</button>
@@ -221,81 +236,76 @@ window.onerror=function(msg,src,line){
         <button onclick="maCalMove(1)">›</button>
       </div>
       <div class="cal-grid" id="cal-grid"></div>
-      <div style="margin-top:16px"><div style="font-size:14px;font-weight:700;margin-bottom:8px">📋 Urlaub dieses Jahr</div><div id="ul-list"></div></div>
+      <div style="margin-top:16px"><div style="font-size:14px;font-weight:700;margin-bottom:8px" data-i18n="ul_year">📋 Urlaub dieses Jahr</div><div id="ul-list"></div></div>
     </div>
 
     <div class="card">
-      <div class="card-title">✏️ Meinen Urlaub beantragen</div>
-      <div class="warnbox">
-        Regeln: mindestens <strong>10 Tage im Voraus</strong> · <strong>keine Überschneidung</strong> mit Kollegen der Filiale.
-        Nach dem Absenden wartet der Antrag auf Freigabe durch den Gebietsleiter (🟧).
-      </div>
+      <div class="card-title" data-i18n="req_title">✏️ Meinen Urlaub beantragen</div>
+      <div class="warnbox" data-i18n="rules"></div>
       <div class="row2">
-        <div><label>Von</label><input type="date" id="ul-from"></div>
-        <div><label>Bis</label><input type="date" id="ul-to"></div>
+        <div><label data-i18n="lbl_von">Von</label><input type="date" id="ul-from"></div>
+        <div><label data-i18n="lbl_bis">Bis</label><input type="date" id="ul-to"></div>
       </div>
       <div id="ul-feedback" style="margin-top:12px;font-size:14px;font-weight:600;display:none"></div>
       <div class="btn-row">
-        <button class="btn btn-red" onclick="maRequestUrlaub()">🌴 Urlaub beantragen</button>
+        <button class="btn btn-red" onclick="maRequestUrlaub()" data-i18n="btn_req">🌴 Urlaub beantragen</button>
       </div>
     </div>
 
     <div class="card">
-      <div class="card-title">📄 Urlaubsantrag (offizielles Formular)</div>
-      <p style="font-size:13px;color:var(--mut);margin-bottom:10px;line-height:1.5">Wird auf das offizielle Sushi-Circle-Formular geschrieben (identisch zur Vorlage des Gebietsleiters). Ausfüllen, im Feld <strong>Arbeitnehmer</strong> unterschreiben, dann als PDF speichern oder per WhatsApp senden. Die Unterschrift des Vorgesetzten ergänzt der Gebietsleiter.</p>
+      <div class="card-title" data-i18n="updf_title">📄 Urlaubsantrag (offizielles Formular)</div>
+      <p style="font-size:13px;color:var(--mut);margin-bottom:10px;line-height:1.5" data-i18n="updf_info"></p>
       <div class="row2">
-        <div><label>Von</label><input type="date" id="up-from"></div>
-        <div><label>Bis</label><input type="date" id="up-to"></div>
+        <div><label data-i18n="lbl_von">Von</label><input type="date" id="up-from"></div>
+        <div><label data-i18n="lbl_bis">Bis</label><input type="date" id="up-to"></div>
       </div>
       <div class="row2">
-        <div><label>Wieder im Einsatz am</label><input type="date" id="up-einsatz"></div>
-        <div><label>Rufnummer</label><input type="tel" id="up-ruf" placeholder="z.B. 0151 123456"></div>
+        <div><label data-i18n="lbl_einsatz">Wieder im Einsatz am</label><input type="date" id="up-einsatz"></div>
+        <div><label data-i18n="lbl_ruf">Rufnummer</label><input type="tel" id="up-ruf" placeholder="z.B. 0151 123456"></div>
       </div>
-      <label>Vorgesetzter (optional)</label>
+      <label data-i18n="lbl_vorg">Vorgesetzter (optional)</label>
       <input type="text" id="up-vorg" placeholder="Name des Gebietsleiters">
-      <label>Ort (für Ort/Datum)</label>
+      <label data-i18n="lbl_ort">Ort (für Ort/Datum)</label>
       <input type="text" id="up-ort" placeholder="z.B. Göttingen">
-      <label>Unterschrift Arbeitnehmer/in (mit dem Finger zeichnen)</label>
+      <label data-i18n="lbl_sig">Unterschrift Arbeitnehmer/in (mit dem Finger zeichnen)</label>
       <div class="canvas-wrap"><canvas id="sig-canvas" width="300" height="90"></canvas></div>
       <div class="btn-row" style="margin-top:8px">
-        <button class="btn" onclick="maSigClear()">↺ Unterschrift löschen</button>
+        <button class="btn" onclick="maSigClear()" data-i18n="btn_clear_sig">↺ Unterschrift löschen</button>
       </div>
       <div class="btn-row">
-        <button class="btn" onclick="maUrlaubPdf('save')">💾 PDF speichern</button>
-        <button class="btn btn-grn" onclick="maSendAntrag()">📨 An Chef senden</button>
+        <button class="btn" onclick="maUrlaubPdf('save')" data-i18n="btn_pdf">💾 PDF speichern</button>
+        <button class="btn btn-grn" onclick="maSendAntrag()" data-i18n="btn_chef">📨 An Chef senden</button>
       </div>
-      <p style="font-size:12px;color:var(--mut);margin-top:8px;line-height:1.5">„An Chef senden" lädt eine kleine Antrag-Datei (mit deiner Unterschrift) herunter und öffnet WhatsApp – die Datei dort anhängen 📎. Der Gebietsleiter unterschreibt als Arbeitgeber und reicht das fertige PDF ein.</p>
+      <p style="font-size:12px;color:var(--mut);margin-top:8px;line-height:1.5" data-i18n="chef_hint"></p>
     </div>
   </div>
 
   <!-- ── KRANKMELDUNG ── -->
   <div class="panel" id="p-kr">
     <div class="card">
-      <div class="card-title">🏥 Krankmeldung</div>
-      <div class="info">Krankheitstage eintragen, Foto der Krankschreibung (gelber Schein) hochladen und per WhatsApp an den Gebietsleiter senden.</div>
+      <div class="card-title" data-i18n="kr_title">🏥 Krankmeldung</div>
+      <div class="info" data-i18n="kr_info"></div>
       <div class="row2">
-        <div><label>Krank von</label><input type="date" id="kr-from"></div>
-        <div><label>Voraussichtlich bis</label><input type="date" id="kr-to"></div>
+        <div><label data-i18n="lbl_kr_von">Krank von</label><input type="date" id="kr-from"></div>
+        <div><label data-i18n="lbl_kr_bis">Voraussichtlich bis</label><input type="date" id="kr-to"></div>
       </div>
-      <label>Krankschreibung (Foto)</label>
+      <label data-i18n="lbl_foto">Krankschreibung (Foto)</label>
       <div class="drop" id="kr-drop" onclick="document.getElementById('kr-file').click()">
-        <div class="drop-icon">📷</div>Foto hochladen oder Kamera öffnen
+        <div class="drop-icon">📷</div><span data-i18n="drop_txt">Foto hochladen oder Kamera öffnen</span>
         <input type="file" id="kr-file" accept="image/*" capture="environment" style="display:none" onchange="maKrPhoto(event)">
       </div>
       <img id="kr-prev" class="photo-prev" style="display:none">
       <div class="btn-row">
-        <button class="btn btn-grn" onclick="maSendKrank()">📲 Krankmeldung per WhatsApp senden</button>
+        <button class="btn btn-grn" onclick="maSendKrank()" data-i18n="btn_kr">📲 Krankmeldung per WhatsApp senden</button>
       </div>
-      <p id="kr-hint" style="font-size:12px;color:var(--mut);margin-top:10px;line-height:1.5;display:none">
-        ℹ️ WhatsApp öffnet sich mit der Nachricht. Das Foto wird im Gerät gespeichert/angezeigt — bitte in WhatsApp noch anhängen (📎).
-      </p>
+      <p id="kr-hint" style="font-size:12px;color:var(--mut);margin-top:10px;line-height:1.5;display:none" data-i18n="kr_hint"></p>
     </div>
   </div>
 
   <!-- ── INFOS / MITTEILUNGEN ── -->
   <div class="panel" id="p-nw">
     <div class="card">
-      <div class="card-title">📢 Infos vom Gebietsleiter</div>
+      <div class="card-title" data-i18n="nw_title">📢 Infos vom Gebietsleiter</div>
       <div id="nw-feed"><div style="font-size:13px;color:var(--mut)">Noch keine Mitteilungen.</div></div>
     </div>
   </div>
@@ -378,7 +388,7 @@ function maStartFbNews(){
 }
 function maRenderNews(){
   var box=document.getElementById('nw-feed'); if(!box) return;
-  if(!maNews.length){ box.innerHTML='<div style="font-size:13px;color:var(--mut)">Noch keine Mitteilungen.</div>'; return; }
+  if(!maNews.length){ box.innerHTML='<div style="font-size:13px;color:var(--mut)">'+t('nw_none')+'</div>'; return; }
   box.innerHTML=maNews.map(function(n){
     var dt=n.created?new Date(n.created).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'}):'';
     return '<div style="border:1px solid var(--brd);border-radius:var(--rs);padding:14px;margin-bottom:12px;background:var(--surf)">'
@@ -408,6 +418,195 @@ function maSetSession(s){if(s)localStorage.setItem('ma_session',JSON.stringify(s
 function maLoadReqs(){try{return JSON.parse(localStorage.getItem('ma_requests')||'[]');}catch(e){return[];}}
 function maSaveReqs(r){localStorage.setItem('ma_requests',JSON.stringify(r));}
 function maWaNumber(){var b=maLoadBundle();return ((b&&b.managerWa)||localStorage.getItem('ma_wa')||'').replace(/[^0-9]/g,'');}
+
+/* ════════════════════════════════════════════════
+   I18N — DE / VI / EN / TH
+   ════════════════════════════════════════════════ */
+var I18N={
+de:{_name:'Deutsch',
+ nav_dp:'Dienstplan',nav_ul:'Urlaub',nav_kr:'Krankmeldung',nav_nw:'Infos',
+ login_sub:'Sushi Circle · Bitte mit deiner Personalnummer anmelden.',lbl_pid:'Personalnummer',btn_login:'Anmelden',
+ err_pid:'Bitte Personalnummer eingeben.',err_notfound:'Personalnummer nicht gefunden. Bitte prüfen.',err_nodata:'Keine Daten geladen. Bitte zuerst Daten laden.',err_conn:'Verbindungsfehler: ',
+ btn_logout:'Abmelden',q_logout:'Abmelden?',no_fil:'keine Filiale',
+ dp_title:'📅 Mein Dienstplan',lbl_month:'Monat',fil:'Filiale',alloc_main:'Stammfiliale',alloc_backup:'Bei Bedarf Einsatz in',
+ dp_not_pub:'Der Dienstplan für {m} wurde noch nicht veröffentlicht.',dp_loading:'⏳ Lade Dienstplan…',dp_load_err:'Fehler beim Laden: ',
+ my_shifts:'👤 Meine Schichten',whole_store:'🏪 Ganze Filiale',th_emp:'Mitarbeiter',no_entries:'Keine Einträge für dich in diesem Monat.',
+ v_frei:'Frei',v_url:'Urlaub',v_krank:'Krank',
+ ul_title:'🌴 Urlaub – Filiale',leg_ok:'Genehmigt',leg_wait:'Wartet auf Freigabe',leg_no:'Abgelehnt',st_wait:'Wartet',
+ ul_year:'📋 Urlaub dieses Jahr',ul_none:'Noch kein Urlaub für {y} eingetragen.',
+ req_title:'✏️ Meinen Urlaub beantragen',
+ rules:'Regeln: mindestens <strong>10 Tage im Voraus</strong> · <strong>keine Überschneidung</strong> mit Kollegen der Filiale. Nach dem Absenden wartet der Antrag auf Freigabe durch den Gebietsleiter (🟧).',
+ lbl_von:'Von',lbl_bis:'Bis',btn_req:'🌴 Urlaub beantragen',
+ sent_fb:'✓ Antrag gesendet (🟧 wartet auf Freigabe). Der Gebietsleiter sieht ihn sofort – die Freigabe erscheint hier automatisch.',
+ sent_off:'✓ Antrag gespeichert (🟧 wartet auf Freigabe). Bitte zur Bestätigung per WhatsApp an den Gebietsleiter senden.',
+ send_fail:'✗ Senden fehlgeschlagen: ',
+ v_pick:'Bitte Start- und Enddatum wählen.',v_invalid:'Ungültiges Datum.',v_endb4:'Das Enddatum liegt vor dem Startdatum.',
+ v_min10:'Urlaub muss mindestens 10 Tage im Voraus beantragt werden (aktuell nur {n} Tage).',
+ v_ov_self:'deinem bestehenden Urlaub',v_ov:'Überschneidung mit {who}. Bitte einen anderen Zeitraum wählen.',
+ updf_title:'📄 Urlaubsantrag (offizielles Formular)',
+ updf_info:'Wird auf das offizielle Sushi-Circle-Formular geschrieben. Ausfüllen, im Feld <strong>Arbeitnehmer</strong> unterschreiben, dann als PDF speichern oder an den Gebietsleiter senden. Die Unterschrift des Vorgesetzten ergänzt der Gebietsleiter.',
+ lbl_einsatz:'Wieder im Einsatz am',lbl_ruf:'Rufnummer',lbl_vorg:'Vorgesetzter (optional)',lbl_ort:'Ort (für Ort/Datum)',
+ lbl_sig:'Unterschrift Arbeitnehmer/in (mit dem Finger zeichnen)',btn_clear_sig:'↺ Unterschrift löschen',btn_pdf:'💾 PDF speichern',btn_chef:'📨 An Chef senden',
+ chef_hint:'„An Chef senden" lädt eine kleine Antrag-Datei (mit deiner Unterschrift) herunter und öffnet WhatsApp – die Datei dort anhängen 📎. Der Gebietsleiter unterschreibt als Arbeitgeber und reicht das fertige PDF ein.',
+ t_dates:'Bitte Von und Bis wählen.',t_sign:'Bitte als Arbeitnehmer unterschreiben.',t_pdf_ok:'✓ PDF gespeichert',
+ t_attach:'✓ PDF gespeichert – bitte in WhatsApp anhängen 📎',t_packet:'✓ Antrag-Datei gespeichert – in WhatsApp anhängen 📎',
+ img_fail:'Formular-Bild konnte nicht geladen werden.',t_err:'Fehler beim Erstellen: ',
+ kr_title:'🏥 Krankmeldung',kr_info:'Krankheitstage eintragen, Foto der Krankschreibung (gelber Schein) hochladen und per WhatsApp an den Gebietsleiter senden.',
+ lbl_kr_von:'Krank von',lbl_kr_bis:'Voraussichtlich bis',lbl_foto:'Krankschreibung (Foto)',drop_txt:'Foto hochladen oder Kamera öffnen',
+ btn_kr:'📲 Krankmeldung per WhatsApp senden',
+ kr_hint:'ℹ️ WhatsApp öffnet sich mit der Nachricht. Das Foto wird im Gerät gespeichert/angezeigt — bitte in WhatsApp noch anhängen (📎).',
+ t_kr_from:'Bitte mindestens das Startdatum wählen.',t_wa:'✓ WhatsApp geöffnet',t_wa_attach:' – Foto noch anhängen 📎',
+ nw_title:'📢 Infos vom Gebietsleiter',nw_none:'Noch keine Mitteilungen.',
+ wa_missing:'WhatsApp-Nummer fehlt. Nachricht kopieren:',
+ months:['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
+ wdS:['So','Mo','Di','Mi','Do','Fr','Sa'],
+ wdL:['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag']},
+vi:{_name:'Tiếng Việt',
+ nav_dp:'Lịch làm',nav_ul:'Nghỉ phép',nav_kr:'Báo ốm',nav_nw:'Thông báo',
+ login_sub:'Sushi Circle · Đăng nhập bằng mã số nhân viên.',lbl_pid:'Mã số nhân viên',btn_login:'Đăng nhập',
+ err_pid:'Vui lòng nhập mã số nhân viên.',err_notfound:'Không tìm thấy mã số. Vui lòng kiểm tra lại.',err_nodata:'Chưa có dữ liệu. Vui lòng tải dữ liệu trước.',err_conn:'Lỗi kết nối: ',
+ btn_logout:'Đăng xuất',q_logout:'Đăng xuất?',no_fil:'chưa có cửa hàng',
+ dp_title:'📅 Lịch làm của tôi',lbl_month:'Tháng',fil:'Cửa hàng',alloc_main:'Cửa hàng chính',alloc_backup:'Hỗ trợ khi cần tại',
+ dp_not_pub:'Lịch làm tháng {m} chưa được công bố.',dp_loading:'⏳ Đang tải lịch…',dp_load_err:'Lỗi khi tải: ',
+ my_shifts:'👤 Ca của tôi',whole_store:'🏪 Cả cửa hàng',th_emp:'Nhân viên',no_entries:'Tháng này bạn chưa có ca nào.',
+ v_frei:'Nghỉ',v_url:'Nghỉ phép',v_krank:'Ốm',
+ ul_title:'🌴 Nghỉ phép – Cửa hàng',leg_ok:'Đã duyệt',leg_wait:'Chờ duyệt',leg_no:'Từ chối',st_wait:'Chờ',
+ ul_year:'📋 Nghỉ phép năm nay',ul_none:'Chưa có nghỉ phép nào trong năm {y}.',
+ req_title:'✏️ Đăng ký nghỉ phép',
+ rules:'Quy định: đăng ký trước <strong>ít nhất 10 ngày</strong> · <strong>không trùng lịch</strong> với đồng nghiệp cùng cửa hàng. Sau khi gửi, đơn chờ Gebietsleiter duyệt (🟧).',
+ lbl_von:'Từ ngày',lbl_bis:'Đến ngày',btn_req:'🌴 Gửi đăng ký',
+ sent_fb:'✓ Đã gửi đơn (🟧 chờ duyệt). Gebietsleiter thấy ngay – kết quả sẽ tự hiện ở đây.',
+ sent_off:'✓ Đã lưu đơn (🟧 chờ duyệt). Vui lòng gửi WhatsApp cho Gebietsleiter để xác nhận.',
+ send_fail:'✗ Gửi thất bại: ',
+ v_pick:'Vui lòng chọn ngày bắt đầu và kết thúc.',v_invalid:'Ngày không hợp lệ.',v_endb4:'Ngày kết thúc trước ngày bắt đầu.',
+ v_min10:'Phải đăng ký trước ít nhất 10 ngày (hiện chỉ còn {n} ngày).',
+ v_ov_self:'lịch nghỉ hiện có của bạn',v_ov:'Trùng lịch với {who}. Vui lòng chọn thời gian khác.',
+ updf_title:'📄 Đơn nghỉ phép (mẫu chính thức)',
+ updf_info:'Đơn được điền vào mẫu chính thức của Sushi Circle. Điền thông tin, ký vào ô <strong>Arbeitnehmer</strong>, sau đó lưu PDF hoặc gửi cho Gebietsleiter. Gebietsleiter sẽ ký phần Vorgesetzter.',
+ lbl_einsatz:'Đi làm lại ngày',lbl_ruf:'Số điện thoại',lbl_vorg:'Cấp trên (tuỳ chọn)',lbl_ort:'Địa điểm (cho Ort/Datum)',
+ lbl_sig:'Chữ ký nhân viên (vẽ bằng ngón tay)',btn_clear_sig:'↺ Xoá chữ ký',btn_pdf:'💾 Lưu PDF',btn_chef:'📨 Gửi cho sếp',
+ chef_hint:'„Gửi cho sếp" tải về một file đơn nhỏ (kèm chữ ký của bạn) và mở WhatsApp – hãy đính kèm file đó 📎. Gebietsleiter sẽ ký phần Arbeitgeber và nộp bản PDF hoàn chỉnh.',
+ t_dates:'Vui lòng chọn Từ ngày và Đến ngày.',t_sign:'Vui lòng ký tên.',t_pdf_ok:'✓ Đã lưu PDF',
+ t_attach:'✓ Đã lưu PDF – nhớ đính kèm vào WhatsApp 📎',t_packet:'✓ Đã lưu file đơn – đính kèm vào WhatsApp 📎',
+ img_fail:'Không tải được mẫu đơn.',t_err:'Lỗi khi tạo: ',
+ kr_title:'🏥 Báo ốm',kr_info:'Nhập ngày ốm, tải ảnh giấy ốm (gelber Schein) và gửi WhatsApp cho Gebietsleiter.',
+ lbl_kr_von:'Ốm từ ngày',lbl_kr_bis:'Dự kiến đến',lbl_foto:'Giấy ốm (ảnh)',drop_txt:'Tải ảnh lên hoặc mở camera',
+ btn_kr:'📲 Gửi báo ốm qua WhatsApp',
+ kr_hint:'ℹ️ WhatsApp sẽ mở với tin nhắn soạn sẵn. Ảnh đã lưu trong máy — nhớ đính kèm trong WhatsApp (📎).',
+ t_kr_from:'Vui lòng chọn ít nhất ngày bắt đầu.',t_wa:'✓ Đã mở WhatsApp',t_wa_attach:' – nhớ đính kèm ảnh 📎',
+ nw_title:'📢 Thông báo từ Gebietsleiter',nw_none:'Chưa có thông báo nào.',
+ wa_missing:'Thiếu số WhatsApp. Sao chép tin nhắn:',
+ months:['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'],
+ wdS:['CN','T2','T3','T4','T5','T6','T7'],
+ wdL:['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy']},
+en:{_name:'English',
+ nav_dp:'Schedule',nav_ul:'Vacation',nav_kr:'Sick note',nav_nw:'News',
+ login_sub:'Sushi Circle · Sign in with your employee number.',lbl_pid:'Employee number',btn_login:'Sign in',
+ err_pid:'Please enter your employee number.',err_notfound:'Employee number not found. Please check.',err_nodata:'No data loaded. Please load data first.',err_conn:'Connection error: ',
+ btn_logout:'Log out',q_logout:'Log out?',no_fil:'no store',
+ dp_title:'📅 My schedule',lbl_month:'Month',fil:'Store',alloc_main:'Main store',alloc_backup:'Backup duty at',
+ dp_not_pub:'The schedule for {m} has not been published yet.',dp_loading:'⏳ Loading schedule…',dp_load_err:'Error loading: ',
+ my_shifts:'👤 My shifts',whole_store:'🏪 Whole store',th_emp:'Employee',no_entries:'No entries for you this month.',
+ v_frei:'Off',v_url:'Vacation',v_krank:'Sick',
+ ul_title:'🌴 Vacation – Store',leg_ok:'Approved',leg_wait:'Pending approval',leg_no:'Rejected',st_wait:'Pending',
+ ul_year:'📋 Vacation this year',ul_none:'No vacation entered for {y} yet.',
+ req_title:'✏️ Request my vacation',
+ rules:'Rules: at least <strong>10 days in advance</strong> · <strong>no overlap</strong> with colleagues of your store. After sending, the request waits for approval by the area manager (🟧).',
+ lbl_von:'From',lbl_bis:'To',btn_req:'🌴 Request vacation',
+ sent_fb:'✓ Request sent (🟧 pending). The area manager sees it instantly – the decision appears here automatically.',
+ sent_off:'✓ Request saved (🟧 pending). Please confirm via WhatsApp to the area manager.',
+ send_fail:'✗ Sending failed: ',
+ v_pick:'Please choose start and end date.',v_invalid:'Invalid date.',v_endb4:'End date is before start date.',
+ v_min10:'Vacation must be requested at least 10 days in advance (currently only {n} days).',
+ v_ov_self:'your existing vacation',v_ov:'Overlap with {who}. Please choose another period.',
+ updf_title:'📄 Vacation request (official form)',
+ updf_info:'Written onto the official Sushi Circle form. Fill in, sign in the <strong>Arbeitnehmer</strong> field, then save as PDF or send to the area manager. The supervisor signature is added by the area manager.',
+ lbl_einsatz:'Back at work on',lbl_ruf:'Phone number',lbl_vorg:'Supervisor (optional)',lbl_ort:'Place (for place/date)',
+ lbl_sig:'Employee signature (draw with your finger)',btn_clear_sig:'↺ Clear signature',btn_pdf:'💾 Save PDF',btn_chef:'📨 Send to manager',
+ chef_hint:'"Send to manager" downloads a small request file (with your signature) and opens WhatsApp – attach the file there 📎. The area manager countersigns and submits the final PDF.',
+ t_dates:'Please choose From and To.',t_sign:'Please sign as employee.',t_pdf_ok:'✓ PDF saved',
+ t_attach:'✓ PDF saved – attach it in WhatsApp 📎',t_packet:'✓ Request file saved – attach it in WhatsApp 📎',
+ img_fail:'Form image could not be loaded.',t_err:'Error creating: ',
+ kr_title:'🏥 Sick report',kr_info:'Enter sick days, upload a photo of the sick note (gelber Schein) and send it via WhatsApp to the area manager.',
+ lbl_kr_von:'Sick from',lbl_kr_bis:'Expected until',lbl_foto:'Sick note (photo)',drop_txt:'Upload photo or open camera',
+ btn_kr:'📲 Send sick report via WhatsApp',
+ kr_hint:'ℹ️ WhatsApp opens with the message. The photo is saved on your device — please attach it in WhatsApp (📎).',
+ t_kr_from:'Please choose at least the start date.',t_wa:'✓ WhatsApp opened',t_wa_attach:' – attach the photo 📎',
+ nw_title:'📢 News from the area manager',nw_none:'No news yet.',
+ wa_missing:'WhatsApp number missing. Copy the message:',
+ months:['January','February','March','April','May','June','July','August','September','October','November','December'],
+ wdS:['Su','Mo','Tu','We','Th','Fr','Sa'],
+ wdL:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']},
+th:{_name:'ไทย',
+ nav_dp:'ตารางงาน',nav_ul:'วันลา',nav_kr:'แจ้งป่วย',nav_nw:'ข่าวสาร',
+ login_sub:'Sushi Circle · เข้าสู่ระบบด้วยรหัสพนักงาน',lbl_pid:'รหัสพนักงาน',btn_login:'เข้าสู่ระบบ',
+ err_pid:'กรุณากรอกรหัสพนักงาน',err_notfound:'ไม่พบรหัสพนักงาน กรุณาตรวจสอบ',err_nodata:'ยังไม่มีข้อมูล กรุณาโหลดข้อมูลก่อน',err_conn:'การเชื่อมต่อล้มเหลว: ',
+ btn_logout:'ออกจากระบบ',q_logout:'ออกจากระบบ?',no_fil:'ไม่มีสาขา',
+ dp_title:'📅 ตารางงานของฉัน',lbl_month:'เดือน',fil:'สาขา',alloc_main:'สาขาหลัก',alloc_backup:'ช่วยงานเมื่อจำเป็นที่',
+ dp_not_pub:'ตารางงานเดือน {m} ยังไม่ประกาศ',dp_loading:'⏳ กำลังโหลด…',dp_load_err:'โหลดไม่สำเร็จ: ',
+ my_shifts:'👤 กะของฉัน',whole_store:'🏪 ทั้งสาขา',th_emp:'พนักงาน',no_entries:'เดือนนี้คุณยังไม่มีกะงาน',
+ v_frei:'หยุด',v_url:'ลาพักร้อน',v_krank:'ป่วย',
+ ul_title:'🌴 วันลา – สาขา',leg_ok:'อนุมัติแล้ว',leg_wait:'รออนุมัติ',leg_no:'ถูกปฏิเสธ',st_wait:'รอ',
+ ul_year:'📋 วันลาปีนี้',ul_none:'ยังไม่มีวันลาสำหรับปี {y}',
+ req_title:'✏️ ยื่นขอวันลา',
+ rules:'กฎ: ยื่นล่วงหน้า<strong>อย่างน้อย 10 วัน</strong> · <strong>ห้ามซ้ำ</strong>กับเพื่อนร่วมสาขา หลังส่ง คำขอจะรอผู้จัดการเขตอนุมัติ (🟧)',
+ lbl_von:'ตั้งแต่',lbl_bis:'ถึง',btn_req:'🌴 ส่งคำขอ',
+ sent_fb:'✓ ส่งคำขอแล้ว (🟧 รออนุมัติ) ผู้จัดการเห็นทันที ผลจะแสดงที่นี่อัตโนมัติ',
+ sent_off:'✓ บันทึกคำขอแล้ว (🟧 รออนุมัติ) กรุณาส่ง WhatsApp ถึงผู้จัดการเพื่อยืนยัน',
+ send_fail:'✗ ส่งไม่สำเร็จ: ',
+ v_pick:'กรุณาเลือกวันเริ่มและวันสิ้นสุด',v_invalid:'วันที่ไม่ถูกต้อง',v_endb4:'วันสิ้นสุดอยู่ก่อนวันเริ่ม',
+ v_min10:'ต้องยื่นล่วงหน้าอย่างน้อย 10 วัน (ตอนนี้เหลือเพียง {n} วัน)',
+ v_ov_self:'วันลาเดิมของคุณ',v_ov:'ซ้ำกับ {who} กรุณาเลือกช่วงอื่น',
+ updf_title:'📄 ใบลาพักร้อน (แบบฟอร์มทางการ)',
+ updf_info:'กรอกลงแบบฟอร์มทางการของ Sushi Circle กรอกข้อมูล เซ็นชื่อในช่อง <strong>Arbeitnehmer</strong> จากนั้นบันทึก PDF หรือส่งให้ผู้จัดการเขต ลายเซ็นหัวหน้าจะถูกเพิ่มโดยผู้จัดการเขต',
+ lbl_einsatz:'กลับมาทำงานวันที่',lbl_ruf:'เบอร์โทร',lbl_vorg:'หัวหน้า (ไม่บังคับ)',lbl_ort:'สถานที่ (สำหรับ Ort/Datum)',
+ lbl_sig:'ลายเซ็นพนักงาน (วาดด้วยนิ้ว)',btn_clear_sig:'↺ ลบลายเซ็น',btn_pdf:'💾 บันทึก PDF',btn_chef:'📨 ส่งให้ผู้จัดการ',
+ chef_hint:'"ส่งให้ผู้จัดการ" จะดาวน์โหลดไฟล์คำขอ (พร้อมลายเซ็นของคุณ) และเปิด WhatsApp – กรุณาแนบไฟล์ 📎 ผู้จัดการเขตจะเซ็นส่วน Arbeitgeber และยื่น PDF ฉบับสมบูรณ์',
+ t_dates:'กรุณาเลือกวันเริ่มและวันสิ้นสุด',t_sign:'กรุณาเซ็นชื่อ',t_pdf_ok:'✓ บันทึก PDF แล้ว',
+ t_attach:'✓ บันทึก PDF แล้ว – แนบใน WhatsApp 📎',t_packet:'✓ บันทึกไฟล์คำขอแล้ว – แนบใน WhatsApp 📎',
+ img_fail:'โหลดแบบฟอร์มไม่สำเร็จ',t_err:'เกิดข้อผิดพลาด: ',
+ kr_title:'🏥 แจ้งป่วย',kr_info:'กรอกวันป่วย อัปโหลดรูปใบรับรองแพทย์ (gelber Schein) และส่งทาง WhatsApp ให้ผู้จัดการเขต',
+ lbl_kr_von:'ป่วยตั้งแต่',lbl_kr_bis:'คาดว่าถึง',lbl_foto:'ใบรับรองแพทย์ (รูป)',drop_txt:'อัปโหลดรูปหรือเปิดกล้อง',
+ btn_kr:'📲 ส่งแจ้งป่วยทาง WhatsApp',
+ kr_hint:'ℹ️ WhatsApp จะเปิดพร้อมข้อความ รูปถูกบันทึกในเครื่อง — กรุณาแนบใน WhatsApp (📎)',
+ t_kr_from:'กรุณาเลือกวันเริ่มอย่างน้อย',t_wa:'✓ เปิด WhatsApp แล้ว',t_wa_attach:' – อย่าลืมแนบรูป 📎',
+ nw_title:'📢 ข่าวจากผู้จัดการเขต',nw_none:'ยังไม่มีประกาศ',
+ wa_missing:'ไม่มีเบอร์ WhatsApp คัดลอกข้อความ:',
+ months:['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'],
+ wdS:['อา','จ','อ','พ','พฤ','ศ','ส'],
+ wdL:['วันอาทิตย์','วันจันทร์','วันอังคาร','วันพุธ','วันพฤหัสบดี','วันศุกร์','วันเสาร์']}
+};
+var MA_LANG=localStorage.getItem('ma_lang')||'de';
+if(!I18N[MA_LANG])MA_LANG='de';
+function t(k,params){
+  var s=(I18N[MA_LANG]&&I18N[MA_LANG][k])||(I18N.de[k])||k;
+  if(params)Object.keys(params).forEach(function(p){s=s.split('{'+p+'}').join(params[p]);});
+  return s;
+}
+function setLang(l){
+  if(!I18N[l])return;
+  MA_LANG=l; localStorage.setItem('ma_lang',l);
+  applyLang();
+}
+function applyLang(){
+  MA_WD=I18N[MA_LANG].wdS; MA_WDF=I18N[MA_LANG].wdL; MA_MON=I18N[MA_LANG].months;
+  document.querySelectorAll('[data-i18n]').forEach(function(el){ el.innerHTML=t(el.getAttribute('data-i18n')); });
+  document.querySelectorAll('.lang-btn').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-lang')===MA_LANG); });
+  var sel=document.getElementById('lang-sel'); if(sel) sel.value=MA_LANG;
+  var sess=maSession();
+  if(sess && document.getElementById('app').style.display!=='none'){
+    maAllocInfo(sess);
+    document.getElementById('hdr-sub').textContent=sess.name+' · '+(sess.filiale||t('no_fil'));
+    maRenderDP(); maRenderCal(); maRenderUlList();
+    if(typeof maRenderNews==='function') maRenderNews();
+  }
+}
+function maAllocInfo(sess){
+  var el=document.getElementById('dp-filiale-info'); if(!el) return;
+  var html='🏪 <strong>'+t('alloc_main')+':</strong> '+(sess.filiale||'—');
+  if(sess.zweit&&sess.zweit.length) html+='<br>🔄 <strong>'+t('alloc_backup')+':</strong> '+sess.zweit.join(', ');
+  el.innerHTML=html;
+}
 
 /* ════════════════════════════════════════════════
    DATE UTILITIES  (testable, pure)
@@ -440,18 +639,18 @@ function maFilialeUrlaub(filiale){
 
 // Validation: returns {ok:bool, reason:string}
 function maValidateUrlaub(fromStr,toStr,existing,todayStr,selfId){
-  if(!fromStr||!toStr)return{ok:false,reason:'Bitte Start- und Enddatum wählen.'};
-  var f=maParseDate(fromStr),t=maParseDate(toStr);
-  if(!f||!t)return{ok:false,reason:'Ungültiges Datum.'};
-  if(t<f)return{ok:false,reason:'Das Enddatum liegt vor dem Startdatum.'};
+  if(!fromStr||!toStr)return{ok:false,reason:t('v_pick')};
+  var f=maParseDate(fromStr),tt=maParseDate(toStr);
+  if(!f||!tt)return{ok:false,reason:t('v_invalid')};
+  if(tt<f)return{ok:false,reason:t('v_endb4')};
   var ahead=maDaysAhead(fromStr,todayStr);
-  if(ahead<10)return{ok:false,reason:'Urlaub muss mindestens 10 Tage im Voraus beantragt werden (aktuell nur '+ahead+' Tage).'};
+  if(ahead<10)return{ok:false,reason:t('v_min10',{n:ahead})};
   for(var i=0;i<existing.length;i++){
     var e=existing[i];
     if(e.status==='rejected')continue;
     if(maRangesOverlap(fromStr,toStr,e.from,e.to)){
-      var who=(selfId&&(''+e.id===''+selfId))?'deinem bestehenden Urlaub':(e.name+' ('+maFmtDE(e.from)+'–'+maFmtDE(e.to)+')');
-      return{ok:false,reason:'Überschneidung mit '+who+'. Bitte einen anderen Zeitraum wählen.'};
+      var who=(selfId&&(''+e.id===''+selfId))?t('v_ov_self'):(e.name+' ('+maFmtDE(e.from)+'–'+maFmtDE(e.to)+')');
+      return{ok:false,reason:t('v_ov',{who:who})};
     }
   }
   return{ok:true};
@@ -489,38 +688,38 @@ function maShowLogin(){
 function maDoLogin(){
   var pid=document.getElementById('login-pid').value.trim();
   var err=document.getElementById('login-err');
-  if(!pid){err.textContent='Bitte Personalnummer eingeben.';err.style.display='block';return;}
+  if(!pid){err.textContent=t('err_pid');err.style.display='block';return;}
   if(fbEnabled()){
     err.textContent='';err.style.display='none';
     var btnErr=function(msg){err.textContent=msg;err.style.display='block';};
     var proceed=function(){
       fbDb.collection('emps').doc(pid).get().then(function(doc){
-        if(!doc.exists){btnErr('Personalnummer nicht gefunden. Bitte prüfen.');return;}
+        if(!doc.exists){btnErr(t('err_notfound'));return;}
         var d=doc.data()||{};
-        var sess={id:pid,name:d.name||'',filiale:d.filiale||''};
+        var sess={id:pid,name:d.name||'',filiale:d.filiale||'',zweit:d.zweit||[]};
         maSetSession(sess);
         fbDb.collection('meta').doc('config').get().then(function(cfg){
           if(cfg.exists && cfg.data().managerWa) localStorage.setItem('ma_wa', cfg.data().managerWa);
         }).catch(function(){});
         maShowApp(sess);
-      }).catch(function(e){btnErr('Verbindungsfehler: '+e.message);});
+      }).catch(function(e){btnErr(t('err_conn')+e.message);});
     };
     if(fbReady) proceed(); else fbInit(proceed);
     return;
   }
-  if(!maLoadBundle()){err.textContent='Keine Daten geladen. Bitte zuerst Daten laden.';err.style.display='block';return;}
+  if(!maLoadBundle()){err.textContent=t('err_nodata');err.style.display='block';return;}
   var emp=maFindEmp(pid);
-  if(!emp){err.textContent='Personalnummer nicht gefunden. Bitte prüfen.';err.style.display='block';return;}
+  if(!emp){err.textContent=t('err_notfound');err.style.display='block';return;}
   err.style.display='none';
-  var sess={id:emp.id,name:emp.name,filiale:emp.filiale||''};
+  var sess={id:emp.id,name:emp.name,filiale:emp.filiale||'',zweit:emp.zweit||[]};
   maSetSession(sess);maShowApp(sess);
 }
-function maLogout(){if(confirm('Abmelden?')){maSetSession(null);document.getElementById('login-pid').value='';maShowLogin();}}
+function maLogout(){if(confirm(t('q_logout'))){maSetSession(null);document.getElementById('login-pid').value='';maShowLogin();}}
 function maShowApp(sess){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
-  document.getElementById('hdr-sub').textContent=sess.name+' · '+(sess.filiale||'keine Filiale');
-  document.getElementById('dp-filiale-info').textContent='Filiale: '+(sess.filiale||'—');
+  document.getElementById('hdr-sub').textContent=sess.name+' · '+(sess.filiale||t('no_fil'));
+  maAllocInfo(sess);
   // default month = current
   var now=new Date();
   document.getElementById('dp-month').value=now.getFullYear()+'-'+('0'+(now.getMonth()+1)).slice(-2);
@@ -578,18 +777,18 @@ function maRenderDP(){
     var key=fbSlug(sess.filiale)+'__'+month;
     if(maFbPlans[key]!==undefined){ plan=maFbPlans[key]; }
     else{
-      out.innerHTML='<div style="color:var(--mut);font-size:13px;padding:8px 0">⏳ Lade Dienstplan…</div>';
+      out.innerHTML='<div style="color:var(--mut);font-size:13px;padding:8px 0">'+t('dp_loading')+'</div>';
       fbDb.collection('plan').doc(key).get().then(function(doc){
         maFbPlans[key]=doc.exists?doc.data():null;
         maRenderDP();
-      }).catch(function(e){ out.innerHTML='<div class="warnbox">Fehler beim Laden: '+e.message+'</div>'; });
+      }).catch(function(e){ out.innerHTML='<div class="warnbox">'+t('dp_load_err')+e.message+'</div>'; });
       return;
     }
   } else {
     var b=maLoadBundle();
     plan=b&&b.dienstplan&&b.dienstplan[sess.filiale]&&b.dienstplan[sess.filiale][month];
   }
-  if(!plan){out.innerHTML='<div class="warnbox">Der Dienstplan für '+(month?maMonthLabel(month):'diesen Monat')+' wurde noch nicht veröffentlicht.</div>';return;}
+  if(!plan){out.innerHTML='<div class="warnbox">'+t('dp_not_pub',{m:(month?maMonthLabel(month):'—')})+'</div>';return;}
   var shifts=plan.shifts||{};
   var emps=plan.employees||[];
   var myKey=sess.id+'-'+sess.name;
@@ -597,23 +796,24 @@ function maRenderDP(){
   var p=month.split('-'),yr=+p[0],mo=+p[1];
   var dim=new Date(yr,mo,0).getDate();
   // MY schedule (big list)
-  var myH='<div style="font-size:14px;font-weight:700;margin-bottom:8px">👤 Meine Schichten</div>';
+  var myH='<div style="font-size:14px;font-weight:700;margin-bottom:8px">'+t('my_shifts')+'</div>';
   var myShift=shifts[myKey]|| (function(){ // fuzzy match by id
     var k=Object.keys(shifts).find(function(kk){return kk.indexOf(sess.id+'-')===0;});return k?shifts[k]:null;})();
   var any=false;
   for(var d=1;d<=dim;d++){
     var iso=yr+'-'+('0'+mo).slice(-2)+'-'+('0'+d).slice(-2);
     var val=myShift?(myShift[iso]||''):'';
+    var valDisp=val==='Frei'?t('v_frei'):val==='Urlaub'?t('v_url'):val==='Krank'?t('v_krank'):val;
     if(!val)continue;
     any=true;
     var dt=new Date(yr,mo-1,d);
     var cls=val==='Frei'?'frei':val==='Urlaub'?'urlaub':val==='Krank'?'krank':'';
-    myH+='<div class="dp-day '+cls+'"><div><div class="d-date">'+('0'+d).slice(-2)+'.'+('0'+mo).slice(-2)+'.</div><div class="d-wd">'+MA_WDF[dt.getDay()]+'</div></div><div class="d-val">'+val+'</div></div>';
+    myH+='<div class="dp-day '+cls+'"><div><div class="d-date">'+('0'+d).slice(-2)+'.'+('0'+mo).slice(-2)+'.</div><div class="d-wd">'+MA_WDF[dt.getDay()]+'</div></div><div class="d-val">'+valDisp+'</div></div>';
   }
-  if(!any)myH+='<div class="dp-day"><div class="d-val" style="color:var(--mut)">Keine Einträge für dich in diesem Monat.</div></div>';
+  if(!any)myH+='<div class="dp-day"><div class="d-val" style="color:var(--mut)">'+t('no_entries')+'</div></div>';
 
   // FULL store grid (scroll)
-  var gridH='<div style="font-size:14px;font-weight:700;margin:18px 0 8px">🏪 Ganze Filiale</div><div class="dp-scroll"><table class="dp-grid"><tr><th class="nm">Mitarbeiter</th>';
+  var gridH='<div style="font-size:14px;font-weight:700;margin:18px 0 8px">'+t('whole_store')+'</div><div class="dp-scroll"><table class="dp-grid"><tr><th class="nm">'+t('th_emp')+'</th>';
   for(var d2=1;d2<=dim;d2++){var dt2=new Date(yr,mo-1,d2);gridH+='<th>'+('0'+d2).slice(-2)+'<br><span style="font-weight:400;color:var(--mut)">'+MA_WD[dt2.getDay()]+'</span></th>';}
   gridH+='</tr>';
   emps.forEach(function(emp){
@@ -645,7 +845,7 @@ function maRenderCal(){
   document.getElementById('cal-title').textContent=MA_MON[maCalM]+' '+maCalY;
   var ul=maFilialeUrlaub(sess.filiale);
   var grid=document.getElementById('cal-grid');
-  var html=['Mo','Di','Mi','Do','Fr','Sa','So'].map(function(d){return '<div class="cal-hd">'+d+'</div>';}).join('');
+  var wd=MA_WD;var html=[wd[1],wd[2],wd[3],wd[4],wd[5],wd[6],wd[0]].map(function(d){return '<div class="cal-hd">'+d+'</div>';}).join('');
   var first=new Date(maCalY,maCalM,1);
   var startWd=(first.getDay()+6)%7; // Monday=0
   var dim=new Date(maCalY,maCalM+1,0).getDate();
@@ -674,10 +874,10 @@ function maRenderUlList(){
   });
   ul.sort(function(a,b){return (a.from<b.from)?-1:1;});
   var box=document.getElementById('ul-list');
-  if(!ul.length){box.innerHTML='<div style="font-size:13px;color:var(--mut);padding:8px 0">Noch kein Urlaub für '+maCalY+' eingetragen.</div>';return;}
+  if(!ul.length){box.innerHTML='<div style="font-size:13px;color:var(--mut);padding:8px 0">'+t('ul_none',{y:maCalY})+'</div>';return;}
   box.innerHTML=ul.map(function(u){
     var c=maStatusClass(u.status);
-    var stTxt=u.status==='approved'?'Genehmigt':u.status==='rejected'?'Abgelehnt':'Wartet';
+    var stTxt=u.status==='approved'?t('leg_ok'):u.status==='rejected'?t('leg_no'):t('st_wait');
     return '<div class="ul-list-item '+c+'"><div style="flex:1"><div class="uname">'+u.name+'</div>'
       +'<div class="udate">'+maFmtDE(u.from)+' – '+maFmtDE(u.to)+'</div></div>'
       +'<span class="ustat '+c+'">'+stTxt+'</span></div>';
@@ -694,22 +894,22 @@ function maRequestUrlaub(){
     fbDb.collection('filialen').doc(fbSlug(sess.filiale||'')).collection('urlaub').add(maBuildUrlaubDoc(sess,from,to))
       .then(function(){
         fb.style.display='block';fb.style.color='var(--grn)';
-        fb.textContent='✓ Antrag gesendet (🟧 wartet auf Freigabe). Der Gebietsleiter sieht ihn sofort – die Freigabe erscheint hier automatisch.';
+        fb.textContent=t('sent_fb');
         document.getElementById('ul-from').value='';document.getElementById('ul-to').value='';
       })
-      .catch(function(e){ fb.style.display='block';fb.style.color='var(--red)';fb.textContent='✗ Senden fehlgeschlagen: '+e.message; });
+      .catch(function(e){ fb.style.display='block';fb.style.color='var(--red)';fb.textContent=t('send_fail')+e.message; });
     return;
   }
   var reqs=maLoadReqs();
   reqs.push({id:sess.id,name:sess.name,filiale:sess.filiale,from:from,to:to,status:'pending',created:maTodayISO()});
   maSaveReqs(reqs);
-  fb.style.display='block';fb.style.color='var(--grn)';fb.textContent='✓ Antrag gespeichert (🟧 wartet auf Freigabe). Bitte zur Bestätigung per WhatsApp an den Gebietsleiter senden.';
+  fb.style.display='block';fb.style.color='var(--grn)';fb.textContent=t('sent_off');
   maRenderCal();maRenderUlList();
   // offer WhatsApp
   var wa=maWaNumber();
   var msg='🌴 *Urlaubsantrag*\n\nName: '+sess.name+'\nPersonalnr.: '+sess.id+'\nFiliale: '+sess.filiale+'\nZeitraum: '+maFmtDE(from)+' – '+maFmtDE(to)+'\n\nBitte um Freigabe.';
   if(wa)window.open('https://wa.me/'+wa+'?text='+encodeURIComponent(msg),'_blank');
-  else prompt('WhatsApp-Nummer fehlt. Nachricht kopieren:',msg);
+  else prompt(t('wa_missing'),msg);
 }
 
 /* ════════════════════════════════════════════════
@@ -771,8 +971,8 @@ function maDrawUrlaubForm(ctx, sess, data, sigCanvas){
 function maUrlaubPdf(mode){
   var sess=maSession();if(!sess)return;
   var from=document.getElementById('up-from').value, to=document.getElementById('up-to').value;
-  if(!from||!to){toast('Bitte Von und Bis wählen.',true);return;}
-  if(maSig.empty){toast('Bitte als Arbeitnehmer unterschreiben.',true);return;}
+  if(!from||!to){toast(t('t_dates'),true);return;}
+  if(maSig.empty){toast(t('t_sign'),true);return;}
   var data={von:from,bis:to,
     einsatz:document.getElementById('up-einsatz').value,
     ruf:document.getElementById('up-ruf').value.trim(),
@@ -796,12 +996,12 @@ function maUrlaubPdf(mode){
         var wa=maWaNumber();
         var msg='\uD83C\uDF34 Urlaubsantrag von '+sess.name+' (Pers.Nr. '+sess.id+'), Filiale '+sess.filiale+', '+maFmtDE(from)+'\u2013'+maFmtDE(to)+'. Das ausgefuellte Formular (PDF) ist im Anhang.';
         if(wa)window.open('https://wa.me/'+wa+'?text='+encodeURIComponent(msg),'_blank');
-        else prompt('WhatsApp-Nummer fehlt. Nachricht kopieren:',msg);
-        toast('\u2713 PDF gespeichert \u2013 bitte in WhatsApp anh\u00e4ngen \uD83D\uDCCE');
-      } else toast('\u2713 PDF gespeichert');
+        else prompt(t('wa_missing'),msg);
+        toast(t('t_attach'));
+      } else toast(t('t_pdf_ok'));
     }catch(e){toast('PDF-Fehler: '+e.message,true);}
   };
-  img.onerror=function(){toast('Formular-Bild konnte nicht geladen werden.',true);};
+  img.onerror=function(){toast(t('img_fail'),true);};
   img.src=URLAUB_IMG;
 }
 
@@ -809,8 +1009,8 @@ function maUrlaubPdf(mode){
 function maSendAntrag(){
   var sess=maSession();if(!sess)return;
   var from=document.getElementById('up-from').value, to=document.getElementById('up-to').value;
-  if(!from||!to){toast('Bitte Von und Bis wählen.',true);return;}
-  if(maSig.empty){toast('Bitte als Arbeitnehmer unterschreiben.',true);return;}
+  if(!from||!to){toast(t('t_dates'),true);return;}
+  if(maSig.empty){toast(t('t_sign'),true);return;}
   var ort=document.getElementById('up-ort').value.trim();
   var packet={
     typ:'urlaubsantrag', v:1,
@@ -827,12 +1027,12 @@ function maSendAntrag(){
     var url=URL.createObjectURL(blob);var a=document.createElement('a');
     a.href=url;a.download='Urlaubsantrag_'+sess.name.replace(/\s+/g,'_')+'.antrag.json';
     document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
-  }catch(e){toast('Fehler beim Erstellen: '+e.message,true);return;}
+  }catch(e){toast(t('t_err')+e.message,true);return;}
   var wa=maWaNumber();
   var msg='\uD83C\uDF34 Urlaubsantrag von '+sess.name+' (Pers.Nr. '+sess.id+'), '+sess.filiale+', '+maFmtDE(from)+'\u2013'+maFmtDE(to)+'. Antrag-Datei ist im Anhang \uD83D\uDCCE (bitte als Arbeitgeber gegenzeichnen).';
   if(wa)window.open('https://wa.me/'+wa+'?text='+encodeURIComponent(msg),'_blank');
-  else prompt('WhatsApp-Nummer fehlt. Nachricht kopieren:',msg);
-  toast('\u2713 Antrag-Datei gespeichert \u2013 in WhatsApp anh\u00e4ngen \uD83D\uDCCE');
+  else prompt(t('wa_missing'),msg);
+  toast(t('t_packet'));
 }
 
 /* ════════════════════════════════════════════════
@@ -848,13 +1048,13 @@ function maKrPhoto(ev){
 function maSendKrank(){
   var sess=maSession();if(!sess)return;
   var from=document.getElementById('kr-from').value,to=document.getElementById('kr-to').value;
-  if(!from){toast('Bitte mindestens das Startdatum wählen.',true);return;}
+  if(!from){toast(t('t_kr_from'),true);return;}
   var bisTxt=to?(' bis '+maFmtDE(to)):'';
   var wa=maWaNumber();
   var msg='🏥 *Krankmeldung*\n\nName: '+sess.name+'\nPersonalnr.: '+sess.id+'\nFiliale: '+sess.filiale+'\nKrank ab: '+maFmtDE(from)+bisTxt+'\n\n'+(maKrImg?'Krankschreibung im Anhang (bitte Foto anhängen 📎).':'Krankschreibung folgt.');
   if(wa)window.open('https://wa.me/'+wa+'?text='+encodeURIComponent(msg),'_blank');
-  else prompt('WhatsApp-Nummer fehlt. Nachricht kopieren:',msg);
-  toast('✓ WhatsApp geöffnet'+(maKrImg?' – Foto noch anhängen 📎':''));
+  else prompt(t('wa_missing'),msg);
+  toast(t('t_wa')+(maKrImg?t('t_wa_attach'):''));
 }
 
 /* ════════════════════════════════════════════════
@@ -864,6 +1064,7 @@ function toast(msg,err){var t=document.getElementById('toast');t.textContent=msg
 document.getElementById('import-modal').addEventListener('click',function(e){if(e.target===this)maCloseImport();});
 document.getElementById('login-pid').addEventListener('keydown',function(e){if(e.key==='Enter')maDoLogin();});
 
+applyLang();
 maInit();
 </script>
 </body>

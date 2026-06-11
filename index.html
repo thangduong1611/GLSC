@@ -241,7 +241,7 @@ window.onerror=function(msg,src,line){
 <header>
   <div>
     <div class="logo">🍣 HR Assistant</div>
-    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v6.3</span></div>
+    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v6.4</span></div>
   </div>
 </header>
 
@@ -588,6 +588,19 @@ window.onerror=function(msg,src,line){
 
 <!-- ===== MITARBEITER ===== -->
 <div id="panel-emp" class="panel">
+  <div class="card">
+    <div class="card-title">🏪 Filial-Verteilung <span class="badge badge-blu">Haupt + Zweitfilialen</span></div>
+    <div class="info">Pro Mitarbeiter festlegen, in welchen Filialen er/sie <strong>bei Bedarf</strong> einspringt (Krankheit/Urlaub). Die Stammfiliale kommt aus der CSV. Nach Änderungen „Veröffentlichen" nicht vergessen — Mitarbeiter sehen die Zuteilung im Dienstplan-Tab.</div>
+    <label>Mitarbeiter</label>
+    <select id="fv-emp" onchange="fvRenderStores()"><option value="">— Mitarbeiter wählen —</option></select>
+    <div id="fv-main" style="font-size:13.5px;font-weight:600;margin:10px 0 4px"></div>
+    <div id="fv-stores" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px;margin-top:6px"></div>
+    <div class="btn-row">
+      <button class="btn btn-grn" onclick="fvSave()" style="flex:1;justify-content:center">💾 Zuteilung speichern</button>
+    </div>
+    <div style="font-size:13px;font-weight:700;margin:14px 0 6px;color:var(--mut)">Übersicht</div>
+    <div id="fv-summary" style="font-size:13px;color:var(--mut)">—</div>
+  </div>
   <div class="card">
     <div class="card-title">📥 CSV-Import vom Unternehmen</div>
     <div class="info">Laden Sie die aktuelle Personaldatei (CSV aus dem System) hoch. Bestehende Mitarbeiter werden aktualisiert, neue hinzugefügt. Mitarbeiter die nicht mehr in der Datei sind, werden als inaktiv markiert.</div>
@@ -995,7 +1008,7 @@ function sw(id, el) {
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('panel-'+id).classList.add('active');
-  if(id==='emp') renderEmpTable();
+  if(id==='emp'){renderEmpTable();fvPopulate();}
   if(id==='news') nwRender();
 avPopulateDropdown();
 initOrtDatumFields();
@@ -3395,7 +3408,7 @@ function fbPublish(){
   if(!b.employees.length){ alert('Keine aktiven Mitarbeiter gefunden. Bitte zuerst die Mitarbeiter-CSV importieren.'); return; }
   var jobs=[];
   b.employees.forEach(function(e){
-    jobs.push(fbDb.collection('emps').doc(''+e.id).set({name:e.name, filiale:e.filiale||'', active:true}));
+    jobs.push(fbDb.collection('emps').doc(''+e.id).set({name:e.name, filiale:e.filiale||'', zweit:(e.zweit||[]), active:true}));
   });
   var nPlan=0;
   Object.keys(b.dienstplan).forEach(function(f){
@@ -3485,6 +3498,57 @@ function fbRevert(docId){
   var r=fbFind(docId); if(!r||!r.ref) return;
   r.ref.update({status:'pending', decidedAt:null})
     .then(function(){ toast('↩ Zurück auf Wartend'); }).catch(function(e){ alert('Fehler: '+e.message); });
+}
+
+// ════════ FILIAL-VERTEILUNG (Haupt + Zweitfilialen) ════════
+function fvUniverse(){
+  var set={};
+  loadEmps().forEach(function(e){ if(e.filiale) set[e.filiale]=1; });
+  try{ loadMkStores().forEach(function(s){ var n=s.name||s.displayName; if(n) set[n]=1; }); }catch(e){}
+  return Object.keys(set).sort();
+}
+function fvPopulate(){
+  var sel=document.getElementById('fv-emp'); if(!sel) return;
+  var cur=sel.value;
+  var emps=loadEmps().filter(function(e){return e.active!==false;});
+  sel.innerHTML='<option value="">— Mitarbeiter wählen —</option>';
+  emps.forEach(function(e){
+    var o=document.createElement('option'); o.value=''+e.id; o.textContent=e.name+'  ['+e.id+']'; sel.appendChild(o);
+  });
+  if(cur) sel.value=cur;
+  fvRenderStores(); fvRenderSummary();
+}
+function fvRenderStores(){
+  var sel=document.getElementById('fv-emp'), box=document.getElementById('fv-stores'), mainEl=document.getElementById('fv-main');
+  if(!sel||!box) return;
+  var id=sel.value;
+  if(!id){ box.innerHTML=''; mainEl.textContent=''; return; }
+  var emp=loadEmps().find(function(e){return ''+e.id===id;}); if(!emp) return;
+  mainEl.innerHTML='Stammfiliale: <span style="color:var(--grn)">'+(emp.filiale||'—')+'</span>';
+  var zweit=emp.zweit||[];
+  box.innerHTML=fvUniverse().filter(function(f){return f!==emp.filiale;}).map(function(f){
+    return '<label style="display:flex;align-items:center;gap:8px;font-size:13.5px;text-transform:none;letter-spacing:0;font-weight:500;color:var(--txt);border:1px solid var(--brd);border-radius:6px;padding:8px 10px;margin:0;cursor:pointer">'
+      +'<input type="checkbox" class="fv-chk" value="'+f.replace(/"/g,'&quot;')+'" '+(zweit.indexOf(f)>=0?'checked':'')+' style="width:auto"> '+f+'</label>';
+  }).join('') || '<div style="color:var(--mut);font-size:13px">Keine weiteren Filialen bekannt. Erst Mitarbeiter-CSV / Marktsuche importieren.</div>';
+}
+function fvSave(){
+  var sel=document.getElementById('fv-emp'); var id=sel?sel.value:'';
+  if(!id){ alert('Bitte Mitarbeiter wählen.'); return; }
+  var emps=loadEmps();
+  var emp=emps.find(function(e){return ''+e.id===id;}); if(!emp) return;
+  emp.zweit=[].slice.call(document.querySelectorAll('.fv-chk:checked')).map(function(x){return x.value;});
+  saveEmps(emps);
+  toast('💾 Zuteilung gespeichert — „Veröffentlichen" nicht vergessen');
+  fvRenderSummary();
+}
+function fvRenderSummary(){
+  var box=document.getElementById('fv-summary'); if(!box) return;
+  var emps=loadEmps().filter(function(e){return e.active!==false;});
+  var withZweit=emps.filter(function(e){return e.zweit&&e.zweit.length;});
+  if(!withZweit.length){ box.textContent='Noch keine Zweitfilialen zugeteilt.'; return; }
+  box.innerHTML=withZweit.map(function(e){
+    return '<div style="padding:5px 0;border-bottom:1px solid var(--brd)"><strong>'+e.name+'</strong> · '+(e.filiale||'—')+' → '+e.zweit.join(', ')+'</div>';
+  }).join('');
 }
 
 // ════════ MITTEILUNGEN (News an alle Mitarbeiter) ════════
@@ -3595,7 +3659,7 @@ function maGroupConsecutive(dates){
   out.push({from:start,to:prev});return out;
 }
 function buildMaBundle(){
-  var emps=loadEmps().filter(function(e){return e.active!==false;}).map(function(e){return{id:e.id,name:e.name,filiale:e.filiale||'',active:true};});
+  var emps=loadEmps().filter(function(e){return e.active!==false;}).map(function(e){return{id:e.id,name:e.name,filiale:e.filiale||'',zweit:(e.zweit||[]),active:true};});
   var filialen=[...new Set(emps.map(function(e){return e.filiale;}).filter(Boolean))];
   var dienstplan={},urlaubMap={};
   var dpKeys=Object.keys(localStorage).filter(function(k){return k.indexOf('sc_dp_')===0;});
