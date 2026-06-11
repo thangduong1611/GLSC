@@ -241,7 +241,7 @@ window.onerror=function(msg,src,line){
 <header>
   <div>
     <div class="logo">🍣 HR Assistant</div>
-    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v6.6</span></div>
+    <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v6.7</span></div>
   </div>
 </header>
 
@@ -286,6 +286,7 @@ window.onerror=function(msg,src,line){
   <div class="card" id="kr-live-card" style="display:none">
     <div class="card-title">📨 Krankmeldungen (Live) <span class="badge badge-red" id="kr-live-count">0</span></div>
     <div class="info">Krankmeldungen aus der Mitarbeiter-App erscheinen hier sofort — inkl. Foto der Krankschreibung. Nach Bearbeitung bitte löschen (Gesundheitsdaten).</div>
+    <div id="kr-live-status" style="font-size:13px;margin-bottom:8px;font-weight:600;display:none"></div>
     <div id="kr-live-list"></div>
   </div>
   <div class="card">
@@ -3507,13 +3508,23 @@ function fbRevert(docId){
 
 // ════════ KRANKMELDUNGEN (Live aus Mitarbeiter-App) ════════
 var fbKrank=[];
+function krShowStatus(msg,color){
+  var card=document.getElementById('kr-live-card'); if(card) card.style.display='block';
+  var st=document.getElementById('kr-live-status');
+  if(st){ st.textContent=msg||''; st.style.color=color||'#6B6860'; st.style.display=msg?'block':'none'; }
+}
 function krStartListener(){
   if(!fbReady||!fbDb) return;
+  krShowStatus('🔄 Verbinde…','#6B6860');
   fbDb.collection('krank').onSnapshot(function(snap){
     var raw=[]; snap.forEach(function(doc){ raw.push({docId:doc.id, ref:doc.ref, d:doc.data()||{}}); });
     fbKrank=raw.sort(function(a,b){ return (a.d.created||'')<(b.d.created||'')?1:-1; });
+    krShowStatus('','');
     krRender();
-  }, function(err){ console.warn('FB krank', err); });
+  }, function(err){
+    console.warn('FB krank', err);
+    krShowStatus('⚠️ Kein Zugriff auf Krankmeldungen ('+err.code+'). In den Firestore-Regeln fehlt vermutlich der Block für „krank" — bitte Regeln ergänzen und neu veröffentlichen.','#C0392B');
+  });
 }
 function krRender(){
   var card=document.getElementById('kr-live-card'), list=document.getElementById('kr-live-list'), cnt=document.getElementById('kr-live-count');
