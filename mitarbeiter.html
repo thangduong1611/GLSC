@@ -165,7 +165,7 @@ window.onerror=function(msg,src,line){
 <div id="login-screen" class="login-screen">
   <div class="login-card">
     <div class="em">🍣</div>
-    <h1>Mitarbeiter-Portal <span style="font-size:11px;color:var(--mut);font-weight:400">v6.6</span></h1>
+    <h1>Mitarbeiter-Portal <span style="font-size:11px;color:var(--mut);font-weight:400">v6.9</span></h1>
     <p data-i18n="login_sub">Sushi Circle · Bitte mit deiner Personalnummer anmelden.</p>
     <div class="lang-row">
       <button class="lang-btn" data-lang="de" onclick="setLang('de')">🇩🇪 DE</button>
@@ -447,9 +447,9 @@ de:{_name:'Deutsch',
  updf_info:'Wird auf das offizielle Sushi-Circle-Formular geschrieben. Ausfüllen, im Feld <strong>Arbeitnehmer</strong> unterschreiben, dann als PDF speichern oder an den Gebietsleiter senden. Die Unterschrift des Vorgesetzten ergänzt der Gebietsleiter.',
  lbl_einsatz:'Wieder im Einsatz am',lbl_ruf:'Rufnummer',lbl_vorg:'Vorgesetzter (optional)',lbl_ort:'Ort (für Ort/Datum)',
  lbl_sig:'Unterschrift Arbeitnehmer/in (mit dem Finger zeichnen)',btn_clear_sig:'↺ Unterschrift löschen',btn_pdf:'💾 PDF speichern',btn_chef:'📨 An Chef senden',
- chef_hint:'„An Chef senden" lädt eine kleine Antrag-Datei (mit deiner Unterschrift) herunter und öffnet WhatsApp – die Datei dort anhängen 📎. Der Gebietsleiter unterschreibt als Arbeitgeber und reicht das fertige PDF ein.',
+ chef_hint:'„An Chef senden" schickt den Antrag mit deiner Unterschrift direkt an den Gebietsleiter. Er unterschreibt als Arbeitgeber und reicht das fertige PDF ein.',
  t_dates:'Bitte Von und Bis wählen.',t_sign:'Bitte als Arbeitnehmer unterschreiben.',t_pdf_ok:'✓ PDF gespeichert',
- t_attach:'✓ PDF gespeichert – bitte in WhatsApp anhängen 📎',t_packet:'✓ Antrag-Datei gespeichert – in WhatsApp anhängen 📎',
+ t_attach:'✓ PDF gespeichert – bitte in WhatsApp anhängen 📎',t_packet:'✓ Antrag-Datei gespeichert – in WhatsApp anhängen 📎',an_sent:'✓ Antrag an den Gebietsleiter gesendet — er unterschreibt und reicht ihn ein.',an_fail:'✗ Senden fehlgeschlagen: ',
  img_fail:'Formular-Bild konnte nicht geladen werden.',t_err:'Fehler beim Erstellen: ',
  kr_title:'🏥 Krankmeldung',kr_info:'Krankheitstage eintragen, Foto der Krankschreibung (gelber Schein) hochladen — die Meldung geht direkt an den Gebietsleiter.',kr_sent:'✓ Krankmeldung an den Gebietsleiter gesendet. Gute Besserung!',kr_fail:'✗ Senden fehlgeschlagen: ',
  lbl_kr_von:'Krank von',lbl_kr_bis:'Voraussichtlich bis',lbl_foto:'Krankschreibung (Foto)',drop_txt:'Foto hochladen oder Kamera öffnen',
@@ -485,9 +485,9 @@ vi:{_name:'Tiếng Việt',
  updf_info:'Đơn được điền vào mẫu chính thức của Sushi Circle. Điền thông tin, ký vào ô <strong>Arbeitnehmer</strong>, sau đó lưu PDF hoặc gửi cho Gebietsleiter. Gebietsleiter sẽ ký phần Vorgesetzter.',
  lbl_einsatz:'Đi làm lại ngày',lbl_ruf:'Số điện thoại',lbl_vorg:'Cấp trên (tuỳ chọn)',lbl_ort:'Địa điểm (cho Ort/Datum)',
  lbl_sig:'Chữ ký nhân viên (vẽ bằng ngón tay)',btn_clear_sig:'↺ Xoá chữ ký',btn_pdf:'💾 Lưu PDF',btn_chef:'📨 Gửi cho sếp',
- chef_hint:'„Gửi cho sếp" tải về một file đơn nhỏ (kèm chữ ký của bạn) và mở WhatsApp – hãy đính kèm file đó 📎. Gebietsleiter sẽ ký phần Arbeitgeber và nộp bản PDF hoàn chỉnh.',
+ chef_hint:'„Gửi cho sếp" gửi đơn kèm chữ ký của bạn thẳng đến Gebietsleiter. Anh ấy ký phần Arbeitgeber và nộp bản PDF hoàn chỉnh.',
  t_dates:'Vui lòng chọn Từ ngày và Đến ngày.',t_sign:'Vui lòng ký tên.',t_pdf_ok:'✓ Đã lưu PDF',
- t_attach:'✓ Đã lưu PDF – nhớ đính kèm vào WhatsApp 📎',t_packet:'✓ Đã lưu file đơn – đính kèm vào WhatsApp 📎',
+ t_attach:'✓ Đã lưu PDF – nhớ đính kèm vào WhatsApp 📎',t_packet:'✓ Đã lưu file đơn – đính kèm vào WhatsApp 📎',an_sent:'✓ Đã gửi đơn cho Gebietsleiter — anh ấy sẽ ký và nộp.',an_fail:'✗ Gửi thất bại: ',
  img_fail:'Không tải được mẫu đơn.',t_err:'Lỗi khi tạo: ',
  kr_title:'🏥 Báo ốm',kr_info:'Nhập ngày ốm, tải ảnh giấy ốm (gelber Schein) — đơn được gửi thẳng đến Gebietsleiter.',kr_sent:'✓ Đã gửi báo ốm đến Gebietsleiter. Chúc mau khoẻ!',kr_fail:'✗ Gửi thất bại: ',
  lbl_kr_von:'Ốm từ ngày',lbl_kr_bis:'Dự kiến đến',lbl_foto:'Giấy ốm (ảnh)',drop_txt:'Tải ảnh lên hoặc mở camera',
@@ -523,9 +523,9 @@ en:{_name:'English',
  updf_info:'Written onto the official Sushi Circle form. Fill in, sign in the <strong>Arbeitnehmer</strong> field, then save as PDF or send to the area manager. The supervisor signature is added by the area manager.',
  lbl_einsatz:'Back at work on',lbl_ruf:'Phone number',lbl_vorg:'Supervisor (optional)',lbl_ort:'Place (for place/date)',
  lbl_sig:'Employee signature (draw with your finger)',btn_clear_sig:'↺ Clear signature',btn_pdf:'💾 Save PDF',btn_chef:'📨 Send to manager',
- chef_hint:'"Send to manager" downloads a small request file (with your signature) and opens WhatsApp – attach the file there 📎. The area manager countersigns and submits the final PDF.',
+ chef_hint:'"Send to manager" sends the request with your signature directly to the area manager. He countersigns and submits the final PDF.',
  t_dates:'Please choose From and To.',t_sign:'Please sign as employee.',t_pdf_ok:'✓ PDF saved',
- t_attach:'✓ PDF saved – attach it in WhatsApp 📎',t_packet:'✓ Request file saved – attach it in WhatsApp 📎',
+ t_attach:'✓ PDF saved – attach it in WhatsApp 📎',t_packet:'✓ Request file saved – attach it in WhatsApp 📎',an_sent:'✓ Request sent to the area manager — he signs and submits it.',an_fail:'✗ Sending failed: ',
  img_fail:'Form image could not be loaded.',t_err:'Error creating: ',
  kr_title:'🏥 Sick report',kr_info:'Enter sick days and upload a photo of the sick note (gelber Schein) — the report goes directly to the area manager.',kr_sent:'✓ Sick report sent to the area manager. Get well soon!',kr_fail:'✗ Sending failed: ',
  lbl_kr_von:'Sick from',lbl_kr_bis:'Expected until',lbl_foto:'Sick note (photo)',drop_txt:'Upload photo or open camera',
@@ -561,9 +561,9 @@ th:{_name:'ไทย',
  updf_info:'กรอกลงแบบฟอร์มทางการของ Sushi Circle กรอกข้อมูล เซ็นชื่อในช่อง <strong>Arbeitnehmer</strong> จากนั้นบันทึก PDF หรือส่งให้ผู้จัดการเขต ลายเซ็นหัวหน้าจะถูกเพิ่มโดยผู้จัดการเขต',
  lbl_einsatz:'กลับมาทำงานวันที่',lbl_ruf:'เบอร์โทร',lbl_vorg:'หัวหน้า (ไม่บังคับ)',lbl_ort:'สถานที่ (สำหรับ Ort/Datum)',
  lbl_sig:'ลายเซ็นพนักงาน (วาดด้วยนิ้ว)',btn_clear_sig:'↺ ลบลายเซ็น',btn_pdf:'💾 บันทึก PDF',btn_chef:'📨 ส่งให้ผู้จัดการ',
- chef_hint:'"ส่งให้ผู้จัดการ" จะดาวน์โหลดไฟล์คำขอ (พร้อมลายเซ็นของคุณ) และเปิด WhatsApp – กรุณาแนบไฟล์ 📎 ผู้จัดการเขตจะเซ็นส่วน Arbeitgeber และยื่น PDF ฉบับสมบูรณ์',
+ chef_hint:'"ส่งให้ผู้จัดการ" ส่งคำขอพร้อมลายเซ็นของคุณตรงถึงผู้จัดการเขต เขาจะเซ็นส่วน Arbeitgeber และยื่น PDF ฉบับสมบูรณ์',
  t_dates:'กรุณาเลือกวันเริ่มและวันสิ้นสุด',t_sign:'กรุณาเซ็นชื่อ',t_pdf_ok:'✓ บันทึก PDF แล้ว',
- t_attach:'✓ บันทึก PDF แล้ว – แนบใน WhatsApp 📎',t_packet:'✓ บันทึกไฟล์คำขอแล้ว – แนบใน WhatsApp 📎',
+ t_attach:'✓ บันทึก PDF แล้ว – แนบใน WhatsApp 📎',t_packet:'✓ บันทึกไฟล์คำขอแล้ว – แนบใน WhatsApp 📎',an_sent:'✓ ส่งคำขอถึงผู้จัดการเขตแล้ว — เขาจะเซ็นและยื่นต่อ',an_fail:'✗ ส่งไม่สำเร็จ: ',
  img_fail:'โหลดแบบฟอร์มไม่สำเร็จ',t_err:'เกิดข้อผิดพลาด: ',
  kr_title:'🏥 แจ้งป่วย',kr_info:'กรอกวันป่วย อัปโหลดรูปใบรับรองแพทย์ (gelber Schein) — รายงานจะส่งตรงถึงผู้จัดการเขต',kr_sent:'✓ ส่งแจ้งป่วยถึงผู้จัดการแล้ว หายไวๆ นะ!',kr_fail:'✗ ส่งไม่สำเร็จ: ',
  lbl_kr_von:'ป่วยตั้งแต่',lbl_kr_bis:'คาดว่าถึง',lbl_foto:'ใบรับรองแพทย์ (รูป)',drop_txt:'อัปโหลดรูปหรือเปิดกล้อง',
@@ -1040,6 +1040,13 @@ function maSendAntrag(){
     anOrtDatum:(ort?ort+', ':'')+maFmtDE(maTodayISO()),
     anSig:document.getElementById('sig-canvas').toDataURL('image/png')
   };
+  if(fbReady&&fbDb){
+    packet.created=new Date().toISOString();
+    fbDb.collection('antrag').add(packet)
+      .then(function(){ toast(t('an_sent')); })
+      .catch(function(e){ toast(t('an_fail')+e.message,true); });
+    return;
+  }
   try{
     var blob=new Blob([JSON.stringify(packet)],{type:'application/json'});
     var url=URL.createObjectURL(blob);var a=document.createElement('a');
