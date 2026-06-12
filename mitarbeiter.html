@@ -6,6 +6,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mein Sushi">
 <meta name="theme-color" content="#C0392B">
+<link rel="manifest" href="manifest-mitarbeiter.json">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Mitarbeiter – Sushi Circle</title>
 <style>
@@ -165,13 +166,18 @@ window.onerror=function(msg,src,line){
 <div id="login-screen" class="login-screen">
   <div class="login-card">
     <div class="em">🍣</div>
-    <h1>Mitarbeiter-Portal <span style="font-size:11px;color:var(--mut);font-weight:400">v6.9</span></h1>
+    <h1>Mitarbeiter-Portal <span style="font-size:11px;color:var(--mut);font-weight:400">v7.0</span></h1>
     <p data-i18n="login_sub">Sushi Circle · Bitte mit deiner Personalnummer anmelden.</p>
     <div class="lang-row">
       <button class="lang-btn" data-lang="de" onclick="setLang('de')">🇩🇪 DE</button>
       <button class="lang-btn" data-lang="vi" onclick="setLang('vi')">🇻🇳 VI</button>
       <button class="lang-btn" data-lang="en" onclick="setLang('en')">🇬🇧 EN</button>
       <button class="lang-btn" data-lang="th" onclick="setLang('th')">🇹🇭 TH</button>
+    </div>
+    <div id="install-box" style="display:none;background:var(--blu-bg);border:1px solid #AED6F1;border-radius:8px;padding:12px;margin-bottom:14px;text-align:left">
+      <div style="font-weight:700;font-size:14px;margin-bottom:6px">📲 <span data-i18n="inst_title">App auf dem Startbildschirm</span></div>
+      <button class="btn btn-grn" id="install-btn" style="display:none" onclick="instDo()" data-i18n="inst_btn">Jetzt installieren</button>
+      <div id="install-ios" style="display:none;font-size:13px;line-height:1.7" data-i18n="inst_ios"></div>
     </div>
     <label data-i18n="lbl_pid">Personalnummer</label>
     <input type="tel" id="login-pid" inputmode="numeric" placeholder="z.B. 1042" autocomplete="off">
@@ -457,7 +463,7 @@ de:{_name:'Deutsch',
  kr_hint:'ℹ️ WhatsApp öffnet sich mit der Nachricht. Das Foto wird im Gerät gespeichert/angezeigt — bitte in WhatsApp noch anhängen (📎).',
  t_kr_from:'Bitte mindestens das Startdatum wählen.',t_wa:'✓ WhatsApp geöffnet',t_wa_attach:' – Foto noch anhängen 📎',
  nw_title:'📢 Infos vom Gebietsleiter',nw_none:'Noch keine Mitteilungen.',
- wa_missing:'WhatsApp-Nummer fehlt. Nachricht kopieren:',
+ wa_missing:'WhatsApp-Nummer fehlt. Nachricht kopieren:',inst_title:'App auf dem Startbildschirm',inst_btn:'Jetzt installieren',inst_ios:'1️⃣ Diese Seite in <strong>Safari</strong> öffnen (in WhatsApp: Teilen → „In Safari öffnen")<br>2️⃣ Unten auf <strong>Teilen</strong> ⬆️ tippen<br>3️⃣ <strong>„Zum Home-Bildschirm"</strong> wählen',
  months:['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
  wdS:['So','Mo','Di','Mi','Do','Fr','Sa'],
  wdL:['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag']},
@@ -495,7 +501,7 @@ vi:{_name:'Tiếng Việt',
  kr_hint:'ℹ️ WhatsApp sẽ mở với tin nhắn soạn sẵn. Ảnh đã lưu trong máy — nhớ đính kèm trong WhatsApp (📎).',
  t_kr_from:'Vui lòng chọn ít nhất ngày bắt đầu.',t_wa:'✓ Đã mở WhatsApp',t_wa_attach:' – nhớ đính kèm ảnh 📎',
  nw_title:'📢 Thông báo từ Gebietsleiter',nw_none:'Chưa có thông báo nào.',
- wa_missing:'Thiếu số WhatsApp. Sao chép tin nhắn:',
+ wa_missing:'Thiếu số WhatsApp. Sao chép tin nhắn:',inst_title:'Cài app ra màn hình chính',inst_btn:'Cài đặt ngay',inst_ios:'1️⃣ Mở trang này bằng <strong>Safari</strong> (trong WhatsApp: Chia sẻ → „Mở bằng Safari")<br>2️⃣ Bấm nút <strong>Chia sẻ</strong> ⬆️ phía dưới<br>3️⃣ Chọn <strong>„Thêm vào Màn hình chính"</strong>',
  months:['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'],
  wdS:['CN','T2','T3','T4','T5','T6','T7'],
  wdL:['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy']},
@@ -533,7 +539,7 @@ en:{_name:'English',
  kr_hint:'ℹ️ WhatsApp opens with the message. The photo is saved on your device — please attach it in WhatsApp (📎).',
  t_kr_from:'Please choose at least the start date.',t_wa:'✓ WhatsApp opened',t_wa_attach:' – attach the photo 📎',
  nw_title:'📢 News from the area manager',nw_none:'No news yet.',
- wa_missing:'WhatsApp number missing. Copy the message:',
+ wa_missing:'WhatsApp number missing. Copy the message:',inst_title:'Install app to home screen',inst_btn:'Install now',inst_ios:'1️⃣ Open this page in <strong>Safari</strong> (in WhatsApp: Share → "Open in Safari")<br>2️⃣ Tap <strong>Share</strong> ⬆️ at the bottom<br>3️⃣ Choose <strong>"Add to Home Screen"</strong>',
  months:['January','February','March','April','May','June','July','August','September','October','November','December'],
  wdS:['Su','Mo','Tu','We','Th','Fr','Sa'],
  wdL:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']},
@@ -571,7 +577,7 @@ th:{_name:'ไทย',
  kr_hint:'ℹ️ WhatsApp จะเปิดพร้อมข้อความ รูปถูกบันทึกในเครื่อง — กรุณาแนบใน WhatsApp (📎)',
  t_kr_from:'กรุณาเลือกวันเริ่มอย่างน้อย',t_wa:'✓ เปิด WhatsApp แล้ว',t_wa_attach:' – อย่าลืมแนบรูป 📎',
  nw_title:'📢 ข่าวจากผู้จัดการเขต',nw_none:'ยังไม่มีประกาศ',
- wa_missing:'ไม่มีเบอร์ WhatsApp คัดลอกข้อความ:',
+ wa_missing:'ไม่มีเบอร์ WhatsApp คัดลอกข้อความ:',inst_title:'ติดตั้งแอปบนหน้าจอหลัก',inst_btn:'ติดตั้งเลย',inst_ios:'1️⃣ เปิดหน้านี้ใน <strong>Safari</strong> (ใน WhatsApp: แชร์ → „เปิดใน Safari")<br>2️⃣ แตะปุ่ม <strong>แชร์</strong> ⬆️ ด้านล่าง<br>3️⃣ เลือก <strong>„เพิ่มลงในหน้าจอโฮม"</strong>',
  months:['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'],
  wdS:['อา','จ','อ','พ','พฤ','ศ','ส'],
  wdL:['วันอาทิตย์','วันจันทร์','วันอังคาร','วันพุธ','วันพฤหัสบดี','วันศุกร์','วันเสาร์']}
@@ -1118,7 +1124,33 @@ function toast(msg,err){var t=document.getElementById('toast');t.textContent=msg
 document.getElementById('import-modal').addEventListener('click',function(e){if(e.target===this)maCloseImport();});
 document.getElementById('login-pid').addEventListener('keydown',function(e){if(e.key==='Enter')maDoLogin();});
 
+/* ── PWA: Installieren ── */
+var instPrompt=null;
+function instIsStandalone(){ try{ return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true; }catch(e){ return false; } }
+function instIsIOS(){ return /iPhone|iPad|iPod/i.test(navigator.userAgent); }
+window.addEventListener('beforeinstallprompt', function(e){
+  e.preventDefault(); instPrompt=e;
+  if(instIsStandalone()) return;
+  document.getElementById('install-box').style.display='block';
+  document.getElementById('install-btn').style.display='inline-flex';
+});
+function instDo(){
+  if(!instPrompt) return;
+  instPrompt.prompt();
+  instPrompt.userChoice.then(function(r){ if(r&&r.outcome==='accepted'){ document.getElementById('install-box').style.display='none'; } instPrompt=null; });
+}
+function instInit(){
+  if(instIsStandalone()) return;
+  if(instIsIOS()){
+    document.getElementById('install-box').style.display='block';
+    document.getElementById('install-ios').style.display='block';
+  }
+}
+if('serviceWorker' in navigator){
+  window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+}
 applyLang();
+instInit();
 maInit();
 </script>
 </body>
