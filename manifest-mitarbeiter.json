@@ -3,7 +3,7 @@
   "short_name": "Mein Sushi",
   "description": "Dienstplan, Urlaub, Krankmeldung",
   "start_url": "mitarbeiter.html",
-  "scope": "/hr-sushi/",
+  "scope": "/GLSC/",
   "display": "standalone",
   "background_color": "#FAFAF9",
   "theme_color": "#C0392B",
