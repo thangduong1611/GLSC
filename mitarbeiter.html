@@ -348,6 +348,7 @@ window.onerror=function(msg,src,line){
    ════════════════════════════════════════════════ */
 var FB_CONFIG = (typeof window!=='undefined' && window.FB_CONFIG) ? window.FB_CONFIG : null;
 var fbReady=false, fbDb=null, fbUnsub=null, maFbUrlaub=[], maFbPlans={};
+var maPlanUnsub=null, maPlanKey=null;
 var maNews=[], maNewsUnsub=null;
 function fbSlug(f){ return (''+f).replace(/\s+/g,'_').toLowerCase(); }
 function fbEnabled(){ return !!(FB_CONFIG && FB_CONFIG.apiKey && typeof firebase!=='undefined'); }
@@ -621,7 +622,7 @@ function maRefreshProfile(){
     maSetSession(sess);
     maAllocInfo(sess);
     document.getElementById('hdr-sub').textContent=sess.name+' · '+(sess.filiale||t('no_fil'));
-    if(filialeChanged){ maFbPlans={}; maStartFbUrlaub(sess); maRenderDP(); maRenderCal(); maRenderUlList(); }
+    if(filialeChanged){ maFbPlans={}; maPlanKey=null; if(maPlanUnsub){try{maPlanUnsub();}catch(e){}maPlanUnsub=null;} maStartFbUrlaub(sess); maRenderDP(); maRenderCal(); maRenderUlList(); }
   }).catch(function(e){ console.warn('profile refresh', e); });
 }
 function maAllocInfo(sess){
@@ -799,15 +800,18 @@ function maRenderDP(){
   var plan=null;
   if(fbReady&&fbDb){
     var key=fbSlug(sess.filiale)+'__'+month;
-    if(maFbPlans[key]!==undefined){ plan=maFbPlans[key]; }
-    else{
-      out.innerHTML='<div style="color:var(--mut);font-size:13px;padding:8px 0">'+t('dp_loading')+'</div>';
-      fbDb.collection('plan').doc(key).get().then(function(doc){
+    // Real-time-Listener: jede Veröffentlichung (Woche ODER Monat) erscheint sofort, ohne Neuladen
+    if(maPlanKey!==key){
+      if(maPlanUnsub){try{maPlanUnsub();}catch(e){}}
+      maPlanKey=key; maPlanUnsub=null;
+      if(maFbPlans[key]===undefined){ out.innerHTML='<div style="color:var(--mut);font-size:13px;padding:8px 0">'+t('dp_loading')+'</div>'; }
+      maPlanUnsub=fbDb.collection('plan').doc(key).onSnapshot(function(doc){
         maFbPlans[key]=doc.exists?doc.data():null;
-        maRenderDP();
-      }).catch(function(e){ out.innerHTML='<div class="warnbox">'+t('dp_load_err')+e.message+'</div>'; });
-      return;
+        if(maPlanKey===key) maRenderDP();
+      }, function(e){ var o=document.getElementById('dp-out'); if(o)o.innerHTML='<div class="warnbox">'+t('dp_load_err')+e.message+'</div>'; });
     }
+    if(maFbPlans[key]===undefined) return; // erster Snapshot noch unterwegs
+    plan=maFbPlans[key];
   } else {
     var b=maLoadBundle();
     plan=b&&b.dienstplan&&b.dienstplan[sess.filiale]&&b.dienstplan[sess.filiale][month];
