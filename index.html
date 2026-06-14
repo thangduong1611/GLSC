@@ -206,6 +206,10 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 .dp-shift{width:100%;border:none;background:transparent;font-size:11px;text-align:center;padding:3px 2px;font-family:inherit;outline:none;color:var(--txt);}
 .dp-shift:focus{background:#FFFBF0;border-radius:3px;}
 .dp-cell-frei{background:#F0EDE8;}.dp-cell-urlaub{background:#EAFAF1;}.dp-cell-krank{background:#FDEDEC;}
+.dp-th-ft{background:#FCF3E0 !important;color:#8a5a00;}
+.dp-fn{display:block;font-weight:600;font-size:8px;color:#a06600;line-height:1.1;margin-top:1px;}
+.dp-cell-ft{box-shadow:inset 0 0 0 1px #f0d9a8;}
+.dp-kw-pub{height:26px;margin:0;padding:0 9px;font-size:11px;line-height:1;}
 .dp-emp-tag{display:inline-flex;align-items:center;gap:5px;background:var(--bg);border:1px solid var(--brd);border-radius:var(--rs);padding:4px 9px;font-size:12px;margin:3px 3px 3px 0;}
 .dp-emp-tag button{background:none;border:none;cursor:pointer;color:var(--mut);font-size:13px;padding:0 1px;line-height:1;}
 .rp-chip{display:inline-flex;align-items:center;padding:4px 11px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--brd);background:var(--surf);color:var(--mut);transition:all .12s;}
@@ -923,7 +927,8 @@ window.onerror=function(msg,src,line){
     <button id="dp-btn-route" class="btn" onclick="dpSetMode('route')" style="flex:1;justify-content:center">🚗 Mein Fahrtplan</button>
   </div>
   <div class="btn-row" style="margin-bottom:14px">
-    <button class="btn btn-grn" onclick="fbPublish()" style="flex:1;justify-content:center">☁️ Für Mitarbeiter-App veröffentlichen</button>
+    <button class="btn btn-grn" onclick="dpPublishMonth()" style="flex:1;justify-content:center">☁️ Diesen Monat veröffentlichen</button>
+    <button class="btn" onclick="fbPublish()" title="Alle Filialen & Monate auf einmal">☁️ Alles</button>
   </div>
   <div id="dp-mode-plan">
     <div class="card">
@@ -935,6 +940,15 @@ window.onerror=function(msg,src,line){
       </div>
       <div id="dp-custom-wrap" style="display:none;margin-top:8px">
         <label>Filialname</label><input type="text" id="dp-custom-name" placeholder="z.B. Rewe Heiligenstadt" oninput="dpInit()">
+      </div>
+      <div style="margin-top:8px">
+        <label>Bundesland (für automatische Feiertage)</label>
+        <select id="dp-bundesland" onchange="dpBLChange()">
+          <option value="NI">Niedersachsen (Hannover, Göttingen)</option>
+          <option value="HE">Hessen (Kassel, Baunatal)</option>
+          <option value="TH">Thüringen (Nordhausen)</option>
+          <option value="_none">— keine Feiertage —</option>
+        </select>
       </div>
     </div>
     <div id="dp-editor" style="display:none">
@@ -2697,6 +2711,7 @@ function dpInit(){
   var saved=dpLoadLS(dpKey());
   if(saved){dpEmployees=saved.employees||[];dpShifts=saved.shifts||{};}
   else{if(!dpEmployees.length){var emps=loadEmps().filter(function(e){return e.active!==false&&(e.filiale||'')===(f);});dpEmployees=emps.map(function(e){return{name:e.name,id:e.id};});}dpShifts={};}
+  var blSel=document.getElementById('dp-bundesland');if(blSel){var savedBl=localStorage.getItem('sc_dp_bl_'+f.replace(/\s+/g,'_').toLowerCase());if(savedBl)blSel.value=savedBl;}
   dpRenderEmpTags();dpRenderWeeks();dpPopulateAddSel();
 }
 function dpRenderEmpTags(){
@@ -2715,23 +2730,96 @@ function dpSaveFromDOM(){document.querySelectorAll('.dp-inp').forEach(function(i
 function dpAddFromList(){var sel=document.getElementById('dp-add-sel'),idx=sel.value;if(idx==='')return;var e=loadEmps().filter(function(x){return x.active!==false;})[parseInt(idx)];if(!e)return;if(dpEmployees.some(function(x){return x.id===e.id;})){toast('Bereits in der Liste!');return;}dpSaveFromDOM();dpEmployees.push({name:e.name,id:e.id});dpRenderEmpTags();dpRenderWeeks();dpPopulateAddSel();sel.value='';toast('✓ '+e.name);}
 function dpAddManual(){var name=document.getElementById('dp-add-name').value.trim();if(!name)return;dpSaveFromDOM();dpEmployees.push({name:name,id:''});dpRenderEmpTags();dpRenderWeeks();document.getElementById('dp-add-name').value='';}
 function dpRemoveEmp(i){if(!confirm(dpEmployees[i].name+' entfernen?'))return;dpSaveFromDOM();dpEmployees.splice(i,1);dpRenderEmpTags();dpRenderWeeks();dpPopulateAddSel();}
+// ── DATUM-HELFER (zeitzonensicher, lokale ISO ohne UTC-Verschiebung) ──
+function dpISO(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function dpParse(s){var p=(''+s).split('-');return new Date(+p[0],+p[1]-1,+p[2],12,0,0);}
+function dpAddDays(d,n){var x=new Date(d);x.setDate(x.getDate()+n);return x;}
+// ── DEUTSCHE FEIERTAGE (Ostern nach Gauß/Meeus) ──
+function dpEaster(y){var a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),da=((h+l-7*m+114)%31)+1;return new Date(y,mo-1,da,12,0,0);}
+function dpHolidays(year,bl){
+  if(bl==='_none')return {};
+  var E=dpEaster(year),map={};
+  function add(d,name){map[dpISO(d)]=name;}
+  // Bundesweit
+  add(new Date(year,0,1,12),'Neujahr');
+  add(dpAddDays(E,-2),'Karfreitag');
+  add(dpAddDays(E,1),'Ostermontag');
+  add(new Date(year,4,1,12),'Tag der Arbeit');
+  add(dpAddDays(E,39),'Christi Himmelfahrt');
+  add(dpAddDays(E,50),'Pfingstmontag');
+  add(new Date(year,9,3,12),'Tag der Deutschen Einheit');
+  add(new Date(year,11,25,12),'1. Weihnachtstag');
+  add(new Date(year,11,26,12),'2. Weihnachtstag');
+  // Länderspezifisch
+  if(bl==='HE')add(dpAddDays(E,60),'Fronleichnam');               // Hessen
+  if(bl==='NI'||bl==='TH')add(new Date(year,9,31,12),'Reformationstag'); // Niedersachsen + Thüringen
+  if(bl==='TH')add(new Date(year,8,20,12),'Weltkindertag');       // Thüringen
+  return map;
+}
+function dpBL(){var s=document.getElementById('dp-bundesland');return s?s.value:'NI';}
+function dpMonthHolidays(){var m=document.getElementById('dp-month').value;if(!m)return {};var y=+m.split('-')[0],bl=dpBL();return Object.assign({},dpHolidays(y-1,bl),dpHolidays(y,bl),dpHolidays(y+1,bl));}
 function dpGetKW(date){var d=new Date(date);d.setHours(0,0,0,0);d.setDate(d.getDate()+4-(d.getDay()||7));return Math.ceil((((d-new Date(d.getFullYear(),0,1))/86400000)+1)/7);}
-function dpGetWeeks(ym){var p=ym.split('-'),year=+p[0],month=+p[1];var first=new Date(year,month-1,1),last=new Date(year,month,0);var weeks=[],d=new Date(first),dow=d.getDay();if(dow!==1)d.setDate(d.getDate()-(dow===0?6:dow-1));while(d<=last){var dates=[];for(var i=0;i<6;i++){dates.push(new Date(d).toISOString().split('T')[0]);d.setDate(d.getDate()+1);}d.setDate(d.getDate()+1);weeks.push({kw:dpGetKW(new Date(dates[0])),dates:dates});}return weeks;}
+function dpGetWeeks(ym){var p=ym.split('-'),year=+p[0],month=+p[1];var first=new Date(year,month-1,1,12),last=new Date(year,month,0,12);var weeks=[],d=new Date(first),dow=d.getDay();if(dow!==1)d.setDate(d.getDate()-(dow===0?6:dow-1));while(d<=last){var dates=[];for(var i=0;i<6;i++){dates.push(dpISO(d));d.setDate(d.getDate()+1);}d.setDate(d.getDate()+1);weeks.push({kw:dpGetKW(dpParse(dates[0])),dates:dates});}return weeks;}
 function dpCellChanged(inp){var ek=inp.dataset.emp,dt=inp.dataset.date,val=inp.value;if(!dpShifts[ek])dpShifts[ek]={};dpShifts[ek][dt]=val;var td=inp.parentElement;td.className='';if(val==='Frei')td.className='dp-cell-frei';else if(val==='Urlaub')td.className='dp-cell-urlaub';else if(val==='Krank')td.className='dp-cell-krank';}
+// Feiertage als "Frei" vorbelegen (nur leere Zellen, manuelle Eingaben bleiben unberührt)
+function dpAutofillFeiertage(){
+  var hol=dpMonthHolidays();
+  dpEmployees.forEach(function(emp){
+    var ek=dpEmpKey(emp);
+    if(!dpShifts[ek])dpShifts[ek]={};
+    Object.keys(hol).forEach(function(iso){
+      if(dpShifts[ek][iso]===undefined)dpShifts[ek][iso]='Frei';
+    });
+  });
+}
 function dpRenderWeeks(){
   var m=document.getElementById('dp-month').value;if(!m)return;
+  dpAutofillFeiertage();
+  var hol=dpMonthHolidays();
   var weeks=dpGetWeeks(m),DAYS=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'],h='';
-  weeks.forEach(function(wk){
-    h+='<div class="card dp-kw-card"><div class="dp-kw-hdr"><span class="dp-kw-hdr-kw">KW: '+wk.kw+'</span><span class="dp-kw-hdr-pause">Pause &gt;6h: 30min · &gt;9h: 45min</span><span class="dp-kw-hdr-yr">'+new Date(wk.dates[0]).getFullYear()+'</span></div><div class="dp-scroll"><table class="dp-table"><thead><tr><th>Mitarbeiter</th>';
-    wk.dates.forEach(function(dt,di){var d=new Date(dt),ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});h+='<th>'+DAYS[di].substring(0,2)+'<br><small style="font-weight:400;font-size:10px">'+ds+'</small></th>';});
+  weeks.forEach(function(wk,wi){
+    h+='<div class="card dp-kw-card"><div class="dp-kw-hdr"><span class="dp-kw-hdr-kw">KW: '+wk.kw+'</span><span class="dp-kw-hdr-pause">Pause &gt;6h: 30min · &gt;9h: 45min</span><span style="display:flex;align-items:center;gap:8px"><button class="btn btn-sm btn-grn dp-kw-pub" onclick="dpPublishWeek('+wi+')" title="Nur diese Woche für Mitarbeiter veröffentlichen">☁️ KW</button><span class="dp-kw-hdr-yr">'+dpParse(wk.dates[0]).getFullYear()+'</span></span></div><div class="dp-scroll"><table class="dp-table"><thead><tr><th>Mitarbeiter</th>';
+    wk.dates.forEach(function(dt,di){var d=dpParse(dt),ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}),fn=hol[dt];h+='<th'+(fn?' class="dp-th-ft" title="'+fn+'"':'')+'>'+DAYS[di].substring(0,2)+'<br><small style="font-weight:400;font-size:10px">'+ds+'</small>'+(fn?'<br><small class="dp-fn">'+fn+'</small>':'')+'</th>';});
     h+='</tr></thead><tbody>';
     if(!dpEmployees.length){h+='<tr><td colspan="7" style="padding:12px 8px;text-align:center;font-size:12px;color:var(--mut)">Noch keine Mitarbeiter.</td></tr>';}
-    else{dpEmployees.forEach(function(emp){var ek=dpEmpKey(emp);h+='<tr><td title="'+emp.name+'">'+emp.name.substring(0,15)+(emp.name.length>15?'…':'')+'</td>';wk.dates.forEach(function(dt){var val=(dpShifts[ek]&&dpShifts[ek][dt])||'',cls=val==='Frei'?'dp-cell-frei':val==='Urlaub'?'dp-cell-urlaub':val==='Krank'?'dp-cell-krank':'';h+='<td class="'+cls+'"><input class="dp-shift dp-inp" list="dp-presets" value="'+val+'" data-emp="'+ek+'" data-date="'+dt+'" oninput="dpCellChanged(this)"></td>';});h+='</tr>';});}
+    else{dpEmployees.forEach(function(emp){var ek=dpEmpKey(emp);h+='<tr><td title="'+emp.name+'">'+emp.name.substring(0,15)+(emp.name.length>15?'…':'')+'</td>';wk.dates.forEach(function(dt){var val=(dpShifts[ek]&&dpShifts[ek][dt])||'',isF=!!hol[dt],cls=val==='Frei'?'dp-cell-frei':val==='Urlaub'?'dp-cell-urlaub':val==='Krank'?'dp-cell-krank':'';if(isF&&!cls)cls='dp-cell-frei';h+='<td class="'+cls+(isF?' dp-cell-ft':'')+'"><input class="dp-shift dp-inp" list="dp-presets" value="'+val+'" data-emp="'+ek+'" data-date="'+dt+'" oninput="dpCellChanged(this)"></td>';});h+='</tr>';});}
     h+='</tbody></table></div></div>';
   });
   document.getElementById('dp-weeks-wrap').innerHTML=h;
 }
 function dpSave(){dpSaveFromDOM();dpStoreLS(dpKey(),{employees:dpEmployees,shifts:dpShifts});toast('✓ Dienstplan gespeichert!');}
+function dpBLChange(){
+  var f=dpGetFiliale();
+  if(f)localStorage.setItem('sc_dp_bl_'+f.replace(/\s+/g,'_').toLowerCase(),document.getElementById('dp-bundesland').value);
+  if(document.getElementById('dp-month').value){dpSaveFromDOM();dpRenderWeeks();}
+}
+// Nur die aktuell geöffnete Filiale + Monat veröffentlichen (leichtgewichtig, gezielt)
+function dpPublishMonth(){
+  if(typeof fbReady==='undefined'||!fbReady||!fbDb||!fbManager){alert('Bitte zuerst als Manager anmelden (Einstellungen → ☁️ Cloud).');return;}
+  var f=dpGetFiliale(),m=document.getElementById('dp-month').value;
+  if(!f||!m){alert('Bitte Filiale und Monat wählen.');return;}
+  dpSaveFromDOM();dpStoreLS(dpKey(),{employees:dpEmployees,shifts:dpShifts});
+  var st=document.getElementById('dp-status');if(st)st.textContent='⏳ '+f+' · '+m+' wird veröffentlicht…';
+  var jobs=[fbDb.collection('plan').doc(fbSlug(f)+'__'+m).set({employees:dpEmployees,shifts:dpShifts})];
+  dpEmployees.forEach(function(e){if(e.id)jobs.push(fbDb.collection('emps').doc(''+e.id).set({name:e.name,filiale:f,active:true},{merge:true}));});
+  Promise.all(jobs).then(function(){if(st)st.textContent='✓ Veröffentlicht: '+f+' · '+fmtMonth(m);toast('☁️ '+f+' veröffentlicht');})
+    .catch(function(e){if(st)st.textContent='⚠️ '+e.message;alert('Fehler: '+e.message);});
+}
+// Nur EINE Woche veröffentlichen — überschreibt per Merge nur die Tage dieser KW
+function dpPublishWeek(wi){
+  if(typeof fbReady==='undefined'||!fbReady||!fbDb||!fbManager){alert('Bitte zuerst als Manager anmelden (Einstellungen → ☁️ Cloud).');return;}
+  var f=dpGetFiliale(),m=document.getElementById('dp-month').value;
+  if(!f||!m){alert('Bitte Filiale und Monat wählen.');return;}
+  dpSaveFromDOM();dpStoreLS(dpKey(),{employees:dpEmployees,shifts:dpShifts});
+  var weeks=dpGetWeeks(m),wk=weeks[wi];if(!wk)return;
+  var partial={};
+  dpEmployees.forEach(function(emp){var ek=dpEmpKey(emp);partial[ek]={};wk.dates.forEach(function(dt){partial[ek][dt]=(dpShifts[ek]&&dpShifts[ek][dt])||'';});});
+  var st=document.getElementById('dp-status');if(st)st.textContent='⏳ KW '+wk.kw+' wird veröffentlicht…';
+  var jobs=[fbDb.collection('plan').doc(fbSlug(f)+'__'+m).set({employees:dpEmployees,shifts:partial},{merge:true})];
+  dpEmployees.forEach(function(e){if(e.id)jobs.push(fbDb.collection('emps').doc(''+e.id).set({name:e.name,filiale:f,active:true},{merge:true}));});
+  Promise.all(jobs).then(function(){if(st)st.textContent='✓ KW '+wk.kw+' veröffentlicht ('+f+')';toast('☁️ KW '+wk.kw+' veröffentlicht');})
+    .catch(function(e){if(st)st.textContent='⚠️ '+e.message;alert('Fehler: '+e.message);});
+}
 var dpLastDoc=null,dpLastFname='';
 function dpExportPDF(){
   dpSaveFromDOM();
@@ -2743,6 +2831,7 @@ function dpExportPDF(){
   var jsPDF=(window.jspdf||jspdf).jsPDF,doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
   var ML=8,MT=8,PW=194,CE=36,CD=(PW-CE)/6,RKW=7,RH=12,RE=7.5,pH=280,y=MT;
   var DAYS=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+  var holPDF=dpMonthHolidays();
   doc.setFontSize(13);doc.setFont('helvetica','bold');
   doc.text('Arbeitsplan \u2013 '+f,ML+PW/2,y+5.5,{align:'center'});y+=10;
   dpGetWeeks(m).forEach(function(wk){
@@ -2750,11 +2839,11 @@ function dpExportPDF(){
     doc.setFillColor(238,232,224);doc.rect(ML,y,PW,RKW,'F');doc.setDrawColor(200,195,188);doc.rect(ML,y,PW,RKW,'S');
     doc.setFontSize(8);doc.setFont('helvetica','bold');doc.text('KW: '+wk.kw,ML+3,y+4.8);
     doc.setFont('helvetica','normal');doc.setFontSize(7);doc.text('Pause (Pflicht)  >6h: 30min    >9h: 45min',ML+22,y+4.8);
-    doc.setFont('helvetica','bold');doc.setFontSize(8);doc.text(String(new Date(wk.dates[0]).getFullYear()),ML+PW-3,y+4.8,{align:'right'});
+    doc.setFont('helvetica','bold');doc.setFontSize(8);doc.text(String(dpParse(wk.dates[0]).getFullYear()),ML+PW-3,y+4.8,{align:'right'});
     y+=RKW;
     doc.setFillColor(248,244,240);doc.rect(ML,y,CE,RH,'F');doc.setDrawColor(200,195,188);doc.rect(ML,y,CE,RH,'S');
     doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.text('Mitarbeiter',ML+CE/2,y+4.5,{align:'center'});
-    wk.dates.forEach(function(dt,di){var x=ML+CE+di*CD,d=new Date(dt),ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});doc.setFillColor(248,244,240);doc.rect(x,y,CD,RH,'F');doc.setDrawColor(200,195,188);doc.rect(x,y,CD,RH,'S');doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.text(DAYS[di].substring(0,2),x+CD/2,y+4.2,{align:'center'});doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.text(ds,x+CD/2,y+9.2,{align:'center'});});
+    wk.dates.forEach(function(dt,di){var x=ML+CE+di*CD,d=dpParse(dt),ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}),fn=holPDF[dt];if(fn)doc.setFillColor(252,243,224);else doc.setFillColor(248,244,240);doc.rect(x,y,CD,RH,'F');doc.setDrawColor(200,195,188);doc.rect(x,y,CD,RH,'S');doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.text(DAYS[di].substring(0,2),x+CD/2,y+4.2,{align:'center'});doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.text(ds,x+CD/2,y+8.4,{align:'center'});if(fn){doc.setFontSize(4.6);doc.setTextColor(150,100,0);doc.text(fn.length>16?fn.substring(0,15)+'\u2026':fn,x+CD/2,y+11.4,{align:'center'});doc.setTextColor(0,0,0);}});
     y+=RH;
     dpEmployees.forEach(function(emp){
       if(y+RE>pH){doc.addPage();y=MT;}
