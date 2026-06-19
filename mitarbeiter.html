@@ -447,12 +447,23 @@ function maStartFbPush(sess){
 }
 // Vom Button ausgelöst: Erlaubnis anfragen + Token registrieren
 function maEnablePush(){
-  var sess=maSession(); if(!sess) return;
+  var sess=maSession(); if(!sess){ toast(t('push_unsupported'), true); return; }
   if(!maPushSupported()){ toast(t('push_unsupported'), true); return; }
+  // iOS PWA: falls Permission bereits granted (ohne Dialog) -> direkt registrieren
+  if(Notification.permission==='granted'){ maPushRegister(sess, false); return; }
   Notification.requestPermission().then(function(perm){
-    if(perm!=='granted'){ toast(t('push_denied'), true); maPushUiRefresh(); return; }
-    maPushRegister(sess, false);
-  }).catch(function(e){ toast(t('push_denied'), true); });
+    if(perm==='granted'){
+      maPushRegister(sess, false);
+    } else {
+      toast(t(perm==='denied' ? 'push_denied' : 'push_unsupported'), true);
+      maPushUiRefresh();
+    }
+  }).catch(function(e){
+    console.warn('push permission error', e);
+    // iOS Fallback: requestPermission wirft manchmal -> Status direkt lesen
+    if(Notification.permission==='granted'){ maPushRegister(sess, false); }
+    else { toast(t('push_denied'), true); }
+  });
 }
 function maPushRegister(sess, silent){
   try{
