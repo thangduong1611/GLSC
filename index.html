@@ -2812,12 +2812,26 @@ function dpPublishWeek(wi){
   if(!f||!m){alert('Bitte Filiale und Monat wählen.');return;}
   dpSaveFromDOM();dpStoreLS(dpKey(),{employees:dpEmployees,shifts:dpShifts});
   var weeks=dpGetWeeks(m),wk=weeks[wi];if(!wk)return;
-  var partial={};
-  dpEmployees.forEach(function(emp){var ek=dpEmpKey(emp);partial[ek]={};wk.dates.forEach(function(dt){partial[ek][dt]=(dpShifts[ek]&&dpShifts[ek][dt])||'';});});
   var st=document.getElementById('dp-status');if(st)st.textContent='⏳ KW '+wk.kw+' wird veröffentlicht…';
-  var jobs=[fbDb.collection('plan').doc(fbSlug(f)+'__'+m).set({employees:dpEmployees,shifts:partial},{merge:true})];
-  dpEmployees.forEach(function(e){if(e.id)jobs.push(fbDb.collection('emps').doc(''+e.id).set({name:e.name,filiale:f,active:true},{merge:true}));});
-  Promise.all(jobs).then(function(){if(st)st.textContent='✓ KW '+wk.kw+' veröffentlicht ('+f+')';toast('☁️ KW '+wk.kw+' veröffentlicht');})
+  var ref=fbDb.collection('plan').doc(fbSlug(f)+'__'+m);
+  // Read-Modify-Write: erst vorhandene Schichten laden, dann nur diese KW überschreiben.
+  // Ohne dieses Muster würde set({shifts:partial},{merge:true}) die anderen Wochen löschen,
+  // weil Firestore merge:true nur auf oberster Ebene arbeitet (shifts wird als Ganzes ersetzt).
+  ref.get().then(function(doc){
+    var existingShifts=(doc.exists&&doc.data().shifts)||{};
+    // Alle bisherigen Schichten übernehmen
+    var merged={};
+    Object.keys(existingShifts).forEach(function(ek){ merged[ek]=Object.assign({},existingShifts[ek]); });
+    // Nur die Tage dieser KW für aktuelle Mitarbeiter aktualisieren
+    dpEmployees.forEach(function(emp){
+      var ek=dpEmpKey(emp);
+      if(!merged[ek]) merged[ek]={};
+      wk.dates.forEach(function(dt){ merged[ek][dt]=(dpShifts[ek]&&dpShifts[ek][dt])||''; });
+    });
+    var jobs=[ref.set({employees:dpEmployees,shifts:merged})];
+    dpEmployees.forEach(function(e){if(e.id)jobs.push(fbDb.collection('emps').doc(''+e.id).set({name:e.name,filiale:f,active:true},{merge:true}));});
+    return Promise.all(jobs);
+  }).then(function(){if(st)st.textContent='✓ KW '+wk.kw+' veröffentlicht ('+f+')';toast('☁️ KW '+wk.kw+' veröffentlicht');})
     .catch(function(e){if(st)st.textContent='⚠️ '+e.message;alert('Fehler: '+e.message);});
 }
 var dpLastDoc=null,dpLastFname='';
