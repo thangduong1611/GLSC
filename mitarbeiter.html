@@ -312,6 +312,10 @@ window.onerror=function(msg,src,line){
   <div class="panel" id="p-nw">
     <div class="card">
       <div class="card-title" data-i18n="nw_title">📢 Infos vom Gebietsleiter</div>
+      <div id="push-box" style="display:none;background:var(--blu-bg);border:1px solid #AED6F1;border-radius:var(--rs);padding:11px 14px;margin-bottom:14px">
+        <div style="font-size:13.5px;color:var(--blu);line-height:1.5;margin-bottom:8px" data-i18n="push_info">🔔 Aktiviere Push-Benachrichtigungen, um sofort informiert zu werden, sobald eine neue Info hochgeladen wird – auch wenn die App geschlossen ist.</div>
+        <button class="btn btn-grn" id="push-btn" onclick="maEnablePush()" data-i18n="push_btn">🔔 Benachrichtigungen aktivieren</button>
+      </div>
       <div id="nw-feed"><div style="font-size:13px;color:var(--mut)">Noch keine Mitteilungen.</div></div>
     </div>
   </div>
@@ -340,6 +344,7 @@ window.onerror=function(msg,src,line){
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 /* ════════════════════════════════════════════════
@@ -415,6 +420,71 @@ function maNewsMarkRead(){
   if(maNews.length) localStorage.setItem('ma_news_seen', maNews[0].created);
   var dot=document.getElementById('nw-dot'); if(dot) dot.style.display='none';
 }
+
+/* ════════════════════════════════════════════════
+   PUSH-BENACHRICHTIGUNGEN (Firebase Cloud Messaging)
+   Voraussetzungen (einmalig in fb-config.js / Firebase-Console):
+     - window.FB_VAPID_KEY = '...'  (Console → Cloud Messaging → Web-Push-Zertifikate)
+     - Datei firebase-messaging-sw.js im selben Ordner
+     - Cloud Function, die bei neuer 'news' an die gespeicherten Tokens sendet
+   ════════════════════════════════════════════════ */
+var maMsg=null, maPushReg=null;
+function maPushSupported(){
+  try{ return !!(window.FB_VAPID_KEY && 'serviceWorker' in navigator && 'Notification' in window
+    && typeof firebase!=='undefined' && firebase.messaging && firebase.messaging.isSupported && firebase.messaging.isSupported()); }
+  catch(e){ return false; }
+}
+// Zeigt den "Aktivieren"-Button nur, wenn sinnvoll (unterstützt + noch nicht erlaubt)
+function maPushUiRefresh(){
+  var box=document.getElementById('push-box'); if(!box) return;
+  if(!maPushSupported()){ box.style.display='none'; return; }
+  box.style.display = (Notification.permission==='granted') ? 'none' : 'block';
+}
+// Beim Login: falls Erlaubnis schon erteilt → Token still auffrischen; sonst Button anzeigen
+function maStartFbPush(sess){
+  maPushUiRefresh();
+  if(maPushSupported() && Notification.permission==='granted'){ maPushRegister(sess, true); }
+}
+// Vom Button ausgelöst: Erlaubnis anfragen + Token registrieren
+function maEnablePush(){
+  var sess=maSession(); if(!sess) return;
+  if(!maPushSupported()){ toast(t('push_unsupported'), true); return; }
+  Notification.requestPermission().then(function(perm){
+    if(perm!=='granted'){ toast(t('push_denied'), true); maPushUiRefresh(); return; }
+    maPushRegister(sess, false);
+  }).catch(function(e){ toast(t('push_denied'), true); });
+}
+function maPushRegister(sess, silent){
+  try{
+    if(!firebase.apps.length && fbEnabled()) firebase.initializeApp(FB_CONFIG);
+    if(!maMsg) maMsg=firebase.messaging();
+    var swReady = maPushReg
+      ? Promise.resolve(maPushReg)
+      : navigator.serviceWorker.register('firebase-messaging-sw.js').then(function(reg){ maPushReg=reg; return reg; });
+    swReady.then(function(reg){
+      return maMsg.getToken({ vapidKey: window.FB_VAPID_KEY, serviceWorkerRegistration: reg });
+    }).then(function(token){
+      if(!token) return;
+      // Token am Mitarbeiter-Profil speichern (für die Cloud Function)
+      if(fbReady && fbDb){
+        fbDb.collection('emps').doc(''+sess.id).set({
+          fcmTokens: firebase.firestore.FieldValue.arrayUnion(token)
+        }, { merge:true }).catch(function(e){ console.warn('token save', e); });
+      }
+      // Vordergrund-Nachrichten (App offen): Toast + Glocke aktualisieren
+      maMsg.onMessage(function(payload){
+        var body=(payload && payload.notification && payload.notification.body) || t('push_newinfo');
+        toast('📢 '+body);
+        if(typeof maNewsDot==='function') maNewsDot();
+      });
+      maPushUiRefresh();
+      if(!silent) toast(t('push_on'));
+    }).catch(function(e){
+      console.warn('push register', e);
+      if(!silent) toast(t('push_denied'), true);
+    });
+  }catch(e){ console.warn('push', e); if(!silent) toast(t('push_unsupported'), true); }
+}
 /* ════════════════════════════════════════════════
    STORAGE
    ════════════════════════════════════════════════ */
@@ -464,6 +534,7 @@ de:{_name:'Deutsch',
  kr_hint:'ℹ️ WhatsApp öffnet sich mit der Nachricht. Das Foto wird im Gerät gespeichert/angezeigt — bitte in WhatsApp noch anhängen (📎).',
  t_kr_from:'Bitte mindestens das Startdatum wählen.',t_wa:'✓ WhatsApp geöffnet',t_wa_attach:' – Foto noch anhängen 📎',
  nw_title:'📢 Infos vom Gebietsleiter',nw_none:'Noch keine Mitteilungen.',
+ push_info:'🔔 Aktiviere Push-Benachrichtigungen, um sofort informiert zu werden, sobald eine neue Info hochgeladen wird – auch wenn die App geschlossen ist.',push_btn:'🔔 Benachrichtigungen aktivieren',push_on:'✓ Benachrichtigungen aktiv',push_denied:'Benachrichtigungen wurden im Browser blockiert. Bitte in den Browser-Einstellungen erlauben.',push_unsupported:'Push-Benachrichtigungen werden auf diesem Gerät/Browser nicht unterstützt.',push_newinfo:'📢 Neue Info vom Gebietsleiter',
  wa_missing:'WhatsApp-Nummer fehlt. Nachricht kopieren:',inst_title:'App auf dem Startbildschirm',inst_btn:'Jetzt installieren',inst_ios:'1️⃣ Diese Seite in <strong>Safari</strong> öffnen (in WhatsApp: Teilen → „In Safari öffnen")<br>2️⃣ Unten auf <strong>Teilen</strong> ⬆️ tippen<br>3️⃣ <strong>„Zum Home-Bildschirm"</strong> wählen',
  months:['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
  wdS:['So','Mo','Di','Mi','Do','Fr','Sa'],
@@ -502,6 +573,7 @@ vi:{_name:'Tiếng Việt',
  kr_hint:'ℹ️ WhatsApp sẽ mở với tin nhắn soạn sẵn. Ảnh đã lưu trong máy — nhớ đính kèm trong WhatsApp (📎).',
  t_kr_from:'Vui lòng chọn ít nhất ngày bắt đầu.',t_wa:'✓ Đã mở WhatsApp',t_wa_attach:' – nhớ đính kèm ảnh 📎',
  nw_title:'📢 Thông báo từ Gebietsleiter',nw_none:'Chưa có thông báo nào.',
+ push_info:'🔔 Bật thông báo đẩy để nhận tin ngay khi có thông tin mới được tải lên – kể cả khi đã đóng app.',push_btn:'🔔 Bật thông báo',push_on:'✓ Đã bật thông báo',push_denied:'Thông báo đã bị chặn trong trình duyệt. Vui lòng cho phép trong cài đặt trình duyệt.',push_unsupported:'Thiết bị/trình duyệt này không hỗ trợ thông báo đẩy.',push_newinfo:'📢 Thông báo mới từ Gebietsleiter',
  wa_missing:'Thiếu số WhatsApp. Sao chép tin nhắn:',inst_title:'Cài app ra màn hình chính',inst_btn:'Cài đặt ngay',inst_ios:'1️⃣ Mở trang này bằng <strong>Safari</strong> (trong WhatsApp: Chia sẻ → „Mở bằng Safari")<br>2️⃣ Bấm nút <strong>Chia sẻ</strong> ⬆️ phía dưới<br>3️⃣ Chọn <strong>„Thêm vào Màn hình chính"</strong>',
  months:['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'],
  wdS:['CN','T2','T3','T4','T5','T6','T7'],
@@ -540,6 +612,7 @@ en:{_name:'English',
  kr_hint:'ℹ️ WhatsApp opens with the message. The photo is saved on your device — please attach it in WhatsApp (📎).',
  t_kr_from:'Please choose at least the start date.',t_wa:'✓ WhatsApp opened',t_wa_attach:' – attach the photo 📎',
  nw_title:'📢 News from the area manager',nw_none:'No news yet.',
+ push_info:'🔔 Enable push notifications to be informed instantly when new info is uploaded – even when the app is closed.',push_btn:'🔔 Enable notifications',push_on:'✓ Notifications enabled',push_denied:'Notifications are blocked in the browser. Please allow them in the browser settings.',push_unsupported:'Push notifications are not supported on this device/browser.',push_newinfo:'📢 New info from the area manager',
  wa_missing:'WhatsApp number missing. Copy the message:',inst_title:'Install app to home screen',inst_btn:'Install now',inst_ios:'1️⃣ Open this page in <strong>Safari</strong> (in WhatsApp: Share → "Open in Safari")<br>2️⃣ Tap <strong>Share</strong> ⬆️ at the bottom<br>3️⃣ Choose <strong>"Add to Home Screen"</strong>',
  months:['January','February','March','April','May','June','July','August','September','October','November','December'],
  wdS:['Su','Mo','Tu','We','Th','Fr','Sa'],
@@ -578,6 +651,7 @@ th:{_name:'ไทย',
  kr_hint:'ℹ️ WhatsApp จะเปิดพร้อมข้อความ รูปถูกบันทึกในเครื่อง — กรุณาแนบใน WhatsApp (📎)',
  t_kr_from:'กรุณาเลือกวันเริ่มอย่างน้อย',t_wa:'✓ เปิด WhatsApp แล้ว',t_wa_attach:' – อย่าลืมแนบรูป 📎',
  nw_title:'📢 ข่าวจากผู้จัดการเขต',nw_none:'ยังไม่มีประกาศ',
+ push_info:'🔔 เปิดการแจ้งเตือนแบบพุช เพื่อรับข่าวทันทีเมื่อมีข้อมูลใหม่ – แม้ปิดแอปอยู่',push_btn:'🔔 เปิดการแจ้งเตือน',push_on:'✓ เปิดการแจ้งเตือนแล้ว',push_denied:'การแจ้งเตือนถูกบล็อกในเบราว์เซอร์ กรุณาอนุญาตในการตั้งค่าเบราว์เซอร์',push_unsupported:'อุปกรณ์/เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือนแบบพุช',push_newinfo:'📢 ข้อมูลใหม่จากผู้จัดการเขต',
  wa_missing:'ไม่มีเบอร์ WhatsApp คัดลอกข้อความ:',inst_title:'ติดตั้งแอปบนหน้าจอหลัก',inst_btn:'ติดตั้งเลย',inst_ios:'1️⃣ เปิดหน้านี้ใน <strong>Safari</strong> (ใน WhatsApp: แชร์ → „เปิดใน Safari")<br>2️⃣ แตะปุ่ม <strong>แชร์</strong> ⬆️ ด้านล่าง<br>3️⃣ เลือก <strong>„เพิ่มลงในหน้าจอโฮม"</strong>',
  months:['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'],
  wdS:['อา','จ','อ','พ','พฤ','ศ','ส'],
@@ -753,8 +827,16 @@ function maShowApp(sess){
   maInitSig();
   // Firebase realtime (falls konfiguriert)
   if(fbEnabled()){
-    if(fbReady){ maStartFbUrlaub(sess); maStartFbNews(); maRefreshProfile(); }
-    else fbInit(function(){ maStartFbUrlaub(sess); maStartFbNews(); maRefreshProfile(); });
+    var afterFbReady=function(){
+      maStartFbUrlaub(sess); maStartFbNews(); maRefreshProfile();
+      // WICHTIG: Nach erfolgreichem Firebase-Login die Ansichten EINMAL neu rendern.
+      // Beim ersten maShowApp() war fbReady noch false → Dienstplan blieb auf
+      // "noch nicht veröffentlicht" stehen, bis der Nutzer den Monat manuell wechselte.
+      maRenderDP(); maRenderCal(); maRenderUlList();
+      if(typeof maStartFbPush==='function') maStartFbPush(sess);
+    };
+    if(fbReady){ afterFbReady(); }
+    else fbInit(afterFbReady);
   }
 }
 function maNav(t){
@@ -946,7 +1028,7 @@ function maRequestUrlaub(){
 var maSig={drawing:false,empty:true,ctx:null};
 function maInitSig(){
   var c=document.getElementById('sig-canvas');if(!c)return;
-  var ctx=c.getContext('2d');maSig.ctx=ctx;
+  var ctx=c.getContext('2d'); if(!ctx) return; maSig.ctx=ctx;
   ctx.lineWidth=2.5;ctx.lineCap='round';ctx.strokeStyle='#1A1A18';
   function pos(e){var r=c.getBoundingClientRect();var t=e.touches?e.touches[0]:e;return{x:(t.clientX-r.left)*(c.width/r.width),y:(t.clientY-r.top)*(c.height/r.height)};}
   function start(e){e.preventDefault();maSig.drawing=true;maSig.empty=false;var p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);}
