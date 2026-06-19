@@ -355,6 +355,7 @@ var FB_CONFIG = (typeof window!=='undefined' && window.FB_CONFIG) ? window.FB_CO
 var fbReady=false, fbDb=null, fbUnsub=null, maFbUrlaub=[], maFbPlans={};
 var maPlanUnsub=null, maPlanKey=null;
 var maNews=[], maNewsUnsub=null;
+var maNewsReads={}, maNewsReadsUnsub=null;
 function fbSlug(f){ return (''+f).replace(/\s+/g,'_').toLowerCase(); }
 function fbEnabled(){ return !!(FB_CONFIG && FB_CONFIG.apiKey && typeof firebase!=='undefined'); }
 function fbInit(onReady){
@@ -397,16 +398,42 @@ function maStartFbNews(){
       .sort(function(a,b){ return a.created<b.created?1:-1; });
     maRenderNews(); maNewsDot();
   }, function(err){ console.warn('FB news', err); });
+  maStartFbNewsReads();
+}
+// Lese-Bestätigungen DIESES Mitarbeiters laden (für die "Gelesen"-Markierung)
+function maStartFbNewsReads(){
+  if(!fbReady||!fbDb) return;
+  var sess=maSession(); if(!sess) return;
+  if(maNewsReadsUnsub){ try{maNewsReadsUnsub();}catch(e){} }
+  maNewsReadsUnsub=fbDb.collection('news_reads').where('empId','==',''+sess.id).onSnapshot(function(snap){
+    var map={}; snap.forEach(function(doc){ var v=doc.data()||{}; if(v.newsId) map[v.newsId]=true; });
+    maNewsReads=map; maRenderNews();
+  }, function(err){ console.warn('FB news_reads', err); });
+}
+// Mitarbeiter bestätigt, eine Mitteilung gelesen zu haben
+function maConfirmRead(newsId){
+  var sess=maSession(); if(!sess) return;
+  maNewsReads[newsId]=true; maRenderNews(); // sofortiges Feedback
+  if(!fbReady||!fbDb) return;
+  fbDb.collection('news_reads').doc(newsId+'__'+sess.id).set({
+    newsId:newsId, empId:''+sess.id, name:sess.name||'', filiale:sess.filiale||'', at:new Date().toISOString()
+  }).then(function(){ toast(t('nw_read_toast')); })
+    .catch(function(e){ console.warn('read confirm', e); });
 }
 function maRenderNews(){
   var box=document.getElementById('nw-feed'); if(!box) return;
   if(!maNews.length){ box.innerHTML='<div style="font-size:13px;color:var(--mut)">'+t('nw_none')+'</div>'; return; }
   box.innerHTML=maNews.map(function(n){
     var dt=n.created?new Date(n.created).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit',year:'numeric'}):'';
+    var read=!!maNewsReads[n.id];
+    var foot = read
+      ? '<div style="margin-top:11px;font-size:13.5px;color:var(--grn);font-weight:600">'+t('nw_read_done')+'</div>'
+      : '<button class="btn btn-grn" style="margin-top:11px" onclick="maConfirmRead(\''+n.id+'\')">'+t('nw_read_btn')+'</button>';
     return '<div style="border:1px solid var(--brd);border-radius:var(--rs);padding:14px;margin-bottom:12px;background:var(--surf)">'
       +'<div style="font-size:12px;color:var(--mut);font-weight:600;margin-bottom:6px">'+dt+'</div>'
       +(n.text?'<div style="font-size:15px;line-height:1.6;white-space:pre-wrap">'+n.text.replace(/</g,'&lt;')+'</div>':'')
       +(n.img?'<img src="'+n.img+'" style="max-width:100%;border-radius:6px;margin-top:10px">':'')
+      +foot
       +'</div>';
   }).join('');
 }
@@ -546,6 +573,7 @@ de:{_name:'Deutsch',
  t_kr_from:'Bitte mindestens das Startdatum wählen.',t_wa:'✓ WhatsApp geöffnet',t_wa_attach:' – Foto noch anhängen 📎',
  nw_title:'📢 Infos vom Gebietsleiter',nw_none:'Noch keine Mitteilungen.',
  push_info:'🔔 Aktiviere Push-Benachrichtigungen, um sofort informiert zu werden, sobald eine neue Info hochgeladen wird – auch wenn die App geschlossen ist.',push_btn:'🔔 Benachrichtigungen aktivieren',push_on:'✓ Benachrichtigungen aktiv',push_denied:'Benachrichtigungen wurden im Browser blockiert. Bitte in den Browser-Einstellungen erlauben.',push_unsupported:'Push-Benachrichtigungen werden auf diesem Gerät/Browser nicht unterstützt.',push_newinfo:'📢 Neue Info vom Gebietsleiter',
+ nw_read_btn:'✓ Gelesen – bestätigen',nw_read_done:'✓ Als gelesen bestätigt',nw_read_toast:'✓ Lesebestätigung gesendet',
  wa_missing:'WhatsApp-Nummer fehlt. Nachricht kopieren:',inst_title:'App auf dem Startbildschirm',inst_btn:'Jetzt installieren',inst_ios:'1️⃣ Diese Seite in <strong>Safari</strong> öffnen (in WhatsApp: Teilen → „In Safari öffnen")<br>2️⃣ Unten auf <strong>Teilen</strong> ⬆️ tippen<br>3️⃣ <strong>„Zum Home-Bildschirm"</strong> wählen',
  months:['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
  wdS:['So','Mo','Di','Mi','Do','Fr','Sa'],
@@ -585,6 +613,7 @@ vi:{_name:'Tiếng Việt',
  t_kr_from:'Vui lòng chọn ít nhất ngày bắt đầu.',t_wa:'✓ Đã mở WhatsApp',t_wa_attach:' – nhớ đính kèm ảnh 📎',
  nw_title:'📢 Thông báo từ Gebietsleiter',nw_none:'Chưa có thông báo nào.',
  push_info:'🔔 Bật thông báo đẩy để nhận tin ngay khi có thông tin mới được tải lên – kể cả khi đã đóng app.',push_btn:'🔔 Bật thông báo',push_on:'✓ Đã bật thông báo',push_denied:'Thông báo đã bị chặn trong trình duyệt. Vui lòng cho phép trong cài đặt trình duyệt.',push_unsupported:'Thiết bị/trình duyệt này không hỗ trợ thông báo đẩy.',push_newinfo:'📢 Thông báo mới từ Gebietsleiter',
+ nw_read_btn:'✓ Đã đọc – xác nhận',nw_read_done:'✓ Đã xác nhận đã đọc',nw_read_toast:'✓ Đã gửi xác nhận đã đọc',
  wa_missing:'Thiếu số WhatsApp. Sao chép tin nhắn:',inst_title:'Cài app ra màn hình chính',inst_btn:'Cài đặt ngay',inst_ios:'1️⃣ Mở trang này bằng <strong>Safari</strong> (trong WhatsApp: Chia sẻ → „Mở bằng Safari")<br>2️⃣ Bấm nút <strong>Chia sẻ</strong> ⬆️ phía dưới<br>3️⃣ Chọn <strong>„Thêm vào Màn hình chính"</strong>',
  months:['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'],
  wdS:['CN','T2','T3','T4','T5','T6','T7'],
@@ -624,6 +653,7 @@ en:{_name:'English',
  t_kr_from:'Please choose at least the start date.',t_wa:'✓ WhatsApp opened',t_wa_attach:' – attach the photo 📎',
  nw_title:'📢 News from the area manager',nw_none:'No news yet.',
  push_info:'🔔 Enable push notifications to be informed instantly when new info is uploaded – even when the app is closed.',push_btn:'🔔 Enable notifications',push_on:'✓ Notifications enabled',push_denied:'Notifications are blocked in the browser. Please allow them in the browser settings.',push_unsupported:'Push notifications are not supported on this device/browser.',push_newinfo:'📢 New info from the area manager',
+ nw_read_btn:'✓ Mark as read',nw_read_done:'✓ Confirmed as read',nw_read_toast:'✓ Read receipt sent',
  wa_missing:'WhatsApp number missing. Copy the message:',inst_title:'Install app to home screen',inst_btn:'Install now',inst_ios:'1️⃣ Open this page in <strong>Safari</strong> (in WhatsApp: Share → "Open in Safari")<br>2️⃣ Tap <strong>Share</strong> ⬆️ at the bottom<br>3️⃣ Choose <strong>"Add to Home Screen"</strong>',
  months:['January','February','March','April','May','June','July','August','September','October','November','December'],
  wdS:['Su','Mo','Tu','We','Th','Fr','Sa'],
@@ -663,6 +693,7 @@ th:{_name:'ไทย',
  t_kr_from:'กรุณาเลือกวันเริ่มอย่างน้อย',t_wa:'✓ เปิด WhatsApp แล้ว',t_wa_attach:' – อย่าลืมแนบรูป 📎',
  nw_title:'📢 ข่าวจากผู้จัดการเขต',nw_none:'ยังไม่มีประกาศ',
  push_info:'🔔 เปิดการแจ้งเตือนแบบพุช เพื่อรับข่าวทันทีเมื่อมีข้อมูลใหม่ – แม้ปิดแอปอยู่',push_btn:'🔔 เปิดการแจ้งเตือน',push_on:'✓ เปิดการแจ้งเตือนแล้ว',push_denied:'การแจ้งเตือนถูกบล็อกในเบราว์เซอร์ กรุณาอนุญาตในการตั้งค่าเบราว์เซอร์',push_unsupported:'อุปกรณ์/เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือนแบบพุช',push_newinfo:'📢 ข้อมูลใหม่จากผู้จัดการเขต',
+ nw_read_btn:'✓ อ่านแล้ว – ยืนยัน',nw_read_done:'✓ ยืนยันว่าอ่านแล้ว',nw_read_toast:'✓ ส่งการยืนยันการอ่านแล้ว',
  wa_missing:'ไม่มีเบอร์ WhatsApp คัดลอกข้อความ:',inst_title:'ติดตั้งแอปบนหน้าจอหลัก',inst_btn:'ติดตั้งเลย',inst_ios:'1️⃣ เปิดหน้านี้ใน <strong>Safari</strong> (ใน WhatsApp: แชร์ → „เปิดใน Safari")<br>2️⃣ แตะปุ่ม <strong>แชร์</strong> ⬆️ ด้านล่าง<br>3️⃣ เลือก <strong>„เพิ่มลงในหน้าจอโฮม"</strong>',
  months:['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'],
  wdS:['อา','จ','อ','พ','พฤ','ศ','ส'],

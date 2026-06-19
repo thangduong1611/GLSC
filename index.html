@@ -3465,7 +3465,7 @@ function fbBootStatus(){
     fbPendingCardShow('⚠️ Firebase-Bibliothek nicht geladen. Internet/Adblocker prüfen und Seite neu laden.', '#C0392B');
     return;
   }
-  fbInit(function(){ fbStartPending(); nwStartListener(); krStartListener(); anStartListener(); });
+  fbInit(function(){ fbStartPending(); nwStartListener(); nwReadsStartListener(); krStartListener(); anStartListener(); });
 }
 function fbSlug(f){ return (''+f).replace(/\s+/g,'_').toLowerCase(); }
 function fbInit(onReady){
@@ -3824,7 +3824,7 @@ function fvRenderSummary(){
 }
 
 // ════════ MITTEILUNGEN (News an alle Mitarbeiter) ════════
-var nwImgData=null, fbNews=[];
+var nwImgData=null, fbNews=[], fbNewsReads={};
 function nwPickImg(ev){
   var f=ev.target.files[0]; if(!f) return;
   var r=new FileReader();
@@ -3862,13 +3862,33 @@ function nwStartListener(){
     nwRender();
   }, function(err){ console.warn('FB news', err); });
 }
+// Lese-Bestätigungen aller Mitarbeiter laden, gruppiert nach Mitteilung
+function nwReadsStartListener(){
+  if(!fbReady||!fbDb) return;
+  fbDb.collection('news_reads').onSnapshot(function(snap){
+    var map={}; snap.forEach(function(doc){ var v=doc.data()||{}; if(!v.newsId) return; (map[v.newsId]=map[v.newsId]||[]).push({name:v.name||'?', filiale:v.filiale||'', at:v.at||''}); });
+    fbNewsReads=map; nwRender();
+  }, function(err){ console.warn('FB news_reads', err); });
+}
 function nwRender(){
   var box=document.getElementById('nw-list'); if(!box) return;
   if(!fbNews.length){ box.innerHTML='Noch keine Mitteilungen.'; return; }
   box.innerHTML=fbNews.map(function(n){
     var d=n.data, dt=d.created?new Date(d.created).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}):'';
+    var reads=(fbNewsReads[n.docId]||[]).slice().sort(function(a,b){ return (''+a.name).localeCompare(''+b.name); });
+    var readHtml;
+    if(reads.length){
+      var names=reads.map(function(r){
+        var tm=r.at?new Date(r.at).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+        var fil=r.filiale?' <span style="color:#9a968e">('+(''+r.filiale).replace(/</g,'&lt;')+')</span>':'';
+        return '<span title="'+tm+'">'+(''+r.name).replace(/</g,'&lt;')+fil+'</span>';
+      }).join(', ');
+      readHtml='<div style="margin-top:6px;font-size:12px;color:var(--grn);font-weight:600">✓ Gelesen ('+reads.length+'): <span style="color:#3a382f;font-weight:400">'+names+'</span></div>';
+    } else {
+      readHtml='<div style="margin-top:6px;font-size:12px;color:#9a968e">Noch niemand hat als gelesen bestätigt.</div>';
+    }
     return '<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid #E8E4E0;border-radius:6px;margin-bottom:6px">'
-      +'<div style="flex:1"><span style="color:#6B6860;font-size:12px">'+dt+'</span><br>'+(d.text||'').replace(/</g,'&lt;').replace(/\n/g,'<br>')+(d.img?'<br><span style="font-size:12px">📷 mit Foto</span>':'')+'</div>'
+      +'<div style="flex:1"><span style="color:#6B6860;font-size:12px">'+dt+'</span><br>'+(d.text||'').replace(/</g,'&lt;').replace(/\n/g,'<br>')+(d.img?'<br><span style="font-size:12px">📷 mit Foto</span>':'')+readHtml+'</div>'
       +'<button class="btn btn-sm" style="color:#C0392B;border-color:#C0392B" onclick="nwDelete(\''+n.docId+'\')">🗑</button>'
       +'</div>';
   }).join('');
