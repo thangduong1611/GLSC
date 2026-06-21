@@ -211,6 +211,7 @@ window.onerror=function(msg,src,line){
     <button class="app-ico" id="ico-ul" onclick="maNav('ul')"><span class="ico-e">🌴</span><span class="ico-l" data-i18n="nav_ul">Urlaub</span></button>
     <button class="app-ico" id="ico-kr" onclick="maNav('kr')"><span class="ico-e">🏥</span><span class="ico-l" data-i18n="nav_kr">Krankmeldung</span></button>
     <button class="app-ico" id="ico-nw" onclick="maNav('nw')"><span class="nw-dot" id="nw-dot"></span><span class="ico-e">📢</span><span class="ico-l" data-i18n="nav_nw">Infos</span></button>
+    <button class="app-ico" id="ico-sl" onclick="maNav('sl')" style="display:none"><span class="ico-e">📋</span><span class="ico-l" data-i18n="nav_sl">Planung</span></button>
   </div>
 </div>
 
@@ -308,7 +309,21 @@ window.onerror=function(msg,src,line){
     </div>
   </div>
 
-  <!-- ── INFOS / MITTEILUNGEN ── -->
+  <!-- ── SHOPLEITER DIENSTPLAN ── -->
+  <div class="panel" id="p-sl">
+    <div class="card">
+      <div class="card-title" data-i18n="sl_title">📋 Dienstplan-Planung</div>
+      <div style="font-size:13px;color:var(--mut);margin-bottom:12px" id="sl-fil-info">—</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div style="flex:1">
+          <label data-i18n="lbl_month">Monat</label>
+          <input type="month" id="sl-month" onchange="slLoadPlan()">
+        </div>
+      </div>
+      <div id="sl-status" style="font-size:13px;color:var(--mut);margin-bottom:10px;min-height:20px"></div>
+      <div id="sl-grid" style="overflow-x:auto"></div>
+    </div>
+  </div>
   <div class="panel" id="p-nw">
     <div class="card">
       <div class="card-title" data-i18n="nw_title">📢 Infos vom Gebietsleiter</div>
@@ -449,6 +464,171 @@ function maNewsMarkRead(){
 }
 
 /* ════════════════════════════════════════════════
+   SHOPLEITER-MODUL
+   Sichtbar nur für Mitarbeiter mit emps/{id}.shopleiter === true.
+   Erlaubt: Schichten bearbeiten + pro Woche veröffentlichen.
+   Nicht erlaubt: Mitarbeiter hinzufügen/löschen, Urlaub genehmigen.
+   ════════════════════════════════════════════════ */
+var slEmps=[], slShifts={}, slPlanLoaded=false;
+
+/* Hilfsfunktionen (identisch mit dpISO/dpParse/dpGetKW in index.html) */
+function slISO(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
+function slParse(s){var p=(''+s).split('-');return new Date(+p[0],+p[1]-1,+p[2],12,0,0);}
+function slEmpKey(e){return (e.id||'x')+'-'+e.name;}
+function slFmtMonth(v){if(!v)return ''; try{return new Date(v+'-01').toLocaleDateString('de-DE',{month:'long',year:'numeric'});}catch(e){return v;}}
+function slFbSlug(f){return (''+f).replace(/\s+/g,'_').toLowerCase();}
+function slGetKW(date){var d=new Date(date);d.setHours(0,0,0,0);d.setDate(d.getDate()+4-(d.getDay()||7));return Math.ceil((((d-new Date(d.getFullYear(),0,1))/86400000)+1)/7);}
+function slGetWeeks(ym){
+  var p=ym.split('-'),year=+p[0],month=+p[1];
+  var first=new Date(year,month-1,1,12),last=new Date(year,month,0,12);
+  var weeks=[],d=new Date(first),dow=d.getDay();
+  if(dow!==1) d.setDate(d.getDate()-(dow===0?6:dow-1));
+  while(d<=last){
+    var dates=[];
+    for(var i=0;i<6;i++){dates.push(slISO(d));d.setDate(d.getDate()+1);}
+    d.setDate(d.getDate()+1);
+    weeks.push({kw:slGetKW(slParse(dates[0])),dates:dates});
+  }
+  return weeks;
+}
+
+/* Wird direkt nach Firebase-Login gerufen – prüft Shopleiter-Rolle */
+function slInit(sess){
+  if(!sess||!fbReady||!fbDb) return;
+  fbDb.collection('emps').doc(''+sess.id).get().then(function(doc){
+    if(!doc.exists) return;
+    var d=doc.data()||{};
+    // Rolle in Session persistieren (damit Tab nach Reload sofort erscheint)
+    sess.shopleiter=!!d.shopleiter;
+    maSetSession(sess);
+    var btn=document.getElementById('ico-sl');
+    if(btn) btn.style.display=sess.shopleiter?'':'none';
+    if(sess.shopleiter){
+      // Filiale-Info setzen
+      var fi=document.getElementById('sl-fil-info');
+      if(fi) fi.textContent='🏪 '+sess.filiale;
+      // Standard-Monat auf aktuellen Monat setzen
+      var mi=document.getElementById('sl-month');
+      if(mi&&!mi.value){var n=new Date();mi.value=n.getFullYear()+'-'+('0'+(n.getMonth()+1)).slice(-2);}
+      slLoadPlan();
+    }
+  }).catch(function(e){console.warn('sl init', e);});
+}
+
+/* Plan für aktuellen Monat aus Firestore laden */
+function slLoadPlan(){
+  var sess=maSession(); if(!sess||!sess.shopleiter||!fbReady||!fbDb) return;
+  var m=document.getElementById('sl-month'); if(!m||!m.value) return;
+  var month=m.value, filiale=sess.filiale, docId=slFbSlug(filiale)+'__'+month;
+  var st=document.getElementById('sl-status'); if(st) st.textContent=t('sl_loading');
+  fbDb.collection('plan').doc(docId).get().then(function(doc){
+    if(!doc.exists){
+      slEmps=[]; slShifts={}; slPlanLoaded=false;
+      if(st) st.textContent=t('sl_empty');
+      slRenderGrid();
+      return;
+    }
+    var d=doc.data()||{};
+    slEmps=(d.employees||[]).slice();
+    slShifts={};
+    var raw=d.shifts||{};
+    Object.keys(raw).forEach(function(ek){ slShifts[ek]=Object.assign({},raw[ek]); });
+    slPlanLoaded=true;
+    if(st) st.textContent='📅 '+slFmtMonth(month)+' · '+slEmps.length+' Mitarbeiter';
+    slRenderGrid();
+  }).catch(function(e){ if(st) st.textContent='⚠️ '+e.message; console.warn('sl load', e); });
+}
+
+/* Alle Eingabefelder in slShifts sichern */
+function slSaveFromDOM(){
+  document.querySelectorAll('.sl-inp').forEach(function(inp){
+    var ek=inp.dataset.emp,dt=inp.dataset.date;
+    if(!slShifts[ek]) slShifts[ek]={};
+    slShifts[ek][dt]=inp.value;
+  });
+}
+
+/* Wochengitter rendern */
+function slRenderGrid(){
+  var box=document.getElementById('sl-grid'); if(!box) return;
+  var m=document.getElementById('sl-month'); if(!m||!m.value){box.innerHTML='';return;}
+  var month=m.value;
+  if(!slEmps.length){box.innerHTML='<div style="font-size:13px;color:var(--mut);padding:10px 0">'+t('sl_empty')+'</div>';return;}
+  var DAYS=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+  var weeks=slGetWeeks(month);
+  var h='<datalist id="sl-presets"><option value="Frei"><option value="Urlaub"><option value="Krank"><option value="08:00-16:00"><option value="10:00-18:00"><option value="12:00-20:00"><option value="13:00-19:00"></datalist>';
+  weeks.forEach(function(wk,wi){
+    var pubLbl=t('sl_pub_btn').replace('{kw}',wk.kw);
+    h+='<div style="margin-bottom:16px;border:1px solid var(--brd);border-radius:var(--rs);overflow:hidden">';
+    h+='<div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg);padding:8px 12px;border-bottom:1px solid var(--brd)">';
+    h+='<span style="font-size:13px;font-weight:700">KW '+wk.kw+'</span>';
+    h+='<button class="btn btn-grn" style="font-size:12px;padding:5px 12px" onclick="slPublishWeek('+wi+')">'+pubLbl+'</button>';
+    h+='</div>';
+    h+='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">';
+    h+='<thead><tr><th style="padding:6px 8px;text-align:left;background:var(--bg);font-weight:700;min-width:90px;position:sticky;left:0;z-index:1">Mitarbeiter</th>';
+    wk.dates.forEach(function(dt,di){
+      var d=slParse(dt),ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+      h+='<th style="padding:6px 4px;text-align:center;background:var(--bg);min-width:96px">'+DAYS[di].substring(0,2)+'<br><small style="font-weight:400;font-size:10px">'+ds+'</small></th>';
+    });
+    h+='</tr></thead><tbody>';
+    slEmps.forEach(function(emp){
+      var ek=slEmpKey(emp);
+      h+='<tr><td style="padding:5px 8px;font-weight:600;white-space:nowrap;position:sticky;left:0;background:var(--surf);z-index:1;border-top:1px solid var(--brd)">'+emp.name.substring(0,14)+(emp.name.length>14?'…':'')+'</td>';
+      wk.dates.forEach(function(dt){
+        var val=(slShifts[ek]&&slShifts[ek][dt])||'';
+        var bg=val==='Frei'?'background:#EAF8F0':val==='Urlaub'?'background:#FEF9E7':val==='Krank'?'background:#FDEDEC':'';
+        h+='<td style="padding:3px;border-top:1px solid var(--brd);'+bg+'"><input class="sl-inp" list="sl-presets" value="'+val.replace(/"/g,'&quot;')+'" data-emp="'+ek+'" data-date="'+dt+'" oninput="slCellChanged(this)" style="width:100%;border:1px solid var(--brd);border-radius:4px;padding:4px 5px;font-size:12px;background:transparent;font-family:inherit"></td>';
+      });
+      h+='</tr>';
+    });
+    h+='</tbody></table></div></div>';
+  });
+  box.innerHTML=h;
+}
+
+/* Zellfarbe live aktualisieren */
+function slCellChanged(inp){
+  var val=inp.value;
+  var td=inp.parentElement;
+  td.style.background=val==='Frei'?'#EAF8F0':val==='Urlaub'?'#FEF9E7':val==='Krank'?'#FDEDEC':'';
+  if(!slShifts[inp.dataset.emp]) slShifts[inp.dataset.emp]={};
+  slShifts[inp.dataset.emp][inp.dataset.date]=val;
+}
+
+/* Nur eine Woche veröffentlichen (Read-Modify-Write – andere Wochen bleiben erhalten) */
+function slPublishWeek(wi){
+  var sess=maSession(); if(!sess||!sess.shopleiter) return;
+  if(!fbReady||!fbDb){ toast(t('err_net'),true); return; }
+  var m=document.getElementById('sl-month'); if(!m||!m.value) return;
+  var month=m.value, filiale=sess.filiale;
+  var weeks=slGetWeeks(month), wk=weeks[wi]; if(!wk) return;
+  slSaveFromDOM();
+  var st=document.getElementById('sl-status'); if(st) st.textContent='⏳ KW '+wk.kw+'…';
+  var ref=fbDb.collection('plan').doc(slFbSlug(filiale)+'__'+month);
+  // Read-Modify-Write: nur Tage dieser KW ändern, andere Wochen/Mitarbeiter unberührt lassen
+  ref.get().then(function(doc){
+    var existingShifts=(doc.exists&&doc.data().shifts)||{};
+    var existingEmps=(doc.exists&&doc.data().employees)||slEmps;
+    var merged={};
+    Object.keys(existingShifts).forEach(function(ek){ merged[ek]=Object.assign({},existingShifts[ek]); });
+    slEmps.forEach(function(emp){
+      var ek=slEmpKey(emp);
+      if(!merged[ek]) merged[ek]={};
+      wk.dates.forEach(function(dt){ merged[ek][dt]=(slShifts[ek]&&slShifts[ek][dt])||''; });
+    });
+    return ref.set({employees:existingEmps, shifts:merged});
+  }).then(function(){
+    var msg=t('sl_pub_ok').replace('{kw}',wk.kw);
+    if(st) st.textContent='✓ '+msg;
+    toast('☁️ '+msg);
+  }).catch(function(e){
+    if(st) st.textContent='⚠️ '+e.message;
+    toast(t('sl_pub_err'),true);
+    console.warn('sl publish', e);
+  });
+}
+
+/* ════════════════════════════════════════════════
    PUSH-BENACHRICHTIGUNGEN (Firebase Cloud Messaging)
    Voraussetzungen (einmalig in fb-config.js / Firebase-Console):
      - window.FB_VAPID_KEY = '...'  (Console → Cloud Messaging → Web-Push-Zertifikate)
@@ -574,6 +754,7 @@ de:{_name:'Deutsch',
  nw_title:'📢 Infos vom Gebietsleiter',nw_none:'Noch keine Mitteilungen.',
  push_info:'🔔 Aktiviere Push-Benachrichtigungen, um sofort informiert zu werden, sobald eine neue Info hochgeladen wird – auch wenn die App geschlossen ist.',push_btn:'🔔 Benachrichtigungen aktivieren',push_on:'✓ Benachrichtigungen aktiv',push_denied:'Benachrichtigungen wurden im Browser blockiert. Bitte in den Browser-Einstellungen erlauben.',push_unsupported:'Push-Benachrichtigungen werden auf diesem Gerät/Browser nicht unterstützt.',push_newinfo:'📢 Neue Info vom Gebietsleiter',
  nw_read_btn:'✓ Gelesen – bestätigen',nw_read_done:'✓ Als gelesen bestätigt',nw_read_toast:'✓ Lesebestätigung gesendet',
+ nav_sl:'📋 Planung',sl_title:'📋 Dienstplan-Planung',sl_loading:'⏳ Lade Dienstplan…',sl_empty:'Noch kein Dienstplan für diesen Monat.',sl_pub_ok:'✓ KW {kw} veröffentlicht',sl_pub_err:'Fehler beim Veröffentlichen',sl_pub_btn:'☁️ KW {kw} veröffentlichen',
  wa_missing:'WhatsApp-Nummer fehlt. Nachricht kopieren:',inst_title:'App auf dem Startbildschirm',inst_btn:'Jetzt installieren',inst_ios:'1️⃣ Diese Seite in <strong>Safari</strong> öffnen (in WhatsApp: Teilen → „In Safari öffnen")<br>2️⃣ Unten auf <strong>Teilen</strong> ⬆️ tippen<br>3️⃣ <strong>„Zum Home-Bildschirm"</strong> wählen',
  months:['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
  wdS:['So','Mo','Di','Mi','Do','Fr','Sa'],
@@ -614,6 +795,7 @@ vi:{_name:'Tiếng Việt',
  nw_title:'📢 Thông báo từ Gebietsleiter',nw_none:'Chưa có thông báo nào.',
  push_info:'🔔 Bật thông báo đẩy để nhận tin ngay khi có thông tin mới được tải lên – kể cả khi đã đóng app.',push_btn:'🔔 Bật thông báo',push_on:'✓ Đã bật thông báo',push_denied:'Thông báo đã bị chặn trong trình duyệt. Vui lòng cho phép trong cài đặt trình duyệt.',push_unsupported:'Thiết bị/trình duyệt này không hỗ trợ thông báo đẩy.',push_newinfo:'📢 Thông báo mới từ Gebietsleiter',
  nw_read_btn:'✓ Đã đọc – xác nhận',nw_read_done:'✓ Đã xác nhận đã đọc',nw_read_toast:'✓ Đã gửi xác nhận đã đọc',
+ nav_sl:'📋 Lập lịch',sl_title:'📋 Lập lịch làm việc',sl_loading:'⏳ Đang tải lịch…',sl_empty:'Chưa có lịch làm cho tháng này.',sl_pub_ok:'✓ Đã đăng tuần {kw}',sl_pub_err:'Lỗi khi đăng lịch',sl_pub_btn:'☁️ Đăng tuần {kw}',
  wa_missing:'Thiếu số WhatsApp. Sao chép tin nhắn:',inst_title:'Cài app ra màn hình chính',inst_btn:'Cài đặt ngay',inst_ios:'1️⃣ Mở trang này bằng <strong>Safari</strong> (trong WhatsApp: Chia sẻ → „Mở bằng Safari")<br>2️⃣ Bấm nút <strong>Chia sẻ</strong> ⬆️ phía dưới<br>3️⃣ Chọn <strong>„Thêm vào Màn hình chính"</strong>',
  months:['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'],
  wdS:['CN','T2','T3','T4','T5','T6','T7'],
@@ -654,6 +836,7 @@ en:{_name:'English',
  nw_title:'📢 News from the area manager',nw_none:'No news yet.',
  push_info:'🔔 Enable push notifications to be informed instantly when new info is uploaded – even when the app is closed.',push_btn:'🔔 Enable notifications',push_on:'✓ Notifications enabled',push_denied:'Notifications are blocked in the browser. Please allow them in the browser settings.',push_unsupported:'Push notifications are not supported on this device/browser.',push_newinfo:'📢 New info from the area manager',
  nw_read_btn:'✓ Mark as read',nw_read_done:'✓ Confirmed as read',nw_read_toast:'✓ Read receipt sent',
+ nav_sl:'📋 Planning',sl_title:'📋 Schedule Planning',sl_loading:'⏳ Loading schedule…',sl_empty:'No schedule published for this month yet.',sl_pub_ok:'✓ Week {kw} published',sl_pub_err:'Error publishing',sl_pub_btn:'☁️ Publish week {kw}',
  wa_missing:'WhatsApp number missing. Copy the message:',inst_title:'Install app to home screen',inst_btn:'Install now',inst_ios:'1️⃣ Open this page in <strong>Safari</strong> (in WhatsApp: Share → "Open in Safari")<br>2️⃣ Tap <strong>Share</strong> ⬆️ at the bottom<br>3️⃣ Choose <strong>"Add to Home Screen"</strong>',
  months:['January','February','March','April','May','June','July','August','September','October','November','December'],
  wdS:['Su','Mo','Tu','We','Th','Fr','Sa'],
@@ -694,6 +877,7 @@ th:{_name:'ไทย',
  nw_title:'📢 ข่าวจากผู้จัดการเขต',nw_none:'ยังไม่มีประกาศ',
  push_info:'🔔 เปิดการแจ้งเตือนแบบพุช เพื่อรับข่าวทันทีเมื่อมีข้อมูลใหม่ – แม้ปิดแอปอยู่',push_btn:'🔔 เปิดการแจ้งเตือน',push_on:'✓ เปิดการแจ้งเตือนแล้ว',push_denied:'การแจ้งเตือนถูกบล็อกในเบราว์เซอร์ กรุณาอนุญาตในการตั้งค่าเบราว์เซอร์',push_unsupported:'อุปกรณ์/เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือนแบบพุช',push_newinfo:'📢 ข้อมูลใหม่จากผู้จัดการเขต',
  nw_read_btn:'✓ อ่านแล้ว – ยืนยัน',nw_read_done:'✓ ยืนยันว่าอ่านแล้ว',nw_read_toast:'✓ ส่งการยืนยันการอ่านแล้ว',
+ nav_sl:'📋 วางแผน',sl_title:'📋 วางแผนตารางงาน',sl_loading:'⏳ กำลังโหลดตาราง…',sl_empty:'ยังไม่มีตารางงานสำหรับเดือนนี้',sl_pub_ok:'✓ เผยแพร่สัปดาห์ {kw} แล้ว',sl_pub_err:'เกิดข้อผิดพลาดขึ้น',sl_pub_btn:'☁️ เผยแพร่สัปดาห์ {kw}',
  wa_missing:'ไม่มีเบอร์ WhatsApp คัดลอกข้อความ:',inst_title:'ติดตั้งแอปบนหน้าจอหลัก',inst_btn:'ติดตั้งเลย',inst_ios:'1️⃣ เปิดหน้านี้ใน <strong>Safari</strong> (ใน WhatsApp: แชร์ → „เปิดใน Safari")<br>2️⃣ แตะปุ่ม <strong>แชร์</strong> ⬆️ ด้านล่าง<br>3️⃣ เลือก <strong>„เพิ่มลงในหน้าจอโฮม"</strong>',
  months:['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'],
  wdS:['อา','จ','อ','พ','พฤ','ศ','ส'],
@@ -876,19 +1060,23 @@ function maShowApp(sess){
       // "noch nicht veröffentlicht" stehen, bis der Nutzer den Monat manuell wechselte.
       maRenderDP(); maRenderCal(); maRenderUlList();
       if(typeof maStartFbPush==='function') maStartFbPush(sess);
+      slInit(sess);
     };
     if(fbReady){ afterFbReady(); }
     else fbInit(afterFbReady);
   }
 }
 function maNav(t){
-  ['dp','ul','kr','nw'].forEach(function(x){
-    document.getElementById('p-'+x).classList.toggle('active',x===t);
-    document.getElementById('ico-'+x).classList.toggle('active',x===t);
+  ['dp','ul','kr','nw','sl'].forEach(function(x){
+    var p=document.getElementById('p-'+x);
+    var ic=document.getElementById('ico-'+x);
+    if(p) p.classList.toggle('active',x===t);
+    if(ic) ic.classList.toggle('active',x===t);
   });
   if(t==='dp'){maRefreshProfile();}
   if(t==='ul'){maRenderCal();maRenderUlList();}
   if(t==='nw'){maNewsMarkRead();}
+  if(t==='sl'){slLoadPlan();}
 }
 
 /* ════════════════════════════════════════════════

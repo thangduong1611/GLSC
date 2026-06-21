@@ -1006,6 +1006,13 @@ window.onerror=function(msg,src,line){
     <input type="text" id="m-id" placeholder="z.B. 1042">
     <label>Filiale (Standard)</label>
     <input type="text" id="m-fil" placeholder="z.B. Hannover Hbf">
+    <div style="display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 12px;background:var(--bg);border:1px solid var(--brd);border-radius:var(--rs)">
+      <input type="checkbox" id="m-shopleiter" style="width:17px;height:17px;cursor:pointer">
+      <div>
+        <div style="font-size:14px;font-weight:600">🏪 Shopleiter</div>
+        <div style="font-size:12px;color:var(--mut)">Darf Dienstplan für die eigene Filiale erstellen und veröffentlichen</div>
+      </div>
+    </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeModal()">Abbrechen</button>
       <button class="btn btn-red" onclick="saveEmp()">Speichern</button>
@@ -1411,7 +1418,7 @@ function renderEmpTable() {
     }
     tr.innerHTML=`<td style="font-weight:500">${e.name}${ausBadge}</td>
 <td><span class="id-chip">${e.id}</span></td>
-<td style="color:var(--mut);font-size:12px">${e.filiale||'—'}</td>
+<td style="color:var(--mut);font-size:12px">${e.filiale||'—'}${e.shopleiter?'<span style="margin-left:5px;font-size:10px;background:#F0F4F8;border:1px solid #AED6F1;color:#1A5276;border-radius:10px;padding:1px 6px;font-weight:700">🏪 SL</span>':''}</td>
 <td style="font-size:11px;color:var(--mut)">${e.eintritt||'—'}</td>
 <td style="font-size:11px;color:var(--mut)">${e.austritt||'—'}</td>
 <td><span class="badge ${isActive?'badge-grn':'badge-gray'}">${isActive?'Aktiv':'Inaktiv'}</span></td>
@@ -1534,6 +1541,7 @@ function openAddModal() {
   document.getElementById('m-name').value='';
   document.getElementById('m-id').value='';
   document.getElementById('m-fil').value='';
+  document.getElementById('m-shopleiter').checked=false;
   document.getElementById('emp-modal').classList.add('open');
   document.getElementById('m-name').focus();
 }
@@ -1545,6 +1553,7 @@ function openEditModal(i) {
   document.getElementById('m-name').value=e.name;
   document.getElementById('m-id').value=e.id;
   document.getElementById('m-fil').value=e.filiale||'';
+  document.getElementById('m-shopleiter').checked=!!(e.shopleiter);
   document.getElementById('emp-modal').classList.add('open');
   document.getElementById('m-name').focus();
 }
@@ -1555,11 +1564,17 @@ function saveEmp() {
   const name=document.getElementById('m-name').value.trim();
   const id=document.getElementById('m-id').value.trim();
   const fil=document.getElementById('m-fil').value.trim();
+  const shopleiter=document.getElementById('m-shopleiter').checked;
   if(!name||!id){alert('Name und Personalnummer sind Pflichtfelder.');return;}
   const emps=loadEmps();
-  if(editIdx!==null) emps[editIdx]={name,id,filiale:fil};
-  else emps.push({name,id,filiale:fil});
+  if(editIdx!==null) emps[editIdx]={...emps[editIdx],name,id,filiale:fil,shopleiter};
+  else emps.push({name,id,filiale:fil,shopleiter});
   saveEmps(emps);
+  // Sofort in Firestore synchronisieren (Shopleiter-Rolle muss live verfügbar sein)
+  if(fbReady&&fbDb&&id){
+    fbDb.collection('emps').doc(''+id).set({name,filiale:fil,shopleiter:shopleiter,active:true},{merge:true})
+      .catch(function(e){ console.warn('shopleiter sync', e); });
+  }
   closeModal();
   renderEmpTable();
   populateDropdowns();
