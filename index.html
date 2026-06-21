@@ -282,6 +282,9 @@ window.onerror=function(msg,src,line){
     <button class="app-ico" onclick="sw('km',this)">
       <span class="ico-e">🚗</span><span class="ico-l">Kilometer&shy;stand</span>
     </button>
+    <button class="app-ico" onclick="sw('inventur',this)">
+      <span class="ico-e">📦</span><span class="ico-l">Inventur</span>
+    </button>
   </div>
 </div>
 
@@ -920,6 +923,79 @@ window.onerror=function(msg,src,line){
   </div>
 </div>
 
+<!-- ===== INVENTUR ===== -->
+<div id="panel-inventur" class="panel">
+  <div class="card">
+    <div class="card-h"><span>📦 Inventur-Verwaltung</span></div>
+    <p style="font-size:13px;color:var(--mut);margin:0 0 14px">Inventur-Links pro Filiale verteilen, Zeitraum festlegen und eingereichte Zählungen einsehen.</p>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+      <div style="flex:1;min-width:150px">
+        <label style="font-size:12px;font-weight:600;color:var(--mut)">Monat</label>
+        <input type="month" id="inv-month" onchange="invRenderAll()">
+      </div>
+      <div style="flex:1;min-width:130px">
+        <label style="font-size:12px;font-weight:600;color:var(--mut)">Start (sichtbar ab)</label>
+        <input type="date" id="inv-start" onchange="invSavePeriod()">
+      </div>
+      <div style="flex:1;min-width:130px">
+        <label style="font-size:12px;font-weight:600;color:var(--mut)">Ende (sichtbar bis)</label>
+        <input type="date" id="inv-end" onchange="invSavePeriod()">
+      </div>
+    </div>
+    <div id="inv-period-status" style="font-size:12px;color:var(--mut);margin-bottom:8px"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><span>🔗 Welo-Links einfügen</span></div>
+    <p style="font-size:13px;color:var(--mut);margin:0 0 10px">Alle 11 Links auf einmal einfügen (einer pro Zeile). Die Filiale wird automatisch aus der Markt-Nr. erkannt.</p>
+    <textarea id="inv-links-raw" rows="5" placeholder="https://welo.sushi-circle.de/inventur/402501-202506-xxxx.html&#10;https://welo.sushi-circle.de/inventur/402257-202506-yyyy.html&#10;..." style="width:100%;font-family:monospace;font-size:12px"></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+      <button class="btn btn-red" onclick="invParseLinks()">📥 Links einlesen</button>
+      <button class="btn" onclick="invClearLinks()">Leeren</button>
+    </div>
+    <div id="inv-links-result" style="margin-top:12px"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><span>🏪 Filialen-Zuordnung</span></div>
+    <p style="font-size:13px;color:var(--mut);margin:0 0 10px">Markt-Nr. → Filialname. Diese Zuordnung wird einmal gespeichert und für alle Monate verwendet.</p>
+    <div id="inv-store-map"></div>
+    <div style="display:flex;gap:6px;margin-top:10px">
+      <input type="text" id="inv-map-nr" placeholder="Markt-Nr. (z.B. 402501)" style="flex:1">
+      <input type="text" id="inv-map-name" placeholder="Filialname (z.B. REWE Bovenden)" style="flex:2">
+      <button class="btn" onclick="invAddStoreMap()">+ </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><span>📊 Eingereichte Zählungen</span>
+      <span id="inv-artikel-badge" class="badge badge-grn" style="font-size:11px"></span>
+    </div>
+    <div id="inv-submissions"></div>
+  </div>
+</div>
+
+<!-- ===== INVENTUR ABTIPP-MODUS (Vollbild-Overlay) ===== -->
+<div id="inv-typemode" class="modal-bg" style="z-index:200">
+  <div class="modal" style="width:min(620px,96vw);max-height:92vh;overflow-y:auto;padding:0">
+    <div style="position:sticky;top:0;background:var(--surf);border-bottom:1px solid var(--brd);padding:14px 18px;z-index:1">
+      <button class="modal-close" onclick="invCloseTypeMode()" style="top:14px;right:14px">✕</button>
+      <div id="inv-tm-title" style="font-size:16px;font-weight:600;padding-right:30px">—</div>
+      <div id="inv-tm-sub" style="font-size:12px;color:var(--mut);margin-top:2px">—</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
+        <label style="font-size:12px;color:var(--mut);display:flex;align-items:center;gap:5px;cursor:pointer">
+          <input type="checkbox" id="inv-tm-only0" checked onchange="invRenderTypeMode()" style="width:15px;height:15px"> Nur Menge &gt; 0
+        </label>
+        <button class="btn btn-sm" onclick="invExportCSV()">⬇️ CSV</button>
+        <button class="btn btn-sm" id="inv-tm-welo" onclick="invOpenWelo()" style="background:#185FA5;color:#fff;border-color:#185FA5">🔗 Welo öffnen</button>
+        <span id="inv-tm-progress" style="font-size:12px;color:var(--mut);margin-left:auto"></span>
+      </div>
+    </div>
+    <div id="inv-tm-list" style="padding:6px 0"></div>
+  </div>
+</div>
+
 <!-- ===== DIENSTPLAN ===== -->
 <div id="panel-dienstplan" class="panel">
   <div class="dp-sub-row">
@@ -1023,6 +1099,7 @@ window.onerror=function(msg,src,line){
 <div class="toast" id="toast">✓ Kopiert!</div>
 
 <script src="fb-config.js"></script>
+<script src="inventur-data.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -1056,6 +1133,7 @@ RP_CL=getRPCL();
   if(id==='dienstplan'){RP_CL=getRPCL();dpOnShow();}
   if(id==='dienstplan'){RP_CL=getRPCL();dpOnShow();}
   if(id==='settings'){renderRpGrpList();applySettings();renderMkStores();renderSavedEmails();var wa=document.getElementById('st-manager-wa');if(wa)wa.value=localStorage.getItem('sc_manager_wa')||'';}
+  if(id==='inventur'){invOnShow();}
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────
@@ -4038,6 +4116,246 @@ if("serviceWorker" in navigator){
       .then(function(r){console.log("SW ok",r.scope);})
       .catch(function(e){console.log("SW err",e);});
   });
+}
+
+/* ════════════════════════════════════════════════
+   INVENTUR (HR-Seite)
+   - Welo-Links pro Filiale verteilen + Zeitraum
+   - Eingereichte Zählungen ansehen + Abtipp-Modus + CSV-Export
+   Firestore:
+     inventur_period/{month} = {start, end}
+     inventur_links/{month}  = {links:{marktNr:url}}
+     inventur_storemap/map   = {marktNr:filialename}  (einmalig, monatsübergreifend)
+     inventur_counts/{month__slug} = {filiale, month, counts:{art:menge}, by, at, submitted}
+   ════════════════════════════════════════════════ */
+var invLinks={}, invStoreMap={}, invCounts={}, invTmKey=null, invTmChecked={};
+var invPeriodUnsub=null, invLinksUnsub=null, invMapUnsub=null, invCountsUnsub=null;
+
+function invDefaultMonth(){ var n=new Date(); return n.getFullYear()+'-'+('0'+(n.getMonth()+1)).slice(-2); }
+function invSlug(f){ return (''+f).replace(/\s+/g,'_').toLowerCase(); }
+// Markt-Nr. aus Welo-Filename ziehen: .../402501-202506-hash.html
+function invParseMarktNr(url){ var m=(''+url).match(/\/(\d{5,7})-\d{6}-/); return m?m[1]:null; }
+function invParseMonthFromUrl(url){ var m=(''+url).match(/\/\d{5,7}-(\d{6})-/); return m?m[1].slice(0,4)+'-'+m[1].slice(4):null; }
+
+function invOnShow(){
+  if(typeof INVENTUR_ITEMS==='undefined'){ toast('inventur-data.js nicht geladen!',true); return; }
+  var badge=document.getElementById('inv-artikel-badge'); if(badge) badge.textContent=INVENTUR_ITEMS.length+' Artikel';
+  var mi=document.getElementById('inv-month'); if(mi&&!mi.value) mi.value=invDefaultMonth();
+  // localStorage-Fallback (offline)
+  invStoreMap=JSON.parse(localStorage.getItem('sc_inv_storemap')||'{}');
+  invRenderStoreMap();
+  if(fbReady&&fbDb) invStartListeners();
+  else if(typeof fbInit==='function' && fbEnabled && fbEnabled()) fbInit(function(){ invStartListeners(); });
+  invRenderAll();
+}
+
+function invStartListeners(){
+  if(!fbReady||!fbDb) return;
+  // Storemap (einmalig)
+  if(!invMapUnsub){
+    invMapUnsub=fbDb.collection('inventur_storemap').doc('map').onSnapshot(function(doc){
+      if(doc.exists){ invStoreMap=doc.data()||{}; localStorage.setItem('sc_inv_storemap',JSON.stringify(invStoreMap)); invRenderStoreMap(); invRenderLinksResult(); invRenderSubmissions(); }
+    }, function(e){ console.warn('inv map',e); });
+  }
+  invBindMonth();
+}
+
+// Monatsabhängige Listener (neu binden bei Monatswechsel)
+function invBindMonth(){
+  if(!fbReady||!fbDb) return;
+  var month=document.getElementById('inv-month').value; if(!month) return;
+  if(invPeriodUnsub){try{invPeriodUnsub();}catch(e){}}
+  if(invLinksUnsub){try{invLinksUnsub();}catch(e){}}
+  if(invCountsUnsub){try{invCountsUnsub();}catch(e){}}
+  invPeriodUnsub=fbDb.collection('inventur_period').doc(month).onSnapshot(function(doc){
+    var d=doc.exists?doc.data():{};
+    var s=document.getElementById('inv-start'), e=document.getElementById('inv-end');
+    if(s&&document.activeElement!==s) s.value=d.start||'';
+    if(e&&document.activeElement!==e) e.value=d.end||'';
+    invRenderPeriodStatus();
+  }, function(e){ console.warn('inv period',e); });
+  invLinksUnsub=fbDb.collection('inventur_links').doc(month).onSnapshot(function(doc){
+    invLinks=(doc.exists&&doc.data().links)||{};
+    invRenderLinksResult();
+  }, function(e){ console.warn('inv links',e); });
+  invCountsUnsub=fbDb.collection('inventur_counts').where('month','==',month).onSnapshot(function(snap){
+    invCounts={}; snap.forEach(function(doc){ invCounts[doc.id]=doc.data(); });
+    invRenderSubmissions();
+  }, function(e){ console.warn('inv counts',e); });
+}
+
+function invRenderAll(){ invBindMonth(); invRenderPeriodStatus(); invRenderLinksResult(); invRenderSubmissions(); }
+
+function invSavePeriod(){
+  if(!fbReady||!fbDb||!fbManager){ alert('Bitte zuerst als Manager anmelden (☁️ Cloud).'); return; }
+  var month=document.getElementById('inv-month').value;
+  var start=document.getElementById('inv-start').value, end=document.getElementById('inv-end').value;
+  fbDb.collection('inventur_period').doc(month).set({start:start,end:end},{merge:true})
+    .then(function(){ toast('✓ Zeitraum gespeichert'); invRenderPeriodStatus(); })
+    .catch(function(e){ alert('Fehler: '+e.message); });
+}
+
+function invRenderPeriodStatus(){
+  var el=document.getElementById('inv-period-status'); if(!el) return;
+  var s=document.getElementById('inv-start').value, e=document.getElementById('inv-end').value;
+  if(!s||!e){ el.innerHTML='<span style="color:var(--amb)">⚠️ Kein Zeitraum gesetzt – Mitarbeiter sehen die Inventur noch nicht.</span>'; return; }
+  var today=new Date().toISOString().slice(0,10);
+  var active=(today>=s&&today<=e);
+  el.innerHTML=(active?'<span style="color:var(--grn)">🟢 Aktiv':'<span style="color:var(--mut)">⚪ Inaktiv')
+    +'</span> · sichtbar '+fmtDate(s)+' – '+fmtDate(e);
+}
+
+function invParseLinks(){
+  if(!fbReady||!fbDb||!fbManager){ alert('Bitte zuerst als Manager anmelden (☁️ Cloud).'); return; }
+  var raw=document.getElementById('inv-links-raw').value.trim();
+  if(!raw){ toast('Bitte Links einfügen.',true); return; }
+  var month=document.getElementById('inv-month').value;
+  var lines=raw.split(/\s+/).filter(function(x){return x.indexOf('http')===0;});
+  var found={}, unknown=[], wrongMonth=[];
+  lines.forEach(function(url){
+    var nr=invParseMarktNr(url); if(!nr){ unknown.push(url); return; }
+    var um=invParseMonthFromUrl(url); if(um&&um!==month) wrongMonth.push(nr+' ('+um+')');
+    found[nr]=url.trim();
+  });
+  if(!Object.keys(found).length){ toast('Keine gültigen Welo-Links erkannt.',true); return; }
+  fbDb.collection('inventur_links').doc(month).set({links:found},{merge:true}).then(function(){
+    var msg='✓ '+Object.keys(found).length+' Links gespeichert';
+    if(wrongMonth.length) msg+=' · ⚠️ anderer Monat: '+wrongMonth.join(', ');
+    toast(msg);
+    document.getElementById('inv-links-raw').value='';
+    // neue Markt-Nrn ohne Namen → in Storemap-Vorschlag
+    Object.keys(found).forEach(function(nr){ if(!invStoreMap[nr]){ invStoreMap[nr]=''; } });
+    invRenderStoreMap();
+  }).catch(function(e){ alert('Fehler: '+e.message); });
+}
+
+function invClearLinks(){ document.getElementById('inv-links-raw').value=''; }
+
+function invRenderLinksResult(){
+  var box=document.getElementById('inv-links-result'); if(!box) return;
+  var nrs=Object.keys(invLinks);
+  if(!nrs.length){ box.innerHTML='<div style="font-size:13px;color:var(--mut)">Noch keine Links für diesen Monat.</div>'; return; }
+  var h='<div style="font-size:12px;color:var(--mut);margin-bottom:6px">'+nrs.length+' Filialen verlinkt:</div>';
+  h+=nrs.sort().map(function(nr){
+    var name=invStoreMap[nr]||('<span style="color:var(--amb)">⚠️ Markt '+nr+' (kein Name)</span>');
+    return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--brd);font-size:13px">'
+      +'<span style="font-family:monospace;color:var(--mut);min-width:64px">'+nr+'</span>'
+      +'<span style="flex:1">'+name+'</span>'
+      +'<a href="'+invLinks[nr]+'" target="_blank" style="font-size:12px">🔗 öffnen</a></div>';
+  }).join('');
+  box.innerHTML=h;
+}
+
+function invRenderStoreMap(){
+  var box=document.getElementById('inv-store-map'); if(!box) return;
+  var nrs=Object.keys(invStoreMap);
+  if(!nrs.length){ box.innerHTML='<div style="font-size:13px;color:var(--mut)">Noch keine Zuordnung. Unten hinzufügen oder Links einlesen.</div>'; return; }
+  box.innerHTML=nrs.sort().map(function(nr){
+    return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid var(--brd)">'
+      +'<span style="font-family:monospace;color:var(--mut);min-width:64px;font-size:13px">'+nr+'</span>'
+      +'<input type="text" value="'+(invStoreMap[nr]||'').replace(/"/g,'&quot;')+'" data-nr="'+nr+'" oninput="invStoreMapEdit(this)" placeholder="Filialname…" style="flex:1">'
+      +'<button class="btn-del" onclick="invRemoveStoreMap(\''+nr+'\')">🗑</button></div>';
+  }).join('');
+}
+
+function invStoreMapEdit(inp){ invStoreMap[inp.dataset.nr]=inp.value; invSaveStoreMapDebounced(); }
+var _invMapTimer=null;
+function invSaveStoreMapDebounced(){ clearTimeout(_invMapTimer); _invMapTimer=setTimeout(invSaveStoreMap, 600); }
+function invSaveStoreMap(){
+  localStorage.setItem('sc_inv_storemap',JSON.stringify(invStoreMap));
+  if(fbReady&&fbDb&&fbManager) fbDb.collection('inventur_storemap').doc('map').set(invStoreMap).catch(function(e){console.warn(e);});
+  invRenderLinksResult(); invRenderSubmissions();
+}
+function invAddStoreMap(){
+  var nr=document.getElementById('inv-map-nr').value.trim(), name=document.getElementById('inv-map-name').value.trim();
+  if(!nr){ toast('Markt-Nr. fehlt.',true); return; }
+  invStoreMap[nr]=name; invSaveStoreMap(); invRenderStoreMap();
+  document.getElementById('inv-map-nr').value=''; document.getElementById('inv-map-name').value='';
+}
+function invRemoveStoreMap(nr){ if(!confirm('Zuordnung für '+nr+' entfernen?'))return; delete invStoreMap[nr]; invSaveStoreMap(); invRenderStoreMap(); }
+
+function invStoreNameForSlug(slug){
+  for(var nr in invStoreMap){ if(invSlug(invStoreMap[nr])===slug) return invStoreMap[nr]; }
+  return slug;
+}
+
+function invRenderSubmissions(){
+  var box=document.getElementById('inv-submissions'); if(!box) return;
+  var keys=Object.keys(invCounts);
+  if(!keys.length){ box.innerHTML='<div style="font-size:13px;color:var(--mut)">Noch keine Zählungen für diesen Monat eingereicht.</div>'; return; }
+  box.innerHTML=keys.map(function(k){
+    var c=invCounts[k];
+    var filled=c.counts?Object.keys(c.counts).filter(function(a){return (+c.counts[a])>0;}).length:0;
+    var status=c.submitted?'<span class="badge badge-grn" style="font-size:11px">✓ Eingereicht</span>':'<span class="badge badge-amb" style="font-size:11px">✎ Entwurf</span>';
+    var nrForStore=null; for(var nr in invStoreMap){ if(invSlug(invStoreMap[nr])===invSlug(c.filiale)) nrForStore=nr; }
+    var hasLink=nrForStore&&invLinks[nrForStore];
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--brd)">'
+      +'<div style="flex:1"><div style="font-weight:600;font-size:14px">'+(c.filiale||'?')+' '+status+'</div>'
+      +'<div style="font-size:12px;color:var(--mut)">'+filled+' Artikel · '+(c.by||'—')+(c.at?' · '+new Date(c.at).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'')+'</div></div>'
+      +'<button class="btn btn-sm btn-red" onclick="invOpenTypeMode(\''+k+'\')">⌨️ Abtippen</button>'
+      +(hasLink?'<a href="'+invLinks[nrForStore]+'" target="_blank"><button class="btn btn-sm">🔗</button></a>':'')
+      +'</div>';
+  }).join('');
+}
+
+/* ── ABTIPP-MODUS ── */
+function invOpenTypeMode(key){
+  invTmKey=key; invTmChecked={};
+  var c=invCounts[key]; if(!c) return;
+  document.getElementById('inv-tm-title').textContent='⌨️ '+(c.filiale||'?')+' · '+(c.month||'');
+  document.getElementById('inv-tm-sub').textContent=(c.by?'Von '+c.by:'')+(c.at?' · '+new Date(c.at).toLocaleString('de-DE'):'');
+  document.getElementById('inv-typemode').classList.add('open');
+  invRenderTypeMode();
+}
+function invCloseTypeMode(){ document.getElementById('inv-typemode').classList.remove('open'); invTmKey=null; }
+
+function invRenderTypeMode(){
+  var list=document.getElementById('inv-tm-list'); if(!list||!invTmKey) return;
+  var c=invCounts[invTmKey]||{}; var counts=c.counts||{};
+  var only0=document.getElementById('inv-tm-only0').checked;
+  // In Welo-Reihenfolge = INVENTUR_ITEMS-Reihenfolge
+  var rows=INVENTUR_ITEMS.filter(function(it){
+    var v=+(counts[it[0]]||0);
+    return only0 ? v>0 : true;
+  });
+  var done=0;
+  var h=rows.map(function(it){
+    var art=it[0], menge=counts[art]||0, einheit=it[2], de=it[3], vi=it[4];
+    var checked=!!invTmChecked[art]; if(checked) done++;
+    return '<div style="display:flex;align-items:center;gap:10px;padding:9px 18px;border-bottom:0.5px solid var(--brd);'+(checked?'opacity:.45':'')+'" id="invtm-'+art+'">'
+      +'<span style="font-family:monospace;font-size:12px;color:var(--mut);min-width:70px">'+art+'</span>'
+      +'<div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:500">'+de+'</div><div style="font-size:11px;color:var(--mut)">'+vi+'</div></div>'
+      +'<span style="font-size:'+(checked?'18':'24')+'px;font-weight:500;color:var(--grn);min-width:42px;text-align:right">'+menge+'</span>'
+      +'<span style="font-size:11px;color:var(--mut);min-width:42px">'+einheit+'</span>'
+      +'<button class="btn btn-sm" onclick="invTmToggle(\''+art+'\')" style="'+(checked?'':'background:var(--grn);color:#fff;border-color:var(--grn)')+'">'+(checked?'↺':'✓')+'</button>'
+      +'</div>';
+  }).join('');
+  list.innerHTML=h||'<div style="padding:20px;text-align:center;color:var(--mut)">Keine Artikel mit Menge &gt; 0.</div>';
+  document.getElementById('inv-tm-progress').textContent=done+' / '+rows.length+' getippt';
+}
+function invTmToggle(art){ invTmChecked[art]=!invTmChecked[art]; invRenderTypeMode(); }
+
+function invOpenWelo(){
+  var c=invCounts[invTmKey]; if(!c) return;
+  var nrForStore=null; for(var nr in invStoreMap){ if(invSlug(invStoreMap[nr])===invSlug(c.filiale)) nrForStore=nr; }
+  if(nrForStore&&invLinks[nrForStore]) window.open(invLinks[nrForStore],'_blank');
+  else alert('Kein Welo-Link für diese Filiale hinterlegt.');
+}
+
+function invExportCSV(){
+  var c=invCounts[invTmKey]; if(!c) return; var counts=c.counts||{};
+  var only0=document.getElementById('inv-tm-only0').checked;
+  var rows=[['MarktNr.','ArtikelNr.','Artikelbezeichnung','Einheit','Menge']];
+  INVENTUR_ITEMS.forEach(function(it){
+    var v=+(counts[it[0]]||0); if(only0&&v<=0) return;
+    var nr=''; for(var n in invStoreMap){ if(invSlug(invStoreMap[n])===invSlug(c.filiale)) nr=n; }
+    rows.push([nr, it[0], it[3], it[2], (''+v).replace('.',',')]);
+  });
+  var csv=rows.map(function(r){ return r.map(function(x){ return '"'+(''+x).replace(/"/g,'""')+'"'; }).join(';'); }).join('\r\n');
+  var a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download='Inventur_'+invSlug(c.filiale)+'_'+(c.month||'')+'.csv'; a.click();
+  toast('✓ CSV exportiert');
 }
 </script>
 

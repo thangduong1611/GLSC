@@ -212,6 +212,7 @@ window.onerror=function(msg,src,line){
     <button class="app-ico" id="ico-kr" onclick="maNav('kr')"><span class="ico-e">🏥</span><span class="ico-l" data-i18n="nav_kr">Krankmeldung</span></button>
     <button class="app-ico" id="ico-nw" onclick="maNav('nw')"><span class="nw-dot" id="nw-dot"></span><span class="ico-e">📢</span><span class="ico-l" data-i18n="nav_nw">Infos</span></button>
     <button class="app-ico" id="ico-sl" onclick="maNav('sl')" style="display:none"><span class="ico-e">📋</span><span class="ico-l" data-i18n="nav_sl">Planung</span></button>
+    <button class="app-ico" id="ico-iv" onclick="maNav('iv')" style="display:none"><span class="nw-dot" id="iv-dot" style="display:none"></span><span class="ico-e">📦</span><span class="ico-l" data-i18n="nav_iv">Inventur</span></button>
   </div>
 </div>
 
@@ -324,6 +325,30 @@ window.onerror=function(msg,src,line){
       <div id="sl-grid" style="overflow-x:auto"></div>
     </div>
   </div>
+
+  <!-- ── INVENTUR (Mitarbeiter) ── -->
+  <div class="panel" id="p-iv">
+    <div class="card">
+      <div class="card-title" data-i18n="iv_title">📦 Inventur</div>
+      <div id="iv-info" style="font-size:13px;color:var(--mut);margin-bottom:10px">—</div>
+      <div id="iv-period" style="font-size:12px;margin-bottom:12px"></div>
+
+      <div id="iv-progress-wrap" style="margin-bottom:12px;display:none">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-bottom:5px">
+          <span data-i18n="iv_progress">Fortschritt</span><span id="iv-progress-txt">0 / 0</span>
+        </div>
+        <div style="height:6px;background:var(--brd);border-radius:99px;overflow:hidden"><div id="iv-progress-bar" style="width:0%;height:100%;background:var(--grn)"></div></div>
+      </div>
+
+      <div id="iv-cats" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:6px"></div>
+      <div id="iv-list"></div>
+
+      <div id="iv-actions" style="display:none;gap:8px;margin-top:14px;position:sticky;bottom:0;background:var(--surf);padding:10px 0;border-top:1px solid var(--brd)">
+        <button class="btn" style="flex:1" onclick="ivSaveDraft()"><span data-i18n="iv_save">💾 Entwurf speichern</span></button>
+        <button class="btn btn-grn" style="flex:1" onclick="ivSubmit()"><span data-i18n="iv_submit">✓ An HR senden</span></button>
+      </div>
+    </div>
+  </div>
   <div class="panel" id="p-nw">
     <div class="card">
       <div class="card-title" data-i18n="nw_title">📢 Infos vom Gebietsleiter</div>
@@ -356,6 +381,7 @@ window.onerror=function(msg,src,line){
 <div class="toast" id="toast"></div>
 
 <script src="fb-config.js"></script>
+<script src="inventur-data.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -461,6 +487,159 @@ function maNewsDot(){
 function maNewsMarkRead(){
   if(maNews.length) localStorage.setItem('ma_news_seen', maNews[0].created);
   var dot=document.getElementById('nw-dot'); if(dot) dot.style.display='none';
+}
+
+/* ════════════════════════════════════════════════
+   INVENTUR (Mitarbeiter-Seite)
+   - Tab erscheint nur, wenn HR einen aktiven Zeitraum gesetzt hat
+   - Zähl-Formular: 11 Gruppen (Tabs), zweisprachig, Entwurf + Senden
+   - Eine Zählung pro Filiale (gemeinsam): inventur_counts/{month__slug}
+   ════════════════════════════════════════════════ */
+var ivMonth=null, ivPeriod=null, ivCounts={}, ivCat='fisch', ivLoaded=false;
+var ivPeriodUnsub=null, ivCountUnsub=null, ivSaveTimer=null;
+
+function ivCurMonth(){ var n=new Date(); return n.getFullYear()+'-'+('0'+(n.getMonth()+1)).slice(-2); }
+function ivSlug(f){ return (''+f).replace(/\s+/g,'_').toLowerCase(); }
+function ivDocId(sess){ return ivMonth+'__'+ivSlug(sess.filiale||''); }
+
+function ivInit(sess){
+  if(typeof INVENTUR_ITEMS==='undefined') return;        // data noch nicht geladen
+  if(!sess||!fbReady||!fbDb) return;
+  ivMonth=ivCurMonth();
+  // Zeitraum dieses Monats beobachten → Tab ein-/ausblenden
+  if(ivPeriodUnsub){try{ivPeriodUnsub();}catch(e){}}
+  ivPeriodUnsub=fbDb.collection('inventur_period').doc(ivMonth).onSnapshot(function(doc){
+    ivPeriod=doc.exists?doc.data():null;
+    ivUpdateVisibility();
+  }, function(e){ console.warn('iv period', e); });
+  // Gemeinsame Zählung dieser Filiale beobachten (live, mehrere Mitarbeiter)
+  if(ivCountUnsub){try{ivCountUnsub();}catch(e){}}
+  ivCountUnsub=fbDb.collection('inventur_counts').doc(ivDocId(sess)).onSnapshot(function(doc){
+    var d=doc.exists?doc.data():null;
+    // Remote-Stand übernehmen, AUSSER der Nutzer tippt gerade (ivCounts._dirty)
+    if(d&&d.counts&&!ivCounts._dirty){ ivCounts=Object.assign({},d.counts); }
+    ivLoaded=true;
+    if(document.getElementById('p-iv') && document.getElementById('p-iv').classList.contains('active')) ivRender();
+  }, function(e){ console.warn('iv count', e); });
+}
+
+// Aktiv = heute zwischen start und end (inklusive)
+function ivIsActive(){
+  if(!ivPeriod||!ivPeriod.start||!ivPeriod.end) return false;
+  var today=new Date().toISOString().slice(0,10);
+  return today>=ivPeriod.start && today<=ivPeriod.end;
+}
+function ivUpdateVisibility(){
+  var btn=document.getElementById('ico-iv'); if(!btn) return;
+  btn.style.display = ivIsActive() ? '' : 'none';
+  // Falls Tab gerade offen, aber nicht mehr aktiv → zurück auf Dienstplan
+  if(!ivIsActive() && document.getElementById('p-iv').classList.contains('active')) maNav('dp');
+}
+
+function ivLoadFromFirestore(sess, cb){
+  fbDb.collection('inventur_counts').doc(ivDocId(sess)).get().then(function(doc){
+    ivCounts = (doc.exists&&doc.data().counts) ? Object.assign({},doc.data().counts) : {};
+    ivLoaded=true; if(cb) cb();
+  }).catch(function(e){ console.warn('iv load', e); ivLoaded=true; if(cb) cb(); });
+}
+
+function ivRender(){
+  var sess=maSession(); if(!sess) return;
+  var info=document.getElementById('iv-info'), per=document.getElementById('iv-period');
+  if(!ivIsActive()){
+    if(info) info.textContent=t('iv_none');
+    if(per) per.innerHTML='';
+    document.getElementById('iv-cats').innerHTML='';
+    document.getElementById('iv-list').innerHTML='';
+    document.getElementById('iv-actions').style.display='none';
+    document.getElementById('iv-progress-wrap').style.display='none';
+    return;
+  }
+  if(info) info.innerHTML='🏪 <strong>'+(sess.filiale||'—')+'</strong> · '+ivMonth;
+  if(per) per.innerHTML='<span style="color:var(--grn);font-weight:600">'+t('iv_active')+'</span> · '+t('iv_count');
+  // Erstes Mal: aus Firestore laden
+  if(!ivLoaded){ ivLoadFromFirestore(sess, ivRender); return; }
+  ivRenderCats();
+  ivRenderList();
+  ivRenderProgress();
+  document.getElementById('iv-actions').style.display='flex';
+}
+
+function ivRenderCats(){
+  var box=document.getElementById('iv-cats'); if(!box) return;
+  var lang=(typeof MA_LANG!=='undefined'?MA_LANG:'de');
+  var idx={de:1,vi:2,en:3,th:4}[lang]||1;
+  // nur Kategorien mit Artikeln
+  var present={}; INVENTUR_ITEMS.forEach(function(it){ present[it[1]]=true; });
+  box.innerHTML=INVENTUR_CATS.filter(function(c){return present[c[0]];}).map(function(c){
+    var on=c[0]===ivCat;
+    return '<button onclick="ivSetCat(\''+c[0]+'\')" style="white-space:nowrap;border-radius:99px;padding:6px 12px;font-size:12px;border:1px solid '+(on?'var(--grn)':'var(--brd)')+';background:'+(on?'var(--grn)':'var(--surf)')+';color:'+(on?'#fff':'var(--mut)')+';cursor:pointer">'+c[idx]+'</button>';
+  }).join('');
+}
+function ivSetCat(c){ ivCat=c; ivRenderCats(); ivRenderList(); }
+
+function ivRenderList(){
+  var box=document.getElementById('iv-list'); if(!box) return;
+  var lang=(typeof MA_LANG!=='undefined'?MA_LANG:'de');
+  var li={de:3,vi:4,en:5,th:6}[lang]||3;          // Index der Sprachspalte
+  var items=INVENTUR_ITEMS.filter(function(it){return it[1]===ivCat;});
+  box.innerHTML=items.map(function(it){
+    var art=it[0], einheit=it[2], de=it[3], tr=it[li];
+    var val=ivCounts[art]!==undefined?ivCounts[art]:'';
+    var trLine=(lang!=='de')?'<div style="font-size:13px;color:var(--grn)">'+tr+'</div>':'';
+    return '<div style="display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:0.5px solid var(--brd)">'
+      +'<div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">'+de+'</div>'+trLine
+      +'<div style="font-size:11px;color:var(--mut);margin-top:1px">Art. '+art+'</div></div>'
+      +'<input type="number" inputmode="decimal" min="0" value="'+val+'" placeholder="0" data-art="'+art+'" oninput="ivCellInput(this)" style="width:62px;text-align:center;font-size:18px;font-weight:500">'
+      +'<div style="width:46px;font-size:12px;color:var(--mut);font-weight:500">'+einheit+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function ivCellInput(inp){
+  var art=inp.dataset.art, v=inp.value.trim();
+  if(v==='') delete ivCounts[art];
+  else ivCounts[art]=parseFloat(v.replace(',','.'))||0;
+  ivCounts._dirty=true;
+  ivRenderProgress();
+  // Auto-Entwurf speichern (debounced)
+  clearTimeout(ivSaveTimer); ivSaveTimer=setTimeout(function(){ ivSaveDraft(true); }, 1500);
+}
+
+function ivRenderProgress(){
+  var wrap=document.getElementById('iv-progress-wrap'); if(!wrap) return;
+  wrap.style.display='block';
+  var total=INVENTUR_ITEMS.length;
+  var filled=0; INVENTUR_ITEMS.forEach(function(it){ if(ivCounts[it[0]]!==undefined&&ivCounts[it[0]]!=='') filled++; });
+  document.getElementById('iv-progress-txt').textContent=filled+' / '+total;
+  document.getElementById('iv-progress-bar').style.width=(total?Math.round(filled/total*100):0)+'%';
+}
+
+function ivCleanCounts(){
+  var out={}; Object.keys(ivCounts).forEach(function(k){ if(k!=='_dirty'&&ivCounts[k]!==''&&ivCounts[k]!==undefined) out[k]=ivCounts[k]; });
+  return out;
+}
+
+function ivSaveDraft(silent){
+  var sess=maSession(); if(!sess||!fbReady||!fbDb) return;
+  fbDb.collection('inventur_counts').doc(ivDocId(sess)).set({
+    filiale:sess.filiale||'', month:ivMonth, counts:ivCleanCounts(),
+    by:sess.name||'', at:new Date().toISOString(), submitted:false
+  },{merge:true}).then(function(){
+    ivCounts._dirty=false;
+    if(!silent) toast(t('iv_saved'));
+  }).catch(function(e){ if(!silent) toast(t('err_net'),true); console.warn('iv save', e); });
+}
+
+function ivSubmit(){
+  var sess=maSession(); if(!sess||!fbReady||!fbDb) return;
+  fbDb.collection('inventur_counts').doc(ivDocId(sess)).set({
+    filiale:sess.filiale||'', month:ivMonth, counts:ivCleanCounts(),
+    by:sess.name||'', at:new Date().toISOString(), submitted:true
+  },{merge:true}).then(function(){
+    ivCounts._dirty=false;
+    toast(t('iv_sent'));
+  }).catch(function(e){ toast(t('err_net'),true); console.warn('iv submit', e); });
 }
 
 /* ════════════════════════════════════════════════
@@ -754,7 +933,7 @@ de:{_name:'Deutsch',
  nw_title:'📢 Infos vom Gebietsleiter',nw_none:'Noch keine Mitteilungen.',
  push_info:'🔔 Aktiviere Push-Benachrichtigungen, um sofort informiert zu werden, sobald eine neue Info hochgeladen wird – auch wenn die App geschlossen ist.',push_btn:'🔔 Benachrichtigungen aktivieren',push_on:'✓ Benachrichtigungen aktiv',push_denied:'Benachrichtigungen wurden im Browser blockiert. Bitte in den Browser-Einstellungen erlauben.',push_unsupported:'Push-Benachrichtigungen werden auf diesem Gerät/Browser nicht unterstützt.',push_newinfo:'📢 Neue Info vom Gebietsleiter',
  nw_read_btn:'✓ Gelesen – bestätigen',nw_read_done:'✓ Als gelesen bestätigt',nw_read_toast:'✓ Lesebestätigung gesendet',
- nav_sl:'📋 Planung',sl_title:'📋 Dienstplan-Planung',sl_loading:'⏳ Lade Dienstplan…',sl_empty:'Noch kein Dienstplan für diesen Monat.',sl_pub_ok:'✓ KW {kw} veröffentlicht',sl_pub_err:'Fehler beim Veröffentlichen',sl_pub_btn:'☁️ KW {kw} veröffentlichen',
+ nav_iv:'📦 Inventur',iv_title:'📦 Inventur',iv_progress:'Fortschritt',iv_save:'💾 Entwurf speichern',iv_submit:'✓ An HR senden',iv_saved:'✓ Entwurf gespeichert',iv_sent:'✓ An HR gesendet – danke!',iv_none:'Aktuell läuft keine Inventur.',iv_active:'🟢 Inventur aktiv',iv_count:'Bitte alle Artikel zählen und Menge eintragen.',iv_search:'Suchen…',nav_sl:'📋 Planung',sl_title:'📋 Dienstplan-Planung',sl_loading:'⏳ Lade Dienstplan…',sl_empty:'Noch kein Dienstplan für diesen Monat.',sl_pub_ok:'✓ KW {kw} veröffentlicht',sl_pub_err:'Fehler beim Veröffentlichen',sl_pub_btn:'☁️ KW {kw} veröffentlichen',
  wa_missing:'WhatsApp-Nummer fehlt. Nachricht kopieren:',inst_title:'App auf dem Startbildschirm',inst_btn:'Jetzt installieren',inst_ios:'1️⃣ Diese Seite in <strong>Safari</strong> öffnen (in WhatsApp: Teilen → „In Safari öffnen")<br>2️⃣ Unten auf <strong>Teilen</strong> ⬆️ tippen<br>3️⃣ <strong>„Zum Home-Bildschirm"</strong> wählen',
  months:['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
  wdS:['So','Mo','Di','Mi','Do','Fr','Sa'],
@@ -795,7 +974,7 @@ vi:{_name:'Tiếng Việt',
  nw_title:'📢 Thông báo từ Gebietsleiter',nw_none:'Chưa có thông báo nào.',
  push_info:'🔔 Bật thông báo đẩy để nhận tin ngay khi có thông tin mới được tải lên – kể cả khi đã đóng app.',push_btn:'🔔 Bật thông báo',push_on:'✓ Đã bật thông báo',push_denied:'Thông báo đã bị chặn trong trình duyệt. Vui lòng cho phép trong cài đặt trình duyệt.',push_unsupported:'Thiết bị/trình duyệt này không hỗ trợ thông báo đẩy.',push_newinfo:'📢 Thông báo mới từ Gebietsleiter',
  nw_read_btn:'✓ Đã đọc – xác nhận',nw_read_done:'✓ Đã xác nhận đã đọc',nw_read_toast:'✓ Đã gửi xác nhận đã đọc',
- nav_sl:'📋 Lập lịch',sl_title:'📋 Lập lịch làm việc',sl_loading:'⏳ Đang tải lịch…',sl_empty:'Chưa có lịch làm cho tháng này.',sl_pub_ok:'✓ Đã đăng tuần {kw}',sl_pub_err:'Lỗi khi đăng lịch',sl_pub_btn:'☁️ Đăng tuần {kw}',
+ nav_iv:'📦 Kiểm kê',iv_title:'📦 Kiểm kê kho',iv_progress:'Tiến độ',iv_save:'💾 Lưu nháp',iv_submit:'✓ Gửi cho HR',iv_saved:'✓ Đã lưu nháp',iv_sent:'✓ Đã gửi cho HR – cảm ơn!',iv_none:'Hiện không có đợt kiểm kê nào.',iv_active:'🟢 Đang kiểm kê',iv_count:'Vui lòng đếm và nhập số lượng từng món.',iv_search:'Tìm kiếm…',nav_sl:'📋 Lập lịch',sl_title:'📋 Lập lịch làm việc',sl_loading:'⏳ Đang tải lịch…',sl_empty:'Chưa có lịch làm cho tháng này.',sl_pub_ok:'✓ Đã đăng tuần {kw}',sl_pub_err:'Lỗi khi đăng lịch',sl_pub_btn:'☁️ Đăng tuần {kw}',
  wa_missing:'Thiếu số WhatsApp. Sao chép tin nhắn:',inst_title:'Cài app ra màn hình chính',inst_btn:'Cài đặt ngay',inst_ios:'1️⃣ Mở trang này bằng <strong>Safari</strong> (trong WhatsApp: Chia sẻ → „Mở bằng Safari")<br>2️⃣ Bấm nút <strong>Chia sẻ</strong> ⬆️ phía dưới<br>3️⃣ Chọn <strong>„Thêm vào Màn hình chính"</strong>',
  months:['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'],
  wdS:['CN','T2','T3','T4','T5','T6','T7'],
@@ -836,7 +1015,7 @@ en:{_name:'English',
  nw_title:'📢 News from the area manager',nw_none:'No news yet.',
  push_info:'🔔 Enable push notifications to be informed instantly when new info is uploaded – even when the app is closed.',push_btn:'🔔 Enable notifications',push_on:'✓ Notifications enabled',push_denied:'Notifications are blocked in the browser. Please allow them in the browser settings.',push_unsupported:'Push notifications are not supported on this device/browser.',push_newinfo:'📢 New info from the area manager',
  nw_read_btn:'✓ Mark as read',nw_read_done:'✓ Confirmed as read',nw_read_toast:'✓ Read receipt sent',
- nav_sl:'📋 Planning',sl_title:'📋 Schedule Planning',sl_loading:'⏳ Loading schedule…',sl_empty:'No schedule published for this month yet.',sl_pub_ok:'✓ Week {kw} published',sl_pub_err:'Error publishing',sl_pub_btn:'☁️ Publish week {kw}',
+ nav_iv:'📦 Inventory',iv_title:'📦 Inventory count',iv_progress:'Progress',iv_save:'💾 Save draft',iv_submit:'✓ Send to HR',iv_saved:'✓ Draft saved',iv_sent:'✓ Sent to HR – thank you!',iv_none:'No inventory is currently running.',iv_active:'🟢 Inventory active',iv_count:'Please count and enter the quantity for each item.',iv_search:'Search…',nav_sl:'📋 Planning',sl_title:'📋 Schedule Planning',sl_loading:'⏳ Loading schedule…',sl_empty:'No schedule published for this month yet.',sl_pub_ok:'✓ Week {kw} published',sl_pub_err:'Error publishing',sl_pub_btn:'☁️ Publish week {kw}',
  wa_missing:'WhatsApp number missing. Copy the message:',inst_title:'Install app to home screen',inst_btn:'Install now',inst_ios:'1️⃣ Open this page in <strong>Safari</strong> (in WhatsApp: Share → "Open in Safari")<br>2️⃣ Tap <strong>Share</strong> ⬆️ at the bottom<br>3️⃣ Choose <strong>"Add to Home Screen"</strong>',
  months:['January','February','March','April','May','June','July','August','September','October','November','December'],
  wdS:['Su','Mo','Tu','We','Th','Fr','Sa'],
@@ -877,7 +1056,7 @@ th:{_name:'ไทย',
  nw_title:'📢 ข่าวจากผู้จัดการเขต',nw_none:'ยังไม่มีประกาศ',
  push_info:'🔔 เปิดการแจ้งเตือนแบบพุช เพื่อรับข่าวทันทีเมื่อมีข้อมูลใหม่ – แม้ปิดแอปอยู่',push_btn:'🔔 เปิดการแจ้งเตือน',push_on:'✓ เปิดการแจ้งเตือนแล้ว',push_denied:'การแจ้งเตือนถูกบล็อกในเบราว์เซอร์ กรุณาอนุญาตในการตั้งค่าเบราว์เซอร์',push_unsupported:'อุปกรณ์/เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือนแบบพุช',push_newinfo:'📢 ข้อมูลใหม่จากผู้จัดการเขต',
  nw_read_btn:'✓ อ่านแล้ว – ยืนยัน',nw_read_done:'✓ ยืนยันว่าอ่านแล้ว',nw_read_toast:'✓ ส่งการยืนยันการอ่านแล้ว',
- nav_sl:'📋 วางแผน',sl_title:'📋 วางแผนตารางงาน',sl_loading:'⏳ กำลังโหลดตาราง…',sl_empty:'ยังไม่มีตารางงานสำหรับเดือนนี้',sl_pub_ok:'✓ เผยแพร่สัปดาห์ {kw} แล้ว',sl_pub_err:'เกิดข้อผิดพลาดขึ้น',sl_pub_btn:'☁️ เผยแพร่สัปดาห์ {kw}',
+ nav_iv:'📦 สต็อก',iv_title:'📦 ตรวจนับสต็อก',iv_progress:'ความคืบหน้า',iv_save:'💾 บันทึกร่าง',iv_submit:'✓ ส่งให้ HR',iv_saved:'✓ บันทึกร่างแล้ว',iv_sent:'✓ ส่งให้ HR แล้ว – ขอบคุณ!',iv_none:'ขณะนี้ไม่มีการตรวจนับ',iv_active:'🟢 กำลังตรวจนับ',iv_count:'กรุณานับและกรอกจำนวนของแต่ละรายการ',iv_search:'ค้นหา…',nav_sl:'📋 วางแผน',sl_title:'📋 วางแผนตารางงาน',sl_loading:'⏳ กำลังโหลดตาราง…',sl_empty:'ยังไม่มีตารางงานสำหรับเดือนนี้',sl_pub_ok:'✓ เผยแพร่สัปดาห์ {kw} แล้ว',sl_pub_err:'เกิดข้อผิดพลาดขึ้น',sl_pub_btn:'☁️ เผยแพร่สัปดาห์ {kw}',
  wa_missing:'ไม่มีเบอร์ WhatsApp คัดลอกข้อความ:',inst_title:'ติดตั้งแอปบนหน้าจอหลัก',inst_btn:'ติดตั้งเลย',inst_ios:'1️⃣ เปิดหน้านี้ใน <strong>Safari</strong> (ใน WhatsApp: แชร์ → „เปิดใน Safari")<br>2️⃣ แตะปุ่ม <strong>แชร์</strong> ⬆️ ด้านล่าง<br>3️⃣ เลือก <strong>„เพิ่มลงในหน้าจอโฮม"</strong>',
  months:['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'],
  wdS:['อา','จ','อ','พ','พฤ','ศ','ส'],
@@ -906,6 +1085,7 @@ function applyLang(){
     document.getElementById('hdr-sub').textContent=sess.name+' · '+(sess.filiale||t('no_fil'));
     maRenderDP(); maRenderCal(); maRenderUlList();
     if(typeof maRenderNews==='function') maRenderNews();
+    if(typeof ivRender==='function' && document.getElementById('p-iv') && document.getElementById('p-iv').classList.contains('active')) ivRender();
   }
 }
 // Holt das eigene Profil (Filiale/Zweitfilialen) frisch aus der Cloud und aktualisiert Session + Anzeige
@@ -1061,13 +1241,14 @@ function maShowApp(sess){
       maRenderDP(); maRenderCal(); maRenderUlList();
       if(typeof maStartFbPush==='function') maStartFbPush(sess);
       slInit(sess);
+      ivInit(sess);
     };
     if(fbReady){ afterFbReady(); }
     else fbInit(afterFbReady);
   }
 }
 function maNav(t){
-  ['dp','ul','kr','nw','sl'].forEach(function(x){
+  ['dp','ul','kr','nw','sl','iv'].forEach(function(x){
     var p=document.getElementById('p-'+x);
     var ic=document.getElementById('ico-'+x);
     if(p) p.classList.toggle('active',x===t);
@@ -1077,6 +1258,7 @@ function maNav(t){
   if(t==='ul'){maRenderCal();maRenderUlList();}
   if(t==='nw'){maNewsMarkRead();}
   if(t==='sl'){slLoadPlan();}
+  if(t==='iv'){ivRender();}
 }
 
 /* ════════════════════════════════════════════════
