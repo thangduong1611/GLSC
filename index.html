@@ -2777,6 +2777,7 @@ function dpKey(){return 'sc_dp_'+dpGetFiliale().replace(/\s+/g,'_').toLowerCase(
 function dpLoadLS(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch(e){return null;}}
 function dpStoreLS(k,d){localStorage.setItem(k,JSON.stringify(d));}
 var dpEmployees=[],dpShifts={};
+var dpCloudUnsub=null, dpDirty=false, dpCloudKey=null;
 function dpEmpKey(e){return (e.id||'x')+'-'+e.name;}
 function dpSetMode(m){
   document.getElementById('dp-mode-plan').style.display=m==='plan'?'block':'none';
@@ -2806,7 +2807,35 @@ function dpInit(){
   else{if(!dpEmployees.length){var emps=loadEmps().filter(function(e){return e.active!==false&&(e.filiale||'')===(f);});dpEmployees=emps.map(function(e){return{name:e.name,id:e.id};});}dpShifts={};}
   var blSel=document.getElementById('dp-bundesland');if(blSel){var savedBl=localStorage.getItem('sc_dp_bl_'+f.replace(/\s+/g,'_').toLowerCase());if(savedBl)blSel.value=savedBl;}
   dpRenderEmpTags();dpRenderWeeks();dpPopulateAddSel();
+  dpBindCloud(f,m);
 }
+// Liest den Plan live aus Firestore – damit von Shopleitern veröffentlichte
+// Pläne im HR-Portal automatisch erscheinen.
+function dpBindCloud(f,m){
+  if(typeof fbReady==='undefined'||!fbReady||!fbDb) return;
+  var key=fbSlug(f)+'__'+m;
+  if(dpCloudKey===key && dpCloudUnsub) return;     // schon gebunden
+  if(dpCloudUnsub){try{dpCloudUnsub();}catch(e){}}
+  dpCloudKey=key; dpDirty=false;
+  dpCloudUnsub=fbDb.collection('plan').doc(key).onSnapshot(function(doc){
+    if(!doc.exists) return;
+    // Aktuelle Auswahl noch passend?
+    if(dpGetFiliale()!==f || document.getElementById('dp-month').value!==m) return;
+    if(dpDirty){
+      // HR hat ungespeicherte Änderungen → nicht überschreiben, nur Hinweis zeigen
+      var st=document.getElementById('dp-status');
+      if(st) st.innerHTML='🔄 Neue Cloud-Version verfügbar (z.B. vom Shopleiter). <a href="#" onclick="dpReloadCloud();return false;">Neu laden</a>';
+      return;
+    }
+    var d=doc.data()||{};
+    dpEmployees=(d.employees||dpEmployees).slice();
+    dpShifts=d.shifts||{};
+    dpStoreLS(dpKey(),{employees:dpEmployees,shifts:dpShifts});
+    dpRenderEmpTags();dpRenderWeeks();
+    var st=document.getElementById('dp-status'); if(st) st.textContent='☁️ Aktueller Stand aus der Cloud geladen.';
+  }, function(e){ console.warn('dp cloud', e); });
+}
+function dpReloadCloud(){ dpDirty=false; var f=dpGetFiliale(),m=document.getElementById('dp-month').value; if(dpCloudUnsub){try{dpCloudUnsub();}catch(e){}} dpCloudUnsub=null; dpCloudKey=null; dpBindCloud(f,m); }
 function dpRenderEmpTags(){
   var c=document.getElementById('dp-emp-tags');
   document.getElementById('dp-emp-count').textContent=dpEmployees.length;
@@ -2853,7 +2882,7 @@ function dpBL(){var s=document.getElementById('dp-bundesland');return s?s.value:
 function dpMonthHolidays(){var m=document.getElementById('dp-month').value;if(!m)return {};var y=+m.split('-')[0],bl=dpBL();return Object.assign({},dpHolidays(y-1,bl),dpHolidays(y,bl),dpHolidays(y+1,bl));}
 function dpGetKW(date){var d=new Date(date);d.setHours(0,0,0,0);d.setDate(d.getDate()+4-(d.getDay()||7));return Math.ceil((((d-new Date(d.getFullYear(),0,1))/86400000)+1)/7);}
 function dpGetWeeks(ym){var p=ym.split('-'),year=+p[0],month=+p[1];var first=new Date(year,month-1,1,12),last=new Date(year,month,0,12);var weeks=[],d=new Date(first),dow=d.getDay();if(dow!==1)d.setDate(d.getDate()-(dow===0?6:dow-1));while(d<=last){var dates=[];for(var i=0;i<6;i++){dates.push(dpISO(d));d.setDate(d.getDate()+1);}d.setDate(d.getDate()+1);weeks.push({kw:dpGetKW(dpParse(dates[0])),dates:dates});}return weeks;}
-function dpCellChanged(inp){var ek=inp.dataset.emp,dt=inp.dataset.date,val=inp.value;if(!dpShifts[ek])dpShifts[ek]={};dpShifts[ek][dt]=val;var td=inp.parentElement;td.className='';if(val==='Frei')td.className='dp-cell-frei';else if(val==='Urlaub')td.className='dp-cell-urlaub';else if(val==='Krank')td.className='dp-cell-krank';}
+function dpCellChanged(inp){var ek=inp.dataset.emp,dt=inp.dataset.date,val=inp.value;if(!dpShifts[ek])dpShifts[ek]={};dpShifts[ek][dt]=val;dpDirty=true;var td=inp.parentElement;td.className='';if(val==='Frei')td.className='dp-cell-frei';else if(val==='Urlaub')td.className='dp-cell-urlaub';else if(val==='Krank')td.className='dp-cell-krank';}
 // Feiertage als "Frei" vorbelegen (nur leere Zellen, manuelle Eingaben bleiben unberührt)
 function dpAutofillFeiertage(){
   var hol=dpMonthHolidays();
@@ -2880,7 +2909,7 @@ function dpRenderWeeks(){
   });
   document.getElementById('dp-weeks-wrap').innerHTML=h;
 }
-function dpSave(){dpSaveFromDOM();dpStoreLS(dpKey(),{employees:dpEmployees,shifts:dpShifts});toast('✓ Dienstplan gespeichert!');}
+function dpSave(){dpSaveFromDOM();dpDirty=false;dpStoreLS(dpKey(),{employees:dpEmployees,shifts:dpShifts});toast('✓ Dienstplan gespeichert!');}
 function dpBLChange(){
   var f=dpGetFiliale();
   if(f)localStorage.setItem('sc_dp_bl_'+f.replace(/\s+/g,'_').toLowerCase(),document.getElementById('dp-bundesland').value);
@@ -2895,7 +2924,7 @@ function dpPublishMonth(){
   var st=document.getElementById('dp-status');if(st)st.textContent='⏳ '+f+' · '+m+' wird veröffentlicht…';
   var jobs=[fbDb.collection('plan').doc(fbSlug(f)+'__'+m).set({employees:dpEmployees,shifts:dpShifts})];
   dpEmployees.forEach(function(e){if(e.id)jobs.push(fbDb.collection('emps').doc(''+e.id).set({name:e.name,filiale:f,active:true},{merge:true}));});
-  Promise.all(jobs).then(function(){if(st)st.textContent='✓ Veröffentlicht: '+f+' · '+fmtMonth(m);toast('☁️ '+f+' veröffentlicht');})
+  Promise.all(jobs).then(function(){dpDirty=false;if(st)st.textContent='✓ Veröffentlicht: '+f+' · '+fmtMonth(m);toast('☁️ '+f+' veröffentlicht');})
     .catch(function(e){if(st)st.textContent='⚠️ '+e.message;alert('Fehler: '+e.message);});
 }
 // Nur EINE Woche veröffentlichen — überschreibt per Merge nur die Tage dieser KW
@@ -2924,7 +2953,7 @@ function dpPublishWeek(wi){
     var jobs=[ref.set({employees:dpEmployees,shifts:merged})];
     dpEmployees.forEach(function(e){if(e.id)jobs.push(fbDb.collection('emps').doc(''+e.id).set({name:e.name,filiale:f,active:true},{merge:true}));});
     return Promise.all(jobs);
-  }).then(function(){if(st)st.textContent='✓ KW '+wk.kw+' veröffentlicht ('+f+')';toast('☁️ KW '+wk.kw+' veröffentlicht');})
+  }).then(function(){dpDirty=false;if(st)st.textContent='✓ KW '+wk.kw+' veröffentlicht ('+f+')';toast('☁️ KW '+wk.kw+' veröffentlicht');})
     .catch(function(e){if(st)st.textContent='⚠️ '+e.message;alert('Fehler: '+e.message);});
 }
 var dpLastDoc=null,dpLastFname='';

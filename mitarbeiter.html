@@ -700,21 +700,26 @@ function slLoadPlan(){
   var m=document.getElementById('sl-month'); if(!m||!m.value) return;
   var month=m.value, filiale=sess.filiale, docId=slFbSlug(filiale)+'__'+month;
   var st=document.getElementById('sl-status'); if(st) st.textContent=t('sl_loading');
-  fbDb.collection('plan').doc(docId).get().then(function(doc){
-    if(!doc.exists){
-      slEmps=[]; slShifts={}; slPlanLoaded=false;
-      if(st) st.textContent=t('sl_empty');
+  // 1) Mitarbeiter dieser Filiale aus der emps-Sammlung laden (unabhängig vom Plan).
+  //    So sieht der Shopleiter die Wochen auch, wenn noch kein Plan existiert.
+  fbDb.collection('emps').where('filiale','==',filiale).get().then(function(snap){
+    var byId={};
+    snap.forEach(function(doc){ var d=doc.data()||{}; if(d.active!==false) byId[doc.id]={id:doc.id, name:d.name||doc.id}; });
+    // 2) Bestehenden Plan laden (Schichten + evtl. Mitarbeiter, die nicht mehr in emps sind)
+    return fbDb.collection('plan').doc(docId).get().then(function(doc){
+      var d=doc.exists?(doc.data()||{}):{};
+      (d.employees||[]).forEach(function(e){ if(e&&e.id&&!byId[e.id]) byId[e.id]={id:e.id, name:e.name||e.id}; });
+      slEmps=Object.keys(byId).map(function(k){ return byId[k]; }).sort(function(a,b){ return (''+a.name).localeCompare(''+b.name); });
+      slShifts={};
+      var raw=d.shifts||{};
+      Object.keys(raw).forEach(function(ek){ slShifts[ek]=Object.assign({},raw[ek]); });
+      slPlanLoaded=true;
+      if(st){
+        if(!slEmps.length) st.textContent='⚠️ '+t('sl_no_emps');
+        else st.textContent='📅 '+slFmtMonth(month)+' · '+slEmps.length+' Mitarbeiter';
+      }
       slRenderGrid();
-      return;
-    }
-    var d=doc.data()||{};
-    slEmps=(d.employees||[]).slice();
-    slShifts={};
-    var raw=d.shifts||{};
-    Object.keys(raw).forEach(function(ek){ slShifts[ek]=Object.assign({},raw[ek]); });
-    slPlanLoaded=true;
-    if(st) st.textContent='📅 '+slFmtMonth(month)+' · '+slEmps.length+' Mitarbeiter';
-    slRenderGrid();
+    });
   }).catch(function(e){ if(st) st.textContent='⚠️ '+e.message; console.warn('sl load', e); });
 }
 
@@ -933,7 +938,7 @@ de:{_name:'Deutsch',
  nw_title:'📢 Infos vom Gebietsleiter',nw_none:'Noch keine Mitteilungen.',
  push_info:'🔔 Aktiviere Push-Benachrichtigungen, um sofort informiert zu werden, sobald eine neue Info hochgeladen wird – auch wenn die App geschlossen ist.',push_btn:'🔔 Benachrichtigungen aktivieren',push_on:'✓ Benachrichtigungen aktiv',push_denied:'Benachrichtigungen wurden im Browser blockiert. Bitte in den Browser-Einstellungen erlauben.',push_unsupported:'Push-Benachrichtigungen werden auf diesem Gerät/Browser nicht unterstützt.',push_newinfo:'📢 Neue Info vom Gebietsleiter',
  nw_read_btn:'✓ Gelesen – bestätigen',nw_read_done:'✓ Als gelesen bestätigt',nw_read_toast:'✓ Lesebestätigung gesendet',
- nav_iv:'📦 Inventur',iv_title:'📦 Inventur',iv_progress:'Fortschritt',iv_save:'💾 Entwurf speichern',iv_submit:'✓ An HR senden',iv_saved:'✓ Entwurf gespeichert',iv_sent:'✓ An HR gesendet – danke!',iv_none:'Aktuell läuft keine Inventur.',iv_active:'🟢 Inventur aktiv',iv_count:'Bitte alle Artikel zählen und Menge eintragen.',iv_search:'Suchen…',nav_sl:'📋 Planung',sl_title:'📋 Dienstplan-Planung',sl_loading:'⏳ Lade Dienstplan…',sl_empty:'Noch kein Dienstplan für diesen Monat.',sl_pub_ok:'✓ KW {kw} veröffentlicht',sl_pub_err:'Fehler beim Veröffentlichen',sl_pub_btn:'☁️ KW {kw} veröffentlichen',
+ nav_iv:'📦 Inventur',iv_title:'📦 Inventur',iv_progress:'Fortschritt',iv_save:'💾 Entwurf speichern',iv_submit:'✓ An HR senden',iv_saved:'✓ Entwurf gespeichert',iv_sent:'✓ An HR gesendet – danke!',iv_none:'Aktuell läuft keine Inventur.',iv_active:'🟢 Inventur aktiv',iv_count:'Bitte alle Artikel zählen und Menge eintragen.',iv_search:'Suchen…',nav_sl:'📋 Planung',sl_title:'📋 Dienstplan-Planung',sl_loading:'⏳ Lade Dienstplan…',sl_empty:'Noch kein Dienstplan für diesen Monat.',sl_pub_ok:'✓ KW {kw} veröffentlicht',sl_pub_err:'Fehler beim Veröffentlichen',sl_pub_btn:'☁️ KW {kw} veröffentlichen',sl_no_emps:'Keine Mitarbeiter in dieser Filiale. Bitte HR kontaktieren.',err_net:'Keine Verbindung – bitte erneut versuchen.',
  wa_missing:'WhatsApp-Nummer fehlt. Nachricht kopieren:',inst_title:'App auf dem Startbildschirm',inst_btn:'Jetzt installieren',inst_ios:'1️⃣ Diese Seite in <strong>Safari</strong> öffnen (in WhatsApp: Teilen → „In Safari öffnen")<br>2️⃣ Unten auf <strong>Teilen</strong> ⬆️ tippen<br>3️⃣ <strong>„Zum Home-Bildschirm"</strong> wählen',
  months:['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
  wdS:['So','Mo','Di','Mi','Do','Fr','Sa'],
@@ -974,7 +979,7 @@ vi:{_name:'Tiếng Việt',
  nw_title:'📢 Thông báo từ Gebietsleiter',nw_none:'Chưa có thông báo nào.',
  push_info:'🔔 Bật thông báo đẩy để nhận tin ngay khi có thông tin mới được tải lên – kể cả khi đã đóng app.',push_btn:'🔔 Bật thông báo',push_on:'✓ Đã bật thông báo',push_denied:'Thông báo đã bị chặn trong trình duyệt. Vui lòng cho phép trong cài đặt trình duyệt.',push_unsupported:'Thiết bị/trình duyệt này không hỗ trợ thông báo đẩy.',push_newinfo:'📢 Thông báo mới từ Gebietsleiter',
  nw_read_btn:'✓ Đã đọc – xác nhận',nw_read_done:'✓ Đã xác nhận đã đọc',nw_read_toast:'✓ Đã gửi xác nhận đã đọc',
- nav_iv:'📦 Kiểm kê',iv_title:'📦 Kiểm kê kho',iv_progress:'Tiến độ',iv_save:'💾 Lưu nháp',iv_submit:'✓ Gửi cho HR',iv_saved:'✓ Đã lưu nháp',iv_sent:'✓ Đã gửi cho HR – cảm ơn!',iv_none:'Hiện không có đợt kiểm kê nào.',iv_active:'🟢 Đang kiểm kê',iv_count:'Vui lòng đếm và nhập số lượng từng món.',iv_search:'Tìm kiếm…',nav_sl:'📋 Lập lịch',sl_title:'📋 Lập lịch làm việc',sl_loading:'⏳ Đang tải lịch…',sl_empty:'Chưa có lịch làm cho tháng này.',sl_pub_ok:'✓ Đã đăng tuần {kw}',sl_pub_err:'Lỗi khi đăng lịch',sl_pub_btn:'☁️ Đăng tuần {kw}',
+ nav_iv:'📦 Kiểm kê',iv_title:'📦 Kiểm kê kho',iv_progress:'Tiến độ',iv_save:'💾 Lưu nháp',iv_submit:'✓ Gửi cho HR',iv_saved:'✓ Đã lưu nháp',iv_sent:'✓ Đã gửi cho HR – cảm ơn!',iv_none:'Hiện không có đợt kiểm kê nào.',iv_active:'🟢 Đang kiểm kê',iv_count:'Vui lòng đếm và nhập số lượng từng món.',iv_search:'Tìm kiếm…',nav_sl:'📋 Lập lịch',sl_title:'📋 Lập lịch làm việc',sl_loading:'⏳ Đang tải lịch…',sl_empty:'Chưa có lịch làm cho tháng này.',sl_pub_ok:'✓ Đã đăng tuần {kw}',sl_pub_err:'Lỗi khi đăng lịch',sl_pub_btn:'☁️ Đăng tuần {kw}',sl_no_emps:'Chưa có nhân viên ở tiệm này. Vui lòng liên hệ HR.',err_net:'Mất kết nối – vui lòng thử lại.',
  wa_missing:'Thiếu số WhatsApp. Sao chép tin nhắn:',inst_title:'Cài app ra màn hình chính',inst_btn:'Cài đặt ngay',inst_ios:'1️⃣ Mở trang này bằng <strong>Safari</strong> (trong WhatsApp: Chia sẻ → „Mở bằng Safari")<br>2️⃣ Bấm nút <strong>Chia sẻ</strong> ⬆️ phía dưới<br>3️⃣ Chọn <strong>„Thêm vào Màn hình chính"</strong>',
  months:['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'],
  wdS:['CN','T2','T3','T4','T5','T6','T7'],
@@ -1015,7 +1020,7 @@ en:{_name:'English',
  nw_title:'📢 News from the area manager',nw_none:'No news yet.',
  push_info:'🔔 Enable push notifications to be informed instantly when new info is uploaded – even when the app is closed.',push_btn:'🔔 Enable notifications',push_on:'✓ Notifications enabled',push_denied:'Notifications are blocked in the browser. Please allow them in the browser settings.',push_unsupported:'Push notifications are not supported on this device/browser.',push_newinfo:'📢 New info from the area manager',
  nw_read_btn:'✓ Mark as read',nw_read_done:'✓ Confirmed as read',nw_read_toast:'✓ Read receipt sent',
- nav_iv:'📦 Inventory',iv_title:'📦 Inventory count',iv_progress:'Progress',iv_save:'💾 Save draft',iv_submit:'✓ Send to HR',iv_saved:'✓ Draft saved',iv_sent:'✓ Sent to HR – thank you!',iv_none:'No inventory is currently running.',iv_active:'🟢 Inventory active',iv_count:'Please count and enter the quantity for each item.',iv_search:'Search…',nav_sl:'📋 Planning',sl_title:'📋 Schedule Planning',sl_loading:'⏳ Loading schedule…',sl_empty:'No schedule published for this month yet.',sl_pub_ok:'✓ Week {kw} published',sl_pub_err:'Error publishing',sl_pub_btn:'☁️ Publish week {kw}',
+ nav_iv:'📦 Inventory',iv_title:'📦 Inventory count',iv_progress:'Progress',iv_save:'💾 Save draft',iv_submit:'✓ Send to HR',iv_saved:'✓ Draft saved',iv_sent:'✓ Sent to HR – thank you!',iv_none:'No inventory is currently running.',iv_active:'🟢 Inventory active',iv_count:'Please count and enter the quantity for each item.',iv_search:'Search…',nav_sl:'📋 Planning',sl_title:'📋 Schedule Planning',sl_loading:'⏳ Loading schedule…',sl_empty:'No schedule published for this month yet.',sl_pub_ok:'✓ Week {kw} published',sl_pub_err:'Error publishing',sl_pub_btn:'☁️ Publish week {kw}',sl_no_emps:'No employees in this store. Please contact HR.',err_net:'No connection – please try again.',
  wa_missing:'WhatsApp number missing. Copy the message:',inst_title:'Install app to home screen',inst_btn:'Install now',inst_ios:'1️⃣ Open this page in <strong>Safari</strong> (in WhatsApp: Share → "Open in Safari")<br>2️⃣ Tap <strong>Share</strong> ⬆️ at the bottom<br>3️⃣ Choose <strong>"Add to Home Screen"</strong>',
  months:['January','February','March','April','May','June','July','August','September','October','November','December'],
  wdS:['Su','Mo','Tu','We','Th','Fr','Sa'],
@@ -1056,7 +1061,7 @@ th:{_name:'ไทย',
  nw_title:'📢 ข่าวจากผู้จัดการเขต',nw_none:'ยังไม่มีประกาศ',
  push_info:'🔔 เปิดการแจ้งเตือนแบบพุช เพื่อรับข่าวทันทีเมื่อมีข้อมูลใหม่ – แม้ปิดแอปอยู่',push_btn:'🔔 เปิดการแจ้งเตือน',push_on:'✓ เปิดการแจ้งเตือนแล้ว',push_denied:'การแจ้งเตือนถูกบล็อกในเบราว์เซอร์ กรุณาอนุญาตในการตั้งค่าเบราว์เซอร์',push_unsupported:'อุปกรณ์/เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือนแบบพุช',push_newinfo:'📢 ข้อมูลใหม่จากผู้จัดการเขต',
  nw_read_btn:'✓ อ่านแล้ว – ยืนยัน',nw_read_done:'✓ ยืนยันว่าอ่านแล้ว',nw_read_toast:'✓ ส่งการยืนยันการอ่านแล้ว',
- nav_iv:'📦 สต็อก',iv_title:'📦 ตรวจนับสต็อก',iv_progress:'ความคืบหน้า',iv_save:'💾 บันทึกร่าง',iv_submit:'✓ ส่งให้ HR',iv_saved:'✓ บันทึกร่างแล้ว',iv_sent:'✓ ส่งให้ HR แล้ว – ขอบคุณ!',iv_none:'ขณะนี้ไม่มีการตรวจนับ',iv_active:'🟢 กำลังตรวจนับ',iv_count:'กรุณานับและกรอกจำนวนของแต่ละรายการ',iv_search:'ค้นหา…',nav_sl:'📋 วางแผน',sl_title:'📋 วางแผนตารางงาน',sl_loading:'⏳ กำลังโหลดตาราง…',sl_empty:'ยังไม่มีตารางงานสำหรับเดือนนี้',sl_pub_ok:'✓ เผยแพร่สัปดาห์ {kw} แล้ว',sl_pub_err:'เกิดข้อผิดพลาดขึ้น',sl_pub_btn:'☁️ เผยแพร่สัปดาห์ {kw}',
+ nav_iv:'📦 สต็อก',iv_title:'📦 ตรวจนับสต็อก',iv_progress:'ความคืบหน้า',iv_save:'💾 บันทึกร่าง',iv_submit:'✓ ส่งให้ HR',iv_saved:'✓ บันทึกร่างแล้ว',iv_sent:'✓ ส่งให้ HR แล้ว – ขอบคุณ!',iv_none:'ขณะนี้ไม่มีการตรวจนับ',iv_active:'🟢 กำลังตรวจนับ',iv_count:'กรุณานับและกรอกจำนวนของแต่ละรายการ',iv_search:'ค้นหา…',nav_sl:'📋 วางแผน',sl_title:'📋 วางแผนตารางงาน',sl_loading:'⏳ กำลังโหลดตาราง…',sl_empty:'ยังไม่มีตารางงานสำหรับเดือนนี้',sl_pub_ok:'✓ เผยแพร่สัปดาห์ {kw} แล้ว',sl_pub_err:'เกิดข้อผิดพลาดขึ้น',sl_pub_btn:'☁️ เผยแพร่สัปดาห์ {kw}',sl_no_emps:'ไม่มีพนักงานในสาขานี้ กรุณาติดต่อ HR',err_net:'ไม่มีการเชื่อมต่อ กรุณาลองใหม่',
  wa_missing:'ไม่มีเบอร์ WhatsApp คัดลอกข้อความ:',inst_title:'ติดตั้งแอปบนหน้าจอหลัก',inst_btn:'ติดตั้งเลย',inst_ios:'1️⃣ เปิดหน้านี้ใน <strong>Safari</strong> (ใน WhatsApp: แชร์ → „เปิดใน Safari")<br>2️⃣ แตะปุ่ม <strong>แชร์</strong> ⬆️ ด้านล่าง<br>3️⃣ เลือก <strong>„เพิ่มลงในหน้าจอโฮม"</strong>',
  months:['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'],
  wdS:['อา','จ','อ','พ','พฤ','ศ','ส'],
