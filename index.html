@@ -2894,6 +2894,37 @@ function dpAutofillFeiertage(){
     });
   });
 }
+// Baut eine Abwesenheits-Overlay { empId: { 'YYYY-MM-DD': 'Urlaub'|'Krank' } }
+// aus genehmigten Urlauben (fbDecided, status=approved) + Krankmeldungen (fbKrank).
+// Wird nur zur Anzeige verwendet – die gespeicherten Schichten bleiben unverändert.
+function dpFilEq(a,b){ return fbSlug(''+(a||''))===fbSlug(''+(b||'')); }
+function dpRefreshIfOpen(){
+  var p=document.getElementById('panel-dienstplan');
+  if(p && p.classList.contains('active') && document.getElementById('dp-month') && document.getElementById('dp-month').value){
+    try{ dpRenderWeeks(); }catch(e){ console.warn('dp refresh', e); }
+  }
+}
+function dpAddRange(ov,id,from,to,label){
+  if(!id||!from) return;
+  var d=dpParse(from), end=dpParse(to||from), guard=0;
+  while(d<=end && guard<400){
+    var iso=dpISO(d);
+    if(!ov[id]) ov[id]={};
+    if(!ov[id][iso]) ov[id][iso]=label;   // erste Abwesenheit pro Tag gewinnt
+    d.setDate(d.getDate()+1); guard++;
+  }
+}
+function dpAbsenceFor(filiale){
+  var ov={};
+  (typeof fbDecided!=='undefined'?fbDecided:[]).forEach(function(r){
+    if(r.status==='approved' && dpFilEq(r.filiale,filiale)) dpAddRange(ov, ''+(r.empId||''), r.from, r.to, 'Urlaub');
+  });
+  (typeof fbKrank!=='undefined'?fbKrank:[]).forEach(function(k){
+    var d=k.d||{}; if(dpFilEq(d.filiale,filiale)) dpAddRange(ov, ''+(d.empId||''), d.from, d.to, 'Krank');
+  });
+  return ov;
+}
+
 function dpRenderWeeks(){
   var m=document.getElementById('dp-month').value;if(!m)return;
   dpAutofillFeiertage();
@@ -2904,7 +2935,7 @@ function dpRenderWeeks(){
     wk.dates.forEach(function(dt,di){var d=dpParse(dt),ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}),fn=hol[dt];h+='<th'+(fn?' class="dp-th-ft" title="'+fn+'"':'')+'>'+DAYS[di].substring(0,2)+'<br><small style="font-weight:400;font-size:10px">'+ds+'</small>'+(fn?'<br><small class="dp-fn">'+fn+'</small>':'')+'</th>';});
     h+='</tr></thead><tbody>';
     if(!dpEmployees.length){h+='<tr><td colspan="7" style="padding:12px 8px;text-align:center;font-size:12px;color:var(--mut)">Noch keine Mitarbeiter.</td></tr>';}
-    else{dpEmployees.forEach(function(emp){var ek=dpEmpKey(emp);h+='<tr><td title="'+emp.name+'">'+emp.name.substring(0,15)+(emp.name.length>15?'…':'')+'</td>';wk.dates.forEach(function(dt){var val=(dpShifts[ek]&&dpShifts[ek][dt])||'',isF=!!hol[dt],cls=val==='Frei'?'dp-cell-frei':val==='Urlaub'?'dp-cell-urlaub':val==='Krank'?'dp-cell-krank':'';if(isF&&!cls)cls='dp-cell-frei';h+='<td class="'+cls+(isF?' dp-cell-ft':'')+'"><input class="dp-shift dp-inp" list="dp-presets" value="'+val+'" data-emp="'+ek+'" data-date="'+dt+'" oninput="dpCellChanged(this)"></td>';});h+='</tr>';});}
+    else{var dpAbs=dpAbsenceFor(dpGetFiliale());dpEmployees.forEach(function(emp){var ek=dpEmpKey(emp),eid=''+(emp.id||'');h+='<tr><td title="'+emp.name+'">'+emp.name.substring(0,15)+(emp.name.length>15?'…':'')+'</td>';wk.dates.forEach(function(dt){var abs=dpAbs[eid]&&dpAbs[eid][dt];var stored=(dpShifts[ek]&&dpShifts[ek][dt])||'';var isF=!!hol[dt];if(abs){var acls=abs==='Urlaub'?'dp-cell-urlaub':'dp-cell-krank';h+='<td class="'+acls+(isF?' dp-cell-ft':'')+'" title="Automatisch: '+abs+(stored?' (überschreibt: '+stored+')':'')+'"><div style="padding:4px 2px;text-align:center;font-size:12px;font-weight:600;color:'+(abs==='Urlaub'?'#1E8449':'#C0392B')+'">'+(abs==='Urlaub'?'🌴 Urlaub':'🏥 Krank')+'</div></td>';}else{var val=stored,cls=val==='Frei'?'dp-cell-frei':val==='Urlaub'?'dp-cell-urlaub':val==='Krank'?'dp-cell-krank':'';if(isF&&!cls)cls='dp-cell-frei';h+='<td class="'+cls+(isF?' dp-cell-ft':'')+'"><input class="dp-shift dp-inp" list="dp-presets" value="'+val+'" data-emp="'+ek+'" data-date="'+dt+'" oninput="dpCellChanged(this)"></td>';}});h+='</tr>';});}
     h+='</tbody></table></div></div>';
   });
   document.getElementById('dp-weeks-wrap').innerHTML=h;
@@ -3678,6 +3709,7 @@ function fbStartPending(){
       fbPending=all.filter(function(r){ return r.status==='pending'; });
       fbDecided=all.filter(function(r){ return r.status!=='pending'; });
       fbRenderPending();
+      dpRefreshIfOpen();
     }, function(err){ console.warn('FB pending', err); fbPendingCardShow('⚠️ Kein Datenbank-Zugriff. Firestore-Regeln prüfen. ('+err.code+')', '#C0392B'); });
 }
 function fbRenderPending(){
@@ -3862,6 +3894,7 @@ function krStartListener(){
     fbKrank=raw.sort(function(a,b){ return (a.d.created||'')<(b.d.created||'')?1:-1; });
     krShowStatus('','');
     krRender();
+    dpRefreshIfOpen();
   }, function(err){
     console.warn('FB krank', err);
     krShowStatus('⚠️ Kein Zugriff auf Krankmeldungen ('+err.code+'). In den Firestore-Regeln fehlt vermutlich der Block für „krank" — bitte Regeln ergänzen und neu veröffentlichen.','#C0392B');

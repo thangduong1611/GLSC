@@ -428,6 +428,12 @@ function maStartFbUrlaub(sess){
       var raw=[]; snap.forEach(function(doc){ raw.push({id:doc.id, data:doc.data()}); });
       maFbUrlaub = maMapUrlaubSnapshot(raw);
       maRenderCal(); maRenderUlList();
+      // Genehmigte Urlaube live in den Dienstplan übernehmen (falls offen)
+      var pdp=document.getElementById('p-dp');
+      if(pdp && pdp.classList.contains('active')) maRenderDP();
+      var psl=document.getElementById('p-sl');
+      if(psl && psl.classList.contains('active') && typeof slRenderGrid==='function' &&
+         document.activeElement && document.activeElement.className.indexOf('sl-inp')<0) slRenderGrid();
     }, function(err){ console.warn('FB listen', err); });
 }
 function maStartFbNews(){
@@ -740,6 +746,7 @@ function slRenderGrid(){
   if(!slEmps.length){box.innerHTML='<div style="font-size:13px;color:var(--mut);padding:10px 0">'+t('sl_empty')+'</div>';return;}
   var DAYS=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
   var weeks=slGetWeeks(month);
+  var slOv=maUrlaubOverlay();
   var h='<datalist id="sl-presets"><option value="Frei"><option value="Urlaub"><option value="Krank"><option value="08:00-16:00"><option value="10:00-18:00"><option value="12:00-20:00"><option value="13:00-19:00"></datalist>';
   weeks.forEach(function(wk,wi){
     var pubLbl=t('sl_pub_btn').replace('{kw}',wk.kw);
@@ -759,6 +766,12 @@ function slRenderGrid(){
       var ek=slEmpKey(emp);
       h+='<tr><td style="padding:5px 8px;font-weight:600;white-space:nowrap;position:sticky;left:0;background:var(--surf);z-index:1;border-top:1px solid var(--brd)">'+emp.name.substring(0,14)+(emp.name.length>14?'…':'')+'</td>';
       wk.dates.forEach(function(dt){
+        var empId=''+(emp.id||'');
+        var ovVal=slOv[empId]&&slOv[empId][dt];
+        if(ovVal){
+          h+='<td style="padding:3px;border-top:1px solid var(--brd);background:#EAFAF1" title="Genehmigter Urlaub (automatisch)"><div style="text-align:center;font-size:12px;font-weight:600;color:#1E8449;padding:4px 2px">🌴 Urlaub</div></td>';
+          return;
+        }
         var val=(slShifts[ek]&&slShifts[ek][dt])||'';
         var bg=val==='Frei'?'background:#EAF8F0':val==='Urlaub'?'background:#FEF9E7':val==='Krank'?'background:#FDEDEC':'';
         h+='<td style="padding:3px;border-top:1px solid var(--brd);'+bg+'"><input class="sl-inp" list="sl-presets" value="'+val.replace(/"/g,'&quot;')+'" data-emp="'+ek+'" data-date="'+dt+'" oninput="slCellChanged(this)" style="width:100%;border:1px solid var(--brd);border-radius:4px;padding:4px 5px;font-size:12px;background:transparent;font-family:inherit"></td>';
@@ -1292,6 +1305,17 @@ function maDoImport(){
 /* ════════════════════════════════════════════════
    FEATURE 1 — DIENSTPLAN
    ════════════════════════════════════════════════ */
+// Overlay { empId: { 'YYYY-MM-DD': 'Urlaub' } } aus genehmigten Urlauben.
+// Nur Anzeige – überschreibt gespeicherte Schichten visuell (Abwesenheit gewinnt).
+function maUrlaubOverlay(){
+  var ov={};
+  (maFbUrlaub||[]).forEach(function(u){
+    if(u.status!=='approved'||!u.id||!u.from) return;
+    var d=maParseDate(u.from), end=maParseDate(u.to||u.from), guard=0;
+    while(d&&end&&d<=end&&guard<400){ var iso=maISO(d); if(!ov[''+u.id])ov[''+u.id]={}; if(!ov[''+u.id][iso])ov[''+u.id][iso]='Urlaub'; d.setDate(d.getDate()+1); guard++; }
+  });
+  return ov;
+}
 function maRenderDP(){
   var sess=maSession();if(!sess)return;
   var month=document.getElementById('dp-month').value;
@@ -1326,10 +1350,13 @@ function maRenderDP(){
   var myH='<div style="font-size:14px;font-weight:700;margin-bottom:8px">'+t('my_shifts')+'</div>';
   var myShift=shifts[myKey]|| (function(){ // fuzzy match by id
     var k=Object.keys(shifts).find(function(kk){return kk.indexOf(sess.id+'-')===0;});return k?shifts[k]:null;})();
+  var maOv=maUrlaubOverlay();
+  var myOv=maOv[''+sess.id]||{};
   var any=false;
   for(var d=1;d<=dim;d++){
     var iso=yr+'-'+('0'+mo).slice(-2)+'-'+('0'+d).slice(-2);
     var val=myShift?(myShift[iso]||''):'';
+    if(myOv[iso]) val=myOv[iso];   // genehmigter Urlaub gewinnt
     var valDisp=val==='Frei'?t('v_frei'):val==='Urlaub'?t('v_url'):val==='Krank'?t('v_krank'):val;
     if(!val)continue;
     any=true;
@@ -1350,6 +1377,7 @@ function maRenderDP(){
     for(var d3=1;d3<=dim;d3++){
       var iso3=yr+'-'+('0'+mo).slice(-2)+'-'+('0'+d3).slice(-2);
       var v=(shifts[ek]&&shifts[ek][iso3])||'';
+      if(maOv[''+emp.id]&&maOv[''+emp.id][iso3]) v=maOv[''+emp.id][iso3];  // Urlaub-Overlay
       var cc=v==='Frei'?'c-frei':v==='Urlaub'?'c-urlaub':v==='Krank'?'c-krank':'';
       var disp=v==='Urlaub'?'U':v==='Krank'?'K':v==='Frei'?'–':v;
       gridH+='<td class="'+cc+'">'+disp+'</td>';
