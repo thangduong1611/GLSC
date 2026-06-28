@@ -344,6 +344,21 @@ window.onerror=function(msg,src,line){
     <div id="fb-pending-list"></div>
   </div>
 
+  <div class="card" id="u-manual-card">
+    <div class="card-title">➕ Urlaub manuell eintragen <span class="badge badge-grn">HR</span></div>
+    <div class="info">Für dringende Fälle <strong>ohne 10-Tage-Vorlauf</strong> (z.B. Notfall). Der Eintrag gilt sofort als <strong>genehmigt</strong>, erscheint beim Mitarbeiter und automatisch im Dienstplan.</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="grid-column:1/-1"><label>Mitarbeiter</label><select id="um-emp"><option value="">— auswählen —</option></select></div>
+      <div><label>Von</label><input type="date" id="um-from"></div>
+      <div><label>Bis</label><input type="date" id="um-to"></div>
+      <div style="grid-column:1/-1"><label>Grund / Notiz (optional)</label><input type="text" id="um-note" placeholder="z.B. dringender Notfall"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-grn" onclick="uManualAdd()" style="flex:1;justify-content:center">✓ Urlaub eintragen</button>
+    </div>
+    <div id="um-status" style="font-size:13px;margin-top:8px;font-weight:600;display:none"></div>
+  </div>
+
   <div class="card" id="an-live-card" style="display:none">
     <div class="card-title">✍️ Unterschriebene Anträge (Live) <span class="badge badge-blu" id="an-live-count">0</span></div>
     <div class="info">Vom Mitarbeiter ausgefüllte + unterschriebene Urlaubsanträge. „Übernehmen" füllt das Formular unten automatisch (inkl. Mitarbeiter-Unterschrift) — nur noch als Arbeitgeber unterschreiben → PDF erstellen.</div>
@@ -1122,6 +1137,7 @@ function sw(id, el) {
   document.getElementById('panel-'+id).classList.add('active');
   if(id==='emp'){renderEmpTable();fvPopulate();}
   if(id==='news') nwRender();
+  if(id==='urlaub') uManualPopulate();
 avPopulateDropdown();
 initOrtDatumFields();
 applySettings();
@@ -3771,6 +3787,53 @@ function fbRevert(docId){
   var r=fbFind(docId); if(!r||!r.ref) return;
   r.ref.update({status:'pending', decidedAt:null})
     .then(function(){ toast('↩ Zurück auf Wartend'); }).catch(function(e){ alert('Fehler: '+e.message); });
+}
+
+// ════════ URLAUB MANUELL EINTRAGEN (HR, ohne 10-Tage-Vorlauf) ════════
+function uManualPopulate(){
+  var sel=document.getElementById('um-emp'); if(!sel) return;
+  var cur=sel.value;
+  var emps=loadEmps().filter(function(e){return e.active!==false;})
+    .sort(function(a,b){return (''+a.name).localeCompare(''+b.name);});
+  sel.innerHTML='<option value="">— auswählen —</option>'+emps.map(function(e){
+    return '<option value="'+(''+e.id)+'">'+e.name+' ['+e.id+']'+(e.filiale?' · '+e.filiale:'')+'</option>';
+  }).join('');
+  if(cur) sel.value=cur;
+}
+function umStatus(msg,color){
+  var st=document.getElementById('um-status'); if(!st) return;
+  st.textContent=msg||''; st.style.color=color||'#6B6860'; st.style.display=msg?'block':'none';
+}
+function uManualAdd(){
+  if(typeof fbReady==='undefined'||!fbReady||!fbDb||!fbManager){ alert('Bitte zuerst als Manager anmelden (Einstellungen → ☁️ Cloud).'); return; }
+  var id=document.getElementById('um-emp').value;
+  var from=document.getElementById('um-from').value;
+  var to=document.getElementById('um-to').value;
+  var note=(document.getElementById('um-note').value||'').trim();
+  if(!id){ umStatus('⚠️ Bitte einen Mitarbeiter wählen.', '#C0392B'); return; }
+  if(!from){ umStatus('⚠️ Bitte ein Von-Datum wählen.', '#C0392B'); return; }
+  if(!to) to=from;
+  if(to<from){ umStatus('⚠️ „Bis" liegt vor „Von".', '#C0392B'); return; }
+  var emp=loadEmps().find(function(e){return ''+e.id===''+id;});
+  if(!emp){ umStatus('⚠️ Mitarbeiter nicht gefunden.', '#C0392B'); return; }
+  var filiale=emp.filiale||'';
+  if(!filiale){ umStatus('⚠️ Mitarbeiter hat keine Stammfiliale.', '#C0392B'); return; }
+  var doc={ empId:''+emp.id, name:emp.name, filiale:filiale,
+    from:from, to:to, status:'approved',
+    created:new Date().toISOString(), decidedAt:new Date().toISOString(),
+    source:'hr' };
+  if(note) doc.note=note;
+  umStatus('⏳ Speichere…', '#6B6860');
+  fbDb.collection('filialen').doc(fbSlug(filiale)).collection('urlaub').add(doc)
+    .then(function(){
+      umStatus('✓ Urlaub für '+emp.name+' eingetragen ('+fmtDate(from)+(to!==from?' – '+fmtDate(to):'')+').', '#1E8449');
+      toast('✓ Urlaub eingetragen');
+      document.getElementById('um-from').value='';
+      document.getElementById('um-to').value='';
+      document.getElementById('um-note').value='';
+      document.getElementById('um-emp').value='';
+    })
+    .catch(function(e){ umStatus('Fehler: '+e.message, '#C0392B'); });
 }
 
 // ════════ UNTERSCHRIEBENE ANTRÄGE (Live aus Mitarbeiter-App) ════════
