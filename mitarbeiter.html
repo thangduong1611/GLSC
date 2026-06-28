@@ -90,6 +90,7 @@ input:focus,textarea:focus,select:focus{border-color:var(--red);}
 table.dp-grid{border-collapse:collapse;font-size:12px;min-width:100%;}
 table.dp-grid th,table.dp-grid td{border:1px solid var(--brd);padding:5px 6px;text-align:center;white-space:nowrap;}
 table.dp-grid th.nm,table.dp-grid td.nm{text-align:left;position:sticky;left:0;background:var(--surf);font-weight:600;min-width:120px;}
+.dp-store-badge{display:inline-block;font-size:11px;font-weight:600;color:var(--grn);background:var(--grn-bg);border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:middle;white-space:nowrap;}
 table.dp-grid tr.me td{background:#FEF6E7;}
 table.dp-grid tr.me td.nm{background:#FDEFCB;}
 td.c-frei{background:#F0EDE8;color:var(--mut);}
@@ -395,6 +396,7 @@ window.onerror=function(msg,src,line){
 var FB_CONFIG = (typeof window!=='undefined' && window.FB_CONFIG) ? window.FB_CONFIG : null;
 var fbReady=false, fbDb=null, fbUnsub=null, maFbUrlaub=[], maFbPlans={};
 var maPlanUnsub=null, maPlanKey=null;
+var maPlanUnsubs={}, maGridStore=null;
 var maNews=[], maNewsUnsub=null;
 var maNewsReads={}, maNewsReadsUnsub=null;
 function fbSlug(f){ return (''+f).replace(/\s+/g,'_').toLowerCase(); }
@@ -1120,7 +1122,7 @@ function maRefreshProfile(){
     maSetSession(sess);
     maAllocInfo(sess);
     document.getElementById('hdr-sub').textContent=sess.name+' · '+(sess.filiale||t('no_fil'));
-    if(filialeChanged){ maFbPlans={}; maPlanKey=null; if(maPlanUnsub){try{maPlanUnsub();}catch(e){}maPlanUnsub=null;} maStartFbUrlaub(sess); maRenderDP(); maRenderCal(); maRenderUlList(); }
+    if(filialeChanged){ maFbPlans={}; maPlanKey=null; if(maPlanUnsub){try{maPlanUnsub();}catch(e){}maPlanUnsub=null;} maClearPlanSubs(); maGridStore=null; maStartFbUrlaub(sess); maRenderDP(); maRenderCal(); maRenderUlList(); }
   }).catch(function(e){ console.warn('profile refresh', e); });
 }
 function maAllocInfo(sess){
@@ -1316,75 +1318,132 @@ function maUrlaubOverlay(){
   });
   return ov;
 }
+// Filialen, zu denen dieser Mitarbeiter gehört (Stammfiliale zuerst, dann Zweitfilialen)
+function maMyStores(sess){
+  var list=[sess.filiale];
+  (sess.zweit||[]).forEach(function(z){ if(z && list.indexOf(z)<0) list.push(z); });
+  return list.filter(Boolean);
+}
+// Live-Listener pro Filiale sicherstellen (mehrere Pläne gleichzeitig)
+function maEnsurePlan(key){
+  if(!fbReady||!fbDb) return;
+  if(maPlanUnsubs[key]) return;
+  maPlanUnsubs[key]=fbDb.collection('plan').doc(key).onSnapshot(function(doc){
+    maFbPlans[key]=doc.exists?doc.data():null;
+    maRenderDP();
+  }, function(e){ maFbPlans[key]=null; maRenderDP(); });
+}
+function maClearPlanSubs(){ Object.keys(maPlanUnsubs).forEach(function(k){try{maPlanUnsubs[k]();}catch(e){}}); maPlanUnsubs={}; }
+function maGridStoreChange(v){ maGridStore=v; maRenderDP(); }
+// Eigene Schicht-Map in einem Plan (exakter Key, sonst Fuzzy per ID)
+function maMyShiftIn(plan,sess){
+  if(!plan) return null;
+  var s=plan.shifts||{};
+  var exact=sess.id+'-'+sess.name;
+  if(s[exact]) return s[exact];
+  var k=Object.keys(s).find(function(kk){return kk.indexOf(sess.id+'-')===0;});
+  return k?s[k]:null;
+}
+function maIsAbsence(v){ return v==='Frei'||v==='Urlaub'||v==='Krank'; }
+function maValDisp(v){ return v==='Frei'?t('v_frei'):v==='Urlaub'?t('v_url'):v==='Krank'?t('v_krank'):v; }
+
 function maRenderDP(){
   var sess=maSession();if(!sess)return;
   var month=document.getElementById('dp-month').value;
   var out=document.getElementById('dp-out');
-  var plan=null;
-  if(fbReady&&fbDb){
-    var key=fbSlug(sess.filiale)+'__'+month;
-    // Real-time-Listener: jede Veröffentlichung (Woche ODER Monat) erscheint sofort, ohne Neuladen
-    if(maPlanKey!==key){
-      if(maPlanUnsub){try{maPlanUnsub();}catch(e){}}
-      maPlanKey=key; maPlanUnsub=null;
-      if(maFbPlans[key]===undefined){ out.innerHTML='<div style="color:var(--mut);font-size:13px;padding:8px 0">'+t('dp_loading')+'</div>'; }
-      maPlanUnsub=fbDb.collection('plan').doc(key).onSnapshot(function(doc){
-        maFbPlans[key]=doc.exists?doc.data():null;
-        if(maPlanKey===key) maRenderDP();
-      }, function(e){ var o=document.getElementById('dp-out'); if(o)o.innerHTML='<div class="warnbox">'+t('dp_load_err')+e.message+'</div>'; });
-    }
-    if(maFbPlans[key]===undefined) return; // erster Snapshot noch unterwegs
-    plan=maFbPlans[key];
-  } else {
-    var b=maLoadBundle();
-    plan=b&&b.dienstplan&&b.dienstplan[sess.filiale]&&b.dienstplan[sess.filiale][month];
-  }
-  if(!plan){out.innerHTML='<div class="warnbox">'+t('dp_not_pub',{m:(month?maMonthLabel(month):'—')})+'</div>';return;}
-  var shifts=plan.shifts||{};
-  var emps=plan.employees||[];
-  var myKey=sess.id+'-'+sess.name;
-  // collect all dates of this month present
+  if(!out)return;
+  if(!month){ out.innerHTML=''; return; }
+  var stores=maMyStores(sess);
   var p=month.split('-'),yr=+p[0],mo=+p[1];
   var dim=new Date(yr,mo,0).getDate();
-  // MY schedule (big list)
-  var myH='<div style="font-size:14px;font-weight:700;margin-bottom:8px">'+t('my_shifts')+'</div>';
-  var myShift=shifts[myKey]|| (function(){ // fuzzy match by id
-    var k=Object.keys(shifts).find(function(kk){return kk.indexOf(sess.id+'-')===0;});return k?shifts[k]:null;})();
+
+  // Pläne aller (Haupt- + Zweit-)Filialen laden
+  var plans={};
+  if(fbReady&&fbDb){
+    stores.forEach(function(store){ var key=fbSlug(store)+'__'+month; maEnsurePlan(key); plans[store]=maFbPlans[key]; });
+    var mainKey=fbSlug(sess.filiale)+'__'+month;
+    if(maFbPlans[mainKey]===undefined){ out.innerHTML='<div style="color:var(--mut);font-size:13px;padding:8px 0">'+t('dp_loading')+'</div>'; return; }
+  } else {
+    var b=maLoadBundle();
+    stores.forEach(function(store){ plans[store]=(b&&b.dienstplan&&b.dienstplan[store]&&b.dienstplan[store][month])||null; });
+  }
+  // noch ladende Zweitfilialen vorerst wie "nicht veröffentlicht" behandeln
+  stores.forEach(function(store){ if(plans[store]===undefined) plans[store]=null; });
+
+  var anyPlan=stores.some(function(store){ return !!plans[store]; });
+  if(!anyPlan){ out.innerHTML='<div class="warnbox">'+t('dp_not_pub',{m:(month?maMonthLabel(month):'—')})+'</div>'; return; }
+
   var maOv=maUrlaubOverlay();
   var myOv=maOv[''+sess.id]||{};
+  var multi=stores.length>1;
+
+  // ── MEINE SCHICHTEN (alle Filialen zusammengeführt) ──
+  var myShiftByStore={};
+  stores.forEach(function(store){ myShiftByStore[store]=maMyShiftIn(plans[store],sess); });
+  var myH='<div style="font-size:14px;font-weight:700;margin-bottom:8px">'+t('my_shifts')+'</div>';
   var any=false;
   for(var d=1;d<=dim;d++){
     var iso=yr+'-'+('0'+mo).slice(-2)+'-'+('0'+d).slice(-2);
-    var val=myShift?(myShift[iso]||''):'';
-    if(myOv[iso]) val=myOv[iso];   // genehmigter Urlaub gewinnt
-    var valDisp=val==='Frei'?t('v_frei'):val==='Urlaub'?t('v_url'):val==='Krank'?t('v_krank'):val;
-    if(!val)continue;
-    any=true;
     var dt=new Date(yr,mo-1,d);
-    var cls=val==='Frei'?'frei':val==='Urlaub'?'urlaub':val==='Krank'?'krank':'';
-    myH+='<div class="dp-day '+cls+'"><div><div class="d-date">'+('0'+d).slice(-2)+'.'+('0'+mo).slice(-2)+'.</div><div class="d-wd">'+MA_WDF[dt.getDay()]+'</div></div><div class="d-val">'+valDisp+'</div></div>';
+    var dateCell='<div><div class="d-date">'+('0'+d).slice(-2)+'.'+('0'+mo).slice(-2)+'.</div><div class="d-wd">'+MA_WDF[dt.getDay()]+'</div></div>';
+    // genehmigter Urlaub gewinnt für den ganzen Tag (filialübergreifend)
+    if(myOv[iso]){
+      any=true;
+      myH+='<div class="dp-day urlaub">'+dateCell+'<div class="d-val">'+maValDisp(myOv[iso])+'</div></div>';
+      continue;
+    }
+    // Einträge aus allen Filialen sammeln
+    var entries=[];
+    stores.forEach(function(store){ var ms=myShiftByStore[store]; var v=ms?(ms[iso]||''):''; if(v) entries.push({store:store,val:v}); });
+    if(!entries.length) continue;
+    var work=entries.filter(function(e){return !maIsAbsence(e.val);});
+    var show=work.length?work:[entries[0]];
+    any=true;
+    var allAbsence=!work.length;
+    var cls=allAbsence?(show[0].val==='Frei'?'frei':show[0].val==='Urlaub'?'urlaub':show[0].val==='Krank'?'krank':''):'';
+    var valHtml=show.map(function(e){
+      var badge=(multi && fbSlug(e.store)!==fbSlug(sess.filiale)) ? '<span class="dp-store-badge">📍 '+e.store+'</span>' : '';
+      return maValDisp(e.val)+badge;
+    }).join(' · ');
+    myH+='<div class="dp-day '+cls+'">'+dateCell+'<div class="d-val">'+valHtml+'</div></div>';
   }
   if(!any)myH+='<div class="dp-day"><div class="d-val" style="color:var(--mut)">'+t('no_entries')+'</div></div>';
 
-  // FULL store grid (scroll)
-  var gridH='<div style="font-size:14px;font-weight:700;margin:18px 0 8px">'+t('whole_store')+'</div><div class="dp-scroll"><table class="dp-grid"><tr><th class="nm">'+t('th_emp')+'</th>';
-  for(var d2=1;d2<=dim;d2++){var dt2=new Date(yr,mo-1,d2);gridH+='<th>'+('0'+d2).slice(-2)+'<br><span style="font-weight:400;color:var(--mut)">'+MA_WD[dt2.getDay()]+'</span></th>';}
-  gridH+='</tr>';
-  emps.forEach(function(emp){
-    var ek=emp.id+'-'+emp.name;
-    var isMe=(''+emp.id===''+sess.id);
-    gridH+='<tr class="'+(isMe?'me':'')+'"><td class="nm">'+emp.name+(isMe?' 👤':'')+'</td>';
-    for(var d3=1;d3<=dim;d3++){
-      var iso3=yr+'-'+('0'+mo).slice(-2)+'-'+('0'+d3).slice(-2);
-      var v=(shifts[ek]&&shifts[ek][iso3])||'';
-      if(maOv[''+emp.id]&&maOv[''+emp.id][iso3]) v=maOv[''+emp.id][iso3];  // Urlaub-Overlay
-      var cc=v==='Frei'?'c-frei':v==='Urlaub'?'c-urlaub':v==='Krank'?'c-krank':'';
-      var disp=v==='Urlaub'?'U':v==='Krank'?'K':v==='Frei'?'–':v;
-      gridH+='<td class="'+cc+'">'+disp+'</td>';
-    }
+  // ── GANZE FILIALE (mit Filial-Umschalter, falls mehrere) ──
+  if(!maGridStore || stores.indexOf(maGridStore)<0) maGridStore=sess.filiale;
+  var gridStore=maGridStore;
+  var gHead='<div style="font-size:14px;font-weight:700;margin:18px 0 8px">'+t('whole_store');
+  if(multi){
+    gHead+=' <select onchange="maGridStoreChange(this.value)" style="margin-left:6px;font-size:12px;padding:3px 6px;border-radius:6px;border:1px solid var(--brd)">';
+    stores.forEach(function(store){ gHead+='<option value="'+(''+store).replace(/"/g,'&quot;')+'"'+(store===gridStore?' selected':'')+'>'+store+'</option>'; });
+    gHead+='</select>';
+  }
+  gHead+='</div>';
+  var gridH=gHead;
+  var gplan=plans[gridStore];
+  if(!gplan){
+    gridH+='<div class="warnbox">'+t('dp_not_pub',{m:(month?maMonthLabel(month):'—')})+'</div>';
+  } else {
+    var shifts=gplan.shifts||{}, emps=gplan.employees||[];
+    gridH+='<div class="dp-scroll"><table class="dp-grid"><tr><th class="nm">'+t('th_emp')+'</th>';
+    for(var d2=1;d2<=dim;d2++){var dt2=new Date(yr,mo-1,d2);gridH+='<th>'+('0'+d2).slice(-2)+'<br><span style="font-weight:400;color:var(--mut)">'+MA_WD[dt2.getDay()]+'</span></th>';}
     gridH+='</tr>';
-  });
-  gridH+='</table></div>';
+    emps.forEach(function(emp){
+      var ek=emp.id+'-'+emp.name;
+      var isMe=(''+emp.id===''+sess.id);
+      gridH+='<tr class="'+(isMe?'me':'')+'"><td class="nm">'+emp.name+(isMe?' 👤':'')+'</td>';
+      for(var d3=1;d3<=dim;d3++){
+        var iso3=yr+'-'+('0'+mo).slice(-2)+'-'+('0'+d3).slice(-2);
+        var v=(shifts[ek]&&shifts[ek][iso3])||'';
+        if(maOv[''+emp.id]&&maOv[''+emp.id][iso3]) v=maOv[''+emp.id][iso3];
+        var cc=v==='Frei'?'c-frei':v==='Urlaub'?'c-urlaub':v==='Krank'?'c-krank':'';
+        var disp=v==='Urlaub'?'U':v==='Krank'?'K':v==='Frei'?'–':v;
+        gridH+='<td class="'+cc+'">'+disp+'</td>';
+      }
+      gridH+='</tr>';
+    });
+    gridH+='</table></div>';
+  }
   out.innerHTML=myH+gridH;
 }
 function maMonthLabel(m){var p=m.split('-');return MA_MON[+p[1]-1]+' '+p[0];}

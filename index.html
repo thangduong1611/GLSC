@@ -212,6 +212,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 .dp-kw-pub{height:26px;margin:0;padding:0 9px;font-size:11px;line-height:1;}
 .dp-emp-tag{display:inline-flex;align-items:center;gap:5px;background:var(--bg);border:1px solid var(--brd);border-radius:var(--rs);padding:4px 9px;font-size:12px;margin:3px 3px 3px 0;}
 .dp-emp-tag button{background:none;border:none;cursor:pointer;color:var(--mut);font-size:13px;padding:0 1px;line-height:1;}
+.dp-emp-tag.dp-emp-zw{background:var(--grn-bg,#E8F5E9);border-color:var(--grn,#2E7D32);color:var(--grn,#2E7D32);font-weight:600;}
 .rp-chip{display:inline-flex;align-items:center;padding:4px 11px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--brd);background:var(--surf);color:var(--mut);transition:all .12s;}
 .rp-chip.on{background:var(--red);color:#fff;border-color:var(--red);}
 .mk-cl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 14px;}
@@ -2779,6 +2780,8 @@ function dpStoreLS(k,d){localStorage.setItem(k,JSON.stringify(d));}
 var dpEmployees=[],dpShifts={};
 var dpCloudUnsub=null, dpDirty=false, dpCloudKey=null;
 function dpEmpKey(e){return (e.id||'x')+'-'+e.name;}
+// Ist dieser Mitarbeiter in der aktuell gewählten Filiale nur "Bei Bedarf" (Zweitfiliale)?
+function dpIsZweit(empId,f){ if(!empId)return false; var e=loadEmps().find(function(x){return ''+x.id===''+empId;}); return !!(e && !dpFilEq(e.filiale,f) && (e.zweit||[]).some(function(z){return dpFilEq(z,f);})); }
 function dpSetMode(m){
   document.getElementById('dp-mode-plan').style.display=m==='plan'?'block':'none';
   document.getElementById('dp-mode-route').style.display=m==='route'?'block':'none';
@@ -2804,7 +2807,7 @@ function dpInit(){
   toggleSigOption('dienstplan','dp-sig-opt');
   var saved=dpLoadLS(dpKey());
   if(saved){dpEmployees=saved.employees||[];dpShifts=saved.shifts||{};}
-  else{if(!dpEmployees.length){var emps=loadEmps().filter(function(e){return e.active!==false&&(e.filiale||'')===(f);});dpEmployees=emps.map(function(e){return{name:e.name,id:e.id};});}dpShifts={};}
+  else{if(!dpEmployees.length){var emps=loadEmps().filter(function(e){return e.active!==false&&(dpFilEq(e.filiale,f)||(e.zweit||[]).some(function(z){return dpFilEq(z,f);}));});dpEmployees=emps.map(function(e){return{name:e.name,id:e.id};});}dpShifts={};}
   var blSel=document.getElementById('dp-bundesland');if(blSel){var savedBl=localStorage.getItem('sc_dp_bl_'+f.replace(/\s+/g,'_').toLowerCase());if(savedBl)blSel.value=savedBl;}
   dpRenderEmpTags();dpRenderWeeks();dpPopulateAddSel();
   dpBindCloud(f,m);
@@ -2840,7 +2843,7 @@ function dpRenderEmpTags(){
   var c=document.getElementById('dp-emp-tags');
   document.getElementById('dp-emp-count').textContent=dpEmployees.length;
   if(!dpEmployees.length){c.innerHTML='<span style="font-size:12px;color:var(--mut)">Noch keine Mitarbeiter.</span>';return;}
-  c.innerHTML=dpEmployees.map(function(e,i){return '<span class="dp-emp-tag">'+e.name+'<button onclick="dpRemoveEmp('+i+')">×</button></span>';}).join('');
+  c.innerHTML=dpEmployees.map(function(e,i){var zw=dpIsZweit(e.id,dpGetFiliale());return '<span class="dp-emp-tag'+(zw?' dp-emp-zw':'')+'">'+(zw?'🔄 ':'')+e.name+'<button onclick="dpRemoveEmp('+i+')">×</button></span>';}).join('');
 }
 function dpPopulateAddSel(){
   var sel=document.getElementById('dp-add-sel');
@@ -2935,7 +2938,7 @@ function dpRenderWeeks(){
     wk.dates.forEach(function(dt,di){var d=dpParse(dt),ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}),fn=hol[dt];h+='<th'+(fn?' class="dp-th-ft" title="'+fn+'"':'')+'>'+DAYS[di].substring(0,2)+'<br><small style="font-weight:400;font-size:10px">'+ds+'</small>'+(fn?'<br><small class="dp-fn">'+fn+'</small>':'')+'</th>';});
     h+='</tr></thead><tbody>';
     if(!dpEmployees.length){h+='<tr><td colspan="7" style="padding:12px 8px;text-align:center;font-size:12px;color:var(--mut)">Noch keine Mitarbeiter.</td></tr>';}
-    else{var dpAbs=dpAbsenceFor(dpGetFiliale());dpEmployees.forEach(function(emp){var ek=dpEmpKey(emp),eid=''+(emp.id||'');h+='<tr><td title="'+emp.name+'">'+emp.name.substring(0,15)+(emp.name.length>15?'…':'')+'</td>';wk.dates.forEach(function(dt){var abs=dpAbs[eid]&&dpAbs[eid][dt];var stored=(dpShifts[ek]&&dpShifts[ek][dt])||'';var isF=!!hol[dt];if(abs){var acls=abs==='Urlaub'?'dp-cell-urlaub':'dp-cell-krank';h+='<td class="'+acls+(isF?' dp-cell-ft':'')+'" title="Automatisch: '+abs+(stored?' (überschreibt: '+stored+')':'')+'"><div style="padding:4px 2px;text-align:center;font-size:12px;font-weight:600;color:'+(abs==='Urlaub'?'#1E8449':'#C0392B')+'">'+(abs==='Urlaub'?'🌴 Urlaub':'🏥 Krank')+'</div></td>';}else{var val=stored,cls=val==='Frei'?'dp-cell-frei':val==='Urlaub'?'dp-cell-urlaub':val==='Krank'?'dp-cell-krank':'';if(isF&&!cls)cls='dp-cell-frei';h+='<td class="'+cls+(isF?' dp-cell-ft':'')+'"><input class="dp-shift dp-inp" list="dp-presets" value="'+val+'" data-emp="'+ek+'" data-date="'+dt+'" oninput="dpCellChanged(this)"></td>';}});h+='</tr>';});}
+    else{var dpAbs=dpAbsenceFor(dpGetFiliale());dpEmployees.forEach(function(emp){var ek=dpEmpKey(emp),eid=''+(emp.id||'');var zw=dpIsZweit(emp.id,dpGetFiliale());h+='<tr><td title="'+emp.name+(zw?' · Zweitfiliale':'')+'">'+(zw?'🔄 ':'')+emp.name.substring(0,15)+(emp.name.length>15?'…':'')+'</td>';wk.dates.forEach(function(dt){var abs=dpAbs[eid]&&dpAbs[eid][dt];var stored=(dpShifts[ek]&&dpShifts[ek][dt])||'';var isF=!!hol[dt];if(abs){var acls=abs==='Urlaub'?'dp-cell-urlaub':'dp-cell-krank';h+='<td class="'+acls+(isF?' dp-cell-ft':'')+'" title="Automatisch: '+abs+(stored?' (überschreibt: '+stored+')':'')+'"><div style="padding:4px 2px;text-align:center;font-size:12px;font-weight:600;color:'+(abs==='Urlaub'?'#1E8449':'#C0392B')+'">'+(abs==='Urlaub'?'🌴 Urlaub':'🏥 Krank')+'</div></td>';}else{var val=stored,cls=val==='Frei'?'dp-cell-frei':val==='Urlaub'?'dp-cell-urlaub':val==='Krank'?'dp-cell-krank':'';if(isF&&!cls)cls='dp-cell-frei';h+='<td class="'+cls+(isF?' dp-cell-ft':'')+'"><input class="dp-shift dp-inp" list="dp-presets" value="'+val+'" data-emp="'+ek+'" data-date="'+dt+'" oninput="dpCellChanged(this)"></td>';}});h+='</tr>';});}
     h+='</tbody></table></div></div>';
   });
   document.getElementById('dp-weeks-wrap').innerHTML=h;
