@@ -86,11 +86,18 @@ input:focus,textarea:focus,select:focus{border-color:var(--red);}
 .dp-day.frei{background:#F5F3F0;}.dp-day.frei .d-val{color:var(--mut);}
 .dp-day.urlaub{background:var(--grn-bg);}.dp-day.urlaub .d-val{color:var(--grn);}
 .dp-day.krank{background:var(--red-l);}.dp-day.krank .d-val{color:var(--red-d);}
-.dp-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--brd);border-radius:var(--rs);}
-table.dp-grid{border-collapse:collapse;font-size:12px;min-width:100%;}
-table.dp-grid th,table.dp-grid td{border:1px solid var(--brd);padding:5px 6px;text-align:center;white-space:nowrap;}
-table.dp-grid th.nm,table.dp-grid td.nm{text-align:left;position:sticky;left:0;background:var(--surf);font-weight:600;min-width:120px;}
+.dp-scroll{overflow:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--brd);border-radius:var(--rs);max-height:64vh;}
+table.dp-grid{border-collapse:collapse;font-size:13px;min-width:100%;}
+table.dp-grid th,table.dp-grid td{border:1px solid var(--brd);padding:7px 6px;text-align:center;white-space:nowrap;}
+table.dp-grid td:not(.nm){min-width:78px;font-weight:600;}
+table.dp-grid thead th{position:sticky;top:0;z-index:3;background:#F2EEE9;font-size:12px;}
+table.dp-grid th.nm,table.dp-grid td.nm{text-align:left;position:sticky;left:0;z-index:2;background:var(--surf);font-weight:600;width:108px;min-width:108px;max-width:108px;padding:0;box-shadow:3px 0 5px -3px rgba(0,0,0,.25);}
+table.dp-grid thead th.nm{z-index:4;background:#F2EEE9;}
+.nm-scroll{overflow-x:auto;white-space:nowrap;padding:7px 8px;-webkit-overflow-scrolling:touch;scrollbar-width:thin;}
+.nm-scroll::-webkit-scrollbar{height:4px;}
+.nm-scroll::-webkit-scrollbar-thumb{background:#CFC8BF;border-radius:2px;}
 .dp-store-badge{display:inline-block;font-size:11px;font-weight:600;color:var(--grn);background:var(--grn-bg);border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:middle;white-space:nowrap;}
+table.dp-grid tbody tr:nth-child(even) td:not(.nm){background:#FBFAF8;}
 table.dp-grid tr.me td{background:#FEF6E7;}
 table.dp-grid tr.me td.nm{background:#FDEFCB;}
 td.c-frei{background:#F0EDE8;color:var(--mut);}
@@ -397,6 +404,7 @@ var FB_CONFIG = (typeof window!=='undefined' && window.FB_CONFIG) ? window.FB_CO
 var fbReady=false, fbDb=null, fbUnsub=null, maFbUrlaub=[], maFbPlans={};
 var maPlanUnsub=null, maPlanKey=null;
 var maPlanUnsubs={}, maGridStore=null;
+var maFbPlanPdfs={}, maPlanPdfUnsubs={};
 var maNews=[], maNewsUnsub=null;
 var maNewsReads={}, maNewsReadsUnsub=null;
 function fbSlug(f){ return (''+f).replace(/\s+/g,'_').toLowerCase(); }
@@ -924,7 +932,7 @@ de:{_name:'Deutsch',
  btn_logout:'Abmelden',q_logout:'Abmelden?',no_fil:'keine Filiale',
  dp_title:'📅 Mein Dienstplan',lbl_month:'Monat',fil:'Filiale',alloc_main:'Stammfiliale',alloc_backup:'Bei Bedarf Einsatz in',
  dp_not_pub:'Der Dienstplan für {m} wurde noch nicht veröffentlicht.',dp_loading:'⏳ Lade Dienstplan…',dp_load_err:'Fehler beim Laden: ',
- my_shifts:'👤 Meine Schichten',whole_store:'🏪 Ganze Filiale',th_emp:'Mitarbeiter',no_entries:'Keine Einträge für dich in diesem Monat.',
+ my_shifts:'👤 Meine Schichten',dp_pdf:'PDF laden',dp_pdf_none:'Kein PDF vorhanden.',whole_store:'🏪 Ganze Filiale',th_emp:'Mitarbeiter',no_entries:'Keine Einträge für dich in diesem Monat.',
  v_frei:'Frei',v_url:'Urlaub',v_krank:'Krank',
  ul_title:'🌴 Urlaub – Filiale',leg_ok:'Genehmigt',leg_wait:'Wartet auf Freigabe',leg_no:'Abgelehnt',st_wait:'Wartet',
  ul_year:'📋 Urlaub dieses Jahr',ul_none:'Noch kein Urlaub für {y} eingetragen.',
@@ -965,7 +973,7 @@ vi:{_name:'Tiếng Việt',
  btn_logout:'Đăng xuất',q_logout:'Đăng xuất?',no_fil:'chưa có cửa hàng',
  dp_title:'📅 Lịch làm của tôi',lbl_month:'Tháng',fil:'Cửa hàng',alloc_main:'Cửa hàng chính',alloc_backup:'Hỗ trợ khi cần tại',
  dp_not_pub:'Lịch làm tháng {m} chưa được công bố.',dp_loading:'⏳ Đang tải lịch…',dp_load_err:'Lỗi khi tải: ',
- my_shifts:'👤 Ca của tôi',whole_store:'🏪 Cả cửa hàng',th_emp:'Nhân viên',no_entries:'Tháng này bạn chưa có ca nào.',
+ my_shifts:'👤 Ca của tôi',dp_pdf:'Tải PDF',dp_pdf_none:'Chưa có file PDF.',whole_store:'🏪 Cả cửa hàng',th_emp:'Nhân viên',no_entries:'Tháng này bạn chưa có ca nào.',
  v_frei:'Nghỉ',v_url:'Nghỉ phép',v_krank:'Ốm',
  ul_title:'🌴 Nghỉ phép – Cửa hàng',leg_ok:'Đã duyệt',leg_wait:'Chờ duyệt',leg_no:'Từ chối',st_wait:'Chờ',
  ul_year:'📋 Nghỉ phép năm nay',ul_none:'Chưa có nghỉ phép nào trong năm {y}.',
@@ -1006,7 +1014,7 @@ en:{_name:'English',
  btn_logout:'Log out',q_logout:'Log out?',no_fil:'no store',
  dp_title:'📅 My schedule',lbl_month:'Month',fil:'Store',alloc_main:'Main store',alloc_backup:'Backup duty at',
  dp_not_pub:'The schedule for {m} has not been published yet.',dp_loading:'⏳ Loading schedule…',dp_load_err:'Error loading: ',
- my_shifts:'👤 My shifts',whole_store:'🏪 Whole store',th_emp:'Employee',no_entries:'No entries for you this month.',
+ my_shifts:'👤 My shifts',dp_pdf:'Get PDF',dp_pdf_none:'No PDF available.',whole_store:'🏪 Whole store',th_emp:'Employee',no_entries:'No entries for you this month.',
  v_frei:'Off',v_url:'Vacation',v_krank:'Sick',
  ul_title:'🌴 Vacation – Store',leg_ok:'Approved',leg_wait:'Pending approval',leg_no:'Rejected',st_wait:'Pending',
  ul_year:'📋 Vacation this year',ul_none:'No vacation entered for {y} yet.',
@@ -1047,7 +1055,7 @@ th:{_name:'ไทย',
  btn_logout:'ออกจากระบบ',q_logout:'ออกจากระบบ?',no_fil:'ไม่มีสาขา',
  dp_title:'📅 ตารางงานของฉัน',lbl_month:'เดือน',fil:'สาขา',alloc_main:'สาขาหลัก',alloc_backup:'ช่วยงานเมื่อจำเป็นที่',
  dp_not_pub:'ตารางงานเดือน {m} ยังไม่ประกาศ',dp_loading:'⏳ กำลังโหลด…',dp_load_err:'โหลดไม่สำเร็จ: ',
- my_shifts:'👤 กะของฉัน',whole_store:'🏪 ทั้งสาขา',th_emp:'พนักงาน',no_entries:'เดือนนี้คุณยังไม่มีกะงาน',
+ my_shifts:'👤 กะของฉัน',dp_pdf:'ดาวน์โหลด PDF',dp_pdf_none:'ไม่มีไฟล์ PDF',whole_store:'🏪 ทั้งสาขา',th_emp:'พนักงาน',no_entries:'เดือนนี้คุณยังไม่มีกะงาน',
  v_frei:'หยุด',v_url:'ลาพักร้อน',v_krank:'ป่วย',
  ul_title:'🌴 วันลา – สาขา',leg_ok:'อนุมัติแล้ว',leg_wait:'รออนุมัติ',leg_no:'ถูกปฏิเสธ',st_wait:'รอ',
  ul_year:'📋 วันลาปีนี้',ul_none:'ยังไม่มีวันลาสำหรับปี {y}',
@@ -1122,7 +1130,7 @@ function maRefreshProfile(){
     maSetSession(sess);
     maAllocInfo(sess);
     document.getElementById('hdr-sub').textContent=sess.name+' · '+(sess.filiale||t('no_fil'));
-    if(filialeChanged){ maFbPlans={}; maPlanKey=null; if(maPlanUnsub){try{maPlanUnsub();}catch(e){}maPlanUnsub=null;} maClearPlanSubs(); maGridStore=null; maStartFbUrlaub(sess); maRenderDP(); maRenderCal(); maRenderUlList(); }
+    if(filialeChanged){ maFbPlans={}; maPlanKey=null; if(maPlanUnsub){try{maPlanUnsub();}catch(e){}maPlanUnsub=null;} maClearPlanSubs(); maFbPlanPdfs={}; maClearPlanPdfSubs(); maGridStore=null; maStartFbUrlaub(sess); maRenderDP(); maRenderCal(); maRenderUlList(); }
   }).catch(function(e){ console.warn('profile refresh', e); });
 }
 function maAllocInfo(sess){
@@ -1409,14 +1417,22 @@ function maRenderDP(){
   }
   if(!any)myH+='<div class="dp-day"><div class="d-val" style="color:var(--mut)">'+t('no_entries')+'</div></div>';
 
-  // ── GANZE FILIALE (mit Filial-Umschalter, falls mehrere) ──
+  // ── GANZE FILIALE (mit Filial-Umschalter + PDF, falls vorhanden) ──
   if(!maGridStore || stores.indexOf(maGridStore)<0) maGridStore=sess.filiale;
   var gridStore=maGridStore;
-  var gHead='<div style="font-size:14px;font-weight:700;margin:18px 0 8px">'+t('whole_store');
+  // PDF dieser Filiale/Monat live beobachten
+  var pdfKey=fbSlug(gridStore)+'__'+month;
+  if(fbReady&&fbDb) maEnsurePlanPdf(pdfKey);
+  var pdfDoc=maFbPlanPdfs[pdfKey];
+  var gHead='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:18px 0 8px">'
+    +'<span style="font-size:14px;font-weight:700">'+t('whole_store')+'</span>';
   if(multi){
-    gHead+=' <select onchange="maGridStoreChange(this.value)" style="margin-left:6px;font-size:12px;padding:3px 6px;border-radius:6px;border:1px solid var(--brd)">';
+    gHead+='<select onchange="maGridStoreChange(this.value)" style="font-size:12px;padding:4px 8px;border-radius:6px;border:1px solid var(--brd)">';
     stores.forEach(function(store){ gHead+='<option value="'+(''+store).replace(/"/g,'&quot;')+'"'+(store===gridStore?' selected':'')+'>'+store+'</option>'; });
     gHead+='</select>';
+  }
+  if(pdfDoc&&pdfDoc.pdf){
+    gHead+='<button onclick="maDownloadPlanPdf(\''+pdfKey+'\')" style="margin-left:auto;font-size:12px;font-weight:600;padding:6px 11px;border-radius:8px;border:1px solid var(--grn);background:var(--grn-bg);color:var(--grn);cursor:pointer;white-space:nowrap">📄 '+t('dp_pdf')+'</button>';
   }
   gHead+='</div>';
   var gridH=gHead;
@@ -1425,13 +1441,13 @@ function maRenderDP(){
     gridH+='<div class="warnbox">'+t('dp_not_pub',{m:(month?maMonthLabel(month):'—')})+'</div>';
   } else {
     var shifts=gplan.shifts||{}, emps=gplan.employees||[];
-    gridH+='<div class="dp-scroll"><table class="dp-grid"><tr><th class="nm">'+t('th_emp')+'</th>';
-    for(var d2=1;d2<=dim;d2++){var dt2=new Date(yr,mo-1,d2);gridH+='<th>'+('0'+d2).slice(-2)+'<br><span style="font-weight:400;color:var(--mut)">'+MA_WD[dt2.getDay()]+'</span></th>';}
-    gridH+='</tr>';
+    gridH+='<div class="dp-scroll"><table class="dp-grid"><thead><tr><th class="nm"><div class="nm-scroll">'+t('th_emp')+'</div></th>';
+    for(var d2=1;d2<=dim;d2++){var dt2=new Date(yr,mo-1,d2);var we2=(dt2.getDay()===0||dt2.getDay()===6);gridH+='<th'+(we2?' style="color:var(--red,#C0392B)"':'')+'>'+('0'+d2).slice(-2)+'<br><span style="font-weight:400;color:var(--mut)">'+MA_WD[dt2.getDay()]+'</span></th>';}
+    gridH+='</tr></thead><tbody>';
     emps.forEach(function(emp){
       var ek=emp.id+'-'+emp.name;
       var isMe=(''+emp.id===''+sess.id);
-      gridH+='<tr class="'+(isMe?'me':'')+'"><td class="nm">'+emp.name+(isMe?' 👤':'')+'</td>';
+      gridH+='<tr class="'+(isMe?'me':'')+'"><td class="nm"><div class="nm-scroll">'+emp.name+(isMe?' 👤':'')+'</div></td>';
       for(var d3=1;d3<=dim;d3++){
         var iso3=yr+'-'+('0'+mo).slice(-2)+'-'+('0'+d3).slice(-2);
         var v=(shifts[ek]&&shifts[ek][iso3])||'';
@@ -1442,9 +1458,32 @@ function maRenderDP(){
       }
       gridH+='</tr>';
     });
-    gridH+='</table></div>';
+    gridH+='</tbody></table></div>';
   }
   out.innerHTML=myH+gridH;
+}
+// PDF-Listener pro Filiale/Monat (von HR veröffentlicht)
+function maEnsurePlanPdf(key){
+  if(!fbReady||!fbDb) return;
+  if(maPlanPdfUnsubs[key]) return;
+  maPlanPdfUnsubs[key]=fbDb.collection('plan_pdf').doc(key).onSnapshot(function(doc){
+    maFbPlanPdfs[key]=doc.exists?doc.data():null;
+    maRenderDP();
+  }, function(e){ maFbPlanPdfs[key]=null; });
+}
+function maClearPlanPdfSubs(){ Object.keys(maPlanPdfUnsubs).forEach(function(k){try{maPlanPdfUnsubs[k]();}catch(e){}}); maPlanPdfUnsubs={}; }
+function maDownloadPlanPdf(key){
+  var d=maFbPlanPdfs[key]; if(!d||!d.pdf){ toast(t('dp_pdf_none'),true); return; }
+  var fname=d.fileName||'Dienstplan.pdf';
+  try{
+    var arr=d.pdf.split(','), bstr=atob(arr[1]), n=bstr.length, u8=new Uint8Array(n);
+    while(n--) u8[n]=bstr.charCodeAt(n);
+    var blob=new Blob([u8],{type:'application/pdf'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a'); a.href=url; a.download=fname;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){try{URL.revokeObjectURL(url);}catch(e){}},5000);
+  }catch(e){ try{ window.open(d.pdf,'_blank'); }catch(e2){ toast('PDF-Fehler',true); } }
 }
 function maMonthLabel(m){var p=m.split('-');return MA_MON[+p[1]-1]+' '+p[0];}
 
