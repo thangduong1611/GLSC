@@ -604,12 +604,71 @@ function ivRenderList(){
     var val=ivCounts[art]!==undefined?ivCounts[art]:'';
     var trLine=(lang!=='de')?'<div style="font-size:13px;color:var(--grn)">'+tr+'</div>':'';
     return '<div style="display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:0.5px solid var(--brd)">'
+      +ivThumb(art)
       +'<div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">'+de+'</div>'+trLine
       +'<div style="font-size:11px;color:var(--mut);margin-top:1px">Art. '+art+'</div></div>'
       +'<input type="number" inputmode="decimal" min="0" value="'+val+'" placeholder="0" data-art="'+art+'" oninput="ivCellInput(this)" style="width:62px;text-align:center;font-size:18px;font-weight:500">'
       +'<div style="width:46px;font-size:12px;color:var(--mut);font-weight:500">'+einheit+'</div>'
       +'</div>';
   }).join('');
+  ivWarmImages();   // alle Produktbilder einmalig (online) vorladen -> offline verfügbar
+}
+
+/* ════════════════════════════════════════════════════════════
+   Produktbilder (Variante A: kleines Vorschaubild + Tippen zum Vergrößern)
+   Konvention: Bild liegt unter  icons/items/<ArtikelNr>.jpg
+   -> Keine Änderung an inventur-data.js nötig. Fehlt ein Bild,
+      wird ein neutraler Platzhalter angezeigt (Layout bleibt heil).
+   ════════════════════════════════════════════════════════════ */
+function ivImgSrc(art){ return 'icons/items/'+art+'.jpg'; }
+
+function ivThumb(art){
+  return '<img src="'+ivImgSrc(art)+'" loading="lazy" decoding="async" alt=""'
+    +' onclick="ivZoom(\''+art+'\')" onerror="ivThumbFail(this)"'
+    +' style="width:44px;height:44px;object-fit:cover;border-radius:10px;background:var(--brd);flex:0 0 auto;cursor:zoom-in">';
+}
+
+function ivThumbFail(img){
+  img.onerror=null;
+  var ph=document.createElement('div');
+  ph.style.cssText='width:44px;height:44px;border-radius:10px;background:var(--brd);flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:16px;opacity:.6';
+  ph.textContent='🖼';
+  img.replaceWith(ph);
+}
+
+function ivZoom(art){
+  var it=null, all=(typeof INVENTUR_ITEMS!=='undefined')?INVENTUR_ITEMS:[];
+  for(var i=0;i<all.length;i++){ if(all[i][0]===art){ it=all[i]; break; } }
+  var lang=(typeof MA_LANG!=='undefined'?MA_LANG:'de');
+  var li={de:3,vi:4,en:5,th:6}[lang]||3;
+  var de=it?it[3]:art, tr=it?it[li]:'';
+  var ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:100000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;cursor:zoom-out';
+  ov.innerHTML='<img src="'+ivImgSrc(art)+'" alt="" style="max-width:86vw;max-height:72vh;object-fit:contain;border-radius:14px;background:#fff" onerror="this.style.display=\'none\'">'
+    +'<div style="color:#fff;font-size:17px;font-weight:600;margin-top:16px;text-align:center;max-width:86vw">'+de+'</div>'
+    +((tr&&tr!==de)?'<div style="color:rgba(255,255,255,.82);font-size:14px;margin-top:2px;text-align:center;max-width:86vw">'+tr+'</div>':'')
+    +'<div style="color:rgba(255,255,255,.55);font-size:12px;margin-top:12px">Art. '+art+' · tippen zum Schließen</div>';
+  ov.addEventListener('click', function(){ ov.remove(); });
+  document.body.appendChild(ov);
+}
+
+/* Lädt einmalig (nur online) ALLE Produktbilder, damit der Service-Worker
+   sie cached und sie danach auch OFFLINE sofort verfügbar sind. */
+var ivWarmed=false;
+function ivWarmImages(){
+  if(ivWarmed) return;
+  if(typeof INVENTUR_ITEMS==='undefined') return;
+  if(navigator.onLine===false) return;
+  ivWarmed=true;
+  var arts=INVENTUR_ITEMS.map(function(it){ return it[0]; });
+  var i=0, CONC=4;
+  function next(){
+    if(i>=arts.length) return;
+    var img=new Image();
+    img.onload=img.onerror=next;
+    img.src=ivImgSrc(arts[i++]);
+  }
+  for(var k=0;k<CONC;k++) next();
 }
 
 function ivCellInput(inp){

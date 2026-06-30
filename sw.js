@@ -18,6 +18,26 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+
+  // Produktbilder (Inventur): Cache-first -> sofort geladen + offline-fest,
+  // da sich Bilder nie ändern (Dateiname = Artikelnummer).
+  if (url.origin === location.origin && url.pathname.includes('/icons/items/')) {
+    e.respondWith(
+      caches.match(req).then(hit => {
+        if (hit) return hit;
+        return fetch(req).then(res => {
+          if (res && res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE).then(c => c.put(req, copy)).catch(()=>{});
+          }
+          return res;
+        });
+      })
+    );
+    return;
+  }
+
   e.respondWith(
     fetch(req).then(res => {
       if (res && res.ok && new URL(req.url).origin === location.origin) {
