@@ -3724,7 +3724,7 @@ function fbPublish(){
   if(!b.employees.length){ alert('Keine aktiven Mitarbeiter gefunden. Bitte zuerst die Mitarbeiter-CSV importieren.'); return; }
   var jobs=[];
   b.employees.forEach(function(e){
-    jobs.push(fbDb.collection('emps').doc(''+e.id).set({name:e.name, filiale:e.filiale||'', zweit:(e.zweit||[]), active:true}));
+    jobs.push(fbDb.collection('emps').doc(''+e.id).set({name:e.name, filiale:e.filiale||'', zweit:(e.zweit||[]), active:true, shopleiter:!!e.shopleiter},{merge:true}));
   });
   var nPlan=0;
   Object.keys(b.dienstplan).forEach(function(f){
@@ -4214,7 +4214,7 @@ function maGroupConsecutive(dates){
   out.push({from:start,to:prev});return out;
 }
 function buildMaBundle(){
-  var emps=loadEmps().filter(function(e){return e.active!==false;}).map(function(e){return{id:e.id,name:e.name,filiale:e.filiale||'',zweit:(e.zweit||[]),active:true};});
+  var emps=loadEmps().filter(function(e){return e.active!==false;}).map(function(e){return{id:e.id,name:e.name,filiale:e.filiale||'',zweit:(e.zweit||[]),active:true,shopleiter:!!e.shopleiter};});
   var filialen=[...new Set(emps.map(function(e){return e.filiale;}).filter(Boolean))];
   var dienstplan={},urlaubMap={};
   var dpKeys=Object.keys(localStorage).filter(function(k){return k.indexOf('sc_dp_')===0;});
