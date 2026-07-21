@@ -342,12 +342,6 @@ window.onerror=function(msg,src,line){
   <div class="card">
     <div class="card-title">🧾 Belege der Mitarbeiter <span class="badge badge-red" id="bl-live-count">0</span></div>
     <div class="info">Mitarbeiter laden Kassenbons hier hoch. Workflow: <strong>Eingereicht</strong> → <strong>In Skovik hochgeladen</strong> (Rückerstattung beantragt) → <strong>Überwiesen</strong> (an Mitarbeiter bezahlt). Der Mitarbeiter bestätigt den Erhalt selbst; der Beleg bleibt hier zur Dokumentation sichtbar.</div>
-    <div style="display:flex;gap:8px;align-items:center;margin:10px 0;flex-wrap:wrap;background:#F5F3F0;padding:8px;border-radius:6px">
-      <label style="font-size:12px;white-space:nowrap;margin:0">📧 Skovik-Weiterleitungsadresse:</label>
-      <input type="email" id="bl-skovik-mail" placeholder="deine@skovik.email" style="flex:1;min-width:180px">
-      <button class="btn btn-sm" onclick="blSaveSkovikMail()">💾 Speichern</button>
-    </div>
-    <div style="font-size:11px;color:#6B6860;margin-bottom:10px">Diese Adresse findest du in Skovik unter <em>Settings → Emails</em>. Beim Teilen wird das Foto direkt an diese Adresse vorbereitet — Skovik liest den Beleg automatisch per KI aus.</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
       <select id="bl-filter-fil" onchange="blRenderAdmin()" style="flex:1;min-width:160px"><option value="">Alle Filialen</option></select>
       <select id="bl-filter-status" onchange="blRenderAdmin()" style="flex:1;min-width:160px">
@@ -362,6 +356,13 @@ window.onerror=function(msg,src,line){
     <div id="bl-live-sum" style="font-size:13px;color:#6B6860;margin-bottom:10px"></div>
     <div id="bl-live-list"></div>
   </div>
+</div>
+
+<!-- Beleg-Foto Viewer (Lightbox mit sichtbarem Schließen-Button, iOS-freundlich) -->
+<div id="bl-img-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;flex-direction:column;align-items:center;justify-content:center;padding:16px">
+  <button onclick="blCloseImgModal()" style="position:absolute;top:16px;right:16px;width:40px;height:40px;border-radius:50%;background:#fff;border:none;font-size:20px;line-height:1;cursor:pointer;font-weight:700">✕</button>
+  <img id="bl-img-modal-img" style="max-width:100%;max-height:75vh;border-radius:8px;object-fit:contain">
+  <div style="color:#fff;font-size:13px;margin-top:14px;text-align:center;max-width:320px">📌 Zum Speichern: Bild <strong>gedrückt halten</strong> und „Zu Fotos hinzufügen" wählen.</div>
 </div>
 
 <!-- ===== URLAUBSANTRAG ===== -->
@@ -4093,35 +4094,6 @@ function blPopulateFilFilter(){
   var fils=Object.keys(set).sort();
   sel.innerHTML='<option value="">Alle Filialen</option>'+fils.map(function(f){return '<option value="'+f+'">'+f+'</option>';}).join('');
   if(cur && set[cur]) sel.value=cur;
-  var mailEl=document.getElementById('bl-skovik-mail');
-  if(mailEl && !mailEl.value) mailEl.value=localStorage.getItem('sc_skovik_mail')||'';
-}
-function blSaveSkovikMail(){
-  var v=(document.getElementById('bl-skovik-mail')||{}).value||'';
-  localStorage.setItem('sc_skovik_mail', v.trim());
-  toast('✓ Gespeichert');
-}
-function blDataURLtoFile(dataUrl, filename){
-  var arr=dataUrl.split(','), mime=(arr[0].match(/:(.*?);/)||[])[1]||'image/jpeg';
-  var bin=atob(arr[1]), n=bin.length, u8=new Uint8Array(n);
-  while(n--){ u8[n]=bin.charCodeAt(n); }
-  return new File([u8], filename, {type:mime});
-}
-async function blSendToSkovik(id){
-  var b=blFind(id); if(!b||!b.d.img) return;
-  var mail=(document.getElementById('bl-skovik-mail')||{}).value || localStorage.getItem('sc_skovik_mail') || '';
-  if(!mail){ toast('Bitte zuerst Skovik-E-Mail-Adresse eintragen und speichern.',true); return; }
-  var fname='Beleg_'+((b.d.empName||'x').replace(/\s+/g,'_'))+'_'+(b.d.createdAt||'').slice(0,10)+'.jpg';
-  var file=blDataURLtoFile(b.d.img, fname);
-  var shareData={ title:'Beleg an Skovik', text:'An: '+mail+'\n(Bitte diese Adresse als Empfänger wählen)', files:[file] };
-  if(navigator.canShare && navigator.canShare({files:[file]}) && navigator.share){
-    try{ await navigator.share(shareData); blSetStatus(id,'skovik'); }
-    catch(err){ if(err.name!=='AbortError') toast('Teilen fehlgeschlagen: '+err.message,true); }
-  } else {
-    blDownload(id);
-    window.open('mailto:'+mail+'?subject='+encodeURIComponent('Beleg')+'&body='+encodeURIComponent('Foto wurde heruntergeladen — bitte manuell anhängen.'),'_blank');
-    toast('Foto gespeichert — bitte manuell an '+mail+' anhängen.');
-  }
 }
 function blStatusMeta(st){
   if(st==='new') return {c:'#B7791F',bg:'#FFF7E6',txt:'Eingereicht'};
@@ -4151,14 +4123,11 @@ function blRenderAdmin(){
     var d=b.d, m=blStatusMeta(d.status);
     var dt=d.createdAt?new Date(d.createdAt).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
     var actions='';
-    if(d.status==='new'){
-      actions+='<button class="btn btn-sm" style="background:#6C3483;color:#fff;border-color:#6C3483" onclick="blSendToSkovik(\''+b.docId+'\')">📤 An Skovik senden</button>';
-      actions+='<button class="btn btn-sm" style="background:#1A5276;color:#fff;border-color:#1A5276" onclick="blSetStatus(\''+b.docId+'\',\'skovik\')">✅ Manuell hochgeladen</button>';
-    }
+    if(d.status==='new') actions+='<button class="btn btn-sm" style="background:#1A5276;color:#fff;border-color:#1A5276" onclick="blSetStatus(\''+b.docId+'\',\'skovik\')">✅ In Skovik hochgeladen</button>';
     else if(d.status==='skovik') actions+='<button class="btn btn-sm" style="background:#1E8449;color:#fff;border-color:#1E8449" onclick="blSetStatus(\''+b.docId+'\',\'paid\')">💸 Überwiesen</button>';
     else if(d.status==='paid') actions+='<span style="font-size:11px;color:#1E8449;font-weight:700;text-align:center">Warte auf Bestätigung MA</span>';
     else if(d.status==='confirmed') actions+='<span style="font-size:11px;color:#1E8449;font-weight:700;text-align:center">✓ Abgeschlossen</span>';
-    actions+=(d.img?'<button class="btn btn-sm" onclick="blDownload(\''+b.docId+'\')">💾 Foto</button>':'');
+    actions+=(d.img?'<button class="btn btn-sm" onclick="blOpenImg(\''+b.docId+'\')">🖼 Foto ansehen</button>':'');
     return '<div style="display:flex;gap:12px;align-items:flex-start;padding:10px;border:1px solid #E8E4E0;border-left:4px solid '+m.c+';border-radius:6px;margin-bottom:8px;flex-wrap:wrap">'
       +(d.img?'<img src="'+d.img+'" style="width:84px;height:84px;object-fit:cover;border-radius:6px;border:1px solid #E8E4E0;cursor:pointer" onclick="blOpenImg(\''+b.docId+'\')" title="Foto ansehen">':'<div style="width:84px;height:84px;display:flex;align-items:center;justify-content:center;background:#F5F3F0;border-radius:6px;font-size:11px;color:#6B6860;text-align:center">kein<br>Foto</div>')
       +'<div style="flex:1;min-width:170px"><strong>'+(d.empName||'?')+'</strong> · '+(d.filiale||'')+'<br>'
@@ -4171,15 +4140,12 @@ function blRenderAdmin(){
 function blFind(id){ return fbBelege.find(function(x){return x.docId===id;}); }
 function blOpenImg(id){
   var b=blFind(id); if(!b||!b.d.img) return;
-  var w=window.open('','_blank');
-  if(w){ w.document.write('<title>Beleg '+(b.d.empName||'')+'</title><img src="'+b.d.img+'" style="max-width:100%">'); }
+  document.getElementById('bl-img-modal-img').src=b.d.img;
+  document.getElementById('bl-img-modal').style.display='flex';
 }
-function blDownload(id){
-  var b=blFind(id); if(!b||!b.d.img) return;
-  var a=document.createElement('a');
-  a.href=b.d.img;
-  a.download='Beleg_'+((b.d.empName||'x').replace(/\s+/g,'_'))+'_'+(b.d.createdAt||'').slice(0,10)+'.jpg';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+function blCloseImgModal(){
+  document.getElementById('bl-img-modal').style.display='none';
+  document.getElementById('bl-img-modal-img').src='';
 }
 function blSetStatus(id,status){
   var b=blFind(id); if(!b) return;
