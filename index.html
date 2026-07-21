@@ -702,7 +702,7 @@ window.onerror=function(msg,src,line){
 <div id="panel-av" class="panel">
   <div class="card">
     <div class="card-title">📝 Änderungsvereinbarung <span class="badge badge-red">PDF-Export</span></div>
-    <div class="info">Mitarbeiter wählen → Felder ausfüllen → Unterschrift zeichnen → PDF herunterladen.</div>
+    <div class="info">Mitarbeiter wählen → Felder ausfüllen → an den Mitarbeiter zum Unterschreiben senden (nur lesen + unterschreiben, keine Bearbeitung, kein Download möglich) → nach Rückerhalt hier laden, selbst als Arbeitgeber unterschreiben und PDF herunterladen.</div>
 
     <label>Mitarbeiter</label>
     <select id="av-emp" onchange="avFillEmp()">
@@ -799,6 +799,19 @@ window.onerror=function(msg,src,line){
       <button class="btn btn-red" onclick="avGeneratePDF()" style="flex:1;justify-content:center;font-size:14px">⬇ PDF herunterladen</button>
     </div>
     <p id="av-status" style="font-size:12px;color:var(--mut);margin-top:8px;text-align:center"></p>
+
+    <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--brd)">
+      <div class="btn-row">
+        <button class="btn btn-grn" onclick="avSendToEmployee()" style="flex:1;justify-content:center;font-size:14px">📤 An Mitarbeiter zum Unterschreiben senden</button>
+      </div>
+      <p style="font-size:11px;color:var(--mut);margin-top:6px">Der Mitarbeiter sieht die Felder nur lesend, kann nichts ändern, hat keinen Download-Button — er kann nur unterschreiben und zurücksenden.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Gesendete Vereinbarungen <span class="badge badge-red" id="av-live-count">0</span></div>
+    <div id="av-live-status" style="font-size:13px;margin-bottom:8px;font-weight:600;display:none"></div>
+    <div id="av-live-list"></div>
   </div>
 </div>
 
@@ -1184,6 +1197,7 @@ RP_CL=getRPCL();
   if(id==='settings'){renderRpGrpList();applySettings();renderMkStores();renderSavedEmails();var wa=document.getElementById('st-manager-wa');if(wa)wa.value=localStorage.getItem('sc_manager_wa')||'';}
   if(id==='inventur'){invOnShow();}
   if(id==='belege'){blPopulateFilFilter();blRenderAdmin();}
+  if(id==='av'){avPopulateDropdown();avRenderList();}
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────
@@ -2614,6 +2628,104 @@ function avGeneratePDF() {
   img1.src = AV_P1;
 }
 
+// ── An Mitarbeiter senden (nur Lesen + Unterschreiben, kein Download) ──
+function avCollectData(){
+  return {
+    empId: document.getElementById('av-pid').value.trim(),
+    empName: document.getElementById('av-name').value.trim(),
+    strasse: document.getElementById('av-strasse').value.trim(),
+    plz: document.getElementById('av-plz').value.trim(),
+    chkGehalt: document.getElementById('av-chk-gehalt').checked,
+    chkVerlaeng: document.getElementById('av-chk-verlaeng').checked,
+    chkStunde: document.getElementById('av-chk-stunde').checked,
+    chkWochen: document.getElementById('av-chk-wochen').checked,
+    chkSonst: document.getElementById('av-chk-sonst').checked,
+    g_alt: document.getElementById('av-g-alt').value, g_ab: document.getElementById('av-g-ab').value, g_neu: document.getElementById('av-g-neu').value,
+    v_monate: document.getElementById('av-v-monate').value, v_bis: document.getElementById('av-v-bis').value, v_unbefristet: document.getElementById('av-v-unbefristet').value,
+    s_alt: document.getElementById('av-s-alt').value, s_ab: document.getElementById('av-s-ab').value, s_neu: document.getElementById('av-s-neu').value,
+    w_alt: document.getElementById('av-w-alt').value, w_ab: document.getElementById('av-w-ab').value, w_neu: document.getElementById('av-w-neu').value,
+    sonstText: document.getElementById('av-sonst-text').value,
+    ortAG: document.getElementById('av-ort-ag').value || ('Hannover, '+avTodayDE())
+  };
+}
+function avSendToEmployee(){
+  if(!fbReady||!fbDb){ toast('Keine Firebase-Verbindung.',true); return; }
+  var d = avCollectData();
+  if(!d.empId || !d.empName){ toast('Bitte zuerst Mitarbeiter wählen bzw. Name/Personalnummer ausfüllen.',true); return; }
+  if(!d.chkGehalt && !d.chkVerlaeng && !d.chkStunde && !d.chkWochen && !d.chkSonst){ toast('Bitte mindestens eine Art der Änderung auswählen.',true); return; }
+  d.status='sent'; d.createdAt=new Date().toISOString();
+  d.anOrt=null; d.anSig=null; d.signedAt=null;
+  fbDb.collection('aenderungsvertrag').add(d)
+    .then(function(){ toast('✓ An Mitarbeiter gesendet'); })
+    .catch(function(e){ toast('Fehler: '+e.message, true); });
+}
+var fbAV=[];
+function avShowStatus(msg,color){
+  var st=document.getElementById('av-live-status');
+  if(st){ st.textContent=msg||''; st.style.color=color||'#6B6860'; st.style.display=msg?'block':'none'; }
+}
+function avStartListener(){
+  if(!fbReady||!fbDb) return;
+  fbDb.collection('aenderungsvertrag').onSnapshot(function(snap){
+    var raw=[]; snap.forEach(function(d){ raw.push({docId:d.id, ref:d.ref, d:d.data()||{}}); });
+    fbAV = raw.sort(function(a,b){ return (a.d.createdAt||'')<(b.d.createdAt||'')?1:-1; });
+    avShowStatus('','');
+    avRenderList();
+  }, function(err){
+    console.warn('FB aenderungsvertrag', err);
+    avShowStatus('⚠️ Kein Zugriff (' +err.code+ '). Firestore-Regel für „aenderungsvertrag" fehlt vermutlich.','#C0392B');
+  });
+}
+function avRenderList(){
+  var list=document.getElementById('av-live-list'), cnt=document.getElementById('av-live-count');
+  if(!list) return;
+  if(cnt) cnt.textContent=fbAV.filter(function(x){return x.d.status==='sent';}).length;
+  if(!fbAV.length){ list.innerHTML='<div style="color:#6B6860;font-size:13px;padding:6px 0">Noch keine Vereinbarung gesendet.</div>'; return; }
+  list.innerHTML=fbAV.map(function(x){
+    var d=x.d, signed=d.status==='signed';
+    var m = signed ? {c:'#1E8449',bg:'#EAFAF1',txt:'✓ Vom Mitarbeiter unterschrieben'} : {c:'#B7791F',bg:'#FFF7E6',txt:'Wartet auf Unterschrift'};
+    var dt=d.createdAt?new Date(d.createdAt).toLocaleDateString('de-DE'):'';
+    return '<div style="display:flex;gap:12px;align-items:center;padding:10px;border:1px solid #E8E4E0;border-left:4px solid '+m.c+';border-radius:6px;margin-bottom:8px;flex-wrap:wrap">'
+      +'<div style="flex:1;min-width:160px"><strong>'+(d.empName||'?')+'</strong> · '+dt+'<br>'
+      +'<span style="display:inline-block;margin-top:4px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:'+m.bg+';color:'+m.c+'">'+m.txt+'</span></div>'
+      +(signed?'<button class="btn btn-sm" style="background:#1E8449;color:#fff;border-color:#1E8449" onclick="avLoadSigned(\''+x.docId+'\')">📥 In Formular laden</button>':'')
+      +'</div>';
+  }).join('');
+}
+function avLoadSigned(id){
+  var x=fbAV.find(function(a){return a.docId===id;}); if(!x) return;
+  var d=x.d;
+  document.getElementById('av-name').value=d.empName||'';
+  document.getElementById('av-pid').value=d.empId||'';
+  document.getElementById('av-strasse').value=d.strasse||'';
+  document.getElementById('av-plz').value=d.plz||'';
+  document.getElementById('av-chk-gehalt').checked=!!d.chkGehalt;
+  document.getElementById('av-chk-verlaeng').checked=!!d.chkVerlaeng;
+  document.getElementById('av-chk-stunde').checked=!!d.chkStunde;
+  document.getElementById('av-chk-wochen').checked=!!d.chkWochen;
+  document.getElementById('av-chk-sonst').checked=!!d.chkSonst;
+  avToggle();
+  document.getElementById('av-g-alt').value=d.g_alt||''; document.getElementById('av-g-ab').value=d.g_ab||''; document.getElementById('av-g-neu').value=d.g_neu||'';
+  document.getElementById('av-v-monate').value=d.v_monate||''; document.getElementById('av-v-bis').value=d.v_bis||''; document.getElementById('av-v-unbefristet').value=d.v_unbefristet||'';
+  document.getElementById('av-s-alt').value=d.s_alt||''; document.getElementById('av-s-ab').value=d.s_ab||''; document.getElementById('av-s-neu').value=d.s_neu||'';
+  document.getElementById('av-w-alt').value=d.w_alt||''; document.getElementById('av-w-ab').value=d.w_ab||''; document.getElementById('av-w-neu').value=d.w_neu||'';
+  document.getElementById('av-sonst-text').value=d.sonstText||'';
+  document.getElementById('av-ort-ag').value=d.ortAG||'';
+  document.getElementById('av-ort-an').value=d.anOrt||'';
+  sigClear('av-sig-an');
+  if(d.anSig){
+    var img=new Image();
+    img.onload=function(){
+      var c=document.getElementById('av-sig-an'), ctx=c.getContext('2d');
+      ctx.clearRect(0,0,c.width,c.height);
+      var scale=Math.min(c.width/img.width,c.height/img.height)*0.9;
+      ctx.drawImage(img,(c.width-img.width*scale)/2,(c.height-img.height*scale)/2,img.width*scale,img.height*scale);
+    };
+    img.src=d.anSig;
+  }
+  toast('✓ Geladen — bitte als Arbeitgeber unterschreiben und PDF herunterladen.');
+}
+
 // ─── VERLAUF ─────────────────────────────────────────────────
 var TYPE_ICONS = {Krankmeldung:'🏥',Urlaubsantrag:'🌴',Stundennachweis:'⏱',Deutschlandticket:'🚆'};
 var TYPE_MAP   = {k:'Krankmeldung',u:'Urlaubsantrag',s:'Stundennachweis',dt:'Deutschlandticket'};
@@ -3711,7 +3823,7 @@ function fbBootStatus(){
     fbPendingCardShow('⚠️ Firebase-Bibliothek nicht geladen. Internet/Adblocker prüfen und Seite neu laden.', '#C0392B');
     return;
   }
-  fbInit(function(){ fbStartPending(); nwStartListener(); nwReadsStartListener(); krStartListener(); anStartListener(); blStartListener(); });
+  fbInit(function(){ fbStartPending(); nwStartListener(); nwReadsStartListener(); krStartListener(); anStartListener(); blStartListener(); avStartListener(); });
 }
 function fbSlug(f){ return (''+f).replace(/\s+/g,'_').toLowerCase(); }
 function fbInit(onReady){

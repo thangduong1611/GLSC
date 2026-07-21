@@ -218,6 +218,7 @@ window.onerror=function(msg,src,line){
     <button class="app-ico active" id="ico-dp" onclick="maNav('dp')"><span class="ico-e">📅</span><span class="ico-l" data-i18n="nav_dp">Dienstplan</span></button>
     <button class="app-ico" id="ico-ul" onclick="maNav('ul')"><span class="ico-e">🌴</span><span class="ico-l" data-i18n="nav_ul">Urlaub</span></button>
     <button class="app-ico" id="ico-kr" onclick="maNav('kr')"><span class="ico-e">🏥</span><span class="ico-l" data-i18n="nav_kr">Krankmeldung</span></button>
+    <button class="app-ico" id="ico-av" onclick="maNav('av')"><span class="nw-dot" id="av-dot" style="display:none"></span><span class="ico-e">📝</span><span class="ico-l" data-i18n="nav_av">Vertrag</span></button>
     <button class="app-ico" id="ico-bl" onclick="maNav('bl')"><span class="nw-dot" id="bl-dot" style="display:none"></span><span class="ico-e">🧾</span><span class="ico-l" data-i18n="nav_bl">Belege</span></button>
 
     <button class="app-ico" id="ico-nw" onclick="maNav('nw')"><span class="nw-dot" id="nw-dot"></span><span class="ico-e">📢</span><span class="ico-l" data-i18n="nav_nw">Infos</span></button>
@@ -342,6 +343,29 @@ window.onerror=function(msg,src,line){
     <div class="card">
       <div class="card-title" data-i18n="bl_list_title">📋 Meine Belege</div>
       <div id="bl-list"></div>
+    </div>
+  </div>
+
+  <!-- ── VERTRAG (Änderungsvereinbarung - nur lesen + unterschreiben) ── -->
+  <div class="panel" id="p-av">
+    <div class="card">
+      <div class="card-title" data-i18n="av-e_title">📝 Änderungsvereinbarung</div>
+      <div id="av-e-empty" style="font-size:13px;color:var(--mut);padding:10px 0" data-i18n="av-e_none">Aktuell nichts zu unterschreiben.</div>
+      <div id="av-e-content" style="display:none">
+        <div class="info" data-i18n="av-e_info">Bitte die Angaben prüfen. Die Felder können hier nicht geändert werden — bei Rückfragen bitte deinen Gebietsleiter direkt ansprechen.</div>
+        <div id="av-e-summary" style="background:var(--bg);border:1px solid var(--brd);border-radius:var(--rs);padding:12px;font-size:13px;line-height:1.7;margin-top:10px"></div>
+        <label style="margin-top:14px" data-i18n="av-e_lbl_ort">Ort, Datum</label>
+        <input type="text" id="av-e-ort">
+        <label style="margin-top:10px" data-i18n="av-e_lbl_sig">Unterschrift (mit dem Finger zeichnen)</label>
+        <canvas id="av-e-sig" width="300" height="90"
+          style="border:1.5px solid var(--brd);border-radius:var(--rs);background:#fff;touch-action:none;display:block;width:100%;cursor:crosshair"></canvas>
+        <div class="btn-row" style="margin-top:8px">
+          <button class="btn btn-sm" onclick="avESigClear()" data-i18n="btn_clear_sig">↺ Unterschrift löschen</button>
+        </div>
+        <div class="btn-row" style="margin-top:14px">
+          <button class="btn btn-grn" onclick="avESend()" style="flex:1;justify-content:center" data-i18n="av-e_btn_send">✍️ Unterschreiben und senden</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1012,7 +1036,11 @@ function maWaNumber(){var b=maLoadBundle();return ((b&&b.managerWa)||localStorag
    ════════════════════════════════════════════════ */
 var I18N={
 de:{_name:'Deutsch',
- nav_dp:'Dienstplan',nav_ul:'Urlaub',nav_kr:'Krankmeldung',nav_bl:'Belege',nav_nw:'Infos',
+ nav_dp:'Dienstplan',nav_ul:'Urlaub',nav_kr:'Krankmeldung',nav_bl:'Belege',nav_av:'Vertrag',nav_nw:'Infos',
+ 'av-e_title':'📝 Änderungsvereinbarung','av-e_none':'Aktuell nichts zu unterschreiben.',
+ 'av-e_info':'Bitte die Angaben prüfen. Die Felder können hier nicht geändert werden — bei Rückfragen bitte deinen Gebietsleiter direkt ansprechen.',
+ 'av-e_lbl_ort':'Ort, Datum','av-e_lbl_sig':'Unterschrift (mit dem Finger zeichnen)',
+ 'av-e_btn_send':'✍️ Unterschreiben und senden','av-e_need_sig':'Bitte unterschreiben.',
  bl_title:'🧾 Beleg einreichen',bl_info:'Hast du im Supermarkt etwas für die Filiale eingekauft? Foto vom Kassenbon hochladen — dein Gebietsleiter reicht ihn bei Skovik ein und überweist dir das Geld.',
  lbl_bl_amount:'Betrag (€)',lbl_bl_note:'Notiz (was wurde gekauft?)',lbl_foto_bl:'Foto vom Kassenbon',
  btn_bl:'📤 Beleg senden',bl_list_title:'📋 Meine Belege',bl_none:'Noch keine Belege eingereicht.',
@@ -1363,13 +1391,14 @@ function maShowApp(sess){
       slInit(sess);
       ivInit(sess);
       blStartListener();
+      avEStartListener();
     };
     if(fbReady){ afterFbReady(); }
     else fbInit(afterFbReady);
   }
 }
 function maNav(t){
-  ['dp','ul','kr','bl','nw','sl','iv'].forEach(function(x){
+  ['dp','ul','kr','bl','av','nw','sl','iv'].forEach(function(x){
     var p=document.getElementById('p-'+x);
     var ic=document.getElementById('ico-'+x);
     if(p) p.classList.toggle('active',x===t);
@@ -1378,6 +1407,7 @@ function maNav(t){
   if(t==='dp'){maRefreshProfile();}
   if(t==='ul'){maRenderCal();maRenderUlList();}
   if(t==='bl'){blRender();}
+  if(t==='av'){avERender();}
   if(t==='nw'){maNewsMarkRead();}
   if(t==='sl'){slLoadPlan();}
   if(t==='iv'){ivRender();}
@@ -1920,6 +1950,72 @@ function blConfirm(id){
   b.ref.update({status:'confirmed', confirmedAt:new Date().toISOString(), empHidden:true})
     .then(function(){ toast(t('bl_confirmed')); })
     .catch(function(e){ toast(t('bl_fail')+e.message,true); });
+}
+
+/* ════════════════════════════════════════════════
+   FEATURE 5 — VERTRAG (Änderungsvereinbarung, nur lesen + unterschreiben)
+   ════════════════════════════════════════════════ */
+var avEDoc=null, avEUnsub=null;
+var avESigCtx=null, avESigDrawing=false, avESigEmpty=true;
+function avEInitSig(){
+  var c=document.getElementById('av-e-sig'); if(!c||avESigCtx) return;
+  var ctx=c.getContext('2d'); avESigCtx=ctx;
+  function pos(e){
+    var r=c.getBoundingClientRect(), sx=c.width/r.width, sy=c.height/r.height;
+    var src=e.touches?e.touches[0]:e;
+    return {x:(src.clientX-r.left)*sx,y:(src.clientY-r.top)*sy};
+  }
+  function start(e){e.preventDefault();avESigDrawing=true;avESigEmpty=false;var p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);}
+  function move(e){if(!avESigDrawing)return;e.preventDefault();var p=pos(e);ctx.strokeStyle='#1A1A18';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.lineJoin='round';ctx.lineTo(p.x,p.y);ctx.stroke();ctx.beginPath();ctx.moveTo(p.x,p.y);}
+  function end(){avESigDrawing=false;}
+  c.addEventListener('mousedown',start); c.addEventListener('mousemove',move); c.addEventListener('mouseup',end); c.addEventListener('mouseleave',end);
+  c.addEventListener('touchstart',start,{passive:false}); c.addEventListener('touchmove',move,{passive:false}); c.addEventListener('touchend',end);
+}
+function avESigClear(){ var c=document.getElementById('av-e-sig'); if(c&&avESigCtx){avESigCtx.clearRect(0,0,c.width,c.height); avESigEmpty=true;} }
+function avEStartListener(){
+  var sess=maSession();
+  if(!fbReady||!fbDb||!sess) return;
+  if(avEUnsub) avEUnsub();
+  avEUnsub=fbDb.collection('aenderungsvertrag').where('empId','==',''+sess.id).where('status','==','sent').onSnapshot(function(snap){
+    var docs=[]; snap.forEach(function(d){ docs.push({docId:d.id, ref:d.ref, d:d.data()||{}}); });
+    avEDoc = docs.length ? docs[0] : null;
+    var dot=document.getElementById('av-dot'); if(dot) dot.style.display=avEDoc?'block':'none';
+    if(document.getElementById('p-av') && document.getElementById('p-av').classList.contains('active')) avERender();
+  }, function(err){ console.warn('FB aenderungsvertrag', err); });
+}
+function avEFmtDate(v){ if(!v) return ''; var p=v.split('-'); return p.length===3 ? (p[2]+'.'+p[1]+'.'+p[0]) : v; }
+function avERender(){
+  var empty=document.getElementById('av-e-empty'), content=document.getElementById('av-e-content');
+  if(!empty||!content) return;
+  if(!avEDoc){ empty.style.display='block'; content.style.display='none'; return; }
+  empty.style.display='none'; content.style.display='block';
+  avEInitSig();
+  var d=avEDoc.d, lines=[];
+  lines.push('<strong>'+(d.empName||'')+'</strong>'+(d.strasse?(', '+d.strasse):'')+(d.plz?(', '+d.plz):''));
+  if(d.chkGehalt) lines.push('💶 <strong>Gehalt:</strong> '+(d.g_alt||'—')+' € → '+(d.g_neu||'—')+' € (ab '+avEFmtDate(d.g_ab)+')');
+  if(d.chkVerlaeng) lines.push('📅 <strong>Verlängerung:</strong> '+(d.v_monate?('um '+d.v_monate+' Monate'):'')+(d.v_bis?(' bis '+avEFmtDate(d.v_bis)):'')+(d.v_unbefristet?(' · unbefristet ab '+avEFmtDate(d.v_unbefristet)):''));
+  if(d.chkStunde) lines.push('⏱ <strong>Stundenlohn:</strong> '+(d.s_alt||'—')+' € → '+(d.s_neu||'—')+' € (ab '+avEFmtDate(d.s_ab)+')');
+  if(d.chkWochen) lines.push('📊 <strong>Wochenstunden:</strong> '+(d.w_alt||'—')+' Std → '+(d.w_neu||'—')+' Std (ab '+avEFmtDate(d.w_ab)+')');
+  if(d.chkSonst && d.sonstText) lines.push('📋 <strong>Sonstiges:</strong> '+d.sonstText.replace(/\n/g,'<br>'));
+  document.getElementById('av-e-summary').innerHTML=lines.join('<br><br>');
+  var ortEl=document.getElementById('av-e-ort');
+  if(!ortEl.value) ortEl.value=new Date().toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+  avESigClear();
+}
+function avESend(){
+  if(!avEDoc){ return; }
+  if(avESigEmpty){ toast(t('av-e_need_sig')||'Bitte unterschreiben.', true); return; }
+  var ort=document.getElementById('av-e-ort').value.trim();
+  avEDoc.ref.update({
+    status:'signed',
+    anOrt: ort,
+    anSig: document.getElementById('av-e-sig').toDataURL('image/png'),
+    signedAt: new Date().toISOString()
+  }).then(function(){
+    toast('✓ Unterschrieben und gesendet');
+    avEDoc=null; avERender();
+    var dot=document.getElementById('av-dot'); if(dot) dot.style.display='none';
+  }).catch(function(e){ toast('Fehler: '+e.message, true); });
 }
 
 /* ════════════════════════════════════════════════
