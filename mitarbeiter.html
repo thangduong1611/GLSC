@@ -218,6 +218,8 @@ window.onerror=function(msg,src,line){
     <button class="app-ico active" id="ico-dp" onclick="maNav('dp')"><span class="ico-e">📅</span><span class="ico-l" data-i18n="nav_dp">Dienstplan</span></button>
     <button class="app-ico" id="ico-ul" onclick="maNav('ul')"><span class="ico-e">🌴</span><span class="ico-l" data-i18n="nav_ul">Urlaub</span></button>
     <button class="app-ico" id="ico-kr" onclick="maNav('kr')"><span class="ico-e">🏥</span><span class="ico-l" data-i18n="nav_kr">Krankmeldung</span></button>
+    <button class="app-ico" id="ico-bl" onclick="maNav('bl')"><span class="nw-dot" id="bl-dot" style="display:none"></span><span class="ico-e">🧾</span><span class="ico-l" data-i18n="nav_bl">Belege</span></button>
+
     <button class="app-ico" id="ico-nw" onclick="maNav('nw')"><span class="nw-dot" id="nw-dot"></span><span class="ico-e">📢</span><span class="ico-l" data-i18n="nav_nw">Infos</span></button>
     <button class="app-ico" id="ico-sl" onclick="maNav('sl')" style="display:none"><span class="ico-e">📋</span><span class="ico-l" data-i18n="nav_sl">Planung</span></button>
     <button class="app-ico" id="ico-iv" onclick="maNav('iv')" style="display:none"><span class="nw-dot" id="iv-dot" style="display:none"></span><span class="ico-e">📦</span><span class="ico-l" data-i18n="nav_iv">Inventur</span></button>
@@ -315,6 +317,31 @@ window.onerror=function(msg,src,line){
         <button class="btn btn-grn" onclick="maSendKrank()" data-i18n="btn_kr">📲 Krankmeldung per WhatsApp senden</button>
       </div>
       <p id="kr-hint" style="font-size:12px;color:var(--mut);margin-top:10px;line-height:1.5;display:none" data-i18n="kr_hint"></p>
+    </div>
+  </div>
+
+  <!-- ── BELEGE (Hóa đơn hoàn ứng) ── -->
+  <div class="panel" id="p-bl">
+    <div class="card">
+      <div class="card-title" data-i18n="bl_title">🧾 Beleg einreichen</div>
+      <div class="info" data-i18n="bl_info"></div>
+      <label data-i18n="lbl_bl_amount">Betrag (€)</label>
+      <input type="number" step="0.01" min="0" id="bl-amount" placeholder="0.00">
+      <label data-i18n="lbl_bl_note">Notiz (was wurde gekauft?)</label>
+      <input type="text" id="bl-note" placeholder="z.B. Wasabi, REWE">
+      <label data-i18n="lbl_foto_bl">Foto vom Kassenbon</label>
+      <div class="drop" id="bl-drop" onclick="document.getElementById('bl-file').click()">
+        <div class="drop-icon">📷</div><span data-i18n="drop_txt">Foto hochladen oder Kamera öffnen</span>
+        <input type="file" id="bl-file" accept="image/*" capture="environment" style="display:none" onchange="blPhoto(event)">
+      </div>
+      <img id="bl-prev" class="photo-prev" style="display:none">
+      <div class="btn-row">
+        <button class="btn btn-grn" onclick="blSend()" data-i18n="btn_bl">📤 Beleg senden</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title" data-i18n="bl_list_title">📋 Meine Belege</div>
+      <div id="bl-list"></div>
     </div>
   </div>
 
@@ -985,7 +1012,13 @@ function maWaNumber(){var b=maLoadBundle();return ((b&&b.managerWa)||localStorag
    ════════════════════════════════════════════════ */
 var I18N={
 de:{_name:'Deutsch',
- nav_dp:'Dienstplan',nav_ul:'Urlaub',nav_kr:'Krankmeldung',nav_nw:'Infos',
+ nav_dp:'Dienstplan',nav_ul:'Urlaub',nav_kr:'Krankmeldung',nav_bl:'Belege',nav_nw:'Infos',
+ bl_title:'🧾 Beleg einreichen',bl_info:'Hast du im Supermarkt etwas für die Filiale eingekauft? Foto vom Kassenbon hochladen — dein Gebietsleiter reicht ihn bei Skovik ein und überweist dir das Geld.',
+ lbl_bl_amount:'Betrag (€)',lbl_bl_note:'Notiz (was wurde gekauft?)',lbl_foto_bl:'Foto vom Kassenbon',
+ btn_bl:'📤 Beleg senden',bl_list_title:'📋 Meine Belege',bl_none:'Noch keine Belege eingereicht.',
+ bl_sent:'✓ Beleg gesendet',bl_fail:'Fehler: ',bl_need_photo:'Bitte zuerst ein Foto vom Kassenbon hochladen.',
+ bl_st_new:'Eingereicht',bl_st_skovik:'In Skovik hochgeladen',bl_st_paid:'Überwiesen',
+ bl_paid_banner:'💰 Geld wurde überwiesen!',bl_confirm_btn:'✓ Geld erhalten — bestätigen',bl_confirmed:'✓ Bestätigt, danke!',
  login_sub:'Sushi Circle · Bitte mit deiner Personalnummer anmelden.',lbl_pid:'Personalnummer',btn_login:'Anmelden',
  err_pid:'Bitte Personalnummer eingeben.',err_notfound:'Personalnummer nicht gefunden. Bitte prüfen.',err_nodata:'Keine Daten geladen. Bitte zuerst Daten laden.',err_conn:'Verbindungsfehler: ',
  btn_logout:'Abmelden',q_logout:'Abmelden?',no_fil:'keine Filiale',
@@ -1329,13 +1362,14 @@ function maShowApp(sess){
       if(typeof maStartFbPush==='function') maStartFbPush(sess);
       slInit(sess);
       ivInit(sess);
+      blStartListener();
     };
     if(fbReady){ afterFbReady(); }
     else fbInit(afterFbReady);
   }
 }
 function maNav(t){
-  ['dp','ul','kr','nw','sl','iv'].forEach(function(x){
+  ['dp','ul','kr','bl','nw','sl','iv'].forEach(function(x){
     var p=document.getElementById('p-'+x);
     var ic=document.getElementById('ico-'+x);
     if(p) p.classList.toggle('active',x===t);
@@ -1343,6 +1377,7 @@ function maNav(t){
   });
   if(t==='dp'){maRefreshProfile();}
   if(t==='ul'){maRenderCal();maRenderUlList();}
+  if(t==='bl'){blRender();}
   if(t==='nw'){maNewsMarkRead();}
   if(t==='sl'){slLoadPlan();}
   if(t==='iv'){ivRender();}
@@ -1803,6 +1838,88 @@ function maSendKrank(){
   if(wa)window.open('https://wa.me/'+wa+'?text='+encodeURIComponent(msg),'_blank');
   else prompt(t('wa_missing'),msg);
   toast(t('t_wa')+(maKrImg?t('t_wa_attach'):''));
+}
+
+/* ════════════════════════════════════════════════
+   FEATURE 4 — BELEGE (Hóa đơn hoàn ứng)
+   ════════════════════════════════════════════════ */
+var blImg=null, blList=[], blUnsub=null;
+function blPhoto(ev){
+  var f=ev.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var maxW=1100, sc=Math.min(1, maxW/img.width);
+      var cv=document.createElement('canvas');
+      cv.width=Math.round(img.width*sc); cv.height=Math.round(img.height*sc);
+      cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+      blImg=cv.toDataURL('image/jpeg',0.75);
+      if(blImg.length>900000){ blImg=cv.toDataURL('image/jpeg',0.5); }
+      var p=document.getElementById('bl-prev');p.src=blImg;p.style.display='block';
+      document.getElementById('bl-drop').classList.add('ok');
+    };
+    img.src=e.target.result;
+  };
+  r.readAsDataURL(f);
+}
+function blSend(){
+  var sess=maSession();if(!sess)return;
+  if(!fbReady||!fbDb){ toast(t('bl_fail')+'offline',true); return; }
+  var amount=parseFloat(document.getElementById('bl-amount').value)||0;
+  var note=document.getElementById('bl-note').value.trim();
+  if(!blImg){ toast(t('bl_need_photo'),true); return; }
+  fbDb.collection('receipts').add({
+    empId:''+sess.id, empName:sess.name, filiale:sess.filiale||'',
+    amount:amount, note:note, img:blImg,
+    status:'new', empHidden:false,
+    createdAt:new Date().toISOString(), skovikAt:null, paidAt:null, confirmedAt:null
+  }).then(function(){
+    toast(t('bl_sent'));
+    document.getElementById('bl-amount').value='';document.getElementById('bl-note').value='';
+    blImg=null; var p=document.getElementById('bl-prev');p.style.display='none';
+    document.getElementById('bl-drop').classList.remove('ok');
+  }).catch(function(e){ toast(t('bl_fail')+e.message,true); });
+}
+function blStartListener(){
+  var sess=maSession();
+  if(!fbReady||!fbDb||!sess) return;
+  if(blUnsub) blUnsub();
+  blUnsub=fbDb.collection('receipts').where('empId','==',''+sess.id).onSnapshot(function(snap){
+    var raw=[]; snap.forEach(function(doc){ raw.push({docId:doc.id, ref:doc.ref, d:doc.data()||{}}); });
+    blList=raw.filter(function(x){return !x.d.empHidden;}).sort(function(a,b){ return (a.d.createdAt||'')<(b.d.createdAt||'')?1:-1; });
+    var pendingConfirm=blList.some(function(x){return x.d.status==='paid';});
+    var dot=document.getElementById('bl-dot'); if(dot) dot.style.display=pendingConfirm?'block':'none';
+    if(document.getElementById('p-bl') && document.getElementById('p-bl').classList.contains('active')) blRender();
+  }, function(err){ console.warn('FB receipts', err); });
+}
+function blStatusMeta(st){
+  if(st==='new') return {c:'#B7791F',bg:'#FFF7E6',txt:t('bl_st_new')};
+  if(st==='skovik') return {c:'#1A5276',bg:'#EAF2F8',txt:t('bl_st_skovik')};
+  if(st==='paid') return {c:'#1E8449',bg:'#EAFAF1',txt:t('bl_st_paid')};
+  return {c:'#6B6860',bg:'#F5F3F0',txt:st};
+}
+function blRender(){
+  var box=document.getElementById('bl-list'); if(!box) return;
+  if(!blList.length){ box.innerHTML='<div style="font-size:13px;color:var(--mut);padding:8px 0">'+t('bl_none')+'</div>'; return; }
+  box.innerHTML=blList.map(function(b){
+    var d=b.d, m=blStatusMeta(d.status);
+    var dt=d.createdAt?new Date(d.createdAt).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}):'';
+    var paidBanner=d.status==='paid'?('<div style="margin-top:6px;padding:8px;border-radius:6px;background:#EAFAF1;color:#1E8449;font-size:12px;font-weight:700">'+t('bl_paid_banner')+'<br><button class="btn btn-grn" style="margin-top:6px;width:100%" onclick="blConfirm(\''+b.docId+'\')">'+t('bl_confirm_btn')+'</button></div>'):'';
+    return '<div style="display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid #E8E4E0;border-left:4px solid '+m.c+';border-radius:6px;margin-bottom:8px">'
+      +(d.img?'<img src="'+d.img+'" style="width:56px;height:56px;object-fit:cover;border-radius:6px;flex-shrink:0">':'')
+      +'<div style="flex:1;min-width:0"><div style="font-weight:700">'+(d.amount?d.amount.toFixed(2)+' €':'')+' <span style="font-weight:400;color:var(--mut);font-size:12px">'+(d.note||'')+'</span></div>'
+      +'<div style="font-size:11px;color:var(--mut)">'+dt+'</div>'
+      +'<span style="display:inline-block;margin-top:4px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:'+m.bg+';color:'+m.c+'">'+m.txt+'</span>'
+      +paidBanner
+      +'</div></div>';
+  }).join('');
+}
+function blConfirm(id){
+  var b=blList.find(function(x){return x.docId===id;}); if(!b) return;
+  b.ref.update({status:'confirmed', confirmedAt:new Date().toISOString(), empHidden:true})
+    .then(function(){ toast(t('bl_confirmed')); })
+    .catch(function(e){ toast(t('bl_fail')+e.message,true); });
 }
 
 /* ════════════════════════════════════════════════

@@ -256,6 +256,9 @@ window.onerror=function(msg,src,line){
     <button class="app-ico active" onclick="sw('krank',this)">
       <span class="ico-e">🏥</span><span class="ico-l">Krankmeldung</span>
     </button>
+    <button class="app-ico" onclick="sw('belege',this)">
+      <span class="ico-e">🧾</span><span class="ico-l">Belege</span>
+    </button>
     <button class="app-ico" onclick="sw('urlaub',this)">
       <span class="ico-e">🌴</span><span class="ico-l">Urlaubs&shy;antrag</span>
     </button>
@@ -331,6 +334,27 @@ window.onerror=function(msg,src,line){
       <button class="btn btn-grn" onclick="shareKrankWithFile('k')">📤 Teilen + Attest</button>
       
     </div>
+  </div>
+</div>
+
+<!-- ===== BELEGE (Hóa đơn hoàn ứng) ===== -->
+<div id="panel-belege" class="panel">
+  <div class="card">
+    <div class="card-title">🧾 Belege der Mitarbeiter <span class="badge badge-red" id="bl-live-count">0</span></div>
+    <div class="info">Mitarbeiter laden Kassenbons hier hoch. Workflow: <strong>Eingereicht</strong> → <strong>In Skovik hochgeladen</strong> (Rückerstattung beantragt) → <strong>Überwiesen</strong> (an Mitarbeiter bezahlt). Der Mitarbeiter bestätigt den Erhalt selbst; der Beleg bleibt hier zur Dokumentation sichtbar.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
+      <select id="bl-filter-fil" onchange="blRenderAdmin()" style="flex:1;min-width:160px"><option value="">Alle Filialen</option></select>
+      <select id="bl-filter-status" onchange="blRenderAdmin()" style="flex:1;min-width:160px">
+        <option value="">Alle Status</option>
+        <option value="new">Eingereicht</option>
+        <option value="skovik">In Skovik hochgeladen</option>
+        <option value="paid">Überwiesen</option>
+        <option value="confirmed">Bestätigt</option>
+      </select>
+    </div>
+    <div id="bl-live-status" style="font-size:13px;margin-bottom:8px;font-weight:600;display:none"></div>
+    <div id="bl-live-sum" style="font-size:13px;color:#6B6860;margin-bottom:10px"></div>
+    <div id="bl-live-list"></div>
   </div>
 </div>
 
@@ -1152,6 +1176,7 @@ RP_CL=getRPCL();
   if(id==='dienstplan'){RP_CL=getRPCL();dpOnShow();}
   if(id==='settings'){renderRpGrpList();applySettings();renderMkStores();renderSavedEmails();var wa=document.getElementById('st-manager-wa');if(wa)wa.value=localStorage.getItem('sc_manager_wa')||'';}
   if(id==='inventur'){invOnShow();}
+  if(id==='belege'){blPopulateFilFilter();blRenderAdmin();}
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────
@@ -3679,7 +3704,7 @@ function fbBootStatus(){
     fbPendingCardShow('⚠️ Firebase-Bibliothek nicht geladen. Internet/Adblocker prüfen und Seite neu laden.', '#C0392B');
     return;
   }
-  fbInit(function(){ fbStartPending(); nwStartListener(); nwReadsStartListener(); krStartListener(); anStartListener(); });
+  fbInit(function(){ fbStartPending(); nwStartListener(); nwReadsStartListener(); krStartListener(); anStartListener(); blStartListener(); });
 }
 function fbSlug(f){ return (''+f).replace(/\s+/g,'_').toLowerCase(); }
 function fbInit(onReady){
@@ -4033,6 +4058,97 @@ function krDelete(id){
   var k=krFind(id); if(!k) return;
   if(!confirm('Krankmeldung von '+(k.d.name||'?')+' als erledigt löschen?')) return;
   k.ref.delete().then(function(){ toast('🗑 Gelöscht'); }).catch(function(e){ alert('Fehler: '+e.message); });
+}
+
+// ════════ BELEGE (Hóa đơn hoàn ứng, Live aus Mitarbeiter-App) ════════
+var fbBelege=[];
+function blShowStatus(msg,color){
+  var st=document.getElementById('bl-live-status');
+  if(st){ st.textContent=msg||''; st.style.color=color||'#6B6860'; st.style.display=msg?'block':'none'; }
+}
+function blStartListener(){
+  if(!fbReady||!fbDb) return;
+  blShowStatus('🔄 Verbinde…','#6B6860');
+  fbDb.collection('receipts').onSnapshot(function(snap){
+    var raw=[]; snap.forEach(function(doc){ raw.push({docId:doc.id, ref:doc.ref, d:doc.data()||{}}); });
+    fbBelege=raw.sort(function(a,b){ return (a.d.createdAt||'')<(b.d.createdAt||'')?1:-1; });
+    blShowStatus('','');
+    blPopulateFilFilter();
+    if(document.getElementById('panel-belege') && document.getElementById('panel-belege').classList.contains('active')) blRenderAdmin();
+  }, function(err){
+    console.warn('FB receipts', err);
+    blShowStatus('⚠️ Kein Zugriff auf Belege ('+err.code+'). In den Firestore-Regeln fehlt vermutlich der Block für „receipts" — bitte Regeln ergänzen und neu veröffentlichen.','#C0392B');
+  });
+}
+function blPopulateFilFilter(){
+  var sel=document.getElementById('bl-filter-fil'); if(!sel) return;
+  var cur=sel.value;
+  var set={}; fbBelege.forEach(function(b){ if(b.d.filiale) set[b.d.filiale]=1; });
+  var fils=Object.keys(set).sort();
+  sel.innerHTML='<option value="">Alle Filialen</option>'+fils.map(function(f){return '<option value="'+f+'">'+f+'</option>';}).join('');
+  if(cur && set[cur]) sel.value=cur;
+}
+function blStatusMeta(st){
+  if(st==='new') return {c:'#B7791F',bg:'#FFF7E6',txt:'Eingereicht'};
+  if(st==='skovik') return {c:'#1A5276',bg:'#EAF2F8',txt:'In Skovik hochgeladen'};
+  if(st==='paid') return {c:'#1E8449',bg:'#EAFAF1',txt:'Überwiesen'};
+  if(st==='confirmed') return {c:'#6B6860',bg:'#F5F3F0',txt:'Bestätigt vom Mitarbeiter'};
+  return {c:'#6B6860',bg:'#F5F3F0',txt:st};
+}
+function blRenderAdmin(){
+  var list=document.getElementById('bl-live-list'), cnt=document.getElementById('bl-live-count'), sum=document.getElementById('bl-live-sum');
+  if(!list) return;
+  var fFil=(document.getElementById('bl-filter-fil')||{}).value||'';
+  var fSt=(document.getElementById('bl-filter-status')||{}).value||'';
+  var items=fbBelege.filter(function(b){
+    if(fFil && b.d.filiale!==fFil) return false;
+    if(fSt && b.d.status!==fSt) return false;
+    return true;
+  });
+  var openCount=fbBelege.filter(function(b){return b.d.status==='new'||b.d.status==='skovik';}).length;
+  if(cnt) cnt.textContent=openCount;
+  if(sum){
+    var sumOpen=items.filter(function(b){return b.d.status==='new'||b.d.status==='skovik';}).reduce(function(s,b){return s+(b.d.amount||0);},0);
+    sum.textContent='Offen (angezeigt): '+sumOpen.toFixed(2)+' € · '+items.length+' Beleg(e)';
+  }
+  if(!items.length){ list.innerHTML='<div style="color:#6B6860;font-size:13px;padding:6px 0">Keine Belege für diesen Filter.</div>'; return; }
+  list.innerHTML=items.map(function(b){
+    var d=b.d, m=blStatusMeta(d.status);
+    var dt=d.createdAt?new Date(d.createdAt).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+    var actions='';
+    if(d.status==='new') actions+='<button class="btn btn-sm" style="background:#1A5276;color:#fff;border-color:#1A5276" onclick="blSetStatus(\''+b.docId+'\',\'skovik\')">✅ In Skovik hochgeladen</button>';
+    else if(d.status==='skovik') actions+='<button class="btn btn-sm" style="background:#1E8449;color:#fff;border-color:#1E8449" onclick="blSetStatus(\''+b.docId+'\',\'paid\')">💸 Überwiesen</button>';
+    else if(d.status==='paid') actions+='<span style="font-size:11px;color:#1E8449;font-weight:700;text-align:center">Warte auf Bestätigung MA</span>';
+    else if(d.status==='confirmed') actions+='<span style="font-size:11px;color:#1E8449;font-weight:700;text-align:center">✓ Abgeschlossen</span>';
+    actions+=(d.img?'<button class="btn btn-sm" onclick="blDownload(\''+b.docId+'\')">💾 Foto</button>':'');
+    return '<div style="display:flex;gap:12px;align-items:flex-start;padding:10px;border:1px solid #E8E4E0;border-left:4px solid '+m.c+';border-radius:6px;margin-bottom:8px;flex-wrap:wrap">'
+      +(d.img?'<img src="'+d.img+'" style="width:84px;height:84px;object-fit:cover;border-radius:6px;border:1px solid #E8E4E0;cursor:pointer" onclick="blOpenImg(\''+b.docId+'\')" title="Foto ansehen">':'<div style="width:84px;height:84px;display:flex;align-items:center;justify-content:center;background:#F5F3F0;border-radius:6px;font-size:11px;color:#6B6860;text-align:center">kein<br>Foto</div>')
+      +'<div style="flex:1;min-width:170px"><strong>'+(d.empName||'?')+'</strong> · '+(d.filiale||'')+'<br>'
+      +'<span style="font-size:14px;font-weight:700">'+(d.amount?d.amount.toFixed(2)+' €':'—')+'</span> <span style="font-size:13px;color:#6B6860">'+(d.note||'')+'</span><br>'
+      +'<span style="font-size:12px;color:#6B6860">'+dt+'</span><br>'
+      +'<span style="display:inline-block;margin-top:4px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:'+m.bg+';color:'+m.c+'">'+m.txt+'</span></div>'
+      +'<div style="display:flex;flex-direction:column;gap:6px;min-width:150px">'+actions+'</div></div>';
+  }).join('');
+}
+function blFind(id){ return fbBelege.find(function(x){return x.docId===id;}); }
+function blOpenImg(id){
+  var b=blFind(id); if(!b||!b.d.img) return;
+  var w=window.open('','_blank');
+  if(w){ w.document.write('<title>Beleg '+(b.d.empName||'')+'</title><img src="'+b.d.img+'" style="max-width:100%">'); }
+}
+function blDownload(id){
+  var b=blFind(id); if(!b||!b.d.img) return;
+  var a=document.createElement('a');
+  a.href=b.d.img;
+  a.download='Beleg_'+((b.d.empName||'x').replace(/\s+/g,'_'))+'_'+(b.d.createdAt||'').slice(0,10)+'.jpg';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+function blSetStatus(id,status){
+  var b=blFind(id); if(!b) return;
+  var upd={status:status};
+  if(status==='skovik') upd.skovikAt=new Date().toISOString();
+  if(status==='paid') upd.paidAt=new Date().toISOString();
+  b.ref.update(upd).then(function(){ toast('✓ Status aktualisiert'); }).catch(function(e){ alert('Fehler: '+e.message); });
 }
 
 // ════════ FILIAL-VERTEILUNG (Haupt + Zweitfilialen) ════════
