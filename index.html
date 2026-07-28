@@ -2689,8 +2689,16 @@ function avRenderList(){
       +'<div style="flex:1;min-width:160px"><strong>'+(d.empName||'?')+'</strong> · '+dt+'<br>'
       +'<span style="display:inline-block;margin-top:4px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:'+m.bg+';color:'+m.c+'">'+m.txt+'</span></div>'
       +(signed?'<button class="btn btn-sm" style="background:#1E8449;color:#fff;border-color:#1E8449" onclick="avLoadSigned(\''+x.docId+'\')">📥 In Formular laden</button>':'')
+      +'<button class="btn btn-sm" style="background:#C0392B;color:#fff;border-color:#C0392B" onclick="avDeleteItem(\''+x.docId+'\')">🗑 Löschen</button>'
       +'</div>';
   }).join('');
+}
+function avDeleteItem(id){
+  var x=fbAV.find(function(a){return a.docId===id;}); if(!x) return;
+  if(!confirm('Diese Vereinbarung wirklich löschen? („'+(x.d.empName||'')+'", '+(x.d.status==='signed'?'unterschrieben':'noch offen')+')')) return;
+  x.ref.delete()
+    .then(function(){ toast('✓ Gelöscht'); })
+    .catch(function(e){ toast('Fehler: '+e.message, true); });
 }
 function avLoadSigned(id){
   var x=fbAV.find(function(a){return a.docId===id;}); if(!x) return;
