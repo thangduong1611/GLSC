@@ -611,7 +611,11 @@ window.onerror=function(msg,src,line){
     <div class="info">Nutzt Name/Personalnummer von oben. Es werden maximal die ersten 4 eingetragenen Tage auf das offizielle Formular übernommen (mehr passt nicht auf eine Seite). Pause bitte pro Tag angeben, „Zeichen" (Stunden) wird automatisch berechnet.</div>
     <div class="row2">
       <div><label>Kostenstelle</label><input type="text" id="std-kostenstelle" placeholder="z.B. 101500" maxlength="6"></div>
-      <div><label>Restaurantname</label><input type="text" id="std-restaurant" placeholder="z.B. 401888: R-Homberg (Efze)-Kasseler Str. - Mohr"></div>
+      <div>
+        <label>Filiale (Restaurantname)</label>
+        <select id="std-filiale-sel" onchange="stdFilialeChange()"><option value="">— Filiale wählen —</option></select>
+        <input type="text" id="std-restaurant" placeholder="z.B. 401888: R-Homberg (Efze)-Kasseler Str. - Mohr" style="margin-top:6px">
+      </div>
     </div>
     <div class="row2">
       <div><label>PLZ</label><input type="text" id="std-plz" placeholder="z.B. 34576"></div>
@@ -894,6 +898,21 @@ window.onerror=function(msg,src,line){
         <button class="btn" onclick="exportMaBundle('copy')" style="flex:1;justify-content:center">📋 Code kopieren</button>
       </div>
     </details>
+  </div>
+  <div class="card">
+    <div class="card-title">🏪 Filialen — PLZ &amp; Ort <span class="badge badge-blu" id="fil-meta-count">0</span></div>
+    <div class="info">Wird für das offizielle Stundennachweis-Formular gebraucht. Filialen aus der Mitarbeiter-CSV erscheinen automatisch (Kostenstelle: Name) — PLZ &amp; Ort bitte einmalig eintragen, danach gespeichert. Neue Filialen (noch nicht in der CSV) können manuell hinzugefügt werden.</div>
+    <div id="fil-meta-list" style="margin-top:10px"></div>
+    <div style="margin-top:14px;padding:12px;background:var(--bg);border-radius:var(--rs);border:1px solid var(--brd)">
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px">+ Filiale manuell hinzufügen</div>
+      <label>Kostenstelle: Name (z.B. 402297: MK-Einbeck-Altendorfer Tor)</label>
+      <input type="text" id="fil-meta-new-name" placeholder="402297: MK-Einbeck-Altendorfer Tor">
+      <div class="row2">
+        <div><label>PLZ</label><input type="text" id="fil-meta-new-plz" placeholder="z.B. 37574"></div>
+        <div><label>Ort</label><input type="text" id="fil-meta-new-ort" placeholder="z.B. Einbeck"></div>
+      </div>
+      <button class="btn btn-grn" onclick="filMetaAdd()" style="margin-top:8px">+ Hinzufügen</button>
+    </div>
   </div>
   <div class="card">
     <div class="card-title">👤 Persönliche Daten <span class="badge badge-red">Pflicht</span></div>
@@ -1223,7 +1242,8 @@ RP_CL=getRPCL();
   if(id==='av') avPopulateDropdown();
   if(id==='dienstplan'){RP_CL=getRPCL();dpOnShow();}
   if(id==='dienstplan'){RP_CL=getRPCL();dpOnShow();}
-  if(id==='settings'){renderRpGrpList();applySettings();renderMkStores();renderSavedEmails();var wa=document.getElementById('st-manager-wa');if(wa)wa.value=localStorage.getItem('sc_manager_wa')||'';}
+  if(id==='settings'){renderRpGrpList();applySettings();renderMkStores();renderSavedEmails();var wa=document.getElementById('st-manager-wa');if(wa)wa.value=localStorage.getItem('sc_manager_wa')||'';filMetaRender();}
+  if(id==='stunden'){stdPopulateFilialeSelect();}
   if(id==='inventur'){invOnShow();}
   if(id==='belege'){blPopulateFilFilter();blRenderAdmin();}
   if(id==='av'){avPopulateDropdown();avRenderList();}
@@ -2788,6 +2808,84 @@ function avLoadSigned(id){
     img.src=d.anSig;
   }
   toast('✓ Geladen — bitte als Arbeitgeber unterschreiben und PDF herunterladen.');
+}
+
+// ── Filialen: PLZ & Ort Verwaltung (für Stundennachweis) ──
+function filMetaLoad(){ try{ return JSON.parse(localStorage.getItem('sc_filiale_meta')||'{}')||{}; }catch(e){ return {}; } }
+function filMetaSave(m){ localStorage.setItem('sc_filiale_meta', JSON.stringify(m)); }
+function filMetaAllNames(){
+  var emps=loadEmps().filter(function(e){return e.active!==false;});
+  var fromCsv=[...new Set(emps.map(function(e){return e.filiale||'';}).filter(Boolean))];
+  var meta=filMetaLoad();
+  var fromMeta=Object.keys(meta);
+  var all=[...new Set(fromCsv.concat(fromMeta))].sort();
+  return {all:all, fromCsv:fromCsv};
+}
+function filMetaRender(){
+  var list=document.getElementById('fil-meta-list'), cnt=document.getElementById('fil-meta-count');
+  if(!list) return;
+  var d=filMetaAllNames(), meta=filMetaLoad();
+  if(cnt) cnt.textContent=d.all.length;
+  if(!d.all.length){ list.innerHTML='<div style="font-size:13px;color:var(--mut)">Noch keine Filialen (CSV importieren oder manuell hinzufügen).</div>'; return; }
+  list.innerHTML=d.all.map(function(name){
+    var m=meta[name]||{plz:'',ort:''};
+    var isManualOnly=d.fromCsv.indexOf(name)===-1;
+    var safe=name.replace(/'/g,"\\'");
+    return '<div style="display:flex;gap:8px;align-items:flex-end;padding:8px 0;border-bottom:1px solid var(--brd);flex-wrap:wrap">'
+      +'<div style="flex:2;min-width:180px;font-size:12.5px;font-weight:600">'+name+(isManualOnly?' <span class="badge badge-amb" style="font-size:9px">manuell</span>':'')+'</div>'
+      +'<div style="flex:1;min-width:90px"><input type="text" placeholder="PLZ" value="'+(m.plz||'')+'" onchange="filMetaSet(\''+safe+'\',\'plz\',this.value)"></div>'
+      +'<div style="flex:1;min-width:110px"><input type="text" placeholder="Ort" value="'+(m.ort||'')+'" onchange="filMetaSet(\''+safe+'\',\'ort\',this.value)"></div>'
+      +(isManualOnly?'<button class="btn btn-sm" style="background:#C0392B;color:#fff;border-color:#C0392B" onclick="filMetaDelete(\''+safe+'\')">🗑</button>':'')
+      +'</div>';
+  }).join('');
+}
+function filMetaSet(name, field, value){
+  var meta=filMetaLoad();
+  if(!meta[name]) meta[name]={plz:'',ort:''};
+  meta[name][field]=value;
+  filMetaSave(meta);
+  stdPopulateFilialeSelect();
+}
+function filMetaAdd(){
+  var name=document.getElementById('fil-meta-new-name').value.trim();
+  if(!name){ toast('Bitte Kostenstelle: Name eintragen.', true); return; }
+  var plz=document.getElementById('fil-meta-new-plz').value.trim();
+  var ort=document.getElementById('fil-meta-new-ort').value.trim();
+  var meta=filMetaLoad();
+  meta[name]={plz:plz, ort:ort};
+  filMetaSave(meta);
+  document.getElementById('fil-meta-new-name').value='';
+  document.getElementById('fil-meta-new-plz').value='';
+  document.getElementById('fil-meta-new-ort').value='';
+  filMetaRender();
+  stdPopulateFilialeSelect();
+  toast('✓ Filiale hinzugefügt');
+}
+function filMetaDelete(name){
+  if(!confirm('Filiale "'+name+'" wirklich entfernen?')) return;
+  var meta=filMetaLoad();
+  delete meta[name];
+  filMetaSave(meta);
+  filMetaRender();
+  stdPopulateFilialeSelect();
+}
+function stdPopulateFilialeSelect(){
+  var sel=document.getElementById('std-filiale-sel'); if(!sel) return;
+  var cur=sel.value;
+  var d=filMetaAllNames();
+  sel.innerHTML='<option value="">— Filiale wählen —</option>'+d.all.map(function(f){return '<option value="'+f.replace(/"/g,'&quot;')+'">'+f+'</option>';}).join('');
+  if(cur && d.all.indexOf(cur)!==-1) sel.value=cur;
+}
+function stdFilialeChange(){
+  var sel=document.getElementById('std-filiale-sel');
+  var name=sel.value; if(!name) return;
+  document.getElementById('std-restaurant').value=name;
+  var kIdx=name.indexOf(':');
+  if(kIdx>0) document.getElementById('std-kostenstelle').value=name.substring(0,kIdx).replace(/\D/g,'');
+  var meta=filMetaLoad()[name]||{};
+  document.getElementById('std-plz').value=meta.plz||'';
+  document.getElementById('std-ort').value=meta.ort||'';
+  if(!meta.plz && !meta.ort){ toast('Für diese Filiale sind noch keine PLZ/Ort hinterlegt — bitte in den Einstellungen ergänzen.'); }
 }
 
 // ─── STUNDENNACHWEIS (offizielles Formular) ─────────────────
