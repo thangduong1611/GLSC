@@ -2483,6 +2483,7 @@ var STD_ORT_X = 1506, STD_ORT_Y = 235;
 var STD_GROUP_X = [858, 1098, 1337, 1576]; // linke Kante je Gruppe
 var STD_GROUP_W = 239; // Breite je Gruppe (4 Unterspalten a 60px)
 var STD_DATUM_HDR_Y = [286, 291, 286, 291];
+var STD_DATUM_HDR_X = [945, 1177, 1424, 1656]; // kalibrierte Position (nicht relativ zu Gruppe, sonst Überlappung mit "Datum:")
 // Personal-Nr.: 6 Ziffernboxen (gleiche x für jede Zeile)
 var STD_PID_X = [50,87,123,159,195,231,268];
 var STD_NAME_X = 293;
@@ -3017,7 +3018,7 @@ function stdGeneratePDF(){
     rows.forEach(function(row, gi){
       if(gi>=4) return;
       var gx=STD_GROUP_X[gi];
-      fillText(gx+10, STD_DATUM_HDR_Y[gi], stdFmtDateDE(row.datum), STD_FONT_SM);
+      fillText(STD_DATUM_HDR_X[gi], STD_DATUM_HDR_Y[gi], stdFmtDateDE(row.datum), STD_FONT_SM);
       var vp=row.von.split(':'), bp=row.bis.split(':');
       var az0=gx, ez0=gx+60, pa0=gx+120, ze0=gx+180;
       ctx.font=STD_FONT_SM+'px Arial, sans-serif';
