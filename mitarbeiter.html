@@ -401,6 +401,8 @@ window.onerror=function(msg,src,line){
         <div style="height:6px;background:var(--brd);border-radius:99px;overflow:hidden"><div id="iv-progress-bar" style="width:0%;height:100%;background:var(--grn)"></div></div>
       </div>
 
+      <input type="search" id="iv-search" placeholder="🔍 Produkt suchen..." oninput="ivSearchInput()"
+        style="width:100%;margin-bottom:10px;font-size:15px;padding:10px 12px">
       <div id="iv-cats" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:6px"></div>
       <div id="iv-list"></div>
 
@@ -729,11 +731,32 @@ function ivRenderCats(){
 }
 function ivSetCat(c){ ivCat=c; ivRenderCats(); ivRenderList(); }
 
+function ivSearchInput(){
+  var box=document.getElementById('iv-cats');
+  var q=(document.getElementById('iv-search').value||'').trim();
+  // Bei aktiver Suche werden Kategorie-Tabs ausgeblendet (Suche geht über ALLE Kategorien)
+  if(box) box.style.display=q?'none':'flex';
+  ivRenderList();
+}
 function ivRenderList(){
   var box=document.getElementById('iv-list'); if(!box) return;
   var lang=(typeof MA_LANG!=='undefined'?MA_LANG:'de');
   var li={de:3,vi:4,en:5,th:6}[lang]||3;          // Index der Sprachspalte
-  var items=INVENTUR_ITEMS.filter(function(it){return ivItemCat(it)===ivCat;});
+  var sEl=document.getElementById('iv-search');
+  var q=sEl?(sEl.value||'').toLowerCase().trim():'';
+  var items;
+  if(q){
+    // Suche über ALLE Kategorien (Name DE/VI/EN/TH + Artikelnummer)
+    items=INVENTUR_ITEMS.filter(function(it){
+      return (it[0]+' '+it[3]+' '+it[4]+' '+it[5]+' '+it[6]).toLowerCase().indexOf(q)!==-1;
+    });
+  } else {
+    items=INVENTUR_ITEMS.filter(function(it){return ivItemCat(it)===ivCat;});
+  }
+  if(!items.length){
+    box.innerHTML='<div style="padding:22px 4px;text-align:center;color:var(--mut);font-size:14px">'+t('iv_no_result')+'</div>';
+    return;
+  }
   box.innerHTML=items.map(function(it){
     var art=it[0], einheit=it[2], de=it[3], tr=it[li];
     var val=ivCounts[art]!==undefined?ivCounts[art]:'';
@@ -757,7 +780,8 @@ function ivRenderList(){
       wird ein neutraler Platzhalter angezeigt (Layout bleibt heil).
    ════════════════════════════════════════════════════════════ */
 function ivImgSrc(art){
-  // 1) Von Mitarbeitern hochgeladenes Foto (HR-Auswahl, sonst zuletzt hochgeladen)
+  // Nur noch von Mitarbeitern hochgeladene Fotos (HR-Auswahl, sonst zuletzt hochgeladen).
+  // Die alten statischen Bilder wurden entfernt (waren falsch zugeordnet).
   var p=ivPhotos[art];
   if(p && p.variants && p.variants.length){
     if(p.chosen){
@@ -765,8 +789,7 @@ function ivImgSrc(art){
     }
     return p.variants[p.variants.length-1].img;
   }
-  // 2) Fallback: statische Datei
-  return 'icons/items/'+art+'.jpg';
+  return '';
 }
 
 /* Mitarbeiter lädt ein Produktfoto hoch. Mehrere Fotos pro Artikel möglich —
@@ -817,7 +840,13 @@ function ivPhotoUpload(art, dataUrl){
 }
 
 function ivThumb(art){
-  return '<img src="'+ivImgSrc(art)+'" loading="lazy" decoding="async" alt=""'
+  var src=ivImgSrc(art);
+  if(!src){
+    // Noch kein Foto vorhanden -> Platzhalter, der zum Hochladen einlädt
+    return '<div onclick="ivPhotoPick(\''+art+'\')" title="Foto hinzufügen"'
+      +' style="width:44px;height:44px;border-radius:10px;background:var(--brd);flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:15px;opacity:.65;cursor:pointer">📷</div>';
+  }
+  return '<img src="'+src+'" loading="lazy" decoding="async" alt=""'
     +' onclick="ivZoom(\''+art+'\')" onerror="ivThumbFail(this)"'
     +' style="width:44px;height:44px;object-fit:cover;border-radius:10px;background:var(--brd);flex:0 0 auto;cursor:zoom-in">';
 }
@@ -850,6 +879,7 @@ function ivZoom(art){
    sie cached und sie danach auch OFFLINE sofort verfügbar sind. */
 var ivWarmed=false;
 function ivWarmImages(){
+  return;   // Statische Bilder entfernt — Fotos kommen jetzt aus Firestore (bereits offline gecacht)
   if(ivWarmed) return;
   if(typeof INVENTUR_ITEMS==='undefined') return;
   if(navigator.onLine===false) return;
@@ -1195,6 +1225,7 @@ de:{_name:'Deutsch',
  iv_offline_note:'Noch nicht gesendet. Deine Eingaben sind auf diesem Gerät gespeichert und werden automatisch übertragen, sobald wieder Internet da ist. App darf zwischendurch geschlossen werden.',
  iv_offline_saved:'Offline gespeichert — wird automatisch gesendet, sobald Internet da ist.',
  iv_photo_add:'Foto aufnehmen',iv_photo_ok:'✓ Foto hochgeladen — danke!',
+ iv_no_result:'Kein Produkt gefunden.',
  'av-e_title':'📝 Änderungsvereinbarung','av-e_none':'Aktuell nichts zu unterschreiben.',
  'av-e_info':'Bitte die Angaben prüfen. Die Felder können hier nicht geändert werden — bei Rückfragen bitte deinen Gebietsleiter direkt ansprechen.',
  'av-e_lbl_ort':'Ort, Datum','av-e_lbl_sig':'Unterschrift (mit dem Finger zeichnen)',
