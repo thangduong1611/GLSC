@@ -1034,6 +1034,29 @@ window.onerror=function(msg,src,line){
 <!-- ===== INVENTUR ===== -->
 <div id="panel-inventur" class="panel">
   <div class="card">
+    <div class="card-h"><span>🗂 Kategorien &amp; Artikel ordnen</span></div>
+    <p style="font-size:13px;color:var(--mut);margin:0 0 12px">Reihenfolge der Kategorien ändern und Artikel in die richtige Kategorie verschieben. Änderungen gelten sofort für alle Mitarbeiter.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <button class="btn btn-sm" onclick="icShowTab('order')" id="ic-tab-order">↕ Reihenfolge</button>
+      <button class="btn btn-sm" onclick="icShowTab('items')" id="ic-tab-items">📦 Artikel zuordnen</button>
+      <button class="btn btn-sm" onclick="icShowTab('photos')" id="ic-tab-photos">🖼 Produktfotos</button>
+    </div>
+    <div id="ic-order" style="display:none"></div>
+    <div id="ic-items" style="display:none">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <input type="text" id="ic-item-search" placeholder="Artikel suchen (Name oder Nr.)" oninput="icRenderItems()" style="flex:2;min-width:180px">
+        <select id="ic-item-filter" onchange="icRenderItems()" style="flex:1;min-width:150px"></select>
+      </div>
+      <div id="ic-item-list" style="max-height:520px;overflow-y:auto"></div>
+    </div>
+    <div id="ic-photos" style="display:none">
+      <p style="font-size:12.5px;color:var(--mut);margin:0 0 10px">Fotos, die Mitarbeiter hochgeladen haben. Standard ist immer das <strong>zuletzt hochgeladene</strong> Foto — du kannst aber ein anderes auswählen oder eins löschen.</p>
+      <input type="text" id="ic-photo-search" placeholder="Artikel suchen..." oninput="icRenderPhotos()" style="margin-bottom:10px">
+      <div id="ic-photo-list" style="max-height:560px;overflow-y:auto"></div>
+    </div>
+    <div id="ic-status" style="font-size:12px;margin-top:10px;font-weight:600;display:none"></div>
+  </div>
+  <div class="card">
     <div class="card-h"><span>📦 Inventur-Verwaltung</span></div>
     <p style="font-size:13px;color:var(--mut);margin:0 0 14px">Inventur-Links pro Filiale verteilen, Zeitraum festlegen und eingereichte Zählungen einsehen.</p>
 
@@ -4860,6 +4883,168 @@ function invSlug(f){ return (''+f).replace(/\s+/g,'_').toLowerCase(); }
 function invParseMarktNr(url){ var m=(''+url).match(/\/(\d{5,7})-\d{6}-/); return m?m[1]:null; }
 function invParseMonthFromUrl(url){ var m=(''+url).match(/\/\d{5,7}-(\d{6})-/); return m?m[1].slice(0,4)+'-'+m[1].slice(4):null; }
 
+// ═══════════════════════════════════════════════════════
+// INVENTUR-KONFIGURATION: Kategorien ordnen, Artikel zuordnen, Fotos
+// Firestore: inventur_config/current  +  inventur_photos/{art}
+// ═══════════════════════════════════════════════════════
+var icCfg={catOrder:[],itemCat:{}}, icPhotos={}, icCfgUnsub=null, icPhotoUnsub=null, icTab='order';
+
+function icStatus(msg,color){
+  var el=document.getElementById('ic-status'); if(!el) return;
+  el.textContent=msg||''; el.style.color=color||'var(--mut)'; el.style.display=msg?'block':'none';
+  if(msg&&color!=='#C0392B') setTimeout(function(){ if(el.textContent===msg) el.style.display='none'; },2500);
+}
+function icStartListeners(){
+  if(!fbReady||!fbDb) return;
+  if(icCfgUnsub){try{icCfgUnsub();}catch(e){}}
+  icCfgUnsub=fbDb.collection('inventur_config').doc('current').onSnapshot(function(doc){
+    var d=doc.exists?doc.data():null;
+    icCfg={catOrder:(d&&d.catOrder)||[], itemCat:(d&&d.itemCat)||{}};
+    var p=document.getElementById('panel-inventur');
+    if(p&&p.classList.contains('active')) icRenderCurrent();
+  }, function(e){ console.warn('ic cfg', e); icStatus('⚠️ Kein Zugriff auf inventur_config ('+e.code+') — Firestore-Regel fehlt.','#C0392B'); });
+  if(icPhotoUnsub){try{icPhotoUnsub();}catch(e){}}
+  icPhotoUnsub=fbDb.collection('inventur_photos').onSnapshot(function(snap){
+    icPhotos={}; snap.forEach(function(d){ icPhotos[d.id]=d.data()||{}; });
+    var p=document.getElementById('panel-inventur');
+    if(icTab==='photos'&&p&&p.classList.contains('active')) icRenderPhotos();
+  }, function(e){ console.warn('ic photos', e); });
+}
+function icSaveCfg(){
+  if(!fbReady||!fbDb){ icStatus('Keine Verbindung','#C0392B'); return; }
+  fbDb.collection('inventur_config').doc('current').set({
+    catOrder:icCfg.catOrder, itemCat:icCfg.itemCat, at:new Date().toISOString()
+  },{merge:true}).then(function(){ icStatus('✓ Gespeichert — gilt sofort für alle Mitarbeiter','var(--grn)'); })
+   .catch(function(e){ icStatus('Fehler: '+e.message,'#C0392B'); });
+}
+function icEffCatOrder(){
+  var base=(typeof INVENTUR_CATS!=='undefined')?INVENTUR_CATS.map(function(c){return c[0];}):[];
+  var ordered=icCfg.catOrder.filter(function(k){return base.indexOf(k)!==-1;});
+  base.forEach(function(k){ if(ordered.indexOf(k)===-1) ordered.push(k); });
+  return ordered;
+}
+function icCatLabel(key){
+  if(typeof INVENTUR_CATS==='undefined') return key;
+  for(var i=0;i<INVENTUR_CATS.length;i++) if(INVENTUR_CATS[i][0]===key) return INVENTUR_CATS[i][1];
+  return key;
+}
+function icItemCat(it){ return icCfg.itemCat[it[0]] || it[1]; }
+function icShowTab(tab){
+  icTab=tab;
+  ['order','items','photos'].forEach(function(x){
+    var p=document.getElementById('ic-'+x); if(p) p.style.display=(x===tab)?'block':'none';
+    var b=document.getElementById('ic-tab-'+x);
+    if(b){ b.style.background=(x===tab)?'var(--red)':''; b.style.color=(x===tab)?'#fff':''; b.style.borderColor=(x===tab)?'var(--red)':''; }
+  });
+  icRenderCurrent();
+}
+function icRenderCurrent(){
+  if(icTab==='order') icRenderOrder();
+  else if(icTab==='items'){ icPopulateFilter(); icRenderItems(); }
+  else icRenderPhotos();
+}
+function icRenderOrder(){
+  var box=document.getElementById('ic-order'); if(!box) return;
+  var order=icEffCatOrder();
+  box.innerHTML=order.map(function(key,i){
+    var count=(typeof INVENTUR_ITEMS!=='undefined')?INVENTUR_ITEMS.filter(function(it){return icItemCat(it)===key;}).length:0;
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--brd);border-radius:8px;margin-bottom:6px">'
+      +'<span style="font-size:12px;color:var(--mut);min-width:24px;text-align:center;font-weight:600">'+(i+1)+'</span>'
+      +'<div style="flex:1;font-size:14px;font-weight:500">'+icCatLabel(key)+' <span style="font-size:11px;color:var(--mut);font-weight:400">('+count+' Artikel)</span></div>'
+      +'<button class="btn btn-sm" onclick="icMoveCat('+i+',-1)"'+(i===0?' disabled style="opacity:.3"':'')+'>▲</button>'
+      +'<button class="btn btn-sm" onclick="icMoveCat('+i+',1)"'+(i===order.length-1?' disabled style="opacity:.3"':'')+'>▼</button>'
+      +'</div>';
+  }).join('');
+}
+function icMoveCat(i,dir){
+  var order=icEffCatOrder(), j=i+dir;
+  if(j<0||j>=order.length) return;
+  var tmp=order[i]; order[i]=order[j]; order[j]=tmp;
+  icCfg.catOrder=order;
+  icRenderOrder(); icSaveCfg();
+}
+function icPopulateFilter(){
+  var sel=document.getElementById('ic-item-filter'); if(!sel) return;
+  var cur=sel.value;
+  sel.innerHTML='<option value="">Alle Kategorien</option>'+icEffCatOrder().map(function(k){
+    return '<option value="'+k+'">'+icCatLabel(k)+'</option>';
+  }).join('');
+  if(cur) sel.value=cur;
+}
+function icRenderItems(){
+  var box=document.getElementById('ic-item-list'); if(!box||typeof INVENTUR_ITEMS==='undefined') return;
+  var q=(document.getElementById('ic-item-search').value||'').toLowerCase().trim();
+  var filt=document.getElementById('ic-item-filter').value||'';
+  var order=icEffCatOrder();
+  var items=INVENTUR_ITEMS.filter(function(it){
+    if(filt && icItemCat(it)!==filt) return false;
+    if(q && (it[3]+' '+it[4]+' '+it[0]).toLowerCase().indexOf(q)===-1) return false;
+    return true;
+  });
+  if(!items.length){ box.innerHTML='<div style="padding:16px;color:var(--mut);font-size:13px">Keine Artikel gefunden.</div>'; return; }
+  box.innerHTML=items.map(function(it){
+    var art=it[0], cur=icItemCat(it), moved=!!icCfg.itemCat[art];
+    var opts=order.map(function(k){
+      return '<option value="'+k+'"'+(k===cur?' selected':'')+'>'+icCatLabel(k)+'</option>';
+    }).join('');
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:0.5px solid var(--brd)">'
+      +'<span style="font-family:monospace;font-size:11px;color:var(--mut);min-width:66px">'+art+'</span>'
+      +'<div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:500">'+it[3]+(moved?' <span style="font-size:10px;color:var(--grn)">✎</span>':'')+'</div>'
+      +'<div style="font-size:11px;color:var(--mut)">'+it[4]+'</div></div>'
+      +'<select onchange="icSetItemCat(\'' + art + '\',this.value)" style="min-width:150px;font-size:12px">'+opts+'</select>'
+      +'</div>';
+  }).join('');
+}
+function icSetItemCat(art,cat){
+  var orig=null;
+  for(var i=0;i<INVENTUR_ITEMS.length;i++) if(INVENTUR_ITEMS[i][0]===art){ orig=INVENTUR_ITEMS[i][1]; break; }
+  if(cat===orig) delete icCfg.itemCat[art];
+  else icCfg.itemCat[art]=cat;
+  icSaveCfg(); icRenderItems();
+}
+function icRenderPhotos(){
+  var box=document.getElementById('ic-photo-list'); if(!box||typeof INVENTUR_ITEMS==='undefined') return;
+  var q=(document.getElementById('ic-photo-search').value||'').toLowerCase().trim();
+  var items=INVENTUR_ITEMS.filter(function(it){
+    if(!q) return !!icPhotos[it[0]];
+    return (it[3]+' '+it[4]+' '+it[0]).toLowerCase().indexOf(q)!==-1;
+  });
+  if(!items.length){ box.innerHTML='<div style="padding:16px;color:var(--mut);font-size:13px">Noch keine von Mitarbeitern hochgeladenen Fotos.</div>'; return; }
+  box.innerHTML=items.map(function(it){
+    var art=it[0], p=icPhotos[art];
+    var variants=(p&&p.variants)||[];
+    var chosen=(p&&p.chosen)||'';
+    var thumbs=variants.map(function(v,vi){
+      var isAct=(chosen? chosen===v.id : vi===variants.length-1);
+      return '<div style="text-align:center">'
+        +'<img src="'+v.img+'" onclick="icChoosePhoto(\'' + art + '\',\'' + v.id + '\')" style="width:70px;height:70px;object-fit:cover;border-radius:8px;cursor:pointer;border:3px solid '+(isAct?'var(--grn)':'transparent')+'">'
+        +'<div style="font-size:9.5px;color:var(--mut);margin-top:2px;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(v.by||'')+'</div>'
+        +'<button class="btn btn-sm" style="font-size:10px;padding:2px 6px;margin-top:2px" onclick="icDeletePhoto(\'' + art + '\',\'' + v.id + '\')">🗑</button>'
+        +'</div>';
+    }).join('');
+    return '<div style="padding:10px 4px;border-bottom:0.5px solid var(--brd)">'
+      +'<div style="font-size:13.5px;font-weight:500">'+it[3]+' <span style="font-family:monospace;font-size:11px;color:var(--mut)">'+art+'</span></div>'
+      +'<div style="font-size:11px;color:var(--mut);margin-bottom:6px">'+it[4]+'</div>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap">'+(thumbs||'<span style="font-size:12px;color:var(--mut)">— kein Foto —</span>')+'</div>'
+      +'</div>';
+  }).join('');
+}
+function icChoosePhoto(art,vid){
+  fbDb.collection('inventur_photos').doc(art).set({chosen:vid},{merge:true})
+    .then(function(){ icStatus('✓ Foto ausgewählt','var(--grn)'); })
+    .catch(function(e){ icStatus('Fehler: '+e.message,'#C0392B'); });
+}
+function icDeletePhoto(art,vid){
+  var p=icPhotos[art]; if(!p) return;
+  if(!confirm('Dieses Foto löschen?')) return;
+  var variants=(p.variants||[]).filter(function(v){return v.id!==vid;});
+  var upd={variants:variants};
+  if(p.chosen===vid) upd.chosen='';
+  fbDb.collection('inventur_photos').doc(art).set(upd,{merge:true})
+    .then(function(){ icStatus('✓ Gelöscht','var(--grn)'); })
+    .catch(function(e){ icStatus('Fehler: '+e.message,'#C0392B'); });
+}
+
 function invOnShow(){
   if(typeof INVENTUR_ITEMS==='undefined'){ toast('inventur-data.js nicht geladen!',true); return; }
   var badge=document.getElementById('inv-artikel-badge'); if(badge) badge.textContent=INVENTUR_ITEMS.length+' Artikel';
@@ -4870,9 +5055,11 @@ function invOnShow(){
   if(fbReady&&fbDb) invStartListeners();
   else if(typeof fbInit==='function' && fbEnabled && fbEnabled()) fbInit(function(){ invStartListeners(); });
   invRenderAll();
+  icShowTab(icTab||'order');
 }
 
 function invStartListeners(){
+  icStartListeners();
   if(!fbReady||!fbDb) return;
   // Storemap (einmalig)
   if(!invMapUnsub){

@@ -393,6 +393,7 @@ window.onerror=function(msg,src,line){
       <div id="iv-info" style="font-size:13px;color:var(--mut);margin-bottom:10px">—</div>
       <div id="iv-period" style="font-size:12px;margin-bottom:12px"></div>
 
+      <div id="iv-sync-note" style="display:none;background:#FFF7E6;border:1px solid #F0C070;color:#8A5A00;border-radius:8px;padding:9px 11px;font-size:12.5px;font-weight:600;margin-bottom:10px;line-height:1.45"></div>
       <div id="iv-progress-wrap" style="margin-bottom:12px;display:none">
         <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-bottom:5px">
           <span data-i18n="iv_progress">Fortschritt</span><span id="iv-progress-txt">0 / 0</span>
@@ -466,6 +467,13 @@ function fbInit(onReady){
   try{
     if(!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
     fbDb=firebase.firestore();
+    // OFFLINE-PERSISTENZ: Schreibvorgänge werden lokal gepuffert und automatisch
+    // synchronisiert, sobald wieder Netz da ist (wichtig im Lager ohne Empfang).
+    try{
+      fbDb.enablePersistence({synchronizeTabs:true}).catch(function(err){
+        console.warn('FB persistence nicht aktiv:', err && err.code);
+      });
+    }catch(e){ console.warn('FB persistence Fehler', e); }
     firebase.auth().signInAnonymously().then(function(){ fbReady=true; if(onReady)onReady(); })
       .catch(function(e){ console.warn('FB auth fehlgeschlagen', e); });
     return true;
@@ -563,17 +571,70 @@ function maNewsMarkRead(){
    - Zähl-Formular: 11 Gruppen (Tabs), zweisprachig, Entwurf + Senden
    - Eine Zählung pro Filiale (gemeinsam): inventur_counts/{month__slug}
    ════════════════════════════════════════════════ */
-var ivMonth=null, ivPeriod=null, ivCounts={}, ivCat='fisch', ivLoaded=false;
+var ivMonth=null, ivPeriod=null, ivCounts={}, ivCat='fisch', ivLoaded=false, ivLocalAt='';
 var ivPeriodUnsub=null, ivCountUnsub=null, ivSaveTimer=null;
+var ivCfg={catOrder:[],itemCat:{}}, ivPhotos={}, ivCfgUnsub=null, ivPhotoUnsub=null;
+// Effektive Kategorie/Reihenfolge (HR-Override berücksichtigen)
+function ivItemCat(it){ return ivCfg.itemCat[it[0]] || it[1]; }
+function ivEffCats(){
+  var base=(typeof INVENTUR_CATS!=='undefined')?INVENTUR_CATS.slice():[];
+  var keys=base.map(function(c){return c[0];});
+  var ordered=ivCfg.catOrder.filter(function(k){return keys.indexOf(k)!==-1;});
+  keys.forEach(function(k){ if(ordered.indexOf(k)===-1) ordered.push(k); });
+  return ordered.map(function(k){
+    for(var i=0;i<base.length;i++) if(base[i][0]===k) return base[i];
+    return null;
+  }).filter(Boolean);
+}
 
 function ivCurMonth(){ var n=new Date(); return n.getFullYear()+'-'+('0'+(n.getMonth()+1)).slice(-2); }
 function ivSlug(f){ return (''+f).replace(/\s+/g,'_').toLowerCase(); }
 function ivDocId(sess){ return ivMonth+'__'+ivSlug(sess.filiale||''); }
 
+/* ── OFFLINE-SCHUTZ ──────────────────────────────────────────
+   Jede Eingabe wird SOFORT lokal gespeichert (localStorage).
+   Damit gehen im Lager ohne Netz keine Daten verloren, auch wenn
+   die App neu lädt. Sync mit Firestore passiert zusätzlich. */
+function ivLocalKey(sess){ return 'sc_iv_'+ivMonth+'__'+ivSlug(sess.filiale||''); }
+function ivLocalSave(){
+  var sess=maSession(); if(!sess||!ivMonth) return;
+  try{
+    localStorage.setItem(ivLocalKey(sess), JSON.stringify({
+      counts: ivCleanCounts(), at: new Date().toISOString()
+    }));
+  }catch(e){ console.warn('iv local save', e); }
+}
+function ivLocalLoad(){
+  var sess=maSession(); if(!sess||!ivMonth) return null;
+  try{
+    var raw=localStorage.getItem(ivLocalKey(sess));
+    return raw?JSON.parse(raw):null;
+  }catch(e){ return null; }
+}
+function ivLocalClear(){
+  var sess=maSession(); if(!sess||!ivMonth) return;
+  try{ localStorage.removeItem(ivLocalKey(sess)); }catch(e){}
+}
+/* Zeigt an, ob noch ungesendete lokale Daten vorliegen */
+function ivSyncBadge(pending){
+  var el=document.getElementById('iv-sync-note'); if(!el) return;
+  if(pending){
+    el.style.display='block';
+    el.textContent='📴 '+t('iv_offline_note');
+  } else { el.style.display='none'; }
+}
+
 function ivInit(sess){
   if(typeof INVENTUR_ITEMS==='undefined') return;        // data noch nicht geladen
   if(!sess||!fbReady||!fbDb) return;
   ivMonth=ivCurMonth();
+  // 1) ZUERST lokalen Stand laden (offline-fest, geht nie verloren)
+  var loc=ivLocalLoad();
+  if(loc&&loc.counts){
+    ivCounts=Object.assign({}, loc.counts);
+    ivLocalAt=loc.at||'';
+    ivLoaded=true;
+  }
   // Zeitraum dieses Monats beobachten → Tab ein-/ausblenden
   if(ivPeriodUnsub){try{ivPeriodUnsub();}catch(e){}}
   ivPeriodUnsub=fbDb.collection('inventur_period').doc(ivMonth).onSnapshot(function(doc){
@@ -584,11 +645,33 @@ function ivInit(sess){
   if(ivCountUnsub){try{ivCountUnsub();}catch(e){}}
   ivCountUnsub=fbDb.collection('inventur_counts').doc(ivDocId(sess)).onSnapshot(function(doc){
     var d=doc.exists?doc.data():null;
-    // Remote-Stand übernehmen, AUSSER der Nutzer tippt gerade (ivCounts._dirty)
-    if(d&&d.counts&&!ivCounts._dirty){ ivCounts=Object.assign({},d.counts); }
+    // Remote-Stand nur übernehmen, wenn der Nutzer NICHT gerade tippt UND
+    // der Remote-Stand neuer ist als der lokale (sonst Datenverlust!).
+    if(d&&d.counts&&!ivCounts._dirty){
+      var remoteAt=d.at||'';
+      if(!ivLocalAt || remoteAt>=ivLocalAt){
+        ivCounts=Object.assign({},d.counts);
+        ivLocalAt=remoteAt;
+        ivLocalSave();
+      }
+    }
     ivLoaded=true;
+    ivSyncBadge(!!ivCounts._dirty);
     if(document.getElementById('p-iv') && document.getElementById('p-iv').classList.contains('active')) ivRender();
   }, function(e){ console.warn('iv count', e); });
+  // Konfiguration (Kategorie-Reihenfolge / Artikel-Zuordnung) von HR beobachten
+  if(ivCfgUnsub){try{ivCfgUnsub();}catch(e){}}
+  ivCfgUnsub=fbDb.collection('inventur_config').doc('current').onSnapshot(function(doc){
+    var d=doc.exists?doc.data():null;
+    ivCfg={catOrder:(d&&d.catOrder)||[], itemCat:(d&&d.itemCat)||{}};
+    if(document.getElementById('p-iv') && document.getElementById('p-iv').classList.contains('active')) ivRender();
+  }, function(e){ console.warn('iv cfg', e); });
+  // Produktfotos beobachten (von Mitarbeitern hochgeladen)
+  if(ivPhotoUnsub){try{ivPhotoUnsub();}catch(e){}}
+  ivPhotoUnsub=fbDb.collection('inventur_photos').onSnapshot(function(snap){
+    ivPhotos={}; snap.forEach(function(d){ ivPhotos[d.id]=d.data()||{}; });
+    if(document.getElementById('p-iv') && document.getElementById('p-iv').classList.contains('active')) ivRenderList();
+  }, function(e){ console.warn('iv photos', e); });
 }
 
 // Aktiv = heute zwischen start und end (inklusive)
@@ -638,8 +721,8 @@ function ivRenderCats(){
   var lang=(typeof MA_LANG!=='undefined'?MA_LANG:'de');
   var idx={de:1,vi:2,en:3,th:4}[lang]||1;
   // nur Kategorien mit Artikeln
-  var present={}; INVENTUR_ITEMS.forEach(function(it){ present[it[1]]=true; });
-  box.innerHTML=INVENTUR_CATS.filter(function(c){return present[c[0]];}).map(function(c){
+  var present={}; INVENTUR_ITEMS.forEach(function(it){ present[ivItemCat(it)]=true; });
+  box.innerHTML=ivEffCats().filter(function(c){return present[c[0]];}).map(function(c){
     var on=c[0]===ivCat;
     return '<button onclick="ivSetCat(\''+c[0]+'\')" style="white-space:nowrap;border-radius:99px;padding:6px 12px;font-size:12px;border:1px solid '+(on?'var(--grn)':'var(--brd)')+';background:'+(on?'var(--grn)':'var(--surf)')+';color:'+(on?'#fff':'var(--mut)')+';cursor:pointer">'+c[idx]+'</button>';
   }).join('');
@@ -650,7 +733,7 @@ function ivRenderList(){
   var box=document.getElementById('iv-list'); if(!box) return;
   var lang=(typeof MA_LANG!=='undefined'?MA_LANG:'de');
   var li={de:3,vi:4,en:5,th:6}[lang]||3;          // Index der Sprachspalte
-  var items=INVENTUR_ITEMS.filter(function(it){return it[1]===ivCat;});
+  var items=INVENTUR_ITEMS.filter(function(it){return ivItemCat(it)===ivCat;});
   box.innerHTML=items.map(function(it){
     var art=it[0], einheit=it[2], de=it[3], tr=it[li];
     var val=ivCounts[art]!==undefined?ivCounts[art]:'';
@@ -658,7 +741,8 @@ function ivRenderList(){
     return '<div style="display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:0.5px solid var(--brd)">'
       +ivThumb(art)
       +'<div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">'+de+'</div>'+trLine
-      +'<div style="font-size:11px;color:var(--mut);margin-top:1px">Art. '+art+'</div></div>'
+      +'<div style="font-size:11px;color:var(--mut);margin-top:1px">Art. '+art
+      +' · <span onclick="ivPhotoPick(\''+art+'\')" style="color:var(--grn);cursor:pointer;font-weight:600">📷 '+t('iv_photo_add')+'</span></div></div>'
       +'<input type="number" inputmode="decimal" min="0" value="'+val+'" placeholder="0" data-art="'+art+'" oninput="ivCellInput(this)" style="width:62px;text-align:center;font-size:18px;font-weight:500">'
       +'<div style="width:46px;font-size:12px;color:var(--mut);font-weight:500">'+einheit+'</div>'
       +'</div>';
@@ -672,7 +756,65 @@ function ivRenderList(){
    -> Keine Änderung an inventur-data.js nötig. Fehlt ein Bild,
       wird ein neutraler Platzhalter angezeigt (Layout bleibt heil).
    ════════════════════════════════════════════════════════════ */
-function ivImgSrc(art){ return 'icons/items/'+art+'.jpg'; }
+function ivImgSrc(art){
+  // 1) Von Mitarbeitern hochgeladenes Foto (HR-Auswahl, sonst zuletzt hochgeladen)
+  var p=ivPhotos[art];
+  if(p && p.variants && p.variants.length){
+    if(p.chosen){
+      for(var i=0;i<p.variants.length;i++) if(p.variants[i].id===p.chosen) return p.variants[i].img;
+    }
+    return p.variants[p.variants.length-1].img;
+  }
+  // 2) Fallback: statische Datei
+  return 'icons/items/'+art+'.jpg';
+}
+
+/* Mitarbeiter lädt ein Produktfoto hoch. Mehrere Fotos pro Artikel möglich —
+   angezeigt wird das zuletzt hochgeladene (oder das von HR ausgewählte). */
+function ivPhotoPick(art){
+  var inp=document.createElement('input');
+  inp.type='file'; inp.accept='image/*'; inp.capture='environment';
+  inp.onchange=function(ev){
+    var f=ev.target.files[0]; if(!f) return;
+    var r=new FileReader();
+    r.onload=function(e){
+      var im=new Image();
+      im.onload=function(){
+        var maxW=520, sc=Math.min(1, maxW/im.width);
+        var cv=document.createElement('canvas');
+        cv.width=Math.round(im.width*sc); cv.height=Math.round(im.height*sc);
+        cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+        var data=cv.toDataURL('image/jpeg',0.7);
+        if(data.length>380000) data=cv.toDataURL('image/jpeg',0.5);
+        ivPhotoUpload(art, data);
+      };
+      im.src=e.target.result;
+    };
+    r.readAsDataURL(f);
+  };
+  inp.click();
+}
+function ivPhotoUpload(art, dataUrl){
+  var sess=maSession();
+  if(!sess||!fbReady||!fbDb){ toast(t('err_net'),true); return; }
+  var variant={
+    id: 'v'+Date.now(),
+    img: dataUrl,
+    by: sess.name||'',
+    at: new Date().toISOString()
+  };
+  var ref=fbDb.collection('inventur_photos').doc(art);
+  ref.get().then(function(doc){
+    var cur=(doc.exists&&doc.data().variants)||[];
+    cur.push(variant);
+    if(cur.length>5) cur=cur.slice(cur.length-5);   // max. 5 Varianten je Artikel
+    return ref.set({variants:cur, lastAt:variant.at, lastBy:variant.by},{merge:true});
+  }).then(function(){
+    toast(t('iv_photo_ok'));
+  }).catch(function(e){
+    toast(t('err_net'),true); console.warn('iv photo upload', e);
+  });
+}
 
 function ivThumb(art){
   return '<img src="'+ivImgSrc(art)+'" loading="lazy" decoding="async" alt=""'
@@ -728,6 +870,8 @@ function ivCellInput(inp){
   if(v==='') delete ivCounts[art];
   else ivCounts[art]=parseFloat(v.replace(',','.'))||0;
   ivCounts._dirty=true;
+  ivLocalSave();          // SOFORT lokal sichern — überlebt Reload/Offline
+  ivSyncBadge(true);
   ivRenderProgress();
   // Auto-Entwurf speichern (debounced)
   clearTimeout(ivSaveTimer); ivSaveTimer=setTimeout(function(){ ivSaveDraft(true); }, 1500);
@@ -749,24 +893,34 @@ function ivCleanCounts(){
 
 function ivSaveDraft(silent){
   var sess=maSession(); if(!sess||!fbReady||!fbDb) return;
+  var now=new Date().toISOString();
+  ivLocalAt=now; ivLocalSave();
   fbDb.collection('inventur_counts').doc(ivDocId(sess)).set({
     filiale:sess.filiale||'', month:ivMonth, counts:ivCleanCounts(),
-    by:sess.name||'', at:new Date().toISOString(), submitted:false
+    by:sess.name||'', at:now, submitted:false
   },{merge:true}).then(function(){
     ivCounts._dirty=false;
+    ivSyncBadge(false);
     if(!silent) toast(t('iv_saved'));
-  }).catch(function(e){ if(!silent) toast(t('err_net'),true); console.warn('iv save', e); });
+  }).catch(function(e){
+    // Offline: Daten bleiben lokal + in der Firestore-Warteschlange
+    if(!silent) toast(t('iv_offline_saved'));
+    console.warn('iv save', e);
+  });
 }
 
 function ivSubmit(){
   var sess=maSession(); if(!sess||!fbReady||!fbDb) return;
+  var now=new Date().toISOString();
+  ivLocalAt=now; ivLocalSave();
   fbDb.collection('inventur_counts').doc(ivDocId(sess)).set({
     filiale:sess.filiale||'', month:ivMonth, counts:ivCleanCounts(),
-    by:sess.name||'', at:new Date().toISOString(), submitted:true
+    by:sess.name||'', at:now, submitted:true
   },{merge:true}).then(function(){
     ivCounts._dirty=false;
+    ivSyncBadge(false);
     toast(t('iv_sent'));
-  }).catch(function(e){ toast(t('err_net'),true); console.warn('iv submit', e); });
+  }).catch(function(e){ toast(t('iv_offline_saved'),true); console.warn('iv submit', e); });
 }
 
 /* ════════════════════════════════════════════════
@@ -1038,6 +1192,9 @@ function maWaNumber(){var b=maLoadBundle();return ((b&&b.managerWa)||localStorag
 var I18N={
 de:{_name:'Deutsch',
  nav_dp:'Dienstplan',nav_ul:'Urlaub',nav_kr:'Krankmeldung',nav_bl:'Belege',nav_av:'Vertrag',nav_nw:'Infos',
+ iv_offline_note:'Noch nicht gesendet. Deine Eingaben sind auf diesem Gerät gespeichert und werden automatisch übertragen, sobald wieder Internet da ist. App darf zwischendurch geschlossen werden.',
+ iv_offline_saved:'Offline gespeichert — wird automatisch gesendet, sobald Internet da ist.',
+ iv_photo_add:'Foto aufnehmen',iv_photo_ok:'✓ Foto hochgeladen — danke!',
  'av-e_title':'📝 Änderungsvereinbarung','av-e_none':'Aktuell nichts zu unterschreiben.',
  'av-e_info':'Bitte die Angaben prüfen. Die Felder können hier nicht geändert werden — bei Rückfragen bitte deinen Gebietsleiter direkt ansprechen.',
  'av-e_lbl_ort':'Ort, Datum','av-e_lbl_sig':'Unterschrift (mit dem Finger zeichnen)',
