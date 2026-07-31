@@ -1172,6 +1172,12 @@ window.onerror=function(msg,src,line){
         </div>
       </div>
       <datalist id="dp-presets"><option value="Frei"><option value="Urlaub"><option value="Krank"><option value="05:30-11:30"><option value="07:00-13:00"><option value="07:00-14:00"><option value="09:00-15:00"><option value="12:00-18:00"><option value="16:00-19:00"><option value="08:00-14:00"></datalist>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <button class="btn btn-sm" onclick="dpSuggest()" style="background:#185FA5;color:#fff;border-color:#185FA5">💡 Vorschlag aus Vormonat</button>
+        <button class="btn btn-sm" onclick="dpCheckConflicts(false)">🔍 Doppelbelegung prüfen</button>
+      </div>
+      <p id="dp-sug-status" style="font-size:12.5px;line-height:1.5;margin:0 0 8px;display:none"></p>
+      <div id="dp-conflict-box" style="display:none;background:#FFF7E6;border:1px solid #F0C070;color:#8A5A00;border-radius:8px;padding:10px 12px;font-size:12.5px;line-height:1.5;margin-bottom:10px"></div>
       <div id="dp-weeks-wrap"></div>
       <div id="dp-sig-opt" style="margin-bottom:10px"><label style="display:flex;align-items:center;gap:9px;cursor:pointer;padding:9px 12px;background:var(--bg);border:1px solid var(--brd);border-radius:var(--rs)"><input type="checkbox" id="dp-sig-check" style="width:16px;height:16px;accent-color:var(--red)"><span style="font-size:13px">✍️ <strong>Unterschrift des Gebietsleiters</strong> auf PDF anfügen</span></label></div>      <div class="btn-row">
         <button class="btn btn-red" onclick="dpExportPDF()" style="flex:1;justify-content:center">⬇ PDF herunterladen</button>
@@ -3577,6 +3583,191 @@ function dpBuildPDFDoc(){
 // GESAMTÜBERSICHT: alle Filialen, 2 Monate (Dienstplan + Urlaub)
 // + Mitarbeiter-Cluster (welcher MA in welchen Filialen)
 // ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// DIENSTPLAN-VORSCHLAG (aus Vormonat) + KONFLIKTPRÜFUNG
+// ═══════════════════════════════════════════════════════
+function dpPrevMonth(m){
+  var p=m.split('-'), y=+p[0], mo=+p[1]-1;
+  var d=new Date(y, mo-1, 1);
+  return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2);
+}
+function dpSugStatus(html,color){
+  var el=document.getElementById('dp-sug-status'); if(!el) return;
+  el.innerHTML=html||''; el.style.color=color||'var(--mut)'; el.style.display=html?'block':'none';
+}
+// "07:00-13:00" -> {s:Minuten, e:Minuten}; sonst null
+function dpParseRange(v){
+  var m=(''+v).match(/(\d{1,2})[:.](\d{2})\s*[-–—]\s*(\d{1,2})[:.](\d{2})/);
+  if(!m) return null;
+  var s=(+m[1])*60+(+m[2]), e=(+m[3])*60+(+m[4]);
+  if(e<=s) e+=1440;                       // über Mitternacht
+  return {s:s, e:e};
+}
+function dpIsWorkValue(v){
+  if(!v) return false;
+  var s=(''+v).trim();
+  return s!=='' && s!=='Frei' && s!=='Urlaub' && s!=='Krank';
+}
+// Baut aus dem Vormonat je Mitarbeiter ein Wochentags-Muster
+function dpBuildPattern(prevData){
+  var pat={};                              // pat[ek][weekday] = häufigster Wert
+  if(!prevData || !prevData.shifts) return pat;
+  Object.keys(prevData.shifts).forEach(function(ek){
+    var byDay={};
+    Object.keys(prevData.shifts[ek]).forEach(function(dt){
+      var v=prevData.shifts[ek][dt];
+      if(!dpIsWorkValue(v)) return;
+      var wd=dpParse(dt).getDay();
+      if(!byDay[wd]) byDay[wd]={};
+      byDay[wd][v]=(byDay[wd][v]||0)+1;
+    });
+    pat[ek]={};
+    Object.keys(byDay).forEach(function(wd){
+      var best=null, bestN=0;
+      Object.keys(byDay[wd]).forEach(function(v){
+        if(byDay[wd][v]>bestN){ best=v; bestN=byDay[wd][v]; }
+      });
+      if(best) pat[ek][wd]=best;
+    });
+  });
+  return pat;
+}
+function dpSuggest(){
+  var f=dpGetFiliale(), m=document.getElementById('dp-month').value;
+  if(!f||!m){ dpSugStatus('Bitte zuerst Filiale und Monat wählen.','#C0392B'); return; }
+  if(!fbReady||!fbDb){ dpSugStatus('Keine Firebase-Verbindung.','#C0392B'); return; }
+  var pm=dpPrevMonth(m);
+  dpSugStatus('Vormonat ('+pm+') wird geladen...');
+  fbDb.collection('plan').doc(fbSlug(f)+'__'+pm).get().then(function(doc){
+    if(!doc.exists){ dpSugStatus('⚠️ Für '+pm+' existiert kein Dienstplan in dieser Filiale — kein Vorschlag möglich.','#B7791F'); return; }
+    var prev=doc.data()||{};
+    var pat=dpBuildPattern(prev);
+    if(!Object.keys(pat).length){ dpSugStatus('⚠️ Im Vormonat sind keine Arbeitszeiten hinterlegt.','#B7791F'); return; }
+
+    dpSaveFromDOM();                                  // aktuelle Eingaben sichern
+    var abs=dpAbsenceFor(f);                          // genehmigter Urlaub / Krank
+    var weeks=dpGetWeeks(m);
+    var filled=0, skippedUrlaub=0, skippedFilled=0, noPattern=0;
+
+    dpEmployees.forEach(function(emp){
+      var ek=dpEmpKey(emp), eid=''+(emp.id||'');
+      if(!pat[ek]){ noPattern++; return; }
+      weeks.forEach(function(wk){
+        wk.dates.forEach(function(dt){
+          if(dt.slice(0,7)!==m) return;               // nur Tage dieses Monats
+          // 1) Urlaub/Krank NIE überschreiben
+          if(abs[eid] && abs[eid][dt]){ skippedUrlaub++; return; }
+          var cur=(dpShifts[ek]&&dpShifts[ek][dt])||'';
+          if(cur==='Urlaub'||cur==='Krank'){ skippedUrlaub++; return; }
+          // 2) bereits ausgefüllte Zellen nicht überschreiben
+          if(cur.trim()!==''){ skippedFilled++; return; }
+          var wd=dpParse(dt).getDay();
+          var v=pat[ek][wd];
+          if(!v) return;
+          if(!dpShifts[ek]) dpShifts[ek]={};
+          dpShifts[ek][dt]=v;
+          filled++;
+        });
+      });
+    });
+
+    dpDirty=true;
+    dpRenderWeeks();
+    var msg='✓ <strong>'+filled+'</strong> Zellen vorgeschlagen (aus '+pm+').';
+    if(skippedUrlaub) msg+=' '+skippedUrlaub+'× Urlaub/Krank übersprungen.';
+    if(skippedFilled) msg+=' '+skippedFilled+'× bereits belegt.';
+    if(noPattern) msg+=' '+noPattern+' MA ohne Vormonats-Daten.';
+    msg+='<br><em>Nur ein Vorschlag — bitte prüfen und anpassen, danach speichern.</em>';
+    dpSugStatus(msg,'var(--grn)');
+    dpCheckConflicts(true);
+  }).catch(function(e){ dpSugStatus('Fehler: '+e.message,'#C0392B'); });
+}
+
+// ── Konfliktprüfung: gleicher MA, gleicher Tag, 2 Filialen, Zeitüberschneidung ──
+function dpCheckConflicts(silent){
+  var m=document.getElementById('dp-month').value;
+  var cur=dpGetFiliale();
+  if(!m){ return; }
+  if(!fbReady||!fbDb){ if(!silent) dpSugStatus('Keine Firebase-Verbindung.','#C0392B'); return; }
+  dpSaveFromDOM();
+  var fils=ovAllFilialen();
+  if(cur && fils.indexOf(cur)===-1) fils.push(cur);
+  if(!silent) dpSugStatus('Konflikte werden geprüft...');
+
+  var jobs=fils.map(function(f){
+    if(f===cur){
+      // aktueller (evtl. ungespeicherter) Stand aus dem Browser
+      return Promise.resolve({filiale:f, data:{employees:dpEmployees, shifts:dpShifts}});
+    }
+    return fbDb.collection('plan').doc(fbSlug(f)+'__'+m).get()
+      .then(function(d){ return {filiale:f, data:d.exists?(d.data()||{}):null}; })
+      .catch(function(){ return {filiale:f, data:null}; });
+  });
+
+  Promise.all(jobs).then(function(all){
+    // byDate[datum][empId] = [{filiale, val, range}]
+    var byDate={};
+    all.forEach(function(p){
+      if(!p.data || !p.data.shifts) return;
+      var emps=p.data.employees||[];
+      var idByKey={};
+      emps.forEach(function(e){ idByKey[dpEmpKey(e)]=''+(e.id||''); });
+      Object.keys(p.data.shifts).forEach(function(ek){
+        var eid=idByKey[ek] || (ek.split('-')[0]||'');
+        if(!eid) return;
+        Object.keys(p.data.shifts[ek]).forEach(function(dt){
+          if(dt.slice(0,7)!==m) return;
+          var v=p.data.shifts[ek][dt];
+          if(!dpIsWorkValue(v)) return;
+          var r=dpParseRange(v);
+          if(!byDate[dt]) byDate[dt]={};
+          if(!byDate[dt][eid]) byDate[dt][eid]=[];
+          byDate[dt][eid].push({filiale:p.filiale, val:v, range:r, name:(ek.split('-').slice(1).join('-'))});
+        });
+      });
+    });
+
+    var conflicts=[];
+    Object.keys(byDate).sort().forEach(function(dt){
+      Object.keys(byDate[dt]).forEach(function(eid){
+        var list=byDate[dt][eid];
+        if(list.length<2) return;
+        for(var i=0;i<list.length;i++){
+          for(var j=i+1;j<list.length;j++){
+            var a=list[i], b=list[j];
+            if(a.filiale===b.filiale) continue;
+            var overlap;
+            if(a.range && b.range) overlap=(a.range.s < b.range.e && b.range.s < a.range.e);
+            else overlap=true;                       // unklare Zeitangabe -> zur Sicherheit melden
+            if(overlap){
+              conflicts.push({date:dt, name:a.name||b.name||eid, id:eid,
+                a:a.filiale+' ('+a.val+')', b:b.filiale+' ('+b.val+')',
+                sure:!!(a.range&&b.range)});
+            }
+          }
+        }
+      });
+    });
+
+    if(!conflicts.length){
+      var base=(!silent)?'✓ Keine Doppelbelegungen gefunden.':'';
+      if(!silent) dpSugStatus(base,'var(--grn)');
+      var cEl=document.getElementById('dp-conflict-box'); if(cEl) cEl.style.display='none';
+      return;
+    }
+    var html='<strong>⚠️ '+conflicts.length+' mögliche Doppelbelegung(en):</strong><ul style="margin:6px 0 0;padding-left:18px">';
+    conflicts.slice(0,40).forEach(function(c){
+      var dd=dpParse(c.date).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+      html+='<li style="margin-bottom:3px">'+dd+' — <strong>'+c.name+'</strong>: '+c.a+' ↔ '+c.b
+           +(c.sure?'':' <em>(Zeit nicht eindeutig)</em>')+'</li>';
+    });
+    if(conflicts.length>40) html+='<li>… und '+(conflicts.length-40)+' weitere</li>';
+    html+='</ul>';
+    var box=document.getElementById('dp-conflict-box');
+    if(box){ box.innerHTML=html; box.style.display='block'; }
+  }).catch(function(e){ dpSugStatus('Fehler bei Konfliktprüfung: '+e.message,'#C0392B'); });
+}
+
 function ovStatus(msg,color){
   var el=document.getElementById('ov-status'); if(!el) return;
   el.textContent=msg||''; el.style.color=color||'var(--mut)';
