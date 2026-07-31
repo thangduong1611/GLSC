@@ -1181,6 +1181,16 @@ window.onerror=function(msg,src,line){
       </div>
       <p id="dp-status" style="font-size:12px;color:var(--mut);text-align:center;margin-top:8px"></p>
     </div>
+    <div class="card">
+      <div class="card-h"><span>📊 Gesamtübersicht (2 Monate)</span></div>
+      <p style="font-size:13px;color:var(--mut);margin:0 0 12px">Exportiert <strong>alle Filialen</strong> mit Dienstplan und genehmigtem Urlaub für den aktuellen und den nächsten Monat — plus eine Übersicht, welcher Mitarbeiter in welchen Filialen eingesetzt ist.</p>
+      <div id="ov-months" style="font-size:12.5px;color:var(--mut);margin-bottom:10px"></div>
+      <div class="btn-row">
+        <button class="btn btn-red" onclick="ovExportPDF()" style="flex:1;justify-content:center">⬇ PDF herunterladen</button>
+        <button class="btn" onclick="ovExportCSV()">📄 CSV (Excel)</button>
+      </div>
+      <p id="ov-status" style="font-size:12px;color:var(--mut);text-align:center;margin-top:8px"></p>
+    </div>
   </div>
   <div id="dp-mode-route" style="display:none">
     <div class="card">
@@ -1267,6 +1277,7 @@ RP_CL=getRPCL();
   if(id==='dienstplan'){RP_CL=getRPCL();dpOnShow();}
   if(id==='settings'){renderRpGrpList();applySettings();renderMkStores();renderSavedEmails();var wa=document.getElementById('st-manager-wa');if(wa)wa.value=localStorage.getItem('sc_manager_wa')||'';filMetaRender();}
   if(id==='stunden'){stdPopulateFilialeSelect();}
+  if(id==='dienstplan'){ovRenderMonthsHint();}
   if(id==='inventur'){invOnShow();}
   if(id==='belege'){blPopulateFilFilter();blRenderAdmin();}
   if(id==='av'){avPopulateDropdown();avRenderList();}
@@ -3562,6 +3573,261 @@ function dpBuildPDFDoc(){
   var fname='Dienstplan_'+f.replace(/\s+/g,'_')+'_'+m+'.pdf';
   return {doc:doc, fname:fname, f:f, m:m};
 }
+// ═══════════════════════════════════════════════════════
+// GESAMTÜBERSICHT: alle Filialen, 2 Monate (Dienstplan + Urlaub)
+// + Mitarbeiter-Cluster (welcher MA in welchen Filialen)
+// ═══════════════════════════════════════════════════════
+function ovStatus(msg,color){
+  var el=document.getElementById('ov-status'); if(!el) return;
+  el.textContent=msg||''; el.style.color=color||'var(--mut)';
+}
+function ovTwoMonths(){
+  var n=new Date();
+  function key(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2); }
+  var m1=new Date(n.getFullYear(), n.getMonth(), 1);
+  var m2=new Date(n.getFullYear(), n.getMonth()+1, 1);
+  return [key(m1), key(m2)];
+}
+function ovMonthLabel(m){
+  var p=m.split('-'), names=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+  return names[parseInt(p[1],10)-1]+' '+p[0];
+}
+function ovMonthDates(m){
+  var p=m.split('-'), y=+p[0], mo=+p[1]-1;
+  var last=new Date(y, mo+1, 0).getDate(), out=[];
+  for(var d=1; d<=last; d++) out.push(y+'-'+('0'+(mo+1)).slice(-2)+'-'+('0'+d).slice(-2));
+  return out;
+}
+function ovRenderMonthsHint(){
+  var el=document.getElementById('ov-months'); if(!el) return;
+  var ms=ovTwoMonths();
+  el.textContent='Zeitraum: '+ovMonthLabel(ms[0])+' + '+ovMonthLabel(ms[1]);
+}
+// Alle bekannten Filialen (aus Mitarbeiterdaten)
+function ovAllFilialen(){
+  var emps=loadEmps().filter(function(e){return e.active!==false;});
+  var set={};
+  emps.forEach(function(e){
+    if(e.filiale) set[e.filiale]=true;
+    (e.zweit||[]).forEach(function(z){ if(z) set[z]=true; });
+  });
+  return Object.keys(set).sort();
+}
+// Urlaub (genehmigt) je Mitarbeiter-ID -> {datum:'Urlaub'}
+function ovUrlaubMap(){
+  var ov={};
+  (typeof fbDecided!=='undefined'?fbDecided:[]).forEach(function(r){
+    if(r.status!=='approved') return;
+    var id=''+(r.empId||''); if(!id) return;
+    if(!ov[id]) ov[id]={};
+    var s=new Date(r.from), e=new Date(r.to);
+    for(var d=new Date(s); d<=e; d.setDate(d.getDate()+1)) ov[id][dpISO(d)]='Urlaub';
+  });
+  return ov;
+}
+// Lädt alle Pläne (Filiale x Monat) aus Firestore
+function ovLoadPlans(fils, months){
+  if(!fbReady||!fbDb) return Promise.reject(new Error('Keine Firebase-Verbindung'));
+  var jobs=[];
+  fils.forEach(function(f){
+    months.forEach(function(m){
+      jobs.push(fbDb.collection('plan').doc(fbSlug(f)+'__'+m).get().then(function(doc){
+        return {filiale:f, month:m, data:doc.exists?(doc.data()||{}):null};
+      }).catch(function(){ return {filiale:f, month:m, data:null}; }));
+    });
+  });
+  return Promise.all(jobs);
+}
+// Baut die Datenstruktur für Export
+function ovBuild(){
+  var months=ovTwoMonths(), fils=ovAllFilialen();
+  if(!fils.length) return Promise.reject(new Error('Keine Filialen gefunden — bitte zuerst Mitarbeiter-CSV importieren.'));
+  var urlaub=ovUrlaubMap();
+  return ovLoadPlans(fils, months).then(function(plans){
+    var byFil={};
+    plans.forEach(function(p){
+      if(!byFil[p.filiale]) byFil[p.filiale]={};
+      byFil[p.filiale][p.month]=p.data;
+    });
+    return {months:months, fils:fils, byFil:byFil, urlaub:urlaub};
+  });
+}
+// Mitarbeiter-Cluster: wer arbeitet in welchen Filialen
+function ovCluster(){
+  var emps=loadEmps().filter(function(e){return e.active!==false;});
+  return emps.map(function(e){
+    var all=[e.filiale].concat(e.zweit||[]).filter(Boolean);
+    var uniq=[]; all.forEach(function(f){ if(uniq.indexOf(f)===-1) uniq.push(f); });
+    return {id:e.id, name:e.name, haupt:e.filiale||'—', zweit:(e.zweit||[]), alle:uniq, shopleiter:!!e.shopleiter};
+  }).sort(function(a,b){
+    if(a.haupt!==b.haupt) return a.haupt<b.haupt?-1:1;
+    return a.name<b.name?-1:1;
+  });
+}
+
+// ─── CSV-Export (Excel) ───────────────────────────────
+function ovExportCSV(){
+  ovStatus('Daten werden geladen...');
+  ovBuild().then(function(D){
+    var rows=[];
+    rows.push(['GESAMTÜBERSICHT DIENSTPLAN + URLAUB']);
+    rows.push(['Erstellt am', avTodayDE()]);
+    rows.push([]);
+    D.months.forEach(function(m){
+      var dates=ovMonthDates(m);
+      rows.push(['=== '+ovMonthLabel(m)+' ===']);
+      rows.push(['Filiale','Mitarbeiter'].concat(dates.map(function(d){return d.slice(8)+'.'+d.slice(5,7);})));
+      D.fils.forEach(function(f){
+        var pd=D.byFil[f] && D.byFil[f][m];
+        var emps=(pd && pd.employees)||[];
+        if(!emps.length){ rows.push([f,'(kein Plan hinterlegt)']); return; }
+        emps.forEach(function(emp){
+          var ek=dpEmpKey(emp), eid=''+(emp.id||'');
+          var line=[f, emp.name];
+          dates.forEach(function(dt){
+            var u=D.urlaub[eid]&&D.urlaub[eid][dt];
+            var v=(pd.shifts&&pd.shifts[ek]&&pd.shifts[ek][dt])||'';
+            line.push(u?'Urlaub':v);
+          });
+          rows.push(line);
+        });
+      });
+      rows.push([]);
+    });
+    rows.push(['=== MITARBEITER-CLUSTER (Einsatz-Filialen) ===']);
+    rows.push(['Mitarbeiter','Personalnr.','Hauptfiliale','Zweitfilialen','Anzahl Filialen','Shopleiter']);
+    ovCluster().forEach(function(c){
+      rows.push([c.name, c.id, c.haupt, c.zweit.join(' | '), c.alle.length, c.shopleiter?'Ja':'']);
+    });
+    var csv=rows.map(function(r){
+      return r.map(function(cell){
+        var s=(cell===undefined||cell===null)?'':(''+cell);
+        return /[";\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+      }).join(';');
+    }).join('\r\n');
+    var blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='Gesamtuebersicht_'+D.months[0]+'_'+D.months[1]+'.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    ovStatus('✓ CSV heruntergeladen','var(--grn)');
+  }).catch(function(e){ ovStatus('Fehler: '+e.message,'#C0392B'); });
+}
+
+// ─── PDF-Export ───────────────────────────────────────
+function ovExportPDF(){
+  ovStatus('Daten werden geladen...');
+  ovBuild().then(function(D){
+    if(typeof window.jspdf==='undefined' && typeof jspdf==='undefined'){
+      ovStatus('jsPDF lädt noch, bitte erneut versuchen.','#C0392B'); return;
+    }
+    var jsPDF=(window.jspdf||jspdf).jsPDF;
+    var doc=new jsPDF({orientation:'landscape', unit:'mm', format:'a4'});
+    var PW=297, PH=210, ML=8, y=0;
+
+    function header(title, sub){
+      doc.setFillColor(26,26,24); doc.rect(0,0,PW,14,'F');
+      doc.setTextColor(255,255,255); doc.setFontSize(11); doc.setFont('helvetica','bold');
+      doc.text(title, ML, 9);
+      if(sub){ doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.text(sub, PW-ML, 9, {align:'right'}); }
+      doc.setTextColor(0,0,0);
+      y=20;
+    }
+    function needSpace(h, title, sub){ if(y+h>PH-10){ doc.addPage(); header(title, sub); } }
+
+    D.months.forEach(function(m, mi){
+      var dates=ovMonthDates(m);
+      var CN=42;                                  // Namensspalte
+      var CD=(PW-2*ML-CN)/dates.length;           // Tagesspalte
+      if(mi>0) doc.addPage();
+      header('Gesamtübersicht — '+ovMonthLabel(m), 'Stand: '+avTodayDE());
+
+      D.fils.forEach(function(f){
+        var pd=D.byFil[f] && D.byFil[f][m];
+        var emps=(pd && pd.employees)||[];
+        needSpace(14, 'Gesamtübersicht — '+ovMonthLabel(m), 'Stand: '+avTodayDE());
+        // Filial-Titel
+        doc.setFillColor(240,238,235); doc.rect(ML,y,PW-2*ML,6,'F');
+        doc.setFontSize(8.5); doc.setFont('helvetica','bold');
+        doc.text(f, ML+2, y+4.2); y+=6;
+        // Datumszeile
+        doc.setFontSize(5.4); doc.setFont('helvetica','normal');
+        dates.forEach(function(dt,di){
+          var dd=new Date(dt), wd=['So','Mo','Di','Mi','Do','Fr','Sa'][dd.getDay()];
+          var isWe=(dd.getDay()===0||dd.getDay()===6);
+          var x=ML+CN+di*CD;
+          if(isWe){ doc.setFillColor(232,228,224); doc.rect(x,y,CD,4,'F'); }
+          doc.text(wd+' '+dt.slice(8), x+CD/2, y+2.8, {align:'center'});
+        });
+        y+=4;
+        if(!emps.length){
+          doc.setFontSize(6.5); doc.setTextColor(140,135,128);
+          doc.text('(kein Dienstplan hinterlegt)', ML+2, y+3.4);
+          doc.setTextColor(0,0,0); y+=6; return;
+        }
+        emps.forEach(function(emp){
+          needSpace(5.2, 'Gesamtübersicht — '+ovMonthLabel(m), 'Stand: '+avTodayDE());
+          var ek=dpEmpKey(emp), eid=''+(emp.id||'');
+          var RH=4.6;
+          doc.setFontSize(6); doc.setFont('helvetica','normal');
+          var nm=emp.name.length>26?emp.name.substring(0,25)+'…':emp.name;
+          doc.text(nm, ML+1, y+3.1);
+          dates.forEach(function(dt,di){
+            var x=ML+CN+di*CD;
+            var u=D.urlaub[eid]&&D.urlaub[eid][dt];
+            var v=u?'Urlaub':((pd.shifts&&pd.shifts[ek]&&pd.shifts[ek][dt])||'');
+            if(v==='Urlaub') doc.setFillColor(212,239,223);
+            else if(v==='Krank') doc.setFillColor(253,222,219);
+            else if(v==='Frei') doc.setFillColor(245,243,240);
+            else doc.setFillColor(255,255,255);
+            doc.rect(x,y,CD,RH,'F');
+            doc.setDrawColor(215,211,205); doc.rect(x,y,CD,RH,'S');
+            if(v){
+              doc.setFontSize(v.length>7?4.1:5);
+              doc.setFont('helvetica', v==='Frei'?'normal':'bold');
+              doc.text(v==='Urlaub'?'Url.':(v==='Krank'?'Krank':v), x+CD/2, y+3.1, {align:'center'});
+            }
+          });
+          y+=RH;
+        });
+        y+=3;
+      });
+    });
+
+    // ── Mitarbeiter-Cluster ──
+    doc.addPage();
+    header('Mitarbeiter-Cluster — Einsatz in Filialen', 'Stand: '+avTodayDE());
+    var cl=ovCluster();
+    var COLS=[[ML,72],[ML+72,20],[ML+92,80],[ML+172,95]];
+    doc.setFillColor(240,238,235); doc.rect(ML,y,PW-2*ML,6,'F');
+    doc.setFontSize(7.5); doc.setFont('helvetica','bold');
+    doc.text('Mitarbeiter', COLS[0][0]+1, y+4.2);
+    doc.text('Pers.-Nr.', COLS[1][0]+1, y+4.2);
+    doc.text('Hauptfiliale', COLS[2][0]+1, y+4.2);
+    doc.text('Zweitfilialen', COLS[3][0]+1, y+4.2);
+    y+=6;
+    cl.forEach(function(c){
+      var zw=c.zweit.join(', ');
+      var zwLines=doc.splitTextToSize(zw||'—', COLS[3][1]-2);
+      var RH=Math.max(5, zwLines.length*3.4+1.6);
+      if(y+RH>PH-10){ doc.addPage(); header('Mitarbeiter-Cluster — Einsatz in Filialen', 'Stand: '+avTodayDE()); }
+      doc.setDrawColor(225,221,216); doc.line(ML,y,PW-ML,y);
+      doc.setFontSize(6.8); doc.setFont('helvetica', c.shopleiter?'bold':'normal');
+      var nm=c.name.length>40?c.name.substring(0,39)+'…':c.name;
+      doc.text(nm+(c.shopleiter?' (SL)':''), COLS[0][0]+1, y+3.6);
+      doc.setFont('helvetica','normal');
+      doc.text(''+(c.id||''), COLS[1][0]+1, y+3.6);
+      var hp=doc.splitTextToSize(c.haupt, COLS[2][1]-2);
+      doc.text(hp[0]||'', COLS[2][0]+1, y+3.6);
+      doc.text(zwLines, COLS[3][0]+1, y+3.6);
+      y+=RH;
+    });
+
+    doc.save('Gesamtuebersicht_'+D.months[0]+'_'+D.months[1]+'.pdf');
+    ovStatus('✓ PDF heruntergeladen','var(--grn)');
+  }).catch(function(e){ ovStatus('Fehler: '+e.message,'#C0392B'); });
+}
+
 function dpExportPDF(){
   var st=document.getElementById('dp-status'); if(st)st.textContent='PDF wird erstellt…';
   var r=dpBuildPDFDoc();
