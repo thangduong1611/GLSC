@@ -3537,6 +3537,7 @@ function dpBuildPDFDoc(){
   var ML=8,MT=8,PW=194,CE=36,CD=(PW-CE)/6,RKW=7,RH=12,RE=7.5,pH=280,y=MT;
   var DAYS=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
   var holPDF=dpMonthHolidays();
+  var dpAbsPDF=dpAbsenceFor(f);   // genehmigter Urlaub / Krankmeldungen
   doc.setFontSize(13);doc.setFont('helvetica','bold');
   doc.text('Arbeitsplan \u2013 '+f,ML+PW/2,y+5.5,{align:'center'});y+=10;
   dpGetWeeks(m).forEach(function(wk){
@@ -3556,7 +3557,17 @@ function dpBuildPDFDoc(){
       doc.setFillColor(250,248,245);doc.rect(ML,y,CE,RE,'F');doc.setDrawColor(200,195,188);doc.rect(ML,y,CE,RE,'S');
       doc.setFontSize(7.5);doc.setFont('helvetica','bold');
       doc.text(emp.name.length>18?emp.name.substring(0,17)+'\u2026':emp.name,ML+2,y+RE/2+2.5);
-      wk.dates.forEach(function(dt,di){var x=ML+CE+di*CD,val=(dpShifts[ek]&&dpShifts[ek][dt])||'';if(val==='Krank')doc.setFillColor(253,222,219);else if(val==='Urlaub')doc.setFillColor(212,239,223);else if(val==='Frei')doc.setFillColor(245,243,240);else doc.setFillColor(255,255,255);doc.rect(x,y,CD,RE,'F');doc.setDrawColor(200,195,188);doc.rect(x,y,CD,RE,'S');if(val){doc.setFontSize(7);doc.setFont('helvetica',val==='Frei'?'normal':'bold');doc.text(val,x+CD/2,y+RE/2+2.5,{align:'center'});}});
+      wk.dates.forEach(function(dt,di){var x=ML+CE+di*CD;
+        // WICHTIG: genehmigter Urlaub/Krank kommt aus dpAbsenceFor() und steht NICHT
+        // in dpShifts (die Zelle ist am Bildschirm kein Eingabefeld) -> hier ergaenzen,
+        // sonst bleiben diese Felder im PDF leer.
+        var eidPDF=''+(emp.id||'');
+        var absPDF=(dpAbsPDF[eidPDF]&&dpAbsPDF[eidPDF][dt])||'';
+        var val=absPDF||((dpShifts[ek]&&dpShifts[ek][dt])||'');
+        if(!val&&holPDF[dt])val='Frei';
+        if(val==='Krank')doc.setFillColor(253,222,219);else if(val==='Urlaub')doc.setFillColor(212,239,223);else if(val==='Frei')doc.setFillColor(245,243,240);else doc.setFillColor(255,255,255);
+        doc.rect(x,y,CD,RE,'F');doc.setDrawColor(200,195,188);doc.rect(x,y,CD,RE,'S');
+        if(val){doc.setFontSize(val.length>10?5.6:7);doc.setFont('helvetica',val==='Frei'?'normal':'bold');doc.text(val,x+CD/2,y+RE/2+2.5,{align:'center'});}});
       y+=RE;
     });
     y+=4;
