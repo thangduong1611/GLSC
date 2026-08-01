@@ -574,6 +574,7 @@ function maNewsMarkRead(){
    - Eine Zählung pro Filiale (gemeinsam): inventur_counts/{month__slug}
    ════════════════════════════════════════════════ */
 var ivMonth=null, ivPeriod=null, ivCounts={}, ivCat='fisch', ivLoaded=false, ivLocalAt='';
+var ivPrevMonth=null, ivPeriodCur=null, ivPeriodPrev=null, ivMonthActive=null, ivMonthUsed=null, ivPeriodUnsub2=null;
 var ivPeriodUnsub=null, ivCountUnsub=null, ivSaveTimer=null;
 var ivCfg={catOrder:[],itemCat:{}}, ivPhotos={}, ivCfgUnsub=null, ivPhotoUnsub=null;
 // Effektive Kategorie/Reihenfolge (HR-Override berücksichtigen)
@@ -590,14 +591,60 @@ function ivEffCats(){
 }
 
 function ivCurMonth(){ var n=new Date(); return n.getFullYear()+'-'+('0'+(n.getMonth()+1)).slice(-2); }
+function ivPrevMonthOf(m){
+  var p=m.split('-'), d=new Date(+p[0], +p[1]-2, 1);
+  return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2);
+}
+function ivToday(){
+  var n=new Date();
+  return n.getFullYear()+'-'+('0'+(n.getMonth()+1)).slice(-2)+'-'+('0'+n.getDate()).slice(-2);
+}
+function ivPeriodActive(p){
+  return !!(p && p.start && p.end && ivToday()>=p.start && ivToday()<=p.end);
+}
+/* Wählt den passenden Zeitraum: bevorzugt einen aktuell laufenden.
+   Läuft ein Zeitraum über den Monatswechsel (z.B. 28.07.–02.08.), liegt er
+   im Dokument des Vormonats — deshalb wird auch dieser berücksichtigt. */
+function ivPickPeriod(){
+  if(ivPeriodActive(ivPeriodCur)){ ivPeriod=ivPeriodCur; ivMonthActive=ivMonth; }
+  else if(ivPeriodActive(ivPeriodPrev)){ ivPeriod=ivPeriodPrev; ivMonthActive=ivPrevMonth; }
+  else { ivPeriod=ivPeriodCur||ivPeriodPrev||null; ivMonthActive=ivPeriodCur?ivMonth:(ivPeriodPrev?ivPrevMonth:ivMonth); }
+  // Zählung immer im Monat des aktiven Zeitraums speichern
+  if(ivMonthActive!==ivMonthUsed){
+    ivMonthUsed=ivMonthActive;
+    ivRebindCounts();
+  }
+  ivUpdateVisibility();
+}
+/* Bindet die Zähl-Daten an den Monat des aktiven Zeitraums */
+function ivRebindCounts(){
+  var sess=maSession(); if(!sess||!fbReady||!fbDb) return;
+  if(ivCountUnsub){try{ivCountUnsub();}catch(e){}}
+  var loc=ivLocalLoad();
+  if(loc&&loc.counts){ ivCounts=Object.assign({}, loc.counts); ivLocalAt=loc.at||''; ivLoaded=true; }
+  ivCountUnsub=fbDb.collection('inventur_counts').doc(ivDocId(sess)).onSnapshot(function(doc){
+    var d=doc.exists?doc.data():null;
+    if(d&&d.counts&&!ivCounts._dirty){
+      var remoteAt=d.at||'';
+      if(!ivLocalAt || remoteAt>=ivLocalAt){
+        ivCounts=Object.assign({},d.counts);
+        ivLocalAt=remoteAt;
+        ivLocalSave();
+      }
+    }
+    ivLoaded=true;
+    ivSyncBadge(!!ivCounts._dirty);
+    if(document.getElementById('p-iv') && document.getElementById('p-iv').classList.contains('active')) ivRender();
+  }, function(e){ console.warn('iv count', e); });
+}
 function ivSlug(f){ return (''+f).replace(/\s+/g,'_').toLowerCase(); }
-function ivDocId(sess){ return ivMonth+'__'+ivSlug(sess.filiale||''); }
+function ivDocId(sess){ return (ivMonthUsed||ivMonth)+'__'+ivSlug(sess.filiale||''); }
 
 /* ── OFFLINE-SCHUTZ ──────────────────────────────────────────
    Jede Eingabe wird SOFORT lokal gespeichert (localStorage).
    Damit gehen im Lager ohne Netz keine Daten verloren, auch wenn
    die App neu lädt. Sync mit Firestore passiert zusätzlich. */
-function ivLocalKey(sess){ return 'sc_iv_'+ivMonth+'__'+ivSlug(sess.filiale||''); }
+function ivLocalKey(sess){ return 'sc_iv_'+(ivMonthUsed||ivMonth)+'__'+ivSlug(sess.filiale||''); }
 function ivLocalSave(){
   var sess=maSession(); if(!sess||!ivMonth) return;
   try{
@@ -630,6 +677,7 @@ function ivInit(sess){
   if(typeof INVENTUR_ITEMS==='undefined') return;        // data noch nicht geladen
   if(!sess||!fbReady||!fbDb) return;
   ivMonth=ivCurMonth();
+  ivPrevMonth=ivPrevMonthOf(ivMonth);
   // 1) ZUERST lokalen Stand laden (offline-fest, geht nie verloren)
   var loc=ivLocalLoad();
   if(loc&&loc.counts){
@@ -637,30 +685,21 @@ function ivInit(sess){
     ivLocalAt=loc.at||'';
     ivLoaded=true;
   }
-  // Zeitraum dieses Monats beobachten → Tab ein-/ausblenden
+  // Zeitraum beobachten → Tab ein-/ausblenden.
+  // WICHTIG: auch den Vormonat prüfen, da ein Inventur-Zeitraum über den
+  // Monatswechsel laufen kann (z.B. 28.07.–02.08. liegt im Dokument 2026-07).
   if(ivPeriodUnsub){try{ivPeriodUnsub();}catch(e){}}
+  if(ivPeriodUnsub2){try{ivPeriodUnsub2();}catch(e){}}
+  ivPeriodCur=null; ivPeriodPrev=null;
   ivPeriodUnsub=fbDb.collection('inventur_period').doc(ivMonth).onSnapshot(function(doc){
-    ivPeriod=doc.exists?doc.data():null;
-    ivUpdateVisibility();
+    ivPeriodCur=doc.exists?doc.data():null;
+    ivPickPeriod();
   }, function(e){ console.warn('iv period', e); });
-  // Gemeinsame Zählung dieser Filiale beobachten (live, mehrere Mitarbeiter)
-  if(ivCountUnsub){try{ivCountUnsub();}catch(e){}}
-  ivCountUnsub=fbDb.collection('inventur_counts').doc(ivDocId(sess)).onSnapshot(function(doc){
-    var d=doc.exists?doc.data():null;
-    // Remote-Stand nur übernehmen, wenn der Nutzer NICHT gerade tippt UND
-    // der Remote-Stand neuer ist als der lokale (sonst Datenverlust!).
-    if(d&&d.counts&&!ivCounts._dirty){
-      var remoteAt=d.at||'';
-      if(!ivLocalAt || remoteAt>=ivLocalAt){
-        ivCounts=Object.assign({},d.counts);
-        ivLocalAt=remoteAt;
-        ivLocalSave();
-      }
-    }
-    ivLoaded=true;
-    ivSyncBadge(!!ivCounts._dirty);
-    if(document.getElementById('p-iv') && document.getElementById('p-iv').classList.contains('active')) ivRender();
-  }, function(e){ console.warn('iv count', e); });
+  ivPeriodUnsub2=fbDb.collection('inventur_period').doc(ivPrevMonth).onSnapshot(function(doc){
+    ivPeriodPrev=doc.exists?doc.data():null;
+    ivPickPeriod();
+  }, function(e){ console.warn('iv period prev', e); });
+  // Zählung wird von ivPickPeriod()/ivRebindCounts() an den aktiven Monat gebunden
   // Konfiguration (Kategorie-Reihenfolge / Artikel-Zuordnung) von HR beobachten
   if(ivCfgUnsub){try{ivCfgUnsub();}catch(e){}}
   ivCfgUnsub=fbDb.collection('inventur_config').doc('current').onSnapshot(function(doc){
@@ -678,9 +717,7 @@ function ivInit(sess){
 
 // Aktiv = heute zwischen start und end (inklusive)
 function ivIsActive(){
-  if(!ivPeriod||!ivPeriod.start||!ivPeriod.end) return false;
-  var today=new Date().toISOString().slice(0,10);
-  return today>=ivPeriod.start && today<=ivPeriod.end;
+  return ivPeriodActive(ivPeriod);
 }
 function ivUpdateVisibility(){
   var btn=document.getElementById('ico-iv'); if(!btn) return;
@@ -926,7 +963,7 @@ function ivSaveDraft(silent){
   var now=new Date().toISOString();
   ivLocalAt=now; ivLocalSave();
   fbDb.collection('inventur_counts').doc(ivDocId(sess)).set({
-    filiale:sess.filiale||'', month:ivMonth, counts:ivCleanCounts(),
+    filiale:sess.filiale||'', month:(ivMonthUsed||ivMonth), counts:ivCleanCounts(),
     by:sess.name||'', at:now, submitted:false
   },{merge:true}).then(function(){
     ivCounts._dirty=false;
@@ -944,7 +981,7 @@ function ivSubmit(){
   var now=new Date().toISOString();
   ivLocalAt=now; ivLocalSave();
   fbDb.collection('inventur_counts').doc(ivDocId(sess)).set({
-    filiale:sess.filiale||'', month:ivMonth, counts:ivCleanCounts(),
+    filiale:sess.filiale||'', month:(ivMonthUsed||ivMonth), counts:ivCleanCounts(),
     by:sess.name||'', at:now, submitted:true
   },{merge:true}).then(function(){
     ivCounts._dirty=false;
