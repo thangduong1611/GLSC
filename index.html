@@ -358,11 +358,18 @@ window.onerror=function(msg,src,line){
   </div>
 </div>
 
-<!-- Beleg-Foto Viewer (Lightbox mit sichtbarem Schließen-Button, iOS-freundlich) -->
-<div id="bl-img-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;flex-direction:column;align-items:center;justify-content:center;padding:16px">
-  <button onclick="blCloseImgModal()" style="position:absolute;top:16px;right:16px;width:40px;height:40px;border-radius:50%;background:#fff;border:none;font-size:20px;line-height:1;cursor:pointer;font-weight:700">✕</button>
-  <img id="bl-img-modal-img" style="max-width:100%;max-height:75vh;border-radius:8px;object-fit:contain">
-  <div style="color:#fff;font-size:13px;margin-top:14px;text-align:center;max-width:320px">📌 Zum Speichern: Bild <strong>gedrückt halten</strong> und „Zu Fotos hinzufügen" wählen.</div>
+<!-- Beleg-Foto Viewer -->
+<div id="bl-img-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:100000;flex-direction:column;align-items:center;justify-content:center;padding:16px">
+  <button type="button" onclick="blCloseImgModal()" aria-label="Schließen"
+    style="position:absolute;top:14px;right:14px;width:46px;height:46px;border-radius:50%;background:#fff;color:#1A1A18;border:none;font-size:22px;line-height:46px;text-align:center;cursor:pointer;font-weight:700;z-index:2;padding:0">✕</button>
+  <img id="bl-img-modal-img" onclick="event.stopPropagation()" style="max-width:100%;max-height:68vh;border-radius:8px;object-fit:contain;position:relative;z-index:1">
+  <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;justify-content:center;position:relative;z-index:2">
+    <button type="button" class="btn btn-grn" onclick="blDownloadCurrent()">💾 Herunterladen</button>
+    <button type="button" class="btn" onclick="blCloseImgModal()">✕ Schließen</button>
+  </div>
+  <div style="color:#fff;font-size:12.5px;margin-top:12px;text-align:center;max-width:340px;opacity:.85;position:relative;z-index:2">
+    Am Handy: Bild <strong>gedrückt halten</strong> → „Zu Fotos hinzufügen".<br>Zum Schließen auch außerhalb des Bildes tippen.
+  </div>
 </div>
 
 <!-- ===== URLAUBSANTRAG ===== -->
@@ -5076,14 +5083,34 @@ function blRenderAdmin(){
   }).join('');
 }
 function blFind(id){ return fbBelege.find(function(x){return x.docId===id;}); }
+var blCurImgId=null;
 function blOpenImg(id){
   var b=blFind(id); if(!b||!b.d.img) return;
+  blCurImgId=id;
+  var mod=document.getElementById('bl-img-modal');
+  // Modal direkt an <body> haengen -> unabhaengig von Panels/Stacking-Kontexten
+  if(mod.parentNode!==document.body) document.body.appendChild(mod);
   document.getElementById('bl-img-modal-img').src=b.d.img;
-  document.getElementById('bl-img-modal').style.display='flex';
+  mod.style.display='flex';
+  // Schliessen per Klick auf den Hintergrund
+  mod.onclick=function(ev){ if(ev.target===mod) blCloseImgModal(); };
+  document.addEventListener('keydown', blImgEsc);
 }
+function blImgEsc(ev){ if(ev.key==='Escape') blCloseImgModal(); }
 function blCloseImgModal(){
-  document.getElementById('bl-img-modal').style.display='none';
-  document.getElementById('bl-img-modal-img').src='';
+  var mod=document.getElementById('bl-img-modal');
+  if(mod){ mod.style.display='none'; mod.onclick=null; }
+  var im=document.getElementById('bl-img-modal-img'); if(im) im.src='';
+  blCurImgId=null;
+  document.removeEventListener('keydown', blImgEsc);
+}
+function blDownloadCurrent(){
+  if(!blCurImgId) return;
+  var b=blFind(blCurImgId); if(!b||!b.d.img) return;
+  var a=document.createElement('a');
+  a.href=b.d.img;
+  a.download='Beleg_'+((b.d.empName||'MA').replace(/\s+/g,'_'))+'_'+((b.d.createdAt||'').slice(0,10))+'.jpg';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 function blSetStatus(id,status){
   var b=blFind(id); if(!b) return;
