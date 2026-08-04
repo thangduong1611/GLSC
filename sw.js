@@ -1,4 +1,4 @@
-const CACHE = 'hr-sushi-v5';
+const CACHE = 'hr-sushi-v6';
 const PRECACHE = ['icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', e => {

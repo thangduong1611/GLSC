@@ -5077,12 +5077,43 @@ function blRenderAdmin(){
       +(d.img?'<img src="'+d.img+'" style="width:84px;height:84px;object-fit:cover;border-radius:6px;border:1px solid #E8E4E0;cursor:pointer" onclick="blOpenImg(\''+b.docId+'\')" title="Foto ansehen">':'<div style="width:84px;height:84px;display:flex;align-items:center;justify-content:center;background:#F5F3F0;border-radius:6px;font-size:11px;color:#6B6860;text-align:center">kein<br>Foto</div>')
       +'<div style="flex:1;min-width:170px"><strong>'+(d.empName||'?')+'</strong> · '+(d.filiale||'')+'<br>'
       +'<span style="font-size:14px;font-weight:700">'+(d.amount?d.amount.toFixed(2)+' €':'—')+'</span> <span style="font-size:13px;color:#6B6860">'+(d.note||'')+'</span><br>'
+      +blPayRow(d)
       +'<span style="font-size:12px;color:#6B6860">'+dt+'</span><br>'
       +'<span style="display:inline-block;margin-top:4px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:'+m.bg+';color:'+m.c+'">'+m.txt+'</span></div>'
       +'<div style="display:flex;flex-direction:column;gap:6px;min-width:150px">'+actions+'</div></div>';
   }).join('');
 }
 function blFind(id){ return fbBelege.find(function(x){return x.docId===id;}); }
+/* Zeigt Zahlungsweg + Kopier-Button (fuer Banking-/PayPal-App) */
+function blPayRow(d){
+  if(!d.payType && !d.payInfo) return '';
+  var icon = d.payType==='PayPal'?'🅿️':(d.payType==='Bar'?'💵':'🏦');
+  var label = d.payType||'';
+  if(d.payType==='Bar' || !d.payInfo){
+    return '<span style="display:inline-block;margin:3px 0;font-size:12px;color:#6B6860">'+icon+' '+label+'</span><br>';
+  }
+  var safe=(''+d.payInfo).replace(/'/g,"\\'").replace(/"/g,'&quot;');
+  return '<div style="display:flex;align-items:center;gap:6px;margin:4px 0;flex-wrap:wrap">'
+    +'<span style="font-size:11px;color:#6B6860;font-weight:600">'+icon+' '+label+'</span>'
+    +'<code style="font-size:12px;background:#F5F3F0;padding:2px 7px;border-radius:4px;user-select:all;word-break:break-all">'+d.payInfo+'</code>'
+    +'<button class="btn btn-sm" style="font-size:10.5px;padding:2px 8px" onclick="blCopyPay(\''+safe+'\',this)">📋 Kopieren</button>'
+    +'</div>';
+}
+function blCopyPay(txt, btn){
+  var done=function(){
+    if(btn){ var o=btn.textContent; btn.textContent='✓ Kopiert'; setTimeout(function(){ btn.textContent=o; },1500); }
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done).catch(function(){ blCopyFallback(txt,done); });
+  } else blCopyFallback(txt,done);
+}
+function blCopyFallback(txt, cb){
+  var ta=document.createElement('textarea');
+  ta.value=txt; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); cb&&cb(); }catch(e){ alert(txt); }
+  document.body.removeChild(ta);
+}
 var blCurImgId=null;
 function blOpenImg(id){
   var b=blFind(id); if(!b||!b.d.img) return;

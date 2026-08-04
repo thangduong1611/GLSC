@@ -330,6 +330,18 @@ window.onerror=function(msg,src,line){
       <input type="number" step="0.01" min="0" id="bl-amount" placeholder="0.00">
       <label data-i18n="lbl_bl_note">Notiz (was wurde gekauft?)</label>
       <input type="text" id="bl-note" placeholder="z.B. Wasabi, REWE">
+      <label data-i18n="lbl_bl_paytype">Wie möchtest du das Geld zurückbekommen?</label>
+      <select id="bl-paytype" onchange="blPayTypeChange()">
+        <option value="IBAN">Überweisung (IBAN)</option>
+        <option value="PayPal">PayPal</option>
+        <option value="Bar">Bar</option>
+        <option value="Sonstiges">Sonstiges</option>
+      </select>
+      <div id="bl-payinfo-wrap">
+        <label id="bl-payinfo-label" data-i18n="lbl_bl_payinfo">IBAN</label>
+        <input type="text" id="bl-payinfo" placeholder="DE00 0000 0000 0000 0000 00">
+        <div style="font-size:11.5px;color:var(--mut);margin-top:-4px;margin-bottom:8px" data-i18n="bl_payinfo_hint">Wird gespeichert — beim nächsten Beleg schon ausgefüllt.</div>
+      </div>
       <label data-i18n="lbl_foto_bl">Foto vom Kassenbon</label>
       <div class="drop" id="bl-drop" onclick="document.getElementById('bl-file').click()">
         <div class="drop-icon">📷</div><span data-i18n="drop_txt">Foto hochladen oder Kamera öffnen</span>
@@ -1271,6 +1283,9 @@ de:{_name:'Deutsch',
  lbl_bl_amount:'Betrag (€)',lbl_bl_note:'Notiz (was wurde gekauft?)',lbl_foto_bl:'Foto vom Kassenbon',
  btn_bl:'📤 Beleg senden',bl_list_title:'📋 Meine Belege',bl_none:'Noch keine Belege eingereicht.',
  bl_sent:'✓ Beleg gesendet',bl_fail:'Fehler: ',bl_need_photo:'Bitte zuerst ein Foto vom Kassenbon hochladen.',
+ lbl_bl_paytype:'Wie möchtest du das Geld zurückbekommen?',lbl_bl_payinfo:'IBAN',lbl_bl_payinfo_other:'Details (wohin überweisen?)',
+ bl_payinfo_hint:'Wird gespeichert — beim nächsten Beleg schon ausgefüllt.',
+ bl_need_pay:'Bitte IBAN / PayPal-Adresse angeben.',
  bl_st_new:'Eingereicht',bl_st_skovik:'In Skovik hochgeladen',bl_st_paid:'Überwiesen',
  bl_paid_banner:'💰 Geld wurde überwiesen!',bl_confirm_btn:'✓ Geld erhalten — bestätigen',bl_confirmed:'✓ Bestätigt, danke!',
  login_sub:'Sushi Circle · Bitte mit deiner Personalnummer anmelden.',lbl_pid:'Personalnummer',btn_login:'Anmelden',
@@ -1632,7 +1647,7 @@ function maNav(t){
   });
   if(t==='dp'){maRefreshProfile();}
   if(t==='ul'){maRenderCal();maRenderUlList();}
-  if(t==='bl'){blRender();}
+  if(t==='bl'){blRender();blPayLoad();}
   if(t==='av'){avERender();}
   if(t==='nw'){maNewsMarkRead();}
   if(t==='sl'){slLoadPlan();}
@@ -2119,19 +2134,49 @@ function blPhoto(ev){
   };
   r.readAsDataURL(f);
 }
+/* Zahlungsweg: Label/Platzhalter je nach Auswahl anpassen */
+function blPayTypeChange(){
+  var tp=document.getElementById('bl-paytype').value;
+  var lab=document.getElementById('bl-payinfo-label');
+  var inp=document.getElementById('bl-payinfo');
+  var wrap=document.getElementById('bl-payinfo-wrap');
+  if(tp==='Bar'){ wrap.style.display='none'; return; }
+  wrap.style.display='';
+  if(tp==='IBAN'){ lab.textContent='IBAN'; inp.placeholder='DE00 0000 0000 0000 0000 00'; }
+  else if(tp==='PayPal'){ lab.textContent='PayPal (E-Mail oder Handynummer)'; inp.placeholder='name@example.com'; }
+  else { lab.textContent=t('lbl_bl_payinfo_other'); inp.placeholder=''; }
+}
+/* Zuletzt genutzten Zahlungsweg lokal merken */
+function blPayKey(){ var s=maSession(); return 'sc_bl_pay_'+((s&&s.id)||'x'); }
+function blPayLoad(){
+  try{
+    var d=JSON.parse(localStorage.getItem(blPayKey())||'null'); if(!d) return;
+    if(d.type) document.getElementById('bl-paytype').value=d.type;
+    blPayTypeChange();
+    if(d.info) document.getElementById('bl-payinfo').value=d.info;
+  }catch(e){}
+}
+function blPaySave(type,info){
+  try{ localStorage.setItem(blPayKey(), JSON.stringify({type:type,info:info})); }catch(e){}
+}
 function blSend(){
   var sess=maSession();if(!sess)return;
   if(!fbReady||!fbDb){ toast(t('bl_fail')+'offline',true); return; }
   var amount=parseFloat(document.getElementById('bl-amount').value)||0;
   var note=document.getElementById('bl-note').value.trim();
+  var payType=document.getElementById('bl-paytype').value;
+  var payInfo=document.getElementById('bl-payinfo').value.trim();
   if(!blImg){ toast(t('bl_need_photo'),true); return; }
+  if(payType!=='Bar' && !payInfo){ toast(t('bl_need_pay'),true); return; }
   fbDb.collection('receipts').add({
     empId:''+sess.id, empName:sess.name, filiale:sess.filiale||'',
     amount:amount, note:note, img:blImg,
+    payType:payType, payInfo:payInfo,
     status:'new', empHidden:false,
     createdAt:new Date().toISOString(), skovikAt:null, paidAt:null, confirmedAt:null
   }).then(function(){
     toast(t('bl_sent'));
+    blPaySave(payType,payInfo);      // fuer den naechsten Beleg merken
     document.getElementById('bl-amount').value='';document.getElementById('bl-note').value='';
     blImg=null; var p=document.getElementById('bl-prev');p.style.display='none';
     document.getElementById('bl-drop').classList.remove('ok');
