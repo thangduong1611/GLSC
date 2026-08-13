@@ -242,6 +242,9 @@ window.onerror=function(msg,src,line){
     <button class="app-ico" onclick="sw('we',this)">
       <span class="ico-e">🚚</span><span class="ico-l">Waren&shy;eingang</span>
     </button>
+    <button class="app-ico" onclick="sw('ug',this)">
+      <span class="ico-e">🔄</span><span class="ico-l">Umlagerung</span>
+    </button>
     <button class="app-ico" onclick="sw('urlaub',this)">
       <span class="ico-e">🌴</span><span class="ico-l">Urlaubs&shy;antrag</span>
     </button>
@@ -380,6 +383,43 @@ window.onerror=function(msg,src,line){
     style="position:absolute;top:14px;right:14px;width:46px;height:46px;border-radius:50%;background:#fff;color:#1A1A18;border:none;font-size:22px;line-height:46px;text-align:center;cursor:pointer;font-weight:700;z-index:2;padding:0">✕</button>
   <img id="we-img-modal-img" onclick="event.stopPropagation()" style="max-width:100%;max-height:68vh;border-radius:8px;object-fit:contain;position:relative;z-index:1">
   <div id="we-img-modal-label" style="color:#fff;font-size:13px;margin-top:12px;text-align:center;position:relative;z-index:2"></div>
+</div>
+
+<!-- ===== UMLAGERUNG ===== -->
+<div id="panel-ug" class="panel">
+  <div class="card">
+    <div class="card-title">🔄 Umlagerung <span class="badge badge-red" id="ug-live-count">0</span></div>
+    <div class="info">Mitarbeiter melden hier informelle Warenausleihen zwischen Filialen, statt es dir mündlich/per WhatsApp zu sagen. Nutze die <strong>Monatsübersicht</strong>, um die Mengen schnell in die Umlagerungsliste zu übertragen.</div>
+    <div style="display:flex;gap:8px;margin:10px 0 14px">
+      <button class="btn btn-sm" onclick="ugShowTab('log')" id="ug-tab-log">📋 Einzelmeldungen</button>
+      <button class="btn btn-sm" onclick="ugShowTab('sum')" id="ug-tab-sum">📊 Monatsübersicht</button>
+    </div>
+
+    <div id="ug-log">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
+        <select id="ug-filter-von" onchange="ugRenderAdmin()" style="flex:1;min-width:160px"><option value="">Alle Quell-Filialen</option></select>
+        <select id="ug-filter-fil" onchange="ugRenderAdmin()" style="flex:1;min-width:160px"><option value="">Alle Ziel-Filialen</option></select>
+        <select id="ug-filter-status" onchange="ugRenderAdmin()" style="flex:1;min-width:160px">
+          <option value="">Alle Status</option>
+          <option value="offen">Offen</option>
+          <option value="uebertragen">Übertragen</option>
+        </select>
+      </div>
+      <div id="ug-live-status" style="font-size:13px;margin-bottom:8px;font-weight:600;display:none"></div>
+      <div id="ug-live-list"></div>
+    </div>
+
+    <div id="ug-sum" style="display:none">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
+        <input type="month" id="ug-sum-month" onchange="ugRenderSummary()" style="flex:1;min-width:140px">
+        <select id="ug-sum-von" onchange="ugRenderSummary()" style="flex:1;min-width:160px"><option value="">Alle Quell-Filialen</option></select>
+      </div>
+      <div id="ug-sum-table" style="overflow-x:auto"></div>
+      <div class="btn-row">
+        <button class="btn btn-grn" onclick="ugCopySummary(this)">📋 Tabelle kopieren</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ===== URLAUBSANTRAG ===== -->
@@ -1302,6 +1342,7 @@ RP_CL=getRPCL();
   if(id==='inventur'){invOnShow();}
   if(id==='belege'){blPopulateFilFilter();blRenderAdmin();}
   if(id==='we'){wePopulateFilFilter();weRenderAdmin();}
+  if(id==='ug'){ugPopulateFilters();ugRenderCurrent();}
   if(id==='av'){avPopulateDropdown();avRenderList();}
 }
 
@@ -4599,7 +4640,7 @@ function fbBootStatus(){
     fbPendingCardShow('⚠️ Firebase-Bibliothek nicht geladen. Internet/Adblocker prüfen und Seite neu laden.', '#C0392B');
     return;
   }
-  fbInit(function(){ fbStartPending(); nwStartListener(); nwReadsStartListener(); krStartListener(); anStartListener(); blStartListener(); avStartListener(); weStartListener(); });
+  fbInit(function(){ fbStartPending(); nwStartListener(); nwReadsStartListener(); krStartListener(); anStartListener(); blStartListener(); avStartListener(); weStartListener(); ugStartListener(); });
 }
 function fbSlug(f){ return (''+f).replace(/\s+/g,'_').toLowerCase(); }
 function fbInit(onReady){
@@ -5247,6 +5288,186 @@ function weDownloadPhotos(id){
     }, i*400);
   });
   toast('⬇️ '+files.length+' Foto(s) werden heruntergeladen…');
+}
+
+// ════════ UMLAGERUNG (Live aus Mitarbeiter-App) ════════
+var fbUmlagerung=[];
+var ugTab='log';
+function ugShowStatus(msg,color){
+  var st=document.getElementById('ug-live-status');
+  if(st){ st.textContent=msg||''; st.style.color=color||'#6B6860'; st.style.display=msg?'block':'none'; }
+}
+function ugStartListener(){
+  if(!fbReady||!fbDb) return;
+  ugShowStatus('🔄 Verbinde…','#6B6860');
+  fbDb.collection('umlagerung').onSnapshot(function(snap){
+    var raw=[]; snap.forEach(function(doc){ raw.push({docId:doc.id, ref:doc.ref, d:doc.data()||{}}); });
+    fbUmlagerung=raw.sort(function(a,b){ return (a.d.createdAt||'')<(b.d.createdAt||'')?1:-1; });
+    ugShowStatus('','');
+    ugPopulateFilters();
+    if(document.getElementById('panel-ug') && document.getElementById('panel-ug').classList.contains('active')) ugRenderCurrent();
+  }, function(err){
+    console.warn('FB umlagerung', err);
+    ugShowStatus('⚠️ Kein Zugriff auf Umlagerungen ('+err.code+'). In den Firestore-Regeln fehlt vermutlich der Block für „umlagerung" — bitte Regeln ergänzen und neu veröffentlichen.','#C0392B');
+  });
+}
+function ugPopulateFilters(){
+  var vonSet={}, filSet={};
+  fbUmlagerung.forEach(function(w){ if(w.d.vonFiliale) vonSet[w.d.vonFiliale]=1; if(w.d.filiale) filSet[w.d.filiale]=1; });
+  var vonList=Object.keys(vonSet).sort(), filList=Object.keys(filSet).sort();
+  ['ug-filter-von','ug-sum-von'].forEach(function(id){
+    var sel=document.getElementById(id); if(!sel) return;
+    var cur=sel.value;
+    sel.innerHTML='<option value="">Alle Quell-Filialen</option>'+vonList.map(function(f){return '<option value="'+f+'">'+f+'</option>';}).join('');
+    if(cur && vonList.indexOf(cur)!==-1) sel.value=cur;
+  });
+  var sel2=document.getElementById('ug-filter-fil');
+  if(sel2){
+    var cur2=sel2.value;
+    sel2.innerHTML='<option value="">Alle Ziel-Filialen</option>'+filList.map(function(f){return '<option value="'+f+'">'+f+'</option>';}).join('');
+    if(cur2 && filList.indexOf(cur2)!==-1) sel2.value=cur2;
+  }
+}
+function ugStatusMeta(st){
+  if(st==='offen') return {c:'#B7791F',bg:'#FFF7E6',txt:'Offen'};
+  if(st==='uebertragen') return {c:'#1E8449',bg:'#EAFAF1',txt:'Übertragen'};
+  return {c:'#6B6860',bg:'#F5F3F0',txt:st};
+}
+function ugFind(id){ return fbUmlagerung.find(function(x){return x.docId===id;}); }
+function ugShowTab(tab){
+  ugTab=tab;
+  ['log','sum'].forEach(function(x){
+    var p=document.getElementById('ug-'+x); if(p) p.style.display=(x===tab)?'block':'none';
+    var b=document.getElementById('ug-tab-'+x);
+    if(b){ b.style.background=(x===tab)?'var(--red)':''; b.style.color=(x===tab)?'#fff':''; b.style.borderColor=(x===tab)?'var(--red)':''; }
+  });
+  ugRenderCurrent();
+}
+function ugRenderCurrent(){
+  if(ugTab==='log') ugRenderAdmin(); else ugRenderSummary();
+}
+function ugRenderAdmin(){
+  var list=document.getElementById('ug-live-list'), cnt=document.getElementById('ug-live-count');
+  if(!list) return;
+  var fVon=(document.getElementById('ug-filter-von')||{}).value||'';
+  var fFil=(document.getElementById('ug-filter-fil')||{}).value||'';
+  var fSt=(document.getElementById('ug-filter-status')||{}).value||'';
+  var items=fbUmlagerung.filter(function(w){
+    if(fVon && w.d.vonFiliale!==fVon) return false;
+    if(fFil && w.d.filiale!==fFil) return false;
+    if(fSt && w.d.status!==fSt) return false;
+    return true;
+  });
+  var openCount=fbUmlagerung.filter(function(w){return w.d.status==='offen';}).length;
+  if(cnt) cnt.textContent=openCount;
+  if(!items.length){ list.innerHTML='<div style="color:#6B6860;font-size:13px;padding:6px 0">Keine Umlagerungen für diesen Filter.</div>'; return; }
+  list.innerHTML=items.map(function(w){
+    var d=w.d, m=ugStatusMeta(d.status);
+    var dt=d.createdAt?new Date(d.createdAt).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+    var itemsHtml=(d.items||[]).map(function(it,i){
+      return '<div style="font-size:13px;margin:3px 0">'+(i+1)+'. '+(it.artikelname||it.artikelnr)+' (Art. '+it.artikelnr+') — <strong>'+it.menge+' '+(it.einheit||'')+'</strong></div>';
+    }).join('');
+    var actions='';
+    if(d.status==='offen') actions+='<button class="btn btn-sm" style="background:#1E8449;color:#fff;border-color:#1E8449" onclick="ugSetStatus(\''+w.docId+'\',\'uebertragen\')">✅ Als übertragen markieren</button>';
+    else actions+='<span style="font-size:11px;color:#1E8449;font-weight:700;text-align:center">✓ Übertragen</span>';
+    actions+='<button class="btn btn-sm" onclick="ugCopyText(\''+w.docId+'\',this)">📋 Text kopieren</button>';
+    actions+='<button class="btn btn-sm" onclick="ugDelete(\''+w.docId+'\')">🗑 Löschen</button>';
+    return '<div style="padding:12px;border:1px solid #E8E4E0;border-left:4px solid '+m.c+';border-radius:6px;margin-bottom:10px">'
+      +'<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px">'
+      +'<div><strong>'+(d.empName||'?')+'</strong><br>'
+      +'<span style="font-size:13px">Von <strong>'+(d.vonFiliale||'?')+'</strong> → Nach <strong>'+(d.filiale||'?')+'</strong> · '+fmtDate(d.datum)+'</span><br>'
+      +'<span style="font-size:12px;color:#6B6860">'+dt+'</span> '
+      +'<span style="display:inline-block;margin-left:6px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:'+m.bg+';color:'+m.c+'">'+m.txt+'</span></div>'
+      +'</div>'
+      +itemsHtml
+      +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'+actions+'</div>'
+      +'</div>';
+  }).join('');
+}
+function ugSetStatus(id,status){
+  var w=ugFind(id); if(!w) return;
+  var upd={status:status};
+  if(status==='uebertragen') upd.uebertragenAt=new Date().toISOString();
+  w.ref.update(upd).then(function(){ toast('✓ Status aktualisiert'); }).catch(function(e){ alert('Fehler: '+e.message); });
+}
+function ugDelete(id){
+  var w=ugFind(id); if(!w) return;
+  if(!confirm('Umlagerung von '+(w.d.empName||'?')+' löschen?')) return;
+  w.ref.delete().then(function(){ toast('🗑 Gelöscht'); }).catch(function(e){ alert('Fehler: '+e.message); });
+}
+function ugFormatText(d){
+  var lines=[];
+  lines.push('🔄 UMLAGERUNG');
+  lines.push('');
+  lines.push('Von Filiale: '+(d.vonFiliale||''));
+  lines.push('Nach Filiale: '+(d.filiale||''));
+  lines.push('Gemeldet von: '+(d.empName||'?')+' (Pers.-Nr. '+(d.empId||'?')+')');
+  lines.push('Datum: '+fmtDate(d.datum));
+  lines.push('');
+  (d.items||[]).forEach(function(it,i){
+    lines.push((i+1)+'. '+(it.artikelname||it.artikelnr)+' (Art. '+it.artikelnr+'): '+it.menge+' '+(it.einheit||''));
+  });
+  lines.push('');
+  lines.push('---');
+  lines.push('Erstellt am: '+(d.createdAt?new Date(d.createdAt).toLocaleString('de-DE'):''));
+  return lines.join('\n');
+}
+function ugCopyText(id, btn){
+  var w=ugFind(id); if(!w) return;
+  blCopyPay(ugFormatText(w.d), btn);
+}
+function ugAggregate(month, von){
+  var artMap={}, filSet={};
+  fbUmlagerung.forEach(function(w){
+    var d=w.d;
+    if(von && d.vonFiliale!==von) return;
+    if(!d.datum || d.datum.slice(0,7)!==month) return;
+    var destFil=d.filiale||'?';
+    filSet[destFil]=1;
+    (d.items||[]).forEach(function(it){
+      var key=it.artikelnr;
+      if(!artMap[key]) artMap[key]={name:it.artikelname||key, einheit:it.einheit||'', byFil:{}};
+      artMap[key].byFil[destFil]=(artMap[key].byFil[destFil]||0)+(parseFloat(it.menge)||0);
+    });
+  });
+  var filialen=Object.keys(filSet).sort();
+  var rows=Object.keys(artMap).sort().map(function(art){
+    var a=artMap[art], total=0;
+    filialen.forEach(function(f){ total+=(a.byFil[f]||0); });
+    return {art:art, name:a.name, einheit:a.einheit, byFil:a.byFil, total:total};
+  });
+  return {filialen:filialen, rows:rows};
+}
+function ugRenderSummary(){
+  var box=document.getElementById('ug-sum-table'); if(!box) return;
+  var monthEl=document.getElementById('ug-sum-month');
+  if(monthEl && !monthEl.value) monthEl.value=invDefaultMonth();
+  var month=monthEl?monthEl.value:invDefaultMonth();
+  var von=(document.getElementById('ug-sum-von')||{}).value||'';
+  var agg=ugAggregate(month, von);
+  if(!agg.rows.length){ box.innerHTML='<div style="color:#6B6860;font-size:13px;padding:10px 0">Keine Umlagerungen für diesen Monat/diese Filiale.</div>'; return; }
+  var head='<tr><th style="text-align:left;padding:6px 8px;border-bottom:2px solid #E8E4E0">Art.-Nr.</th><th style="text-align:left;padding:6px 8px;border-bottom:2px solid #E8E4E0">Artikelbezeichnung</th><th style="text-align:left;padding:6px 8px;border-bottom:2px solid #E8E4E0">Einheit</th>'
+    +agg.filialen.map(function(f){return '<th style="text-align:right;padding:6px 8px;border-bottom:2px solid #E8E4E0">'+f+'</th>';}).join('')
+    +'<th style="text-align:right;padding:6px 8px;border-bottom:2px solid #E8E4E0">Gesamt</th></tr>';
+  var body=agg.rows.map(function(r){
+    return '<tr><td style="padding:5px 8px;border-bottom:1px solid #F0EDE8">'+r.art+'</td><td style="padding:5px 8px;border-bottom:1px solid #F0EDE8">'+r.name+'</td><td style="padding:5px 8px;border-bottom:1px solid #F0EDE8">'+r.einheit+'</td>'
+      +agg.filialen.map(function(f){return '<td style="text-align:right;padding:5px 8px;border-bottom:1px solid #F0EDE8">'+(r.byFil[f]?r.byFil[f]:'')+'</td>';}).join('')
+      +'<td style="text-align:right;padding:5px 8px;border-bottom:1px solid #F0EDE8;font-weight:700">'+(r.total||'')+'</td></tr>';
+  }).join('');
+  box.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:12.5px">'+head+body+'</table>';
+}
+function ugCopySummary(btn){
+  var monthEl=document.getElementById('ug-sum-month');
+  var month=monthEl?monthEl.value:invDefaultMonth();
+  var von=(document.getElementById('ug-sum-von')||{}).value||'';
+  var agg=ugAggregate(month, von);
+  var header=['Artikel-Nr.','Artikelbezeichnung','Einheit'].concat(agg.filialen).concat(['Gesamt']);
+  var lines=[header.join('\t')];
+  agg.rows.forEach(function(r){
+    var cells=[r.art, r.name, r.einheit].concat(agg.filialen.map(function(f){ return r.byFil[f]?r.byFil[f]:''; })).concat([r.total||'']);
+    lines.push(cells.join('\t'));
+  });
+  blCopyPay(lines.join('\n'), btn);
 }
 
 // ════════ FILIAL-VERTEILUNG (Haupt + Zweitfilialen) ════════

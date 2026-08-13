@@ -219,6 +219,7 @@ window.onerror=function(msg,src,line){
     <button class="app-ico" id="ico-av" onclick="maNav('av')"><span class="nw-dot" id="av-dot" style="display:none"></span><span class="ico-e">📝</span><span class="ico-l" data-i18n="nav_av">Vertrag</span></button>
     <button class="app-ico" id="ico-bl" onclick="maNav('bl')"><span class="nw-dot" id="bl-dot" style="display:none"></span><span class="ico-e">🧾</span><span class="ico-l" data-i18n="nav_bl">Belege</span></button>
     <button class="app-ico" id="ico-we" onclick="maNav('we')"><span class="ico-e">🚚</span><span class="ico-l" data-i18n="nav_we">Wareneingang</span></button>
+    <button class="app-ico" id="ico-ug" onclick="maNav('ug')"><span class="ico-e">🔄</span><span class="ico-l" data-i18n="nav_ug">Umlagerung</span></button>
 
     <button class="app-ico" id="ico-nw" onclick="maNav('nw')"><span class="nw-dot" id="nw-dot"></span><span class="ico-e">📢</span><span class="ico-l" data-i18n="nav_nw">Infos</span></button>
     <button class="app-ico" id="ico-sl" onclick="maNav('sl')" style="display:none"><span class="ico-e">📋</span><span class="ico-l" data-i18n="nav_sl">Planung</span></button>
@@ -402,6 +403,32 @@ window.onerror=function(msg,src,line){
 
       <div class="btn-row">
         <button class="btn btn-grn" onclick="weSubmit()" data-i18n="btn_we_submit">📤 Reklamation senden</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── UMLAGERUNG (Warenausleihe zwischen Filialen) ── -->
+  <div class="panel" id="p-ug">
+    <div class="card">
+      <div class="card-title" data-i18n="ug_title">🔄 Umlagerung</div>
+      <div class="info" data-i18n="ug_info"></div>
+      <div id="ug-info" style="font-size:13px;color:var(--mut);margin-bottom:10px"></div>
+      <label data-i18n="lbl_ug_von">Woher wurde die Ware geholt?</label>
+      <select id="ug-von"><option value="" data-i18n="ug_von_placeholder">— Filiale wählen —</option></select>
+      <label data-i18n="lbl_ug_datum">Datum</label>
+      <input type="date" id="ug-datum">
+
+      <input type="search" id="ug-search" placeholder="🔍 Produkt suchen..." oninput="ugSearchInput()" style="margin-top:14px">
+      <div id="ug-cats" style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0;overflow-x:auto"></div>
+      <div id="ug-list"></div>
+
+      <div style="margin-top:18px;border-top:1px solid var(--brd);padding-top:14px">
+        <div style="font-size:14px;font-weight:600;margin-bottom:8px" data-i18n="ug_cart_title">🛒 Deine Auswahl</div>
+        <div id="ug-cart"></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-grn" onclick="ugSubmit()" data-i18n="btn_ug_submit">📤 Umlagerung melden</button>
       </div>
     </div>
   </div>
@@ -1380,6 +1407,14 @@ de:{_name:'Deutsch',
  we_need_items:'Bitte mindestens einen Artikel hinzufügen.',we_need_artikel:'Bitte bei jedem Artikel den Namen angeben.',we_need_fehlerart:'Bitte bei jedem Artikel die Art des Problems wählen.',
  we_need_ganze_beschreibung:'Bitte kurz beschreiben, was passiert ist.',
  we_photo_budget_txt:'{kb} KB von {max} KB Fotos verwendet',we_photo_too_big:'Foto zu groß – Fotos in diesem Bericht zusammen: {kb} KB von {max} KB erlaubt. Bitte ein anderes Foto entfernen oder erneut aufnehmen.',
+ nav_ug:'Umlagerung',ug_title:'🔄 Umlagerung',
+ ug_info:'Hast du Ware informell aus einer anderen Filiale mitgenommen (z.B. weil dort etwas fehlte)? Bitte hier melden, damit nichts vergessen wird — dein Gebietsleiter überträgt es monatlich in die Umlagerungsliste.',
+ lbl_ug_von:'Woher wurde die Ware geholt?',ug_von_placeholder:'— Filiale wählen —',lbl_ug_datum:'Datum',
+ ug_cart_title:'🛒 Deine Auswahl',ug_cart_empty:'Noch keine Artikel ausgewählt. Oben suchen oder Kategorie wählen und antippen.',
+ btn_ug_submit:'📤 Umlagerung melden',ug_sent:'✓ Umlagerung gemeldet – danke!',ug_fail:'Fehler: ',
+ ug_need_own_filiale:'Deiner Personalnummer ist keine Filiale zugeordnet. Bitte Gebietsleiter kontaktieren.',
+ ug_need_von:'Bitte auswählen, aus welcher Filiale die Ware geholt wurde.',ug_need_datum:'Bitte ein Datum wählen.',
+ ug_need_items:'Bitte mindestens einen Artikel hinzufügen.',ug_need_menge:'Bitte bei jedem Artikel eine Menge größer als 0 angeben.',
  months:['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
  wdS:['So','Mo','Di','Mi','Do','Fr','Sa'],
  wdL:['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag']},
@@ -1433,6 +1468,14 @@ vi:{_name:'Tiếng Việt',
  we_need_items:'Vui lòng thêm ít nhất một mặt hàng.',we_need_artikel:'Vui lòng nhập tên cho mỗi mặt hàng.',we_need_fehlerart:'Vui lòng chọn loại vấn đề cho mỗi mặt hàng.',
  we_need_ganze_beschreibung:'Vui lòng mô tả ngắn gọn chuyện gì đã xảy ra.',
  we_photo_budget_txt:'Đã dùng {kb} KB / {max} KB cho ảnh',we_photo_too_big:'Ảnh quá lớn – tổng dung lượng ảnh trong báo cáo này: {kb} KB / {max} KB cho phép. Vui lòng xóa bớt ảnh hoặc chụp lại.',
+ nav_ug:'Chuyển hàng',ug_title:'🔄 Chuyển hàng giữa tiệm',
+ ug_info:'Bạn đã lấy hàng tạm từ tiệm khác (vd vì tiệm mình thiếu)? Hãy báo ở đây để không bị quên — quản lý khu vực sẽ tổng hợp vào báo cáo Umlagerungsliste hàng tháng.',
+ lbl_ug_von:'Đã lấy hàng từ tiệm nào?',ug_von_placeholder:'— Chọn tiệm —',lbl_ug_datum:'Ngày',
+ ug_cart_title:'🛒 Danh sách đã chọn',ug_cart_empty:'Chưa chọn mặt hàng nào. Tìm kiếm hoặc chọn danh mục ở trên rồi bấm vào.',
+ btn_ug_submit:'📤 Gửi báo cáo chuyển hàng',ug_sent:'✓ Đã gửi báo cáo – cảm ơn!',ug_fail:'Lỗi: ',
+ ug_need_own_filiale:'Mã số nhân viên của bạn chưa có tiệm. Vui lòng liên hệ quản lý khu vực.',
+ ug_need_von:'Vui lòng chọn đã lấy hàng từ tiệm nào.',ug_need_datum:'Vui lòng chọn ngày.',
+ ug_need_items:'Vui lòng thêm ít nhất một mặt hàng.',ug_need_menge:'Vui lòng nhập số lượng lớn hơn 0 cho mỗi mặt hàng.',
  months:['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'],
  wdS:['CN','T2','T3','T4','T5','T6','T7'],
  wdL:['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy']},
@@ -1486,6 +1529,14 @@ en:{_name:'English',
  we_need_items:'Please add at least one item.',we_need_artikel:'Please enter a name for every item.',we_need_fehlerart:'Please choose a problem type for every item.',
  we_need_ganze_beschreibung:'Please briefly describe what happened.',
  we_photo_budget_txt:'{kb} KB of {max} KB used for photos',we_photo_too_big:'Photo too big – total photos in this report: {kb} KB of {max} KB allowed. Please remove a photo or retake it.',
+ nav_ug:'Stock Transfer',ug_title:'🔄 Stock Transfer',
+ ug_info:'Did you informally take stock from another store (e.g. because yours was short)? Report it here so it doesn’t get forgotten — your area manager will add it to the monthly Umlagerungsliste.',
+ lbl_ug_von:'Which store did you take it from?',ug_von_placeholder:'— Select store —',lbl_ug_datum:'Date',
+ ug_cart_title:'🛒 Your selection',ug_cart_empty:'No items selected yet. Search or pick a category above and tap an item.',
+ btn_ug_submit:'📤 Report transfer',ug_sent:'✓ Transfer reported – thank you!',ug_fail:'Error: ',
+ ug_need_own_filiale:'No store is assigned to your employee number. Please contact your area manager.',
+ ug_need_von:'Please select which store the stock was taken from.',ug_need_datum:'Please select a date.',
+ ug_need_items:'Please add at least one item.',ug_need_menge:'Please enter a quantity greater than 0 for every item.',
  months:['January','February','March','April','May','June','July','August','September','October','November','December'],
  wdS:['Su','Mo','Tu','We','Th','Fr','Sa'],
  wdL:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']},
@@ -1539,6 +1590,14 @@ th:{_name:'ไทย',
  we_need_items:'กรุณาเพิ่มสินค้าอย่างน้อยหนึ่งรายการ',we_need_artikel:'กรุณาระบุชื่อสินค้าทุกรายการ',we_need_fehlerart:'กรุณาเลือกประเภทปัญหาสำหรับทุกรายการ',
  we_need_ganze_beschreibung:'กรุณาอธิบายสั้นๆ ว่าเกิดอะไรขึ้น',
  we_photo_budget_txt:'ใช้ไปแล้ว {kb} KB จาก {max} KB สำหรับรูปภาพ',we_photo_too_big:'รูปใหญ่เกินไป – รูปทั้งหมดในรายงานนี้: {kb} KB จาก {max} KB ที่อนุญาต กรุณาลบรูปหรือถ่ายใหม่',
+ nav_ug:'โอนย้ายสินค้า',ug_title:'🔄 โอนย้ายสินค้าระหว่างสาขา',
+ ug_info:'คุณหยิบสินค้าจากสาขาอื่นแบบไม่เป็นทางการหรือไม่ (เช่น เพราะสาขาคุณขาดของ)? กรุณาแจ้งที่นี่เพื่อไม่ให้ลืม — ผู้จัดการเขตจะรวมเข้ารายงาน Umlagerungsliste ประจำเดือน',
+ lbl_ug_von:'หยิบสินค้ามาจากสาขาไหน?',ug_von_placeholder:'— เลือกสาขา —',lbl_ug_datum:'วันที่',
+ ug_cart_title:'🛒 รายการที่เลือก',ug_cart_empty:'ยังไม่ได้เลือกสินค้า ค้นหาหรือเลือกหมวดหมู่ด้านบนแล้วแตะเพื่อเพิ่ม',
+ btn_ug_submit:'📤 ส่งรายงานการโอนย้าย',ug_sent:'✓ ส่งรายงานแล้ว – ขอบคุณ!',ug_fail:'ข้อผิดพลาด: ',
+ ug_need_own_filiale:'รหัสพนักงานของคุณไม่มีสาขาที่กำหนดไว้ กรุณาติดต่อผู้จัดการเขต',
+ ug_need_von:'กรุณาเลือกว่าหยิบสินค้ามาจากสาขาไหน',ug_need_datum:'กรุณาเลือกวันที่',
+ ug_need_items:'กรุณาเพิ่มสินค้าอย่างน้อยหนึ่งรายการ',ug_need_menge:'กรุณาระบุจำนวนมากกว่า 0 สำหรับทุกรายการ',
  months:['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'],
  wdS:['อา','จ','อ','พ','พฤ','ศ','ส'],
  wdL:['วันอาทิตย์','วันจันทร์','วันอังคาร','วันพุธ','วันพฤหัสบดี','วันศุกร์','วันเสาร์']}
@@ -1723,6 +1782,7 @@ function maShowApp(sess){
       if(typeof maStartFbPush==='function') maStartFbPush(sess);
       slInit(sess);
       ivInit(sess);
+      ugInit(sess);
       blStartListener();
       avEStartListener();
     };
@@ -1731,7 +1791,7 @@ function maShowApp(sess){
   }
 }
 function maNav(t){
-  ['dp','ul','kr','bl','av','nw','sl','iv','we'].forEach(function(x){
+  ['dp','ul','kr','bl','av','nw','sl','iv','we','ug'].forEach(function(x){
     var p=document.getElementById('p-'+x);
     var ic=document.getElementById('ico-'+x);
     if(p) p.classList.toggle('active',x===t);
@@ -1745,6 +1805,7 @@ function maNav(t){
   if(t==='sl'){slLoadPlan();}
   if(t==='iv'){ivRender();}
   if(t==='we'){weRenderItems();weUpdateBudget();}
+  if(t==='ug'){ugOnShow();}
 }
 
 /* ════════════════════════════════════════════════
@@ -1944,6 +2005,183 @@ function weResetForm(){
   weItems=[];
   weRenderItems();
   weUpdateBudget();
+}
+
+/* ════════════════════════════════════════════════
+   UMLAGERUNG (Warenausleihe zwischen Filialen)
+   ════════════════════════════════════════════════ */
+var ugCfg={catOrder:[],itemCat:{}}, ugCfgUnsub=null;
+var ugCat='fisch', ugItems=[], ugItemSeq=0;
+var ugVonList=[], ugVonLoaded=false;
+
+function ugItemCat(it){ return ugCfg.itemCat[it[0]] || it[1]; }
+function ugEffCats(){
+  var base=(typeof INVENTUR_CATS!=='undefined')?INVENTUR_CATS.slice():[];
+  var keys=base.map(function(c){return c[0];});
+  var ordered=ugCfg.catOrder.filter(function(k){return keys.indexOf(k)!==-1;});
+  keys.forEach(function(k){ if(ordered.indexOf(k)===-1) ordered.push(k); });
+  return ordered.map(function(k){
+    for(var i=0;i<base.length;i++) if(base[i][0]===k) return base[i];
+    return null;
+  }).filter(Boolean);
+}
+function ugToday(){
+  var n=new Date();
+  return n.getFullYear()+'-'+('0'+(n.getMonth()+1)).slice(-2)+'-'+('0'+n.getDate()).slice(-2);
+}
+
+function ugInit(sess){
+  if(typeof INVENTUR_ITEMS==='undefined') return;
+  if(!sess||!fbReady||!fbDb) return;
+  if(ugCfgUnsub){try{ugCfgUnsub();}catch(e){}}
+  ugCfgUnsub=fbDb.collection('inventur_config').doc('current').onSnapshot(function(doc){
+    var d=doc.exists?doc.data():null;
+    ugCfg={catOrder:(d&&d.catOrder)||[], itemCat:(d&&d.itemCat)||{}};
+    if(document.getElementById('p-ug')&&document.getElementById('p-ug').classList.contains('active')){ ugRenderCats(); ugRenderList(); }
+  }, function(e){ console.warn('ug cfg', e); });
+  ugPopulateVon(sess);
+}
+function ugPopulateVon(sess){
+  if(!fbReady||!fbDb) return;
+  fbDb.collection('emps').get().then(function(snap){
+    var set={};
+    snap.forEach(function(doc){ var f=(doc.data()||{}).filiale; if(f && f!==sess.filiale) set[f]=1; });
+    ugVonList=Object.keys(set).sort(); ugVonLoaded=true; ugRenderVonOptions();
+  }).catch(function(e){ console.warn('ug emps', e); });
+}
+function ugRenderVonOptions(){
+  var sel=document.getElementById('ug-von'); if(!sel) return;
+  var cur=sel.value;
+  sel.innerHTML='<option value="">'+t('ug_von_placeholder')+'</option>'+ugVonList.map(function(f){return '<option value="'+f+'">'+f+'</option>';}).join('');
+  if(cur && ugVonList.indexOf(cur)!==-1) sel.value=cur;
+}
+
+function ugOnShow(){
+  var sess=maSession(); if(!sess) return;
+  var info=document.getElementById('ug-info'); if(info) info.innerHTML='🏪 <strong>'+(sess.filiale||'—')+'</strong>';
+  var dt=document.getElementById('ug-datum'); if(dt && !dt.value) dt.value=ugToday();
+  if(!ugVonLoaded) ugPopulateVon(sess); else ugRenderVonOptions();
+  ugRenderCats();
+  ugRenderList();
+  ugRenderCart();
+}
+
+function ugRenderCats(){
+  var box=document.getElementById('ug-cats'); if(!box) return;
+  var lang=(typeof MA_LANG!=='undefined'?MA_LANG:'de');
+  var idx={de:1,vi:2,en:3,th:4}[lang]||1;
+  var present={}; INVENTUR_ITEMS.forEach(function(it){ present[ugItemCat(it)]=true; });
+  box.innerHTML=ugEffCats().filter(function(c){return present[c[0]];}).map(function(c){
+    var on=c[0]===ugCat;
+    return '<button onclick="ugSetCat(\''+c[0]+'\')" style="white-space:nowrap;border-radius:99px;padding:6px 12px;font-size:12px;border:1px solid '+(on?'var(--grn)':'var(--brd)')+';background:'+(on?'var(--grn)':'var(--surf)')+';color:'+(on?'#fff':'var(--mut)')+';cursor:pointer">'+c[idx]+'</button>';
+  }).join('');
+}
+function ugSetCat(c){ ugCat=c; ugRenderCats(); ugRenderList(); }
+function ugSearchInput(){
+  var box=document.getElementById('ug-cats');
+  var q=(document.getElementById('ug-search').value||'').trim();
+  if(box) box.style.display=q?'none':'flex';
+  ugRenderList();
+}
+function ugRenderList(){
+  var box=document.getElementById('ug-list'); if(!box) return;
+  var lang=(typeof MA_LANG!=='undefined'?MA_LANG:'de');
+  var li={de:3,vi:4,en:5,th:6}[lang]||3;
+  var sEl=document.getElementById('ug-search');
+  var q=sEl?(sEl.value||'').toLowerCase().trim():'';
+  var items;
+  if(q){
+    items=INVENTUR_ITEMS.filter(function(it){
+      return (it[0]+' '+it[3]+' '+it[4]+' '+it[5]+' '+it[6]).toLowerCase().indexOf(q)!==-1;
+    });
+  } else {
+    items=INVENTUR_ITEMS.filter(function(it){return ugItemCat(it)===ugCat;});
+  }
+  if(!items.length){
+    box.innerHTML='<div style="padding:22px 4px;text-align:center;color:var(--mut);font-size:14px">'+t('iv_no_result')+'</div>';
+    return;
+  }
+  box.innerHTML=items.map(function(it){
+    var art=it[0], einheit=it[2], de=it[3], tr=it[li];
+    var inCart=ugItems.some(function(x){return x.artikelnr===art;});
+    var trLine=(lang!=='de')?'<div style="font-size:13px;color:var(--grn)">'+tr+'</div>':'';
+    return '<div onclick="ugAddToCart(\''+art+'\')" style="display:flex;align-items:center;gap:10px;padding:11px 2px;border-bottom:0.5px solid var(--brd);cursor:pointer">'
+      +'<div style="flex:1;min-width:0"><div style="font-size:15px;font-weight:500">'+de+'</div>'+trLine
+      +'<div style="font-size:11px;color:var(--mut);margin-top:1px">Art. '+art+' · '+einheit+'</div></div>'
+      +'<div style="font-size:20px;color:'+(inCart?'var(--grn)':'var(--mut)')+'">'+(inCart?'✓':'➕')+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function ugAddToCart(art){
+  var it=INVENTUR_ITEMS.find(function(x){return x[0]===art;}); if(!it) return;
+  var ex=ugItems.find(function(x){return x.artikelnr===art;});
+  if(ex){ ex.menge=(parseFloat(ex.menge)||0)+1; }
+  else { ugItems.push({lid:'u'+(ugItemSeq++), artikelnr:art, artikelname:it[3], einheit:it[2], menge:1}); }
+  ugRenderList();
+  ugRenderCart();
+}
+function ugCartQty(lid,val){
+  var it=ugItems.find(function(x){return x.lid===lid;});
+  if(it) it.menge=val;
+}
+function ugCartRemove(lid){
+  ugItems=ugItems.filter(function(x){return x.lid!==lid;});
+  ugRenderList();
+  ugRenderCart();
+}
+function ugRenderCart(){
+  var box=document.getElementById('ug-cart'); if(!box) return;
+  if(!ugItems.length){
+    box.innerHTML='<div style="font-size:13px;color:var(--mut)">'+t('ug_cart_empty')+'</div>';
+    return;
+  }
+  box.innerHTML=ugItems.map(function(it){
+    return '<div style="display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:0.5px solid var(--brd)">'
+      +'<div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:500">'+it.artikelname+'</div>'
+      +'<div style="font-size:11px;color:var(--mut)">Art. '+it.artikelnr+' · '+it.einheit+'</div></div>'
+      +'<input type="number" inputmode="decimal" min="0" step="0.1" value="'+it.menge+'" oninput="ugCartQty(\''+it.lid+'\',this.value)" style="width:62px;text-align:center;font-size:16px">'
+      +'<button class="btn" style="width:auto;padding:6px 10px;font-size:12px" onclick="ugCartRemove(\''+it.lid+'\')">'+t('btn_we_remove')+'</button>'
+      +'</div>';
+  }).join('');
+}
+
+function ugValidate(){
+  var sess=maSession();
+  if(!sess||!sess.filiale){ toast(t('ug_need_own_filiale'),true); return false; }
+  var von=document.getElementById('ug-von').value;
+  if(!von){ toast(t('ug_need_von'),true); return false; }
+  var datum=document.getElementById('ug-datum').value;
+  if(!datum){ toast(t('ug_need_datum'),true); return false; }
+  if(!ugItems.length){ toast(t('ug_need_items'),true); return false; }
+  for(var i=0;i<ugItems.length;i++){
+    if(!(parseFloat(ugItems[i].menge)>0)){ toast(t('ug_need_menge'),true); return false; }
+  }
+  return true;
+}
+function ugSubmit(){
+  var sess=maSession(); if(!sess) return;
+  if(!ugValidate()) return;
+  if(!fbReady||!fbDb){ toast(t('ug_fail')+'offline',true); return; }
+  var doc={
+    empId:''+sess.id, empName:sess.name, filiale:sess.filiale||'',
+    vonFiliale:document.getElementById('ug-von').value,
+    datum:document.getElementById('ug-datum').value,
+    items:ugItems.map(function(it){ return {artikelnr:it.artikelnr, artikelname:it.artikelname, einheit:it.einheit, menge:parseFloat(it.menge)||0}; }),
+    status:'offen', createdAt:new Date().toISOString(), uebertragenAt:null
+  };
+  fbDb.collection('umlagerung').add(doc).then(function(){
+    toast(t('ug_sent'));
+    ugResetForm();
+  }).catch(function(e){ toast(t('ug_fail')+e.message,true); });
+}
+function ugResetForm(){
+  document.getElementById('ug-von').value='';
+  document.getElementById('ug-datum').value=ugToday();
+  var s=document.getElementById('ug-search'); if(s) s.value='';
+  ugItems=[];
+  ugRenderList();
+  ugRenderCart();
 }
 
 /* ════════════════════════════════════════════════
