@@ -218,6 +218,7 @@ window.onerror=function(msg,src,line){
     <button class="app-ico" id="ico-kr" onclick="maNav('kr')"><span class="ico-e">🏥</span><span class="ico-l" data-i18n="nav_kr">Krankmeldung</span></button>
     <button class="app-ico" id="ico-av" onclick="maNav('av')"><span class="nw-dot" id="av-dot" style="display:none"></span><span class="ico-e">📝</span><span class="ico-l" data-i18n="nav_av">Vertrag</span></button>
     <button class="app-ico" id="ico-bl" onclick="maNav('bl')"><span class="nw-dot" id="bl-dot" style="display:none"></span><span class="ico-e">🧾</span><span class="ico-l" data-i18n="nav_bl">Belege</span></button>
+    <button class="app-ico" id="ico-we" onclick="maNav('we')"><span class="ico-e">🚚</span><span class="ico-l" data-i18n="nav_we">Wareneingang</span></button>
 
     <button class="app-ico" id="ico-nw" onclick="maNav('nw')"><span class="nw-dot" id="nw-dot"></span><span class="ico-e">📢</span><span class="ico-l" data-i18n="nav_nw">Infos</span></button>
     <button class="app-ico" id="ico-sl" onclick="maNav('sl')" style="display:none"><span class="ico-e">📋</span><span class="ico-l" data-i18n="nav_sl">Planung</span></button>
@@ -353,6 +354,55 @@ window.onerror=function(msg,src,line){
     <div class="card">
       <div class="card-title" data-i18n="bl_list_title">📋 Meine Belege</div>
       <div id="bl-list"></div>
+    </div>
+  </div>
+
+  <!-- ── WARENEINGANG-REKLAMATION ── -->
+  <div class="panel" id="p-we">
+    <div class="card">
+      <div class="card-title" data-i18n="we_title">🚚 Wareneingang-Reklamation</div>
+      <div class="info" data-i18n="we_info"></div>
+      <label data-i18n="lbl_we_lieferant">Lieferant</label>
+      <input type="text" id="we-lieferant" list="we-lief-list" placeholder="z.B. Schwan Asia Food">
+      <datalist id="we-lief-list"><option value="Schwan Asia Food"><option value="Sonstiger"></datalist>
+      <div class="row2">
+        <div><label data-i18n="lbl_we_lsnr">Lieferschein-Nr.</label><input type="text" id="we-lsnr" placeholder="z.B. 123456"></div>
+        <div><label data-i18n="lbl_we_lsdatum">Lieferdatum</label><input type="date" id="we-lsdatum"></div>
+      </div>
+      <label data-i18n="lbl_we_lsfoto">Foto vom Lieferschein</label>
+      <div class="drop" id="we-ls-drop" onclick="document.getElementById('we-ls-file').click()">
+        <div class="drop-icon">📷</div><span data-i18n="drop_txt">Foto hochladen oder Kamera öffnen</span>
+        <input type="file" id="we-ls-file" accept="image/*" capture="environment" style="display:none" onchange="weLieferscheinPhoto(event)">
+      </div>
+      <img id="we-ls-prev" class="photo-prev" style="display:none">
+
+      <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-weight:500;font-size:13px;color:var(--txt);margin-top:16px">
+        <input type="checkbox" id="we-ganze-fehlt" onchange="weToggleGanze()" style="width:auto">
+        <span data-i18n="lbl_we_ganze_fehlt">Die gesamte Lieferung ist nicht angekommen</span>
+      </label>
+
+      <div id="we-ganze-wrap" style="display:none">
+        <label data-i18n="lbl_we_ganze_beschreibung">Was ist passiert?</label>
+        <textarea id="we-ganze-beschreibung"></textarea>
+      </div>
+
+      <div id="we-items-section">
+        <div id="we-items"></div>
+        <div class="btn-row">
+          <button class="btn" onclick="weAddItem()" data-i18n="btn_we_add_item">➕ Artikel hinzufügen</button>
+        </div>
+      </div>
+
+      <div style="margin-top:14px">
+        <div style="height:6px;border-radius:4px;background:var(--brd);overflow:hidden">
+          <div id="we-budget-bar" style="height:100%;width:0%;background:var(--red);transition:width .2s"></div>
+        </div>
+        <div id="we-budget-txt" style="font-size:11px;color:var(--mut);margin-top:4px"></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-grn" onclick="weSubmit()" data-i18n="btn_we_submit">📤 Reklamation senden</button>
+      </div>
     </div>
   </div>
 
@@ -1318,6 +1368,18 @@ de:{_name:'Deutsch',
  nw_read_btn:'✓ Gelesen – bestätigen',nw_read_done:'✓ Als gelesen bestätigt',nw_read_toast:'✓ Lesebestätigung gesendet',
  nav_iv:'📦 Inventur',iv_title:'📦 Inventur',iv_progress:'Fortschritt',iv_save:'💾 Entwurf speichern',iv_submit:'✓ An HR senden',iv_saved:'✓ Entwurf gespeichert',iv_sent:'✓ An HR gesendet – danke!',iv_none:'Aktuell läuft keine Inventur.',iv_active:'🟢 Inventur aktiv',iv_count:'Bitte alle Artikel zählen und Menge eintragen.',iv_search:'Suchen…',nav_sl:'📋 Planung',sl_title:'📋 Dienstplan-Planung',sl_loading:'⏳ Lade Dienstplan…',sl_empty:'Noch kein Dienstplan für diesen Monat.',sl_pub_ok:'✓ KW {kw} veröffentlicht',sl_pub_err:'Fehler beim Veröffentlichen',sl_pub_btn:'☁️ KW {kw} veröffentlichen',sl_no_emps:'Keine Mitarbeiter in dieser Filiale. Bitte HR kontaktieren.',err_net:'Keine Verbindung – bitte erneut versuchen.',
  wa_missing:'WhatsApp-Nummer fehlt. Nachricht kopieren:',inst_title:'App auf dem Startbildschirm',inst_btn:'Jetzt installieren',inst_ios:'1️⃣ Diese Seite in <strong>Safari</strong> öffnen (in WhatsApp: Teilen → „In Safari öffnen")<br>2️⃣ Unten auf <strong>Teilen</strong> ⬆️ tippen<br>3️⃣ <strong>„Zum Home-Bildschirm"</strong> wählen',
+ nav_we:'Wareneingang',we_title:'🚚 Wareneingang-Reklamation',
+ we_info:'Bei Problemen mit einer Lieferung (fehlende Ware, beschädigt, nicht frisch...) hier melden. Foto vom Lieferschein + betroffenen Artikeln machen und kurz beschreiben — dein Gebietsleiter kümmert sich um die Reklamation beim Lieferanten.',
+ lbl_we_lieferant:'Lieferant',lbl_we_lsnr:'Lieferschein-Nr.',lbl_we_lsdatum:'Lieferdatum',lbl_we_lsfoto:'Foto vom Lieferschein',
+ lbl_we_ganze_fehlt:'Die gesamte Lieferung ist nicht angekommen',lbl_we_ganze_beschreibung:'Was ist passiert?',
+ btn_we_add_item:'➕ Artikel hinzufügen',lbl_we_artikel:'Artikel (Name/Nummer)',lbl_we_bestellt:'Menge bestellt',lbl_we_erhalten:'Menge erhalten',
+ lbl_we_fehlerart:'Art des Problems',we_fa_fehlmenge:'Fehlmenge',we_fa_beschaedigt:'Beschädigt',we_fa_nicht_frisch:'Nicht frisch',we_fa_falscher_artikel:'Falscher Artikel',we_fa_sonstiges:'Sonstiges',
+ lbl_we_beschreibung:'Kurzbeschreibung',lbl_we_foto_item:'Foto (optional)',btn_we_remove:'🗑 Entfernen',btn_we_submit:'📤 Reklamation senden',
+ we_sent:'✓ Reklamation gesendet – danke!',we_fail:'Fehler: ',
+ we_need_lieferant:'Bitte Lieferant angeben.',we_need_lsdatum:'Bitte Lieferdatum angeben.',we_need_lsnr:'Bitte Lieferschein-Nr. angeben.',
+ we_need_items:'Bitte mindestens einen Artikel hinzufügen.',we_need_artikel:'Bitte bei jedem Artikel den Namen angeben.',we_need_fehlerart:'Bitte bei jedem Artikel die Art des Problems wählen.',
+ we_need_ganze_beschreibung:'Bitte kurz beschreiben, was passiert ist.',
+ we_photo_budget_txt:'{kb} KB von {max} KB Fotos verwendet',we_photo_too_big:'Foto zu groß – Fotos in diesem Bericht zusammen: {kb} KB von {max} KB erlaubt. Bitte ein anderes Foto entfernen oder erneut aufnehmen.',
  months:['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
  wdS:['So','Mo','Di','Mi','Do','Fr','Sa'],
  wdL:['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag']},
@@ -1359,6 +1421,18 @@ vi:{_name:'Tiếng Việt',
  nw_read_btn:'✓ Đã đọc – xác nhận',nw_read_done:'✓ Đã xác nhận đã đọc',nw_read_toast:'✓ Đã gửi xác nhận đã đọc',
  nav_iv:'📦 Kiểm kê',iv_title:'📦 Kiểm kê kho',iv_progress:'Tiến độ',iv_save:'💾 Lưu nháp',iv_submit:'✓ Gửi cho HR',iv_saved:'✓ Đã lưu nháp',iv_sent:'✓ Đã gửi cho HR – cảm ơn!',iv_none:'Hiện không có đợt kiểm kê nào.',iv_active:'🟢 Đang kiểm kê',iv_count:'Vui lòng đếm và nhập số lượng từng món.',iv_search:'Tìm kiếm…',nav_sl:'📋 Lập lịch',sl_title:'📋 Lập lịch làm việc',sl_loading:'⏳ Đang tải lịch…',sl_empty:'Chưa có lịch làm cho tháng này.',sl_pub_ok:'✓ Đã đăng tuần {kw}',sl_pub_err:'Lỗi khi đăng lịch',sl_pub_btn:'☁️ Đăng tuần {kw}',sl_no_emps:'Chưa có nhân viên ở tiệm này. Vui lòng liên hệ HR.',err_net:'Mất kết nối – vui lòng thử lại.',
  wa_missing:'Thiếu số WhatsApp. Sao chép tin nhắn:',inst_title:'Cài app ra màn hình chính',inst_btn:'Cài đặt ngay',inst_ios:'1️⃣ Mở trang này bằng <strong>Safari</strong> (trong WhatsApp: Chia sẻ → „Mở bằng Safari")<br>2️⃣ Bấm nút <strong>Chia sẻ</strong> ⬆️ phía dưới<br>3️⃣ Chọn <strong>„Thêm vào Màn hình chính"</strong>',
+ nav_we:'Hàng nhận',we_title:'🚚 Báo cáo hàng nhận có vấn đề',
+ we_info:'Khi hàng giao có vấn đề (thiếu hàng, hư hỏng, không tươi...) hãy báo ở đây. Chụp ảnh phiếu giao hàng + các mặt hàng bị lỗi và mô tả ngắn gọn — quản lý khu vực sẽ liên hệ nhà cung cấp để khiếu nại.',
+ lbl_we_lieferant:'Nhà cung cấp',lbl_we_lsnr:'Số phiếu giao hàng (Lieferschein)',lbl_we_lsdatum:'Ngày giao hàng',lbl_we_lsfoto:'Ảnh phiếu giao hàng',
+ lbl_we_ganze_fehlt:'Toàn bộ lô hàng không đến',lbl_we_ganze_beschreibung:'Chuyện gì đã xảy ra?',
+ btn_we_add_item:'➕ Thêm mặt hàng',lbl_we_artikel:'Mặt hàng (tên/mã số)',lbl_we_bestellt:'Số lượng đặt',lbl_we_erhalten:'Số lượng nhận',
+ lbl_we_fehlerart:'Loại vấn đề',we_fa_fehlmenge:'Thiếu hàng',we_fa_beschaedigt:'Hư hỏng',we_fa_nicht_frisch:'Không tươi',we_fa_falscher_artikel:'Sai hàng',we_fa_sonstiges:'Khác',
+ lbl_we_beschreibung:'Mô tả ngắn',lbl_we_foto_item:'Ảnh (không bắt buộc)',btn_we_remove:'🗑 Xóa',btn_we_submit:'📤 Gửi báo cáo',
+ we_sent:'✓ Đã gửi báo cáo – cảm ơn!',we_fail:'Lỗi: ',
+ we_need_lieferant:'Vui lòng nhập nhà cung cấp.',we_need_lsdatum:'Vui lòng nhập ngày giao hàng.',we_need_lsnr:'Vui lòng nhập số phiếu giao hàng.',
+ we_need_items:'Vui lòng thêm ít nhất một mặt hàng.',we_need_artikel:'Vui lòng nhập tên cho mỗi mặt hàng.',we_need_fehlerart:'Vui lòng chọn loại vấn đề cho mỗi mặt hàng.',
+ we_need_ganze_beschreibung:'Vui lòng mô tả ngắn gọn chuyện gì đã xảy ra.',
+ we_photo_budget_txt:'Đã dùng {kb} KB / {max} KB cho ảnh',we_photo_too_big:'Ảnh quá lớn – tổng dung lượng ảnh trong báo cáo này: {kb} KB / {max} KB cho phép. Vui lòng xóa bớt ảnh hoặc chụp lại.',
  months:['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'],
  wdS:['CN','T2','T3','T4','T5','T6','T7'],
  wdL:['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy']},
@@ -1400,6 +1474,18 @@ en:{_name:'English',
  nw_read_btn:'✓ Mark as read',nw_read_done:'✓ Confirmed as read',nw_read_toast:'✓ Read receipt sent',
  nav_iv:'📦 Inventory',iv_title:'📦 Inventory count',iv_progress:'Progress',iv_save:'💾 Save draft',iv_submit:'✓ Send to HR',iv_saved:'✓ Draft saved',iv_sent:'✓ Sent to HR – thank you!',iv_none:'No inventory is currently running.',iv_active:'🟢 Inventory active',iv_count:'Please count and enter the quantity for each item.',iv_search:'Search…',nav_sl:'📋 Planning',sl_title:'📋 Schedule Planning',sl_loading:'⏳ Loading schedule…',sl_empty:'No schedule published for this month yet.',sl_pub_ok:'✓ Week {kw} published',sl_pub_err:'Error publishing',sl_pub_btn:'☁️ Publish week {kw}',sl_no_emps:'No employees in this store. Please contact HR.',err_net:'No connection – please try again.',
  wa_missing:'WhatsApp number missing. Copy the message:',inst_title:'Install app to home screen',inst_btn:'Install now',inst_ios:'1️⃣ Open this page in <strong>Safari</strong> (in WhatsApp: Share → "Open in Safari")<br>2️⃣ Tap <strong>Share</strong> ⬆️ at the bottom<br>3️⃣ Choose <strong>"Add to Home Screen"</strong>',
+ nav_we:'Goods Receipt',we_title:'🚚 Goods Receipt Complaint',
+ we_info:'If a delivery has a problem (missing items, damaged, not fresh...) report it here. Take a photo of the delivery note plus the affected items and add a short description — your area manager will file the complaint with the supplier.',
+ lbl_we_lieferant:'Supplier',lbl_we_lsnr:'Delivery note no. (Lieferschein)',lbl_we_lsdatum:'Delivery date',lbl_we_lsfoto:'Photo of delivery note',
+ lbl_we_ganze_fehlt:'The entire delivery did not arrive',lbl_we_ganze_beschreibung:'What happened?',
+ btn_we_add_item:'➕ Add item',lbl_we_artikel:'Item (name/number)',lbl_we_bestellt:'Quantity ordered',lbl_we_erhalten:'Quantity received',
+ lbl_we_fehlerart:'Type of problem',we_fa_fehlmenge:'Missing quantity',we_fa_beschaedigt:'Damaged',we_fa_nicht_frisch:'Not fresh',we_fa_falscher_artikel:'Wrong item',we_fa_sonstiges:'Other',
+ lbl_we_beschreibung:'Short description',lbl_we_foto_item:'Photo (optional)',btn_we_remove:'🗑 Remove',btn_we_submit:'📤 Send complaint',
+ we_sent:'✓ Complaint sent – thank you!',we_fail:'Error: ',
+ we_need_lieferant:'Please enter the supplier.',we_need_lsdatum:'Please enter the delivery date.',we_need_lsnr:'Please enter the delivery note number.',
+ we_need_items:'Please add at least one item.',we_need_artikel:'Please enter a name for every item.',we_need_fehlerart:'Please choose a problem type for every item.',
+ we_need_ganze_beschreibung:'Please briefly describe what happened.',
+ we_photo_budget_txt:'{kb} KB of {max} KB used for photos',we_photo_too_big:'Photo too big – total photos in this report: {kb} KB of {max} KB allowed. Please remove a photo or retake it.',
  months:['January','February','March','April','May','June','July','August','September','October','November','December'],
  wdS:['Su','Mo','Tu','We','Th','Fr','Sa'],
  wdL:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']},
@@ -1441,6 +1527,18 @@ th:{_name:'ไทย',
  nw_read_btn:'✓ อ่านแล้ว – ยืนยัน',nw_read_done:'✓ ยืนยันว่าอ่านแล้ว',nw_read_toast:'✓ ส่งการยืนยันการอ่านแล้ว',
  nav_iv:'📦 สต็อก',iv_title:'📦 ตรวจนับสต็อก',iv_progress:'ความคืบหน้า',iv_save:'💾 บันทึกร่าง',iv_submit:'✓ ส่งให้ HR',iv_saved:'✓ บันทึกร่างแล้ว',iv_sent:'✓ ส่งให้ HR แล้ว – ขอบคุณ!',iv_none:'ขณะนี้ไม่มีการตรวจนับ',iv_active:'🟢 กำลังตรวจนับ',iv_count:'กรุณานับและกรอกจำนวนของแต่ละรายการ',iv_search:'ค้นหา…',nav_sl:'📋 วางแผน',sl_title:'📋 วางแผนตารางงาน',sl_loading:'⏳ กำลังโหลดตาราง…',sl_empty:'ยังไม่มีตารางงานสำหรับเดือนนี้',sl_pub_ok:'✓ เผยแพร่สัปดาห์ {kw} แล้ว',sl_pub_err:'เกิดข้อผิดพลาดขึ้น',sl_pub_btn:'☁️ เผยแพร่สัปดาห์ {kw}',sl_no_emps:'ไม่มีพนักงานในสาขานี้ กรุณาติดต่อ HR',err_net:'ไม่มีการเชื่อมต่อ กรุณาลองใหม่',
  wa_missing:'ไม่มีเบอร์ WhatsApp คัดลอกข้อความ:',inst_title:'ติดตั้งแอปบนหน้าจอหลัก',inst_btn:'ติดตั้งเลย',inst_ios:'1️⃣ เปิดหน้านี้ใน <strong>Safari</strong> (ใน WhatsApp: แชร์ → „เปิดใน Safari")<br>2️⃣ แตะปุ่ม <strong>แชร์</strong> ⬆️ ด้านล่าง<br>3️⃣ เลือก <strong>„เพิ่มลงในหน้าจอโฮม"</strong>',
+ nav_we:'รับสินค้า',we_title:'🚚 แจ้งปัญหาสินค้าที่รับเข้า',
+ we_info:'หากการจัดส่งมีปัญหา (สินค้าขาด เสียหาย ไม่สด...) กรุณาแจ้งที่นี่ ถ่ายรูปใบส่งของ (Lieferschein) และสินค้าที่มีปัญหา พร้อมอธิบายสั้นๆ — ผู้จัดการเขตจะติดต่อร้องเรียนกับผู้จัดจำหน่ายให้',
+ lbl_we_lieferant:'ผู้จัดจำหน่าย',lbl_we_lsnr:'เลขที่ใบส่งของ (Lieferschein)',lbl_we_lsdatum:'วันที่จัดส่ง',lbl_we_lsfoto:'รูปใบส่งของ',
+ lbl_we_ganze_fehlt:'สินค้าทั้งล็อตไม่มาถึง',lbl_we_ganze_beschreibung:'เกิดอะไรขึ้น?',
+ btn_we_add_item:'➕ เพิ่มรายการสินค้า',lbl_we_artikel:'สินค้า (ชื่อ/รหัส)',lbl_we_bestellt:'จำนวนที่สั่ง',lbl_we_erhalten:'จำนวนที่ได้รับ',
+ lbl_we_fehlerart:'ประเภทปัญหา',we_fa_fehlmenge:'สินค้าขาด',we_fa_beschaedigt:'เสียหาย',we_fa_nicht_frisch:'ไม่สด',we_fa_falscher_artikel:'สินค้าผิด',we_fa_sonstiges:'อื่นๆ',
+ lbl_we_beschreibung:'คำอธิบายสั้นๆ',lbl_we_foto_item:'รูปภาพ (ไม่บังคับ)',btn_we_remove:'🗑 ลบ',btn_we_submit:'📤 ส่งเรื่องร้องเรียน',
+ we_sent:'✓ ส่งเรื่องร้องเรียนแล้ว – ขอบคุณ!',we_fail:'ข้อผิดพลาด: ',
+ we_need_lieferant:'กรุณาระบุผู้จัดจำหน่าย',we_need_lsdatum:'กรุณาระบุวันที่จัดส่ง',we_need_lsnr:'กรุณาระบุเลขที่ใบส่งของ',
+ we_need_items:'กรุณาเพิ่มสินค้าอย่างน้อยหนึ่งรายการ',we_need_artikel:'กรุณาระบุชื่อสินค้าทุกรายการ',we_need_fehlerart:'กรุณาเลือกประเภทปัญหาสำหรับทุกรายการ',
+ we_need_ganze_beschreibung:'กรุณาอธิบายสั้นๆ ว่าเกิดอะไรขึ้น',
+ we_photo_budget_txt:'ใช้ไปแล้ว {kb} KB จาก {max} KB สำหรับรูปภาพ',we_photo_too_big:'รูปใหญ่เกินไป – รูปทั้งหมดในรายงานนี้: {kb} KB จาก {max} KB ที่อนุญาต กรุณาลบรูปหรือถ่ายใหม่',
  months:['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'],
  wdS:['อา','จ','อ','พ','พฤ','ศ','ส'],
  wdL:['วันอาทิตย์','วันจันทร์','วันอังคาร','วันพุธ','วันพฤหัสบดี','วันศุกร์','วันเสาร์']}
@@ -1633,7 +1731,7 @@ function maShowApp(sess){
   }
 }
 function maNav(t){
-  ['dp','ul','kr','bl','av','nw','sl','iv'].forEach(function(x){
+  ['dp','ul','kr','bl','av','nw','sl','iv','we'].forEach(function(x){
     var p=document.getElementById('p-'+x);
     var ic=document.getElementById('ico-'+x);
     if(p) p.classList.toggle('active',x===t);
@@ -1646,6 +1744,206 @@ function maNav(t){
   if(t==='nw'){maNewsMarkRead();}
   if(t==='sl'){slLoadPlan();}
   if(t==='iv'){ivRender();}
+  if(t==='we'){weRenderItems();weUpdateBudget();}
+}
+
+/* ════════════════════════════════════════════════
+   WARENEINGANG-REKLAMATION
+   ════════════════════════════════════════════════ */
+var weItems=[];
+var weItemSeq=0;
+var weLieferscheinImg=null;
+var WE_PHOTO_BUDGET=900000;
+
+function weCheckPhotoBudget(){
+  var total=(weLieferscheinImg?weLieferscheinImg.length:0);
+  weItems.forEach(function(it){ if(it.img) total+=it.img.length; });
+  return total;
+}
+function weUpdateBudget(){
+  var total=weCheckPhotoBudget();
+  var pct=Math.min(100, Math.round(total/WE_PHOTO_BUDGET*100));
+  var bar=document.getElementById('we-budget-bar'); if(bar) bar.style.width=pct+'%';
+  var txt=document.getElementById('we-budget-txt');
+  if(txt) txt.textContent=t('we_photo_budget_txt',{kb:Math.round(total/1024),max:Math.round(WE_PHOTO_BUDGET/1024)});
+}
+function weToggleGanze(){
+  var on=document.getElementById('we-ganze-fehlt').checked;
+  document.getElementById('we-ganze-wrap').style.display=on?'block':'none';
+  document.getElementById('we-items-section').style.display=on?'none':'block';
+}
+function weLieferscheinPhoto(ev){
+  var f=ev.target.files[0]; if(!f) return;
+  var r=new FileReader();
+  r.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var maxW=1100, sc=Math.min(1, maxW/img.width);
+      var cv=document.createElement('canvas');
+      cv.width=Math.round(img.width*sc); cv.height=Math.round(img.height*sc);
+      cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+      var data=cv.toDataURL('image/jpeg',0.75);
+      if(data.length>900000) data=cv.toDataURL('image/jpeg',0.5);
+      var otherTotal=0; weItems.forEach(function(it){ if(it.img) otherTotal+=it.img.length; });
+      if(otherTotal+data.length>WE_PHOTO_BUDGET){
+        toast(t('we_photo_too_big',{kb:Math.round((otherTotal+data.length)/1024),max:Math.round(WE_PHOTO_BUDGET/1024)}),true);
+        ev.target.value='';
+        return;
+      }
+      weLieferscheinImg=data;
+      var p=document.getElementById('we-ls-prev'); p.src=data; p.style.display='block';
+      document.getElementById('we-ls-drop').classList.add('ok');
+      weUpdateBudget();
+    };
+    img.src=e.target.result;
+  };
+  r.readAsDataURL(f);
+}
+function weItemPhotoPick(lid){
+  var inp=document.createElement('input');
+  inp.type='file'; inp.accept='image/*'; inp.capture='environment';
+  inp.onchange=function(ev){
+    var f=ev.target.files[0]; if(!f) return;
+    var r=new FileReader();
+    r.onload=function(e){
+      var im=new Image();
+      im.onload=function(){
+        var maxW=520, sc=Math.min(1, maxW/im.width);
+        var cv=document.createElement('canvas');
+        cv.width=Math.round(im.width*sc); cv.height=Math.round(im.height*sc);
+        cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+        var data=cv.toDataURL('image/jpeg',0.7);
+        if(data.length>380000) data=cv.toDataURL('image/jpeg',0.5);
+        var it=weItems.find(function(x){ return x.lid===lid; });
+        if(!it) return;
+        var otherTotal=(weLieferscheinImg?weLieferscheinImg.length:0);
+        weItems.forEach(function(x){ if(x.lid!==lid && x.img) otherTotal+=x.img.length; });
+        if(otherTotal+data.length>WE_PHOTO_BUDGET){
+          toast(t('we_photo_too_big',{kb:Math.round((otherTotal+data.length)/1024),max:Math.round(WE_PHOTO_BUDGET/1024)}),true);
+          return;
+        }
+        it.img=data;
+        weRenderItems();
+        weUpdateBudget();
+      };
+      im.src=e.target.result;
+    };
+    r.readAsDataURL(f);
+  };
+  inp.click();
+}
+function weAddItem(){
+  weItems.push({lid:'i'+(weItemSeq++), artikel:'', mengeBestellt:'', mengeErhalten:'', fehlerart:'fehlmenge', beschreibung:'', img:null});
+  weRenderItems();
+}
+function weRemoveItem(lid){
+  weItems=weItems.filter(function(it){ return it.lid!==lid; });
+  weRenderItems();
+  weUpdateBudget();
+}
+function weItemField(lid, field, value){
+  var it=weItems.find(function(x){ return x.lid===lid; });
+  if(it) it[field]=value;
+}
+function weFehlerartOptions(sel){
+  var opts=[['fehlmenge','we_fa_fehlmenge'],['beschaedigt','we_fa_beschaedigt'],['nicht_frisch','we_fa_nicht_frisch'],['falscher_artikel','we_fa_falscher_artikel'],['sonstiges','we_fa_sonstiges']];
+  return opts.map(function(o){ return '<option value="'+o[0]+'"'+(o[0]===sel?' selected':'')+'>'+t(o[1])+'</option>'; }).join('');
+}
+function weRenderItems(){
+  var box=document.getElementById('we-items'); if(!box) return;
+  box.innerHTML=weItems.map(function(it,idx){
+    return '<div class="card" style="background:var(--bg);margin-bottom:10px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'+
+        '<strong style="font-size:12px;color:var(--mut)">#'+(idx+1)+'</strong>'+
+        '<button class="btn" style="width:auto;padding:6px 12px;font-size:12px" onclick="weRemoveItem(\''+it.lid+'\')">'+t('btn_we_remove')+'</button>'+
+      '</div>'+
+      '<label>'+t('lbl_we_artikel')+'</label>'+
+      '<input type="text" value="'+(it.artikel||'').replace(/"/g,'&quot;')+'" oninput="weItemField(\''+it.lid+'\',\'artikel\',this.value)">'+
+      '<div class="row2">'+
+        '<div><label>'+t('lbl_we_bestellt')+'</label><input type="number" step="0.01" value="'+(it.mengeBestellt||'')+'" oninput="weItemField(\''+it.lid+'\',\'mengeBestellt\',this.value)"></div>'+
+        '<div><label>'+t('lbl_we_erhalten')+'</label><input type="number" step="0.01" value="'+(it.mengeErhalten||'')+'" oninput="weItemField(\''+it.lid+'\',\'mengeErhalten\',this.value)"></div>'+
+      '</div>'+
+      '<label>'+t('lbl_we_fehlerart')+'</label>'+
+      '<select onchange="weItemField(\''+it.lid+'\',\'fehlerart\',this.value)">'+weFehlerartOptions(it.fehlerart)+'</select>'+
+      '<label>'+t('lbl_we_beschreibung')+'</label>'+
+      '<textarea oninput="weItemField(\''+it.lid+'\',\'beschreibung\',this.value)">'+(it.beschreibung||'')+'</textarea>'+
+      '<label>'+t('lbl_we_foto_item')+'</label>'+
+      (it.img
+        ? '<img src="'+it.img+'" class="photo-prev" style="display:block;margin-bottom:8px"><button class="btn" style="width:auto;padding:6px 12px;font-size:12px" onclick="weItemPhotoPick(\''+it.lid+'\')">'+t('lbl_we_foto_item')+'</button>'
+        : '<div class="drop" onclick="weItemPhotoPick(\''+it.lid+'\')"><div class="drop-icon">📷</div><span>'+t('drop_txt')+'</span></div>')+
+    '</div>';
+  }).join('');
+}
+function weValidate(){
+  var lieferant=document.getElementById('we-lieferant').value.trim();
+  var lsdatum=document.getElementById('we-lsdatum').value;
+  var lsnr=document.getElementById('we-lsnr').value.trim();
+  var ganze=document.getElementById('we-ganze-fehlt').checked;
+  if(!lieferant){ toast(t('we_need_lieferant'),true); return false; }
+  if(!lsdatum){ toast(t('we_need_lsdatum'),true); return false; }
+  if(!ganze && !lsnr){ toast(t('we_need_lsnr'),true); return false; }
+  if(ganze){
+    var desc=document.getElementById('we-ganze-beschreibung').value.trim();
+    if(!desc){ toast(t('we_need_ganze_beschreibung'),true); return false; }
+  } else {
+    if(!weItems.length){ toast(t('we_need_items'),true); return false; }
+    for(var i=0;i<weItems.length;i++){
+      if(!weItems[i].artikel||!weItems[i].artikel.trim()){ toast(t('we_need_artikel'),true); return false; }
+      if(!weItems[i].fehlerart){ toast(t('we_need_fehlerart'),true); return false; }
+    }
+  }
+  if(weCheckPhotoBudget()>WE_PHOTO_BUDGET){
+    toast(t('we_photo_too_big',{kb:Math.round(weCheckPhotoBudget()/1024),max:Math.round(WE_PHOTO_BUDGET/1024)}),true);
+    return false;
+  }
+  return true;
+}
+function weSubmit(){
+  var sess=maSession(); if(!sess) return;
+  if(!weValidate()) return;
+  if(!fbReady||!fbDb){ toast(t('we_fail')+'offline',true); return; }
+  var ganze=document.getElementById('we-ganze-fehlt').checked;
+  var doc={
+    empId:''+sess.id, empName:sess.name, filiale:sess.filiale||'',
+    lieferant:document.getElementById('we-lieferant').value.trim(),
+    lieferscheinNr:document.getElementById('we-lsnr').value.trim(),
+    lieferdatum:document.getElementById('we-lsdatum').value,
+    lieferscheinImg:weLieferscheinImg||null,
+    ganzeLieferungFehlt:ganze,
+    ganzeLieferungBeschreibung:ganze?document.getElementById('we-ganze-beschreibung').value.trim():'',
+    items:ganze?[]:weItems.map(function(it){
+      return {
+        artikel:it.artikel.trim(),
+        mengeBestellt:(it.mengeBestellt!==''&&it.mengeBestellt!=null)?parseFloat(it.mengeBestellt):null,
+        mengeErhalten:(it.mengeErhalten!==''&&it.mengeErhalten!=null)?parseFloat(it.mengeErhalten):null,
+        fehlerart:it.fehlerart,
+        beschreibung:(it.beschreibung||'').trim(),
+        img:it.img||null
+      };
+    }),
+    status:'offen',
+    createdAt:new Date().toISOString(), gemeldetAt:null, erledigtAt:null
+  };
+  fbDb.collection('wareneingang').add(doc).then(function(){
+    toast(t('we_sent'));
+    weResetForm();
+  }).catch(function(e){ toast(t('we_fail')+e.message,true); });
+}
+function weResetForm(){
+  document.getElementById('we-lieferant').value='';
+  document.getElementById('we-lsnr').value='';
+  document.getElementById('we-lsdatum').value='';
+  document.getElementById('we-ganze-fehlt').checked=false;
+  document.getElementById('we-ganze-beschreibung').value='';
+  document.getElementById('we-ganze-wrap').style.display='none';
+  document.getElementById('we-items-section').style.display='block';
+  weLieferscheinImg=null;
+  var p=document.getElementById('we-ls-prev'); p.style.display='none'; p.src='';
+  document.getElementById('we-ls-drop').classList.remove('ok');
+  document.getElementById('we-ls-file').value='';
+  weItems=[];
+  weRenderItems();
+  weUpdateBudget();
 }
 
 /* ════════════════════════════════════════════════
