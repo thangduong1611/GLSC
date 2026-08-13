@@ -46,8 +46,6 @@ header .hbtn{background:rgba(255,255,255,.18);border:none;color:#fff;font-size:1
 .card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);padding:18px;margin-bottom:14px;}
 .card-title{font-size:16px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
 .badge{font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;}
-.badge-grn{background:var(--grn-bg);color:var(--grn);}
-.badge-blu{background:var(--blu-bg);color:var(--blu);}
 .info{background:var(--blu-bg);border:1px solid #AED6F1;border-radius:var(--rs);padding:11px 14px;font-size:13.5px;color:var(--blu);line-height:1.6;margin-bottom:14px;}
 .warnbox{background:var(--amb-bg);border:1px solid #F4D03F;border-radius:var(--rs);padding:11px 14px;font-size:13.5px;color:#7D6608;line-height:1.6;margin-bottom:14px;}
 
@@ -671,10 +669,6 @@ function ivLocalLoad(){
     var raw=localStorage.getItem(ivLocalKey(sess));
     return raw?JSON.parse(raw):null;
   }catch(e){ return null; }
-}
-function ivLocalClear(){
-  var sess=maSession(); if(!sess||!ivMonth) return;
-  try{ localStorage.removeItem(ivLocalKey(sess)); }catch(e){}
 }
 /* Zeigt an, ob noch ungesendete lokale Daten vorliegen */
 function ivSyncBadge(pending){

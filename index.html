@@ -49,21 +49,6 @@ header .sub{font-size:12px;opacity:.85;}
 .badge-amb{background:var(--amb-bg);color:var(--amb);}
 .badge-red{background:var(--red-l);color:var(--red-d);}
 .badge-gray{background:#F0EDE8;color:#6B6860;}
-.vlf-item{border:1px solid var(--brd);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start;background:var(--surf);transition:opacity .15s;}
-.vlf-item.erledigt{border-left:3px solid var(--grn);}
-.vlf-item.ausstehend{border-left:3px solid #E8B84B;}
-.vlf-icon{font-size:20px;flex-shrink:0;margin-top:1px;}
-.vlf-main{flex:1;min-width:0;}
-.vlf-title{font-size:13px;font-weight:600;margin-bottom:3px;}
-.vlf-meta{font-size:12px;color:var(--mut);line-height:1.6;}
-.vlf-actions{display:flex;gap:6px;align-items:center;flex-shrink:0;}
-.vlf-status-btn{font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid;cursor:pointer;font-weight:600;background:none;transition:all .15s;}
-.vlf-status-btn.erledigt{color:var(--grn);border-color:var(--grn);}
-.vlf-status-btn.ausstehend{color:#B7860B;border-color:#E8B84B;}
-.vlf-del{background:none;border:none;cursor:pointer;color:var(--mut);font-size:15px;padding:2px 5px;}
-.vlf-del:hover{color:var(--red);}
-.vlf-empty{text-align:center;padding:32px 16px;color:var(--mut);font-size:13px;}
-.vlf-note{font-size:11px;color:var(--mut);font-style:italic;margin-top:4px;}
 .csv-stat{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
 .csv-stat-box{flex:1;min-width:80px;text-align:center;padding:10px;border-radius:var(--rs);border:1px solid var(--brd);background:var(--bg);}
 .csv-stat-box .n{font-size:22px;font-weight:700;}
@@ -84,7 +69,6 @@ textarea{min-height:72px;resize:vertical;line-height:1.6;}
 /* EMPLOYEE SELECT */
 .emp-select-wrap{position:relative;}
 .emp-select-wrap select{padding-right:32px;}
-.emp-badge-id{display:inline-block;font-size:11px;background:var(--blu-bg);color:var(--blu);border-radius:4px;padding:2px 7px;margin-left:6px;font-weight:600;vertical-align:middle;}
 
 /* UPLOAD */
 .drop{border:2px dashed var(--brd);border-radius:var(--r);padding:22px 16px;text-align:center;cursor:pointer;font-size:13px;color:var(--mut);transition:all .2s;background:var(--bg);}
@@ -111,7 +95,6 @@ textarea{min-height:72px;resize:vertical;line-height:1.6;}
 .e-body{font-size:12.5px;line-height:1.8;white-space:pre-wrap;background:#fff;border:1px solid var(--brd);border-radius:var(--rs);padding:12px;max-height:300px;overflow-y:auto;}
 
 /* CANVAS */
-.canvas-wrap{margin-top:8px;border-radius:var(--r);overflow:hidden;border:1px solid var(--brd);cursor:crosshair;}
 canvas{display:block;max-width:100%;}
 
 /* STUNDEN */
@@ -133,7 +116,6 @@ canvas{display:block;max-width:100%;}
 .dt-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--brd);border-radius:var(--rs);margin-bottom:6px;background:var(--surf);}
 .dt-item .name{flex:1;font-size:13px;font-weight:500;}
 .dt-item .id-chip{font-size:11px;}
-.dt-item .dt-drop{width:200px;}
 .dt-remove{background:none;border:none;cursor:pointer;color:var(--mut);font-size:16px;padding:2px 6px;}
 .dt-remove:hover{color:var(--red);}
 
@@ -182,8 +164,6 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
   .row2,.row3{grid-template-columns:1fr;}
   .s-row{grid-template-columns:1fr 1fr;}
   .s-row>div:nth-child(3){grid-column:1/-1;}
-  .vlf-item{flex-wrap:wrap;}
-  .vlf-actions{width:100%;justify-content:flex-end;margin-top:6px;}
   .card{padding:14px 12px;}
   .wrap{padding:12px 10px;}
   header .logo{font-size:17px;}
@@ -1285,8 +1265,6 @@ checkFirstStart();
   renderEmpNotif();
 renderRpGrpList();
 RP_CL=getRPCL();
-  if(id==='av') avPopulateDropdown();
-  if(id==='dienstplan'){RP_CL=getRPCL();dpOnShow();}
   if(id==='dienstplan'){RP_CL=getRPCL();dpOnShow();}
   if(id==='settings'){renderRpGrpList();applySettings();renderMkStores();renderSavedEmails();var wa=document.getElementById('st-manager-wa');if(wa)wa.value=localStorage.getItem('sc_manager_wa')||'';filMetaRender();}
   if(id==='stunden'){stdPopulateFilialeSelect();}
@@ -1876,57 +1854,6 @@ async function shareMail(p, fileBlob) {
   }
 }
 
-async function shareMailWithCanvas(p) {
-  // For Urlaubsantrag: share email text + signed document image
-  var canvas = document.getElementById('u-canvas');
-  var drawCanvas = document.getElementById('u-draw-canvas');
-
-  // Check if document has been loaded and (optionally) signed
-  var hasDoc = canvas && canvas.width > 10;
-
-  if(!hasDoc) {
-    // No document loaded – share text only
-    await shareMail(p, null);
-    return;
-  }
-
-  try {
-    // Convert the signed document canvas to blob
-    canvas.toBlob(async function(blob) {
-      if(!blob) { await shareMail(p, null); return; }
-
-      var e = getEmail(p);
-      var empName = document.getElementById('u-name').value || 'Mitarbeiter';
-      var file = new File([blob], 'Urlaubsantrag_' + empName.replace(/\s+/g,'_') + '.png', {type:'image/png'});
-
-      var shareData = {
-        title: e.subj,
-        text: 'Betreff: ' + e.subj + '\n\n' + e.body
-      };
-
-      if(navigator.canShare && navigator.canShare({files:[file]})) {
-        shareData.files = [file];
-      }
-
-      if(navigator.share) {
-        try {
-          await navigator.share(shareData);
-        } catch(err) {
-          if(err.name !== 'AbortError') {
-            copyMail(p);
-            toast('In Zwischenablage kopiert');
-          }
-        }
-      } else {
-        copyMail(p);
-        toast('E-Mail kopiert – Share nicht verfügbar');
-      }
-    }, 'image/png');
-  } catch(err) {
-    await shareMail(p, null);
-  }
-}
-
 async function shareKrankWithFile(p) {
   var e = getEmail(p);
   var subj = e.subj;
@@ -2011,8 +1938,6 @@ function setMailToFor(p,email,label,btnEl){
   renderEmailChipsFor(p);
   toast('Empfänger: '+(p in _mailToOverride?_mailToOverride[p]:TO));
 }
-
-function getMailTo(p){return _mailToOverride[p]||TO;}
 
 // Patch mailto to use per-panel override
 const _origMailto=window.mailto;
@@ -4271,19 +4196,6 @@ async function kmShare(){
   if(navigator.share){navigator.share({title:subj,text:body});}
   else{navigator.clipboard.writeText(subj+'\n\n'+body);toast('Text kopiert');}
 }
-function kmSetDate(){
-  // Default: next Monday
-  const d=new Date();
-  const day=d.getDay();
-  const diff=(1+(7-day))%7||(day===1?0:7-(day-1));
-  d.setDate(d.getDate()+(day===1?0:diff));
-  const iso=d.toISOString().split('T')[0];
-  document.getElementById('km-datum').value=iso;
-  // prefill KFZ from settings
-  const s=loadSettings();
-  if(s.kfz) document.getElementById('km-kfz').value=s.kfz;
-  updateKM();
-}
 function getKW(d){
   const t=new Date(d.getFullYear(),d.getMonth(),d.getDate());
   t.setDate(t.getDate()+(4-((t.getDay()||7))));
@@ -4933,23 +4845,6 @@ function krToMail(docId){
   toast(d.img?'📋 Formular gefüllt · Foto heruntergeladen — in der E-Mail anhängen 📎':'📋 Formular gefüllt');
   var res=document.getElementById('k-res'); if(res) res.scrollIntoView({behavior:'smooth'});
 }
-function krSendHr(docId){
-  var k=krFind(docId); if(!k) return;
-  if(!mailEnabled()){ alert('Direkt-Mail ist noch nicht eingerichtet.\n\n1) Kostenloses Konto auf emailjs.com\n2) Service + Template anlegen\n3) IDs in fb-config.js (MAIL_CONFIG) eintragen.'); return; }
-  var d=k.d;
-  var pidStr=d.empId?' (Personalnr. '+d.empId+')':'';
-  var subj='Krankmeldung – '+(d.name||'?')+pidStr+' – '+(d.filiale||'');
-  var body='Sehr geehrte Damen und Herren,\n\nhiermit möchte ich Sie darüber informieren, dass Herr/Frau '+(d.name||'?')+pidStr+' (Filiale: '+(d.filiale||'')+') aufgrund einer Erkrankung in der Zeit vom '+fmtDate(d.from)+(d.to?' bis voraussichtlich '+fmtDate(d.to):'')+' arbeitsunfähig ist.\n\n'+(d.img?'Das ärztliche Attest ist dieser E-Mail als Anhang beigefügt.':'Das ärztliche Attest wird nachgereicht.')+'\n\nBitte nehmen Sie die entsprechenden Buchungen in der Lohnabrechnung vor.\n\nBei Rückfragen stehe ich Ihnen gerne zur Verfügung.\n\n'+SIG;
-  var fn='Krankschreibung_'+((d.name||'x').replace(/\s+/g,'_'))+'_'+(d.from||'')+'.jpg';
-  var doSend=function(att){
-    toast('📧 Sende…');
-    mailDirect({subject:subj, body:body, attachment:att, attachmentName:att?fn:undefined})
-      .then(function(){ toast('✓ E-Mail an HR gesendet'); k.ref.update({sentAt:new Date().toISOString()}).catch(function(){}); })
-      .catch(function(e){ alert('Mail-Fehler: '+(e&&e.text||e.message||e)); });
-  };
-  if(d.img) mailShrinkImg(d.img, doSend); else doSend(null);
-}
-
 // ════════ KRANKMELDUNGEN (Live aus Mitarbeiter-App) ════════
 var fbKrank=[];
 function krShowStatus(msg,color){
@@ -5709,11 +5604,6 @@ function invAddStoreMap(){
   document.getElementById('inv-map-nr').value=''; document.getElementById('inv-map-name').value='';
 }
 function invRemoveStoreMap(nr){ if(!confirm('Zuordnung für '+nr+' entfernen?'))return; delete invStoreMap[nr]; invSaveStoreMap(); invRenderStoreMap(); }
-
-function invStoreNameForSlug(slug){
-  for(var nr in invStoreMap){ if(invSlug(invStoreMap[nr])===slug) return invStoreMap[nr]; }
-  return slug;
-}
 
 function invRenderSubmissions(){
   var box=document.getElementById('inv-submissions'); if(!box) return;
