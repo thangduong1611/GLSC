@@ -28,6 +28,14 @@ service cloud.firestore {
     function isManagerForRegion(r) {
       return r in managerRegions();
     }
+    // Existing docs written before the Region-Feature (or any future doc that
+    // somehow lacks a region) are treated as "ost" for access purposes — this
+    // is what lets a manager (and the one-time Backfill) read/update/delete
+    // pre-migration data at all. Once the Backfill has run, every document
+    // has an explicit region and this fallback is never actually used.
+    function docRegion(data) {
+      return data.get('region', 'ost');
+    }
 
     // ══════════════════════════════════════════════════════════
     // REGION-MAPPING (new)
@@ -44,9 +52,9 @@ service cloud.firestore {
     match /filialen_meta/{marktNr} {
       allow get, list: if isAuthed();
       allow create: if isManagerForRegion(request.resource.data.region);
-      allow update: if isManagerForRegion(resource.data.region)
+      allow update: if isManagerForRegion(docRegion(resource.data))
         && isManagerForRegion(request.resource.data.region);
-      allow delete: if isManagerForRegion(resource.data.region);
+      allow delete: if isManagerForRegion(docRegion(resource.data));
     }
 
     // ══════════════════════════════════════════════════════════
@@ -60,9 +68,9 @@ service cloud.firestore {
     match /emps/{pid} {
       allow get, list: if isAuthed();
       allow create: if isManagerForRegion(request.resource.data.region);
-      allow update: if isManagerForRegion(resource.data.region)
+      allow update: if isManagerForRegion(docRegion(resource.data))
         && isManagerForRegion(request.resource.data.region);
-      allow delete: if isManagerForRegion(resource.data.region);
+      allow delete: if isManagerForRegion(docRegion(resource.data));
     }
 
     // ══════════════════════════════════════════════════════════
@@ -85,10 +93,14 @@ service cloud.firestore {
     // ══════════════════════════════════════════════════════════
     match /filialen/{f}/urlaub/{u} {
       allow read, create: if isAuthed();
-      allow update, delete: if isManagerForRegion(resource.data.region);
+      allow update, delete: if isManagerForRegion(docRegion(resource.data));
     }
     match /{path=**}/urlaub/{u} {
-      allow read: if isManagerForRegion(resource.data.region);
+      // list()/collectionGroup ohne .where() kann Firestore nicht gegen ein
+      // dynamisches Feld wie region prüfen -> list bewusst offener (isManager,
+      // nicht regionsgebunden); die App filtert Ergebnisse selbst per Query.
+      allow get: if isManagerForRegion(docRegion(resource.data));
+      allow list: if isManager();
     }
 
     // ══════════════════════════════════════════════════════════
@@ -107,11 +119,15 @@ service cloud.firestore {
     // ══════════════════════════════════════════════════════════
     match /krank/{k} {
       allow create: if isAuthed();
-      allow read, update, delete: if isManagerForRegion(resource.data.region);
+      allow get: if isManagerForRegion(docRegion(resource.data));
+      allow list: if isManager();
+      allow update, delete: if isManagerForRegion(docRegion(resource.data));
     }
     match /antrag/{a} {
       allow create: if isAuthed();
-      allow read, update, delete: if isManagerForRegion(resource.data.region);
+      allow get: if isManagerForRegion(docRegion(resource.data));
+      allow list: if isManager();
+      allow update, delete: if isManagerForRegion(docRegion(resource.data));
     }
 
     // ══════════════════════════════════════════════════════════
@@ -125,13 +141,13 @@ service cloud.firestore {
     match /receipts/{k} {
       allow create: if isAuthed();
       allow read: if isAuthed();
-      allow update: if isManagerForRegion(resource.data.region)
+      allow update: if isManagerForRegion(docRegion(resource.data))
         || (isAuthed()
             && resource.data.status == 'paid'
             && request.resource.data.status == 'confirmed'
             && request.resource.data.diff(resource.data).affectedKeys()
                  .hasOnly(['status', 'confirmedAt', 'empHidden']));
-      allow delete: if isManagerForRegion(resource.data.region);
+      allow delete: if isManagerForRegion(docRegion(resource.data));
     }
 
     // ══════════════════════════════════════════════════════════
@@ -142,13 +158,13 @@ service cloud.firestore {
     match /aenderungsvertrag/{a} {
       allow create: if isManagerForRegion(request.resource.data.region);
       allow read: if isAuthed();
-      allow update: if isManagerForRegion(resource.data.region)
+      allow update: if isManagerForRegion(docRegion(resource.data))
         || (isAuthed()
             && resource.data.status == 'sent'
             && request.resource.data.status == 'signed'
             && request.resource.data.diff(resource.data).affectedKeys()
                  .hasOnly(['status', 'anOrt', 'anSig', 'signedAt']));
-      allow delete: if isManagerForRegion(resource.data.region);
+      allow delete: if isManagerForRegion(docRegion(resource.data));
     }
 
     // ══════════════════════════════════════════════════════════
@@ -156,7 +172,9 @@ service cloud.firestore {
     // ══════════════════════════════════════════════════════════
     match /wareneingang/{w} {
       allow create: if isAuthed();
-      allow read, update, delete: if isManagerForRegion(resource.data.region);
+      allow get: if isManagerForRegion(docRegion(resource.data));
+      allow list: if isManager();
+      allow update, delete: if isManagerForRegion(docRegion(resource.data));
     }
 
     // ══════════════════════════════════════════════════════════
@@ -164,7 +182,9 @@ service cloud.firestore {
     // ══════════════════════════════════════════════════════════
     match /umlagerung/{u} {
       allow create: if isAuthed();
-      allow read, update, delete: if isManagerForRegion(resource.data.region);
+      allow get: if isManagerForRegion(docRegion(resource.data));
+      allow list: if isManager();
+      allow update, delete: if isManagerForRegion(docRegion(resource.data));
     }
 
     // ══════════════════════════════════════════════════════════

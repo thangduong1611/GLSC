@@ -4980,7 +4980,7 @@ function fbStartPending(){
       fbDecided=all.filter(function(r){ return r.status!=='pending'; });
       fbRenderPending();
       dpRefreshIfOpen();
-    }, function(err){ console.warn('FB pending', err); fbPendingCardShow('⚠️ Kein Datenbank-Zugriff. Firestore-Regeln prüfen. ('+err.code+')', '#C0392B'); });
+    }, function(err){ console.warn('FB pending', err); fbPendingCardShow('⚠️ Kein Datenbank-Zugriff. ('+err.code+') '+(err.message||''), '#C0392B'); });
 }
 function fbRenderPending(){
   var card=document.getElementById('fb-pending-card');

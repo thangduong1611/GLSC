@@ -62,6 +62,7 @@ input:focus,textarea:focus,select:focus{border-color:var(--red);}
 /* BUTTONS */
 .btn{padding:12px 18px;border-radius:var(--rs);border:1.5px solid var(--brd);background:var(--surf);font-size:15px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:all .15s;font-family:inherit;color:var(--txt);width:100%;}
 .btn:active{transform:scale(0.98);}
+.btn:disabled{opacity:.55;cursor:not-allowed;}
 .btn-red{background:var(--red);color:#fff;border-color:var(--red);}
 .btn-grn{background:var(--grn);color:#fff;border-color:var(--grn);}
 .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
@@ -293,7 +294,7 @@ window.onerror=function(msg,src,line){
       </div>
       <div class="btn-row">
         <button class="btn" onclick="maUrlaubPdf('save')" data-i18n="btn_pdf">💾 PDF speichern</button>
-        <button class="btn btn-grn" onclick="maSendAntrag()" data-i18n="btn_chef">📨 An Chef senden</button>
+        <button class="btn btn-grn" id="btn-send-antrag" onclick="maSendAntrag()" data-i18n="btn_chef">📨 An Chef senden</button>
       </div>
       <p style="font-size:12px;color:var(--mut);margin-top:8px;line-height:1.5" data-i18n="chef_hint"></p>
     </div>
@@ -2556,7 +2557,9 @@ function maUrlaubPdf(mode){
 }
 
 // Sendet ein Antrag-Datenpaket (Felder + AN-Unterschrift) an den Gebietsleiter zum Gegenzeichnen
+var maAntragSending=false;
 function maSendAntrag(){
+  if(maAntragSending) return;
   var sess=maSession();if(!sess)return;
   var from=document.getElementById('up-from').value, to=document.getElementById('up-to').value;
   if(!from||!to){toast(t('t_dates'),true);return;}
@@ -2573,10 +2576,13 @@ function maSendAntrag(){
     anSig:document.getElementById('sig-canvas').toDataURL('image/png')
   };
   if(fbReady&&fbDb){
+    var btn=document.getElementById('btn-send-antrag');
+    maAntragSending=true;
+    if(btn) btn.disabled=true;
     packet.created=new Date().toISOString();
     fbDb.collection('antrag').add(packet)
-      .then(function(){ toast(t('an_sent')); })
-      .catch(function(e){ toast(t('an_fail')+e.message,true); });
+      .then(function(){ maAntragSending=false; if(btn) btn.disabled=false; toast(t('an_sent')); })
+      .catch(function(e){ maAntragSending=false; if(btn) btn.disabled=false; toast(t('an_fail')+e.message,true); });
     return;
   }
   try{
