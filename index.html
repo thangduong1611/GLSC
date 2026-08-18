@@ -228,6 +228,10 @@ window.onerror=function(msg,src,line){
     <div class="logo">🍣 HR Assistant</div>
     <div class="sub" id="header-sub">Sushi Circle Gastronomie GmbH · <span style="opacity:.6">v6.9</span></div>
   </div>
+  <div id="region-switcher-wrap" style="margin-left:auto;position:relative;display:none">
+    <button onclick="regionSwitcherToggle()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:20px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">📍 <span id="region-switcher-label">—</span> ▾</button>
+    <div id="region-switcher-menu" style="display:none;position:absolute;right:0;top:calc(100% + 6px);min-width:140px;background:var(--surf);color:var(--txt);border:1px solid var(--brd);border-radius:var(--rs);box-shadow:0 8px 24px rgba(0,0,0,.22);overflow:hidden;z-index:50"></div>
+  </div>
 </header>
 
 <div class="wrap">
@@ -957,6 +961,19 @@ window.onerror=function(msg,src,line){
     </details>
   </div>
   <div class="card">
+    <div class="card-title">🔧 Region-Backfill (einmalig) <span class="badge badge-amb">Temporär — nach Gebrauch entfernen</span></div>
+    <div class="info">Einmaliger Schritt für die Umstellung auf mehrere Regionen: markiert alle bestehenden Datensätze (Mitarbeiter, Krankmeldungen, Belege, Wareneingang, Umlagerung, Urlaubsanträge, Änderungsvereinbarungen, Urlaub) ohne Region-Feld als <code>region:"ost"</code>. Zuerst „🔍 Prüfen" zum Zählen, danach „⚠️ Jetzt markieren". Diese Karte danach aus dem Code entfernen.</div>
+    <div class="btn-row">
+      <button class="btn" onclick="regionBackfillScan()">🔍 Prüfen</button>
+      <button class="btn btn-red" id="region-backfill-run" onclick="regionBackfillRun()" style="display:none">⚠️ Jetzt markieren</button>
+    </div>
+    <div id="region-backfill-stat" style="font-size:12px;color:var(--mut);margin-top:8px;line-height:1.7"></div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px dashed var(--brd)">
+      <div class="info" style="margin-bottom:8px">Einmalig: legt die geteilte Filialen-Stammdatenliste in der Cloud an, aus den bereits lokal importierten Filialen-Listen (PLZ/Ort + Fahrtplan-Gruppen) — alle mit <code>region:"ost"</code>. Danach kann eine zweite Region eigene Filialen importieren, ohne diese zu überschreiben.</div>
+      <button class="btn" onclick="regionSeedFilialenMeta()">🌱 Filialen-Stammdaten anlegen</button>
+    </div>
+  </div>
+  <div class="card">
     <div class="card-title">🏪 Filialen — PLZ &amp; Ort <span class="badge badge-blu" id="fil-meta-count">0</span></div>
     <div class="info">Wird für das offizielle Stundennachweis-Formular gebraucht. Marktsuche-CSV hochladen (unten) — PLZ, Ort und Straße werden automatisch für alle Filialen übernommen und gespeichert. Bei Bedarf können einzelne Werte unten manuell überschrieben werden.</div>
     <div id="fil-meta-list" style="margin-top:10px"></div>
@@ -1276,6 +1293,15 @@ window.onerror=function(msg,src,line){
 
 </div><!-- /wrap -->
 
+<!-- MODAL: Region wählen (beim Login, wenn mehrere Regionen verfügbar) -->
+<div class="modal-bg" id="region-picker-modal">
+  <div class="modal" style="width:min(360px,92vw)">
+    <h3>📍 Region wählen</h3>
+    <div class="info" style="margin-bottom:12px">Dein Konto hat Zugriff auf mehrere Regionen. Bitte wählen, welche Region du jetzt verwalten möchtest.</div>
+    <div id="region-picker-list" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+</div>
+
 <!-- MODAL: Mitarbeiter hinzufügen/bearbeiten -->
 <div class="modal-bg" id="emp-modal">
   <div class="modal">
@@ -1287,6 +1313,9 @@ window.onerror=function(msg,src,line){
     <input type="text" id="m-id" placeholder="z.B. 1042">
     <label>Filiale (Standard)</label>
     <input type="text" id="m-fil" placeholder="z.B. Hannover Hbf">
+    <label>Kostenstelle (Filiale-Nr., optional)</label>
+    <input type="text" id="m-filnr" placeholder="z.B. 401891">
+    <div id="m-region-hint" style="font-size:11px;color:var(--mut);margin-top:-4px;margin-bottom:10px">Region: —</div>
     <div style="display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 12px;background:var(--bg);border:1px solid var(--brd);border-radius:var(--rs)">
       <input type="checkbox" id="m-shopleiter" style="width:17px;height:17px;cursor:pointer">
       <div>
@@ -1831,6 +1860,8 @@ function openAddModal() {
   document.getElementById('m-name').value='';
   document.getElementById('m-id').value='';
   document.getElementById('m-fil').value='';
+  document.getElementById('m-filnr').value='';
+  document.getElementById('m-region-hint').textContent='Region: '+(REGION_LABELS[activeRegion]||activeRegion||'—');
   document.getElementById('m-shopleiter').checked=false;
   document.getElementById('emp-modal').classList.add('open');
   document.getElementById('m-name').focus();
@@ -1843,6 +1874,8 @@ function openEditModal(i) {
   document.getElementById('m-name').value=e.name;
   document.getElementById('m-id').value=e.id;
   document.getElementById('m-fil').value=e.filiale||'';
+  document.getElementById('m-filnr').value=e.filialeNr||'';
+  document.getElementById('m-region-hint').textContent='Region: '+(REGION_LABELS[activeRegion]||activeRegion||'—');
   document.getElementById('m-shopleiter').checked=!!(e.shopleiter);
   document.getElementById('emp-modal').classList.add('open');
   document.getElementById('m-name').focus();
@@ -1854,15 +1887,17 @@ function saveEmp() {
   const name=document.getElementById('m-name').value.trim();
   const id=document.getElementById('m-id').value.trim();
   const fil=document.getElementById('m-fil').value.trim();
+  const filnr=document.getElementById('m-filnr').value.trim();
   const shopleiter=document.getElementById('m-shopleiter').checked;
   if(!name||!id){alert('Name und Personalnummer sind Pflichtfelder.');return;}
+  if(!activeRegion){alert('Keine Region aktiv — bitte neu anmelden.');return;}
   const emps=loadEmps();
-  if(editIdx!==null) emps[editIdx]={...emps[editIdx],name,id,filiale:fil,shopleiter};
-  else emps.push({name,id,filiale:fil,shopleiter});
+  if(editIdx!==null) emps[editIdx]={...emps[editIdx],name,id,filiale:fil,filialeNr:filnr,shopleiter};
+  else emps.push({name,id,filiale:fil,filialeNr:filnr,shopleiter});
   saveEmps(emps);
   // Sofort in Firestore synchronisieren (Shopleiter-Rolle muss live verfügbar sein)
   if(fbReady&&fbDb&&id){
-    fbDb.collection('emps').doc(''+id).set({name,filiale:fil,shopleiter:shopleiter,active:true},{merge:true})
+    fbDb.collection('emps').doc(''+id).set({name,filiale:fil,filialeNr:filnr,shopleiter:shopleiter,active:true,region:activeRegion},{merge:true})
       .catch(function(e){ console.warn('shopleiter sync', e); });
   }
   closeModal();
@@ -2777,6 +2812,7 @@ function avSendToEmployee(){
   if(!d.chkGehalt && !d.chkVerlaeng && !d.chkStunde && !d.chkWochen && !d.chkSonst){ toast('Bitte mindestens eine Art der Änderung auswählen.',true); return; }
   d.status='sent'; d.createdAt=new Date().toISOString();
   d.anOrt=null; d.anSig=null; d.signedAt=null;
+  d.region=activeRegion;
   fbDb.collection('aenderungsvertrag').add(d)
     .then(function(){ toast('✓ An Mitarbeiter gesendet'); })
     .catch(function(e){ toast('Fehler: '+e.message, true); });
@@ -2786,9 +2822,11 @@ function avShowStatus(msg,color){
   var st=document.getElementById('av-live-status');
   if(st){ st.textContent=msg||''; st.style.color=color||'#6B6860'; st.style.display=msg?'block':'none'; }
 }
+var avUnsub=null;
 function avStartListener(){
-  if(!fbReady||!fbDb) return;
-  fbDb.collection('aenderungsvertrag').onSnapshot(function(snap){
+  if(!fbReady||!fbDb||!activeRegion) return;
+  if(avUnsub){ try{avUnsub();}catch(e){} }
+  avUnsub=fbDb.collection('aenderungsvertrag').where('region','==',activeRegion).onSnapshot(function(snap){
     var raw=[]; snap.forEach(function(d){ raw.push({docId:d.id, ref:d.ref, d:d.data()||{}}); });
     fbAV = raw.sort(function(a,b){ return (a.d.createdAt||'')<(b.d.createdAt||'')?1:-1; });
     avShowStatus('','');
@@ -2938,6 +2976,7 @@ function importMarktsucheCSV(ev){
       filMetaSave(meta);
       filMetaRender();
       stdPopulateFilialeSelect();
+      filialenMetaWriteThroughFromFilMeta(meta, activeRegion);
       stat.textContent='✓ '+count+' Filiale(n) übernommen.';
       toast('✓ Marktsuche-CSV importiert ('+count+')');
     }catch(err){
@@ -3497,7 +3536,7 @@ function dpPublishMonth(){
   dpSaveFromDOM();dpStoreLS(dpKey(),{employees:dpEmployees,shifts:dpShifts});
   var st=document.getElementById('dp-status');if(st)st.textContent='⏳ '+f+' · '+m+' wird veröffentlicht…';
   var jobs=[fbDb.collection('plan').doc(fbSlug(f)+'__'+m).set({employees:dpEmployees,shifts:dpShifts})];
-  dpEmployees.forEach(function(e){if(e.id)jobs.push(fbDb.collection('emps').doc(''+e.id).set({name:e.name,filiale:f,active:true},{merge:true}));});
+  dpEmployees.forEach(function(e){if(e.id)jobs.push(fbDb.collection('emps').doc(''+e.id).set({name:e.name,filiale:f,active:true,region:activeRegion},{merge:true}));});
   Promise.all(jobs).then(function(){dpDirty=false;if(st)st.textContent='✓ Veröffentlicht: '+f+' · '+fmtMonth(m);toast('☁️ '+f+' veröffentlicht');})
     .catch(function(e){if(st)st.textContent='⚠️ '+e.message;alert('Fehler: '+e.message);});
 }
@@ -3525,7 +3564,7 @@ function dpPublishWeek(wi){
       wk.dates.forEach(function(dt){ merged[ek][dt]=(dpShifts[ek]&&dpShifts[ek][dt])||''; });
     });
     var jobs=[ref.set({employees:dpEmployees,shifts:merged})];
-    dpEmployees.forEach(function(e){if(e.id)jobs.push(fbDb.collection('emps').doc(''+e.id).set({name:e.name,filiale:f,active:true},{merge:true}));});
+    dpEmployees.forEach(function(e){if(e.id)jobs.push(fbDb.collection('emps').doc(''+e.id).set({name:e.name,filiale:f,active:true,region:activeRegion},{merge:true}));});
     return Promise.all(jobs);
   }).then(function(){dpDirty=false;if(st)st.textContent='✓ KW '+wk.kw+' veröffentlicht ('+f+')';toast('☁️ KW '+wk.kw+' veröffentlicht');})
     .catch(function(e){if(st)st.textContent='⚠️ '+e.message;alert('Fehler: '+e.message);});
@@ -4417,6 +4456,7 @@ function importMarktsuche(ev){
       saveMkStores(existing);
       const fi=document.getElementById('mk-csv-file');if(fi)fi.value='';
       renderMkStores();
+      filialenMetaWriteThroughFromMkStores(imported, activeRegion);
       setTimeout(function(){
         const card=document.getElementById('mk-cluster-card');
         if(card&&card.scrollIntoView) card.scrollIntoView({behavior:'smooth',block:'center'});
@@ -4622,6 +4662,8 @@ checkFirstStart();
 // ════════ FIREBASE (Realtime Urlaub-Freigabe) ════════
 var FB_CONFIG = (typeof window!=='undefined' && window.FB_CONFIG) ? window.FB_CONFIG : null;
 var fbReady=false, fbDb=null, fbPending=[], fbDecided=[], fbManager=false;
+var REGION_LABELS={ost:'Đông', west:'Tây'};
+var activeRegion=null, __managerRegions=[];
 function fbEnabled(){ return !!(FB_CONFIG && FB_CONFIG.apiKey && typeof firebase!=='undefined'); }
 function fbPendingCardShow(msg, color){
   var card=document.getElementById('fb-pending-card');
@@ -4640,7 +4682,7 @@ function fbBootStatus(){
     fbPendingCardShow('⚠️ Firebase-Bibliothek nicht geladen. Internet/Adblocker prüfen und Seite neu laden.', '#C0392B');
     return;
   }
-  fbInit(function(){ fbStartPending(); nwStartListener(); nwReadsStartListener(); krStartListener(); anStartListener(); blStartListener(); avStartListener(); weStartListener(); ugStartListener(); });
+  fbInit(function(){ fbStartPending(); nwStartListener(); nwReadsStartListener(); krStartListener(); anStartListener(); blStartListener(); avStartListener(); weStartListener(); ugStartListener(); empsSyncListener(); filialenSyncListener(); });
 }
 function fbSlug(f){ return (''+f).replace(/\s+/g,'_').toLowerCase(); }
 function fbInit(onReady){
@@ -4651,12 +4693,25 @@ function fbInit(onReady){
     fbDb=firebase.firestore();
     firebase.auth().onAuthStateChanged(function(user){
       if(user && user.email){
-        fbReady=true; fbManager=true;
+        fbReady=true;
         var st=document.getElementById('fb-login-stat');
         if(st){ st.textContent='✓ Angemeldet als '+user.email; st.style.color='#1E8449'; }
-        if(onReady) onReady();
+        fbDb.collection('managers').doc(user.email).get().then(function(doc){
+          var regions=(doc.exists && doc.data().regions) || [];
+          if(!regions.length){
+            fbManager=false; activeRegion=null;
+            fbPendingCardShow('✓ Angemeldet als '+user.email+', aber keiner Region zugewiesen. Bitte Admin kontaktieren.', '#C0392B');
+            return;
+          }
+          fbManager=true; __managerRegions=regions;
+          regionResolve(regions, onReady);
+        }).catch(function(e){
+          fbManager=false;
+          fbPendingCardShow('⚠️ Fehler beim Prüfen der Region-Zuweisung: '+e.message, '#C0392B');
+        });
       } else {
-        fbManager=false;
+        fbManager=false; activeRegion=null; __managerRegions=[];
+        regionRenderSwitcher();
         fbPendingCardShow('🔐 Bitte in den Einstellungen mit dem Manager-Konto anmelden (E-Mail/Passwort).', '#B7860B');
         var st=document.getElementById('fb-login-stat');
         if(st){ st.textContent='Nicht angemeldet.'; st.style.color='#6B6860'; }
@@ -4665,6 +4720,81 @@ function fbInit(onReady){
     return true;
   }catch(e){ console.warn('FB init', e); fbPendingCardShow('⚠️ Firebase-Fehler: '+e.message, '#C0392B'); return false; }
 }
+
+// ════════ REGION-AUSWAHL (Ost/West) ════════
+function regionResolve(regions, onReady){
+  var saved=localStorage.getItem('sc_active_region');
+  if(regions.length===1){
+    regionSetActive(regions[0], onReady);
+  } else if(saved && regions.indexOf(saved)!==-1){
+    regionSetActive(saved, onReady);
+  } else {
+    regionShowPicker(regions, onReady);
+  }
+}
+function regionShowPicker(regions, onReady){
+  var list=document.getElementById('region-picker-list');
+  list.innerHTML=regions.map(function(r){
+    return '<button class="btn btn-red" style="justify-content:center;font-size:15px;padding:14px" onclick="regionPickerChoose(\''+r+'\')">📍 '+(REGION_LABELS[r]||r)+'</button>';
+  }).join('');
+  window.__regionPickerOnReady=onReady;
+  document.getElementById('region-picker-modal').classList.add('open');
+}
+function regionPickerChoose(r){
+  document.getElementById('region-picker-modal').classList.remove('open');
+  var cb=window.__regionPickerOnReady; window.__regionPickerOnReady=null;
+  regionSetActive(r, cb);
+}
+function regionSetActive(region, onReady){
+  var isSwitch=(activeRegion!=null && activeRegion!==region);
+  activeRegion=region;
+  localStorage.setItem('sc_active_region', region);
+  regionRenderSwitcher();
+  if(isSwitch){ regionRebindListeners(); regionAfterSwitchReset(); }
+  else if(onReady){ onReady(); }
+}
+function regionRenderSwitcher(){
+  var wrap=document.getElementById('region-switcher-wrap');
+  var label=document.getElementById('region-switcher-label');
+  if(!wrap||!label) return;
+  if(!activeRegion){ wrap.style.display='none'; return; }
+  wrap.style.display='block';
+  label.textContent=REGION_LABELS[activeRegion]||activeRegion;
+  var menu=document.getElementById('region-switcher-menu');
+  if(__managerRegions.length<2){ menu.innerHTML=''; return; }
+  menu.innerHTML=__managerRegions.map(function(r){
+    return '<div onclick="regionSwitchTo(\''+r+'\')" style="padding:10px 16px;cursor:pointer;font-size:13px;'+(r===activeRegion?'font-weight:700;color:var(--red)':'')+'" onmouseover="this.style.background=\'var(--bg)\'" onmouseout="this.style.background=\'\'">📍 '+(REGION_LABELS[r]||r)+'</div>';
+  }).join('');
+}
+function regionSwitcherToggle(){
+  var menu=document.getElementById('region-switcher-menu'); if(!menu) return;
+  menu.style.display = menu.style.display==='block' ? 'none' : 'block';
+}
+function regionSwitchTo(r){
+  var menu=document.getElementById('region-switcher-menu'); if(menu) menu.style.display='none';
+  if(r===activeRegion) return;
+  regionSetActive(r, null);
+}
+function regionRebindListeners(){
+  fbStartPending();
+  krStartListener();
+  anStartListener();
+  blStartListener();
+  avStartListener();
+  weStartListener();
+  ugStartListener();
+  if(typeof empsSyncListener==='function') empsSyncListener();
+  if(typeof filialenSyncListener==='function') filialenSyncListener();
+}
+function regionAfterSwitchReset(){
+  var dpSel=document.getElementById('dp-filiale');
+  if(dpSel){ dpSel.value=''; if(typeof dpFilialeChange==='function') dpFilialeChange(); }
+  var activePanel=document.querySelector('.panel.active');
+  var activeBtn=document.querySelector('.app-ico.active');
+  if(activePanel && activeBtn){ sw(activePanel.id.replace('panel-',''), activeBtn); }
+  toast('📍 Region gewechselt: '+(REGION_LABELS[activeRegion]||activeRegion));
+}
+
 function fbManagerLogin(){
   if(!fbEnabled()){ alert('Firebase ist nicht konfiguriert.'); return; }
   if(!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
@@ -4681,11 +4811,16 @@ function fbManagerLogout(){
 }
 function fbPublish(){
   if(!fbReady||!fbDb||!fbManager){ alert('Bitte zuerst als Manager anmelden (Einstellungen).'); return; }
+  if(!activeRegion){ alert('Keine Region aktiv — bitte neu anmelden.'); return; }
   var b=buildMaBundle();
   if(!b.employees.length){ alert('Keine aktiven Mitarbeiter gefunden. Bitte zuerst die Mitarbeiter-CSV importieren.'); return; }
+  var activeEmps=loadEmps().filter(function(e){return e.active!==false;});
   var jobs=[];
-  b.employees.forEach(function(e){
-    jobs.push(fbDb.collection('emps').doc(''+e.id).set({name:e.name, filiale:e.filiale||'', zweit:(e.zweit||[]), active:true, shopleiter:!!e.shopleiter},{merge:true}));
+  activeEmps.forEach(function(e){
+    jobs.push(fbDb.collection('emps').doc(''+e.id).set({
+      name:e.name, filiale:e.filiale||'', filialeNr:e.filialeNr||'', eintritt:e.eintritt||'', austritt:e.austritt||'',
+      zweit:(e.zweit||[]), active:true, shopleiter:!!e.shopleiter, region:activeRegion
+    },{merge:true}));
   });
   var nPlan=0;
   Object.keys(b.dienstplan).forEach(function(f){
@@ -4702,15 +4837,142 @@ function fbPublish(){
     toast('☁️ Veröffentlicht');
   }).catch(function(e){ if(stat) stat.textContent='⚠️ Fehler: '+e.message; alert('Veröffentlichen fehlgeschlagen: '+e.message); });
 }
+
+// ════════ REGION-BACKFILL (einmalig, siehe Einstellungen) ════════
+var REGION_BACKFILL_COLLECTIONS=['emps','krank','receipts','wareneingang','umlagerung','antrag','aenderungsvertrag'];
+var __regionBackfillPending=null;
+function regionBackfillScan(){
+  if(!fbReady||!fbDb||!fbManager){ alert('Bitte zuerst als Manager anmelden (Einstellungen).'); return; }
+  var stat=document.getElementById('region-backfill-stat');
+  stat.textContent='🔄 Zähle Dokumente ohne Region…';
+  document.getElementById('region-backfill-run').style.display='none';
+  var counts={};
+  var jobs=REGION_BACKFILL_COLLECTIONS.map(function(col){
+    return fbDb.collection(col).get().then(function(snap){
+      var missing=[]; snap.forEach(function(doc){ if(!doc.data().region) missing.push(doc.ref); });
+      counts[col]=missing;
+    });
+  });
+  jobs.push(fbDb.collectionGroup('urlaub').get().then(function(snap){
+    var missing=[]; snap.forEach(function(doc){ if(!doc.data().region) missing.push(doc.ref); });
+    counts['urlaub (alle Filialen)']=missing;
+  }));
+  Promise.all(jobs).then(function(){
+    __regionBackfillPending=counts;
+    var total=Object.keys(counts).reduce(function(s,k){ return s+counts[k].length; },0);
+    var lines=Object.keys(counts).map(function(k){ return k+': '+counts[k].length; });
+    stat.innerHTML='Gefunden ohne Region-Feld:<br>'+lines.join('<br>')+'<br><strong>Gesamt: '+total+'</strong>'+(total?'':'<br>✓ Nichts zu tun.');
+    document.getElementById('region-backfill-run').style.display=total?'inline-flex':'none';
+  }).catch(function(e){ stat.textContent='⚠️ Fehler: '+e.message; });
+}
+function regionBackfillRun(){
+  if(!fbReady||!fbDb||!fbManager){ alert('Bitte zuerst als Manager anmelden (Einstellungen).'); return; }
+  if(!__regionBackfillPending){ alert('Bitte zuerst „🔍 Prüfen" ausführen.'); return; }
+  var allRefs=[];
+  Object.keys(__regionBackfillPending).forEach(function(k){ __regionBackfillPending[k].forEach(function(ref){ allRefs.push(ref); }); });
+  if(!allRefs.length){ alert('Nichts zu markieren.'); return; }
+  if(!confirm('Wirklich '+allRefs.length+' Dokumente mit region:"ost" markieren? Dies kann nicht automatisch rückgängig gemacht werden.')) return;
+  var stat=document.getElementById('region-backfill-stat');
+  stat.textContent='🔄 Schreibe '+allRefs.length+' Dokumente…';
+  var chunks=[]; for(var i=0;i<allRefs.length;i+=400){ chunks.push(allRefs.slice(i,i+400)); }
+  var chain=Promise.resolve();
+  chunks.forEach(function(chunk){
+    chain=chain.then(function(){
+      var batch=fbDb.batch();
+      chunk.forEach(function(ref){ batch.update(ref,{region:'ost'}); });
+      return batch.commit();
+    });
+  });
+  chain.then(function(){
+    stat.textContent='✓ Fertig — '+allRefs.length+' Dokumente auf region:"ost" gesetzt.';
+    document.getElementById('region-backfill-run').style.display='none';
+    __regionBackfillPending=null;
+    toast('✓ Region-Backfill abgeschlossen');
+  }).catch(function(e){ stat.textContent='⚠️ Fehler beim Schreiben: '+e.message; });
+}
+
+// ════════ FILIALEN_META (Region-fähige Filial-Stammdaten, ersetzt lokale-only Listen) ════════
+function filialenMetaWriteThrough(entries, region){
+  if(!fbReady||!fbDb||!fbManager||!region) return;
+  entries.forEach(function(e){
+    var nr=e.marktNr||fbSlug(e.name||''); if(!nr) return;
+    fbDb.collection('filialen_meta').doc(nr).set({
+      name:e.name||'', marktNr:e.marktNr||'', plz:e.plz||'', ort:e.ort||'', strasse:e.strasse||'',
+      region:region, active:true, updatedAt:new Date().toISOString()
+    },{merge:true}).catch(function(err){ console.warn('filialen_meta write', err); });
+  });
+}
+function filialenMetaWriteThroughFromFilMeta(meta, region){
+  filialenMetaWriteThrough(Object.keys(meta).map(function(nr){
+    var m=meta[nr]||{}; return {marktNr:nr, name:m.name, plz:m.plz, ort:m.ort, strasse:m.strasse};
+  }), region);
+}
+function filialenMetaWriteThroughFromMkStores(stores, region){
+  filialenMetaWriteThrough(stores.map(function(s){
+    var nr=/^\d{3,}$/.test(s.id||'') ? s.id : '';
+    return {marktNr:nr, name:s.name, ort:s.ort};
+  }), region);
+}
+function regionSeedFilialenMeta(){
+  if(!fbReady||!fbDb||!fbManager){ alert('Bitte zuerst als Manager anmelden (Einstellungen).'); return; }
+  var filMeta=filMetaLoad(), mkStores=loadMkStores();
+  var nFil=Object.keys(filMeta).length, nMk=mkStores.length;
+  if(!nFil && !nMk){ alert('Keine lokalen Filialdaten gefunden (weder Filialen-PLZ-Liste noch Marktsuche-Liste).'); return; }
+  if(!confirm('Filialen-Stammdaten aus lokalen Daten anlegen: '+nFil+' aus „Filialen — PLZ & Ort", '+nMk+' aus „Fahrtplan-Gruppen" — alle mit region:"ost". Fortfahren?')) return;
+  filialenMetaWriteThroughFromFilMeta(filMeta, 'ost');
+  filialenMetaWriteThroughFromMkStores(mkStores, 'ost');
+  toast('✓ Filialen-Stammdaten werden angelegt…');
+}
+
+// ── Region-gebundene Sync-Listener: Cloud (Quelle der Wahrheit) -> lokaler Cache ──
+var empsSyncUnsub=null;
+function empsSyncListener(){
+  if(!fbReady||!fbDb||!activeRegion) return;
+  if(empsSyncUnsub){ try{empsSyncUnsub();}catch(e){} }
+  empsSyncUnsub=fbDb.collection('emps').where('region','==',activeRegion).onSnapshot(function(snap){
+    var arr=[];
+    snap.forEach(function(doc){
+      var d=doc.data()||{};
+      arr.push({id:doc.id, name:d.name||'', filiale:d.filiale||'', filialeNr:d.filialeNr||'',
+        active:d.active!==false, eintritt:d.eintritt||'', austritt:d.austritt||'',
+        zweit:d.zweit||[], shopleiter:!!d.shopleiter});
+    });
+    saveEmps(arr);
+    if(typeof renderEmpTable==='function') renderEmpTable();
+    if(typeof fvPopulate==='function') fvPopulate();
+    if(typeof dpPopulateFiliale==='function') dpPopulateFiliale();
+  }, function(err){ console.warn('FB emps sync', err); });
+}
+var filialenSyncUnsub=null;
+function filialenSyncListener(){
+  if(!fbReady||!fbDb||!activeRegion) return;
+  if(filialenSyncUnsub){ try{filialenSyncUnsub();}catch(e){} }
+  filialenSyncUnsub=fbDb.collection('filialen_meta').where('region','==',activeRegion).onSnapshot(function(snap){
+    var mk=[], meta={};
+    snap.forEach(function(doc){
+      var d=doc.data()||{};
+      if(d.marktNr) meta[d.marktNr]={name:d.name||'', plz:d.plz||'', ort:d.ort||'', strasse:d.strasse||''};
+      mk.push({id:d.marktNr||doc.id, name:d.name||'', ort:d.ort||''});
+    });
+    saveMkStores(mk);
+    filMetaSave(meta);
+    if(typeof renderMkStores==='function') renderMkStores();
+    if(typeof filMetaRender==='function') filMetaRender();
+    if(typeof stdPopulateFilialeSelect==='function') stdPopulateFilialeSelect();
+  }, function(err){ console.warn('FB filialen_meta sync', err); });
+}
+
 // Firestore-Docs -> Liste (testbar)
 function maMapPendingSnapshot(rawDocs){
   return rawDocs.map(function(d){ var v=d.data||{};
     return {docId:d.id, ref:d.ref||null, empId:v.empId, name:v.name, filiale:v.filiale, from:v.from, to:v.to, status:v.status, created:v.created};
   }).sort(function(a,b){ return (a.created||'')<(b.created||'')?-1:1; });
 }
+var fbPendingUnsub=null;
 function fbStartPending(){
-  if(!fbReady||!fbDb) return;
-  fbDb.collectionGroup('urlaub')
+  if(!fbReady||!fbDb||!activeRegion) return;
+  if(fbPendingUnsub){ try{fbPendingUnsub();}catch(e){} }
+  fbPendingUnsub=fbDb.collectionGroup('urlaub').where('region','==',activeRegion)
     .onSnapshot(function(snap){
       var raw=[]; snap.forEach(function(doc){ raw.push({id:doc.id, data:doc.data(), ref:doc.ref}); });
       var all=maMapPendingSnapshot(raw);
@@ -4832,10 +5094,12 @@ function anShowStatus(msg,color){
   var st=document.getElementById('an-live-status');
   if(st){ st.textContent=msg||''; st.style.color=color||'#6B6860'; st.style.display=msg?'block':'none'; }
 }
+var anUnsub=null;
 function anStartListener(){
-  if(!fbReady||!fbDb) return;
+  if(!fbReady||!fbDb||!activeRegion) return;
+  if(anUnsub){ try{anUnsub();}catch(e){} }
   anShowStatus('🔄 Verbinde…','#6B6860');
-  fbDb.collection('antrag').onSnapshot(function(snap){
+  anUnsub=fbDb.collection('antrag').where('region','==',activeRegion).onSnapshot(function(snap){
     var raw=[]; snap.forEach(function(doc){ raw.push({docId:doc.id, ref:doc.ref, d:doc.data()||{}}); });
     fbAntrag=raw.sort(function(a,b){ return (a.d.created||'')<(b.d.created||'')?1:-1; });
     anShowStatus('','');
@@ -4924,10 +5188,12 @@ function krShowStatus(msg,color){
   var st=document.getElementById('kr-live-status');
   if(st){ st.textContent=msg||''; st.style.color=color||'#6B6860'; st.style.display=msg?'block':'none'; }
 }
+var krUnsub=null;
 function krStartListener(){
-  if(!fbReady||!fbDb) return;
+  if(!fbReady||!fbDb||!activeRegion) return;
+  if(krUnsub){ try{krUnsub();}catch(e){} }
   krShowStatus('🔄 Verbinde…','#6B6860');
-  fbDb.collection('krank').onSnapshot(function(snap){
+  krUnsub=fbDb.collection('krank').where('region','==',activeRegion).onSnapshot(function(snap){
     var raw=[]; snap.forEach(function(doc){ raw.push({docId:doc.id, ref:doc.ref, d:doc.data()||{}}); });
     fbKrank=raw.sort(function(a,b){ return (a.d.created||'')<(b.d.created||'')?1:-1; });
     krShowStatus('','');
@@ -4985,10 +5251,12 @@ function blShowStatus(msg,color){
   var st=document.getElementById('bl-live-status');
   if(st){ st.textContent=msg||''; st.style.color=color||'#6B6860'; st.style.display=msg?'block':'none'; }
 }
+var blUnsub=null;
 function blStartListener(){
-  if(!fbReady||!fbDb) return;
+  if(!fbReady||!fbDb||!activeRegion) return;
+  if(blUnsub){ try{blUnsub();}catch(e){} }
   blShowStatus('🔄 Verbinde…','#6B6860');
-  fbDb.collection('receipts').onSnapshot(function(snap){
+  blUnsub=fbDb.collection('receipts').where('region','==',activeRegion).onSnapshot(function(snap){
     var raw=[]; snap.forEach(function(doc){ raw.push({docId:doc.id, ref:doc.ref, d:doc.data()||{}}); });
     fbBelege=raw.sort(function(a,b){ return (a.d.createdAt||'')<(b.d.createdAt||'')?1:-1; });
     blShowStatus('','');
@@ -5124,10 +5392,12 @@ function weShowStatus(msg,color){
   var st=document.getElementById('we-live-status');
   if(st){ st.textContent=msg||''; st.style.color=color||'#6B6860'; st.style.display=msg?'block':'none'; }
 }
+var weUnsub=null;
 function weStartListener(){
-  if(!fbReady||!fbDb) return;
+  if(!fbReady||!fbDb||!activeRegion) return;
+  if(weUnsub){ try{weUnsub();}catch(e){} }
   weShowStatus('🔄 Verbinde…','#6B6860');
-  fbDb.collection('wareneingang').onSnapshot(function(snap){
+  weUnsub=fbDb.collection('wareneingang').where('region','==',activeRegion).onSnapshot(function(snap){
     var raw=[]; snap.forEach(function(doc){ raw.push({docId:doc.id, ref:doc.ref, d:doc.data()||{}}); });
     fbWareneingang=raw.sort(function(a,b){ return (a.d.createdAt||'')<(b.d.createdAt||'')?1:-1; });
     weShowStatus('','');
@@ -5297,10 +5567,12 @@ function ugShowStatus(msg,color){
   var st=document.getElementById('ug-live-status');
   if(st){ st.textContent=msg||''; st.style.color=color||'#6B6860'; st.style.display=msg?'block':'none'; }
 }
+var ugUnsub=null;
 function ugStartListener(){
-  if(!fbReady||!fbDb) return;
+  if(!fbReady||!fbDb||!activeRegion) return;
+  if(ugUnsub){ try{ugUnsub();}catch(e){} }
   ugShowStatus('🔄 Verbinde…','#6B6860');
-  fbDb.collection('umlagerung').onSnapshot(function(snap){
+  ugUnsub=fbDb.collection('umlagerung').where('region','==',activeRegion).onSnapshot(function(snap){
     var raw=[]; snap.forEach(function(doc){ raw.push({docId:doc.id, ref:doc.ref, d:doc.data()||{}}); });
     fbUmlagerung=raw.sort(function(a,b){ return (a.d.createdAt||'')<(b.d.createdAt||'')?1:-1; });
     ugShowStatus('','');

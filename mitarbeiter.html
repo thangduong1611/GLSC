@@ -570,7 +570,7 @@ function fbInit(onReady){
 }
 // Baut das Firestore-Dokument für einen Urlaubsantrag (testbar)
 function maBuildUrlaubDoc(sess, from, to){
-  return { empId:sess.id, name:sess.name, filiale:sess.filiale||'',
+  return { empId:sess.id, name:sess.name, filiale:sess.filiale||'', region:sess.region||'',
     from:from, to:to, status:'pending', created:new Date().toISOString() };
 }
 // Wandelt Firestore-Docs in App-Einträge (testbar)
@@ -1110,6 +1110,7 @@ function slInit(sess){
     var d=doc.data()||{};
     // Rolle in Session persistieren (damit Tab nach Reload sofort erscheint)
     sess.shopleiter=!!d.shopleiter;
+    sess.region=d.region||sess.region||'';
     maSetSession(sess);
     var btn=document.getElementById('ico-sl');
     if(btn) btn.style.display=sess.shopleiter?'':'none';
@@ -1639,6 +1640,7 @@ function maRefreshProfile(){
     sess.name=d.name||sess.name;
     sess.filiale=d.filiale||'';
     sess.zweit=d.zweit||[];
+    sess.region=d.region||sess.region||'';
     maSetSession(sess);
     maAllocInfo(sess);
     document.getElementById('hdr-sub').textContent=sess.name+' · '+(sess.filiale||t('no_fil'));
@@ -1740,7 +1742,7 @@ function maDoLogin(){
       fbDb.collection('emps').doc(pid).get().then(function(doc){
         if(!doc.exists){btnErr(t('err_notfound'));return;}
         var d=doc.data()||{};
-        var sess={id:pid,name:d.name||'',filiale:d.filiale||'',zweit:d.zweit||[]};
+        var sess={id:pid,name:d.name||'',filiale:d.filiale||'',zweit:d.zweit||[],region:d.region||''};
         maSetSession(sess);
         fbDb.collection('meta').doc('config').get().then(function(cfg){
           if(cfg.exists && cfg.data().managerWa) localStorage.setItem('ma_wa', cfg.data().managerWa);
@@ -1965,7 +1967,7 @@ function weSubmit(){
   if(!fbReady||!fbDb){ toast(t('we_fail')+'offline',true); return; }
   var ganze=document.getElementById('we-ganze-fehlt').checked;
   var doc={
-    empId:''+sess.id, empName:sess.name, filiale:sess.filiale||'',
+    empId:''+sess.id, empName:sess.name, filiale:sess.filiale||'', region:sess.region||'',
     lieferant:document.getElementById('we-lieferant').value.trim(),
     lieferscheinNr:document.getElementById('we-lsnr').value.trim(),
     lieferdatum:document.getElementById('we-lsdatum').value,
@@ -2042,8 +2044,8 @@ function ugInit(sess){
   ugPopulateVon(sess);
 }
 function ugPopulateVon(sess){
-  if(!fbReady||!fbDb) return;
-  fbDb.collection('emps').get().then(function(snap){
+  if(!fbReady||!fbDb||!sess.region) return;
+  fbDb.collection('emps').where('region','==',sess.region).get().then(function(snap){
     var set={};
     snap.forEach(function(doc){ var f=(doc.data()||{}).filiale; if(f && f!==sess.filiale) set[f]=1; });
     ugVonList=Object.keys(set).sort(); ugVonLoaded=true; ugRenderVonOptions();
@@ -2164,7 +2166,7 @@ function ugSubmit(){
   if(!ugValidate()) return;
   if(!fbReady||!fbDb){ toast(t('ug_fail')+'offline',true); return; }
   var doc={
-    empId:''+sess.id, empName:sess.name, filiale:sess.filiale||'',
+    empId:''+sess.id, empName:sess.name, filiale:sess.filiale||'', region:sess.region||'',
     vonFiliale:document.getElementById('ug-von').value,
     datum:document.getElementById('ug-datum').value,
     items:ugItems.map(function(it){ return {artikelnr:it.artikelnr, artikelname:it.artikelname, einheit:it.einheit, menge:parseFloat(it.menge)||0}; }),
@@ -2562,7 +2564,7 @@ function maSendAntrag(){
   var ort=document.getElementById('up-ort').value.trim();
   var packet={
     typ:'urlaubsantrag', v:1,
-    name:sess.name, id:sess.id, filiale:sess.filiale,
+    name:sess.name, id:sess.id, filiale:sess.filiale, region:sess.region||'',
     vorg:document.getElementById('up-vorg').value.trim(),
     von:from, bis:to,
     einsatz:document.getElementById('up-einsatz').value,
@@ -2622,7 +2624,7 @@ function maSendKrank(){
   if(!from){toast(t('t_kr_from'),true);return;}
   if(fbReady&&fbDb){
     fbDb.collection('krank').add({
-      empId:''+sess.id, name:sess.name, filiale:sess.filiale||'',
+      empId:''+sess.id, name:sess.name, filiale:sess.filiale||'', region:sess.region||'',
       from:from, to:(to||''), img:(maKrImg||null), created:new Date().toISOString()
     }).then(function(){
       toast(t('kr_sent'));
@@ -2699,7 +2701,7 @@ function blSend(){
   if(!blImg){ toast(t('bl_need_photo'),true); return; }
   if(payType!=='Bar' && !payInfo){ toast(t('bl_need_pay'),true); return; }
   fbDb.collection('receipts').add({
-    empId:''+sess.id, empName:sess.name, filiale:sess.filiale||'',
+    empId:''+sess.id, empName:sess.name, filiale:sess.filiale||'', region:sess.region||'',
     amount:amount, note:note, img:blImg,
     payType:payType, payInfo:payInfo,
     status:'new', empHidden:false,

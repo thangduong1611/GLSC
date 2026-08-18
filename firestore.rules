@@ -1,0 +1,186 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ══════════════════════════════════════════════════════════
+    // AUTH HELPERS
+    // ══════════════════════════════════════════════════════════
+    function isAuthed() {
+      return request.auth != null;
+    }
+    // Regions the signed-in email is a manager of, e.g. ['ost'] or ['ost','west'].
+    // Looked up from managers/{email}. Firestore caches identical get()/exists()
+    // calls within one rule evaluation, so this doesn't multiply per document
+    // returned by a list query.
+    function managerRegions() {
+      return isAuthed() && exists(/databases/$(database)/documents/managers/$(request.auth.token.email))
+        ? get(/databases/$(database)/documents/managers/$(request.auth.token.email)).data.regions
+        : [];
+    }
+    // Any-region manager — used for collections shared across all regions
+    // (Mitteilungen, globale Einstellungen, Inventur-Produktkatalog).
+    function isManager() {
+      return managerRegions().size() > 0;
+    }
+    // Region-scoped manager — used for collections that must stay separated
+    // per region (Mitarbeiter, Krankmeldung, Belege, Wareneingang, Umlagerung,
+    // Urlaub, Änderungsvereinbarung, Filialen).
+    function isManagerForRegion(r) {
+      return r in managerRegions();
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // REGION-MAPPING (new)
+    // ══════════════════════════════════════════════════════════
+    // Grants are set manually via Firebase Console — no in-app UI writes here.
+    match /managers/{email} {
+      allow get: if isAuthed() && request.auth.token.email == email;
+      allow write: if false;
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // FILIALEN-STAMMDATEN (new — replaces the old browser-local-only lists)
+    // ══════════════════════════════════════════════════════════
+    match /filialen_meta/{marktNr} {
+      allow get, list: if isAuthed();
+      allow create: if isManagerForRegion(request.resource.data.region);
+      allow update: if isManagerForRegion(resource.data.region)
+        && isManagerForRegion(request.resource.data.region);
+      allow delete: if isManagerForRegion(resource.data.region);
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // MITARBEITERSTAMMDATEN
+    // ══════════════════════════════════════════════════════════
+    // get/list stay open to any authenticated (incl. anonymous employee)
+    // session — employee-side login/roster lookups rely on this and cannot
+    // be region-gated server-side since employee auth carries no identity
+    // claim. Region separation for employee-facing reads (e.g. Umlagerung's
+    // "welche Filiale" list) is enforced client-side via query filters.
+    match /emps/{pid} {
+      allow get, list: if isAuthed();
+      allow create: if isManagerForRegion(request.resource.data.region);
+      allow update: if isManagerForRegion(resource.data.region)
+        && isManagerForRegion(request.resource.data.region);
+      allow delete: if isManagerForRegion(resource.data.region);
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // DIENSTPLAN — unchanged, already scoped per-Filiale by doc ID
+    // ══════════════════════════════════════════════════════════
+    match /plan/{docId} {
+      allow read, write: if isAuthed();
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // GLOBALE KONFIGURATION — shared across regions, any manager
+    // ══════════════════════════════════════════════════════════
+    match /meta/{docId} {
+      allow get: if isAuthed();
+      allow list, write: if isManager();
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // URLAUB
+    // ══════════════════════════════════════════════════════════
+    match /filialen/{f}/urlaub/{u} {
+      allow read, create: if isAuthed();
+      allow update, delete: if isManagerForRegion(resource.data.region);
+    }
+    match /{path=**}/urlaub/{u} {
+      allow read: if isManagerForRegion(resource.data.region);
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // MITTEILUNGEN — stays company-wide across regions (by design)
+    // ══════════════════════════════════════════════════════════
+    match /news/{n} {
+      allow read: if isAuthed();
+      allow write: if isManager();
+    }
+    match /news_reads/{id} {
+      allow read, write: if isAuthed();
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // KRANKMELDUNG / URLAUBSANTRAG (Antrag-Paket)
+    // ══════════════════════════════════════════════════════════
+    match /krank/{k} {
+      allow create: if isAuthed();
+      allow read, update, delete: if isManagerForRegion(resource.data.region);
+    }
+    match /antrag/{a} {
+      allow create: if isAuthed();
+      allow read, update, delete: if isManagerForRegion(resource.data.region);
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // BELEGE (Hóa đơn hoàn ứng)
+    // create: jeder eingeloggte Mitarbeiter
+    // read:   jeder eingeloggte Mitarbeiter (für "Meine Belege", client-seitig gefiltert)
+    // update: Manager der zuständigen Region; oder Mitarbeiter bestätigt selbst
+    //         den Erhalt (paid -> confirmed), keine anderen Felder änderbar
+    // delete: nur Manager der zuständigen Region
+    // ══════════════════════════════════════════════════════════
+    match /receipts/{k} {
+      allow create: if isAuthed();
+      allow read: if isAuthed();
+      allow update: if isManagerForRegion(resource.data.region)
+        || (isAuthed()
+            && resource.data.status == 'paid'
+            && request.resource.data.status == 'confirmed'
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['status', 'confirmedAt', 'empHidden']));
+      allow delete: if isManagerForRegion(resource.data.region);
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // ÄNDERUNGSVEREINBARUNG
+    // (Konsolidiert — die Live-Regeln hatten zuvor zwei überlappende
+    // match-Blöcke für denselben Pfad; hier zu einem klaren zusammengeführt.)
+    // ══════════════════════════════════════════════════════════
+    match /aenderungsvertrag/{a} {
+      allow create: if isManagerForRegion(request.resource.data.region);
+      allow read: if isAuthed();
+      allow update: if isManagerForRegion(resource.data.region)
+        || (isAuthed()
+            && resource.data.status == 'sent'
+            && request.resource.data.status == 'signed'
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['status', 'anOrt', 'anSig', 'signedAt']));
+      allow delete: if isManagerForRegion(resource.data.region);
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // WARENEINGANG-REKLAMATION
+    // ══════════════════════════════════════════════════════════
+    match /wareneingang/{w} {
+      allow create: if isAuthed();
+      allow read, update, delete: if isManagerForRegion(resource.data.region);
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // UMLAGERUNG
+    // ══════════════════════════════════════════════════════════
+    match /umlagerung/{u} {
+      allow create: if isAuthed();
+      allow read, update, delete: if isManagerForRegion(resource.data.region);
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // INVENTUR — geteilter Produktkatalog + Betriebsdaten, regionsübergreifend
+    // (bewusst NICHT regionsgetrennt — siehe Projekt-Follow-up-Notiz)
+    // ══════════════════════════════════════════════════════════
+    match /inventur_config/{id} {
+      allow read: if isAuthed();
+      allow write: if isManager();
+    }
+    match /inventur_photos/{art} {
+      allow read, write: if isAuthed();
+    }
+    match /inventur_period/{id}   { allow read, write: if isAuthed(); }
+    match /inventur_links/{id}    { allow read, write: if isAuthed(); }
+    match /inventur_storemap/{id} { allow read, write: if isAuthed(); }
+    match /inventur_counts/{id}   { allow read, write: if isAuthed(); }
+  }
+}
