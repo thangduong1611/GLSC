@@ -171,7 +171,6 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 }
 
 /* ── DIENSTPLAN ── */
-.dp-sub-row{display:flex;gap:8px;margin-bottom:14px;}
 .dp-kw-card{margin-bottom:10px;padding:0;overflow:hidden;}
 .dp-kw-hdr{display:flex;align-items:center;justify-content:space-between;background:#F5F0EC;padding:7px 14px;border-bottom:1px solid var(--brd);}
 .dp-kw-hdr-kw{font-size:13px;font-weight:700;}
@@ -193,23 +192,6 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 .dp-emp-tag{display:inline-flex;align-items:center;gap:5px;background:var(--bg);border:1px solid var(--brd);border-radius:var(--rs);padding:4px 9px;font-size:12px;margin:3px 3px 3px 0;}
 .dp-emp-tag button{background:none;border:none;cursor:pointer;color:var(--mut);font-size:13px;padding:0 1px;line-height:1;}
 .dp-emp-tag.dp-emp-zw{background:var(--grn-bg,#E8F5E9);border-color:var(--grn,#2E7D32);color:var(--grn,#2E7D32);font-weight:600;}
-.rp-chip{display:inline-flex;align-items:center;padding:4px 11px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--brd);background:var(--surf);color:var(--mut);transition:all .12s;}
-.rp-chip.on{background:var(--red);color:#fff;border-color:var(--red);}
-.mk-cl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 14px;}
-@media(min-width:520px){.mk-cl-grid{grid-template-columns:repeat(4,1fr);}}
-.mk-cl-ico{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:12px 6px 10px;border-radius:18px;border:none;cursor:pointer;transition:transform .15s;-webkit-tap-highlight-color:transparent;user-select:none;text-align:center;color:#fff;}
-.mk-cl-ico:active{transform:scale(0.9);}
-.mk-cl-ico .cl-emoji{font-size:22px;line-height:1;}
-.mk-cl-ico .cl-name{font-size:11px;font-weight:700;line-height:1.2;word-break:break-word;}
-.mk-cl-ico .cl-sub{font-size:9px;opacity:.85;font-weight:500;}
-.mk-cl-ico .cl-x{position:absolute;top:-5px;right:-5px;width:20px;height:20px;border-radius:50%;background:#fff;color:#444;border:1px solid var(--brd);font-size:12px;line-height:18px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.2);}
-.rp-day{border:1.5px solid var(--brd);border-radius:10px;padding:10px 12px;cursor:pointer;transition:border .12s;min-height:72px;}
-.rp-day.ho{background:var(--bg);cursor:default;}
-.rp-day-lbl{font-size:10px;font-weight:700;color:var(--mut);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em;}
-.rp-day-name{font-size:12px;font-weight:600;line-height:1.3;margin-bottom:3px;}
-.rp-day-meta{font-size:10px;opacity:.7;}
-.rp-store-row{display:flex;align-items:flex-start;justify-content:space-between;padding:8px 0;border-top:1px solid var(--brd);}
-.rp-map-btn{padding:5px 10px;border-radius:7px;font-size:11px;font-weight:500;text-decoration:none;border:1px solid;display:inline-flex;align-items:center;gap:3px;margin-left:8px;flex-shrink:0;white-space:nowrap;}
 #setup-overlay.open{display:flex !important;}
 
 </style>
@@ -1023,34 +1005,6 @@ window.onerror=function(msg,src,line){
     </div>
     <button class="btn btn-red" onclick="addSavedEmail()" style="margin-top:8px;width:100%;justify-content:center">+ Adresse speichern</button>
   </div>
-  <div id="mk-cluster-card" class="card" style="display:none">
-    <div class="card-title">📍 Marktsuche-Filialen <span class="badge badge-grn" id="mk-stores-count">0</span></div>
-    <div class="info">1–2 Filialen anklicken → <strong>Cluster erstellen</strong>. Cluster werden als Fahrtplan-Gruppen genutzt. Tippe auf einen Cluster zum Bearbeiten/Auflösen.</div>
-    <div id="mk-cl-section" style="display:none">
-      <div style="font-size:13px;font-weight:600;margin:2px 0 2px">🗂 Cluster <span class="badge badge-grn" id="mk-cl-count">0</span></div>
-      <div class="mk-cl-grid" id="mk-cl-grid"></div>
-    </div>
-    <div id="mk-avail-section">
-      <div id="mk-avail-title" style="font-size:13px;font-weight:600;margin:2px 0 6px">Verfügbare Filialen</div>
-      <div id="mk-cluster-hint" style="font-size:12px;color:var(--mut);margin-bottom:8px">Filialen anklicken zum Auswählen (max. 2 pro Cluster)</div>
-      <div id="mk-stores-list"></div>
-      <div class="btn-row" style="margin-top:8px">
-        <button class="btn btn-red" onclick="mkCreateCluster()" style="flex:1;justify-content:center">🗂 Cluster erstellen</button>
-        <button class="btn" onclick="mkClearSel()">↺ Auswahl</button>
-      </div>
-    </div>
-    <div id="mk-all-clustered" style="display:none;font-size:13px;color:var(--mut);padding:10px 0">✅ Alle Filialen sind Clustern zugeordnet. Tippe oben auf einen Cluster zum Auflösen.</div>
-    <div class="btn-row" style="margin-top:10px;border-top:1px solid var(--brd);padding-top:10px">
-      <button class="btn-del" onclick="mkClearAll()" style="flex:1;justify-content:center">🗑 Alle Filialen & Cluster zurücksetzen</button>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title">🚗 Fahrtplan-Gruppen <span class="badge badge-grn" id="rp-grp-count">0</span></div>
-    <div class="info">Filialen in Tagesgruppen aufteilen (max. 2 pro Gruppe). Erscheinen im Dienstplan → Fahrtplan.</div>
-    <div id="rp-grp-list" style="margin-bottom:10px"></div>
-    <div style="display:flex;gap:8px;margin-top:0"><button class="btn btn-red" onclick="openRpGrpModal(null)" style="flex:1;justify-content:center">+ Neue Gruppe</button><button class="btn" onclick="rpImportFromEmps()" style="flex:1;justify-content:center" title="Filialen aus importierter Mitarbeiterliste übernehmen">📥 Aus MA-Liste</button><button class="btn" onclick="document.getElementById('mk-csv-file').click()" style="flex:1;justify-content:center" title="Marktsuche CSV importieren">📍 Marktsuche CSV</button></div>
-    <input type="file" id="mk-csv-file" style="display:none" accept=".csv,text/csv" onchange="importMarktsuche(event)">
-  </div>
   <div class="card">
     <div class="card-title">✍️ Unterschrift hochladen</div>
     <p style="font-size:13px;color:var(--mut);margin-bottom:12px">PNG mit transparentem Hintergrund. Für Urlaubsanträge und Änderungsvereinbarungen.</p>
@@ -1203,10 +1157,6 @@ window.onerror=function(msg,src,line){
 
 <!-- ===== DIENSTPLAN ===== -->
 <div id="panel-dienstplan" class="panel">
-  <div class="dp-sub-row">
-    <button id="dp-btn-plan" class="btn btn-red" onclick="dpSetMode('plan')" style="flex:1;justify-content:center">📅 Filial-Dienstplan</button>
-    <button id="dp-btn-route" class="btn" onclick="dpSetMode('route')" style="flex:1;justify-content:center">🚗 Mein Fahrtplan</button>
-  </div>
   <div class="btn-row" style="margin-bottom:14px">
     <button class="btn btn-grn" onclick="dpPublishMonth()" style="flex:1;justify-content:center">☁️ Diesen Monat veröffentlichen</button>
     <button class="btn" onclick="fbPublish()" title="Alle Filialen & Monate auf einmal">☁️ Alles</button>
@@ -1270,23 +1220,6 @@ window.onerror=function(msg,src,line){
         <button class="btn" onclick="ovExportCSV()">📄 CSV (Excel)</button>
       </div>
       <p id="ov-status" style="font-size:12px;color:var(--mut);text-align:center;margin-top:8px"></p>
-    </div>
-  </div>
-  <div id="dp-mode-route" style="display:none">
-    <div class="card">
-      <div class="card-title">🚗 Wöchentlicher Fahrtplan <span class="badge badge-grn" id="rp-filial-count"></span></div>
-      <div class="info">Jede Woche neu würfeln. Filialen werden automatisch aus der importierten Mitarbeiterliste erkannt – oder manuell unter ⚙ Einstellungen → Fahrtplan-Gruppen konfigurieren.</div>
-      <div style="margin-bottom:12px">
-        <div style="font-size:11px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">Home Office</div>
-        <div id="rp-ho-chips" style="display:flex;gap:5px;flex-wrap:wrap"></div>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
-        <button onclick="rpRegen()" class="btn btn-red" style="flex:1;justify-content:center">🔀 Neue Woche würfeln</button>
-        <button onclick="rpCopyText()" class="btn" style="flex:1;justify-content:center">📋 Kopieren</button>
-      </div>
-      <div id="rp-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px"></div>
-      <div id="rp-overflow-note" style="display:none;font-size:12px;color:#8a6d00;background:#fff8e1;border:1px solid #f0e0a0;border-radius:8px;padding:8px 10px;margin-bottom:12px"></div>
-      <div id="rp-detail"></div>
     </div>
   </div>
 </div>
@@ -1362,10 +1295,8 @@ applySettings();
 checkFirstStart();
   renderSavedEmails();
   renderEmpNotif();
-renderRpGrpList();
-RP_CL=getRPCL();
-  if(id==='dienstplan'){RP_CL=getRPCL();dpOnShow();}
-  if(id==='settings'){renderRpGrpList();applySettings();renderMkStores();renderSavedEmails();var wa=document.getElementById('st-manager-wa');if(wa)wa.value=localStorage.getItem('sc_manager_wa')||'';filMetaRender();}
+  if(id==='dienstplan'){dpOnShow();}
+  if(id==='settings'){applySettings();renderSavedEmails();var wa=document.getElementById('st-manager-wa');if(wa)wa.value=localStorage.getItem('sc_manager_wa')||'';filMetaRender();}
   if(id==='stunden'){stdPopulateFilialeSelect();}
   if(id==='dienstplan'){ovRenderMonthsHint();}
   if(id==='inventur'){invOnShow();}
@@ -3208,147 +3139,6 @@ function wizSave(){
   updateUrlaub();updateKrank();
   toast('Willkommen, '+name+'!');
 }
-// ─── FAHRTPLAN-GRUPPEN ─────────────────────────────────────
-var RP_COLORS=['#185FA5','#2E7D32','#E65100','#B71C1C','#4527A0','#00695C','#6A1B9A','#1565C0','#558B2F','#AD1457'];
-var RP_BKGS  =['#ddeeff','#e3f2e1','#fff0e0','#fdecea','#ede7f6','#e0f2f1','#f3e5f5','#e3f2fd','#f1f8e9','#fce4ec'];
-function loadRpGroups(){try{return JSON.parse(localStorage.getItem('sc_rp_groups')||'[]');}catch(e){return [];}}
-function saveRpGroups(d){localStorage.setItem('sc_rp_groups',JSON.stringify(d));}
-function getRPCL(){
-  var grps=loadRpGroups();
-  if(grps.length) return grps.map(function(g,i){
-    var ci=i%RP_COLORS.length,stores=[];
-    if(g.s1name)stores.push({n:g.s1name,a:g.s1addr||'',o:g.s1open||'08:00'});
-    if(g.s2name)stores.push({n:g.s2name,a:g.s2addr||'',o:g.s2open||'08:00'});
-    return{id:'grp'+i,name:g.name,c:RP_COLORS[ci],bg:RP_BKGS[ci],txt:RP_COLORS[ci],
-      stores:stores,km:g.km||0,dep:g.dep||'07:00',bk:g.bk||'14:00',wt:'ok',warn:g.warn||''};
-  });
-  // Auto-generate from employee filialen (CSV import)
-  var emps=loadEmps().filter(function(e){return e.active!==false;});
-  var filialen=[...new Set(emps.map(function(e){return e.filiale||'';}).filter(Boolean))].sort();
-  if(filialen.length) return filialen.map(function(f,i){
-    var ci=i%RP_COLORS.length;
-    return{id:'auto'+i,name:f,c:RP_COLORS[ci],bg:RP_BKGS[ci],txt:RP_COLORS[ci],
-      stores:[{n:f,a:'',o:'08:00'}],km:0,dep:'07:00',bk:'14:00',wt:'ok',warn:''};
-  });
-  return RP_CL_DEFAULT;
-}
-function renderRpGrpList(){
-  var grps=loadRpGroups(),c=document.getElementById('rp-grp-list'),cnt=document.getElementById('rp-grp-count');
-  if(cnt)cnt.textContent=grps.length;
-  var totalFil=grps.reduce(function(s,g){return s+(g.s1name?1:0)+(g.s2name?1:0);},0);
-  var fc=document.getElementById('rp-filial-count');
-  if(fc)fc.textContent=(totalFil>0?totalFil+' Filialen':(grps.length?grps.length+' Gruppen':'Standard'));
-  if(!c)return;
-  if(!grps.length){c.innerHTML='<p style="font-size:13px;color:var(--mut)">Noch keine Gruppen. Ohne eigene Gruppen wird die Standardregion Göttingen verwendet.</p>';return;}
-  c.innerHTML=grps.map(function(g,i){
-    var ci=i%RP_COLORS.length,stores=(g.s1name||'')+(g.s2name?' + '+g.s2name:'');
-    return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--brd)">'
-      +'<div style="width:10px;height:10px;border-radius:50%;background:'+RP_COLORS[ci]+';flex-shrink:0"></div>'
-      +'<div style="flex:1"><div style="font-size:13px;font-weight:600">'+g.name+'</div>'
-      +'<div style="font-size:11px;color:var(--mut)">'+stores+(g.dep?' · Ab '+g.dep:'')+'</div></div>'
-      +'<button class="btn btn-sm" onclick="openRpGrpModal('+i+')">✏</button>'
-      +'<button class="btn-del" onclick="delRpGrp('+i+')" title="Löschen">🗑</button></div>';
-  }).join('');
-}
-function openRpGrpModal(idx){
-  var grps=loadRpGroups(),g=idx!==null?grps[idx]:{};
-  document.getElementById('rp-grp-idx').value=idx!==null?idx:'';
-  document.getElementById('rp-grp-modal-title').textContent=idx!==null?'Gruppe bearbeiten':'Neue Fahrgruppe';
-  var fn=function(id,v){var el=document.getElementById(id);if(el)el.value=v||'';};
-  fn('rp-grp-name',g.name);fn('rp-s1-name',g.s1name);fn('rp-s1-addr',g.s1addr);fn('rp-s1-open',g.s1open||'07:00');
-  fn('rp-s2-name',g.s2name);fn('rp-s2-addr',g.s2addr);fn('rp-s2-open',g.s2open||'08:00');
-  fn('rp-grp-dep',g.dep||'07:00');fn('rp-grp-bk',g.bk||'14:00');
-  fn('rp-s1-id',g.s1id);fn('rp-s2-id',g.s2id);
-  var kmEl=document.getElementById('rp-grp-km');if(kmEl)kmEl.value=g.km||'';
-  // Clear "manually edited" flag on name
-  var nameEl=document.getElementById('rp-grp-name');if(nameEl)delete nameEl.dataset.manual;
-  // Populate store selectors from imported Marktsuche CSV
-  var mkStores=loadMkStores();
-  var s1pick=document.getElementById('rp-s1-pick'),s2pick=document.getElementById('rp-s2-pick');
-  if(s1pick){s1pick.style.display=mkStores.length?'block':'none';}
-  if(s2pick){s2pick.style.display=mkStores.length?'block':'none';}
-  if(mkStores.length){
-    var opts1='<option value="">— Filiale wählen —</option>';
-    var opts2='<option value="">— keine (optional) —</option>';
-    mkStores.forEach(function(s,i){
-      opts1+='<option value="'+i+'">'+s.name+'</option>';
-      opts2+='<option value="'+i+'">'+s.name+'</option>';
-    });
-    var s1sel=document.getElementById('rp-s1-sel'),s2sel=document.getElementById('rp-s2-sel');
-    if(s1sel)s1sel.innerHTML=opts1;
-    if(s2sel)s2sel.innerHTML=opts2;
-  }
-  var dis=document.getElementById('rp-grp-dissolve');
-  if(dis){if(idx!==null){dis.style.display='block';dis.setAttribute('data-idx',idx);}else{dis.style.display='none';}}
-  document.getElementById('rp-grp-modal').classList.add('open');
-}
-function closeRpGrpModal(){document.getElementById('rp-grp-modal').classList.remove('open');}
-function rpStoreSelect(slot,idxStr){
-  var idEl=document.getElementById('rp-s'+slot+'-id');
-  if(idxStr===''){if(idEl)idEl.value='';rpUpdateGrpName();return;}
-  var stores=loadMkStores(),s=stores[parseInt(idxStr)];
-  if(!s)return;
-  document.getElementById('rp-s'+slot+'-name').value=s.name;
-  document.getElementById('rp-s'+slot+'-addr').value=s.addr||'';
-  if(idEl)idEl.value=s.id||'';
-  var openEl=document.getElementById('rp-s'+slot+'-open');
-  if(openEl&&!openEl.value) openEl.value=slot===1?'07:00':'08:00';
-  rpUpdateGrpName();
-}
-function rpStoreCity(name){
-  var stores=loadMkStores();
-  var found=stores.find(function(s){return s.name===name;});
-  if(found&&found.ort) return found.ort;                       // cleanest: city from CSV
-  if(found&&found.type) return name.replace(found.type+' ','').trim();
-  return name.split(' ').slice(1).join(' ')||name;
-}
-function rpUpdateGrpName(){
-  var nameEl=document.getElementById('rp-grp-name');
-  if(!nameEl||nameEl.dataset.manual)return;
-  var s1=document.getElementById('rp-s1-name').value.trim();
-  var s2=document.getElementById('rp-s2-name').value.trim();
-  var c1=s1?rpStoreCity(s1):'',c2=s2?rpStoreCity(s2):'';
-  nameEl.value=(c1&&c2&&c1!==c2)?(c1+' / '+c2):(c1||c2||'');
-}
-function saveRpGrp(){
-  var name=document.getElementById('rp-grp-name').value.trim(),s1=document.getElementById('rp-s1-name').value.trim();
-  if(!name||!s1){alert('Gruppenname und Filiale 1 sind Pflicht.');return;}
-  var kmEl=document.getElementById('rp-grp-km'),km=kmEl?parseInt(kmEl.value)||0:0;
-  var s1idEl=document.getElementById('rp-s1-id'),s2idEl=document.getElementById('rp-s2-id');
-  var s2nameVal=document.getElementById('rp-s2-name').value.trim();
-  var g={name:name,s1id:s1idEl?s1idEl.value:'',s1name:s1,s1addr:document.getElementById('rp-s1-addr').value.trim(),s1open:document.getElementById('rp-s1-open').value.trim()||'07:00',s2id:(s2nameVal&&s2idEl)?s2idEl.value:'',s2name:s2nameVal,s2addr:document.getElementById('rp-s2-addr').value.trim(),s2open:document.getElementById('rp-s2-open').value.trim()||'08:00',dep:document.getElementById('rp-grp-dep').value.trim()||'07:00',bk:document.getElementById('rp-grp-bk').value.trim()||'14:00',km:km};
-  var grps=loadRpGroups(),idxStr=document.getElementById('rp-grp-idx').value;
-  if(idxStr!=='')grps[parseInt(idxStr)]=g;else grps.push(g);
-  saveRpGroups(grps);closeRpGrpModal();renderRpGrpList();
-  RP_CL=getRPCL();rpSchedule=[];
-  if(typeof renderMkStores==='function')renderMkStores();
-  if(document.getElementById('rp-grid'))rpRender();
-  toast('✓ Gruppe gespeichert');
-}
-function delRpGrp(i){
-  if(!confirm('Gruppe löschen?'))return;
-  var grps=loadRpGroups();grps.splice(i,1);saveRpGroups(grps);renderRpGrpList();
-  RP_CL=getRPCL();rpSchedule=[];
-  if(typeof renderMkStores==='function')renderMkStores();
-  if(document.getElementById('rp-grid'))rpRender();
-  toast('✓ Gelöscht');
-}
-function rpDissolveFromModal(){
-  var dis=document.getElementById('rp-grp-dissolve');
-  var idx=dis?parseInt(dis.getAttribute('data-idx')):-1;
-  if(isNaN(idx)||idx<0)return;
-  var grps=loadRpGroups();
-  if(!grps[idx])return;
-  if(!confirm('Cluster "'+grps[idx].name+'" auflösen? Die Filialen erscheinen wieder in der Liste.'))return;
-  grps.splice(idx,1);saveRpGroups(grps);
-  closeRpGrpModal();renderRpGrpList();
-  RP_CL=getRPCL();rpSchedule=[];
-  if(typeof renderMkStores==='function')renderMkStores();
-  if(document.getElementById('rp-grid'))rpRender();
-  toast('✓ Cluster aufgelöst');
-}
-(function(){function _bindRp(){var m=document.getElementById('rp-grp-modal');if(m)m.addEventListener('click',function(e){if(e.target===this)closeRpGrpModal();});}if(document.getElementById('rp-grp-modal'))_bindRp();else document.addEventListener('DOMContentLoaded',_bindRp);})();
-
 // ═══════════════════════════════════════════════════════════
 // ── DIENSTPLAN ────────────────────────────────────────────
 // ═══════════════════════════════════════════════════════════
@@ -3361,14 +3151,7 @@ var dpCloudUnsub=null, dpDirty=false, dpCloudKey=null;
 function dpEmpKey(e){return (e.id||'x')+'-'+e.name;}
 // Ist dieser Mitarbeiter in der aktuell gewählten Filiale nur "Bei Bedarf" (Zweitfiliale)?
 function dpIsZweit(empId,f){ if(!empId)return false; var e=loadEmps().find(function(x){return ''+x.id===''+empId;}); return !!(e && !dpFilEq(e.filiale,f) && (e.zweit||[]).some(function(z){return dpFilEq(z,f);})); }
-function dpSetMode(m){
-  document.getElementById('dp-mode-plan').style.display=m==='plan'?'block':'none';
-  document.getElementById('dp-mode-route').style.display=m==='route'?'block':'none';
-  document.getElementById('dp-btn-plan').className=m==='plan'?'btn btn-red':'btn';
-  document.getElementById('dp-btn-route').className=m==='route'?'btn btn-red':'btn';
-  if(m==='route')rpInit();
-}
-function dpOnShow(){dpPopulateFiliale();RP_CL=getRPCL();if(!rpSchedule.length)rpInit();else rpRender();renderRpGrpList();}
+function dpOnShow(){dpPopulateFiliale();}
 function dpPopulateFiliale(){
   var emps=loadEmps().filter(function(e){return e.active!==false;});
   var filialen=[...new Set(emps.map(function(e){return e.filiale||'';}).filter(Boolean))].sort();
@@ -4112,125 +3895,6 @@ async function dpSharePDF(){
   if(navigator.share){try{await navigator.share(sd);}catch(err){if(err.name!=='AbortError')toast('Fehler beim Teilen');}}
   else toast('Bitte PDF herunterladen');
 }
-// ── FAHRTPLAN ─────────────────────────────────────────────────
-var RP_CL_DEFAULT=[
-  {id:'einbeck',name:'Einbeck / Northeim',c:'#185FA5',bg:'#ddeeff',txt:'#0C447C',stores:[{n:'Marktkauf Einbeck',a:'Altendorfer Tor 24, 37574 Einbeck',o:'08:00'},{n:'Edeka Northeim',a:'Robert Schnabel Str. 1, 37154 Northeim',o:'07:00'}],km:213,dep:'07:00',bk:'13:30',wt:'ok',warn:'A7 vor 07:30 Uhr thoang.'},
-  {id:'bovenden',name:'Göttingen Nord',c:'#2E7D32',bg:'#e3f2e1',txt:'#1B5E20',stores:[{n:'Edeka Bovenden',a:'Industriestr. 8, 37120 Bovenden',o:'07:00'},{n:'Tegut An der Lutter',a:'An der Lutter 22, 37075 Göttingen',o:'07:00'}],km:241,dep:'06:30',bk:'13:00',wt:'ok',warn:'Abfahrt 06:30 — vor Göttingen-Stau.'},
-  {id:'goettingen',name:'Göttingen Stadt',c:'#E65100',bg:'#fff0e0',txt:'#BF360C',stores:[{n:'Kaufland Göttingen-Grone',a:'Am Kauf Park 2, 37079 Göttingen',o:'08:00'},{n:'Tegut Göttingen Weender',a:'Weender Str. 75, 37073 Göttingen',o:'08:00'}],km:238,dep:'07:30',bk:'14:00',wt:'ok',warn:'Mittwochs am ruhigsten.'},
-  {id:'kassel',name:'Kassel / Baunatal',c:'#B71C1C',bg:'#fdecea',txt:'#7F0000',stores:[{n:'Edeka Aschoff Kassel',a:'Frankfurter Str. 114-120, 34121 Kassel',o:'07:00'},{n:'Ratio Markt Baunatal',a:'Fuldastr. 1-5, 34225 Baunatal',o:'08:00'}],km:353,dep:'06:00',bk:'14:30',wt:'warn',warn:'⚠ Kassel-Nord 07:30-09:00 Stau! 06:00 losfahren!'},
-  {id:'heiligenstadt',name:'Heiligenstadt / Nordhausen',c:'#4527A0',bg:'#ede7f6',txt:'#311B92',stores:[{n:'Rewe Heilbad Heiligenstadt',a:'Sperberwiese 1, 37308 Heiligenstadt',o:'06:00'},{n:'Marktkauf Nordhausen',a:'Nordhausen, Thüringen',o:'08:00'}],km:397,dep:'06:30',bk:'15:00',wt:'warn',warn:'⚠ Freitags: Rückfahrt vor 11:00!'},
-  {id:'homberg',name:'Homberg Efze',c:'#00695C',bg:'#e0f2f1',txt:'#004D40',stores:[{n:'Rewe Efze Homberg',a:'Kasseler Str. 3, 34576 Homberg (Efze)',o:'07:00'}],km:370,dep:'08:00',bk:'13:30',wt:'ok',warn:'Samstag ideal — kein Rush Hour.'}
-];
-var RP_CL=RP_CL_DEFAULT;
-var RP_DAYS=['Mo','Di','Mi','Do','Fr','Sa'],RP_DAYF=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
-var RP_NUM_DAYS=6;  // fixed Mo–Sa working week
-var rpHoDay=-1,rpSchedule=[],rpSelDay=-1;
-function rpShuffle(a){var b=[...a];for(var i=b.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
-function rpGen(){
-  var n=RP_CL.length;
-  var order=rpShuffle(RP_CL.map(function(_,i){return i;}));
-  rpSchedule=new Array(RP_NUM_DAYS).fill(null);
-  // Home-office day: forced if user picked one; random only if there is a free day
-  var hoIdx=-1;
-  if(rpHoDay>=0&&rpHoDay<RP_NUM_DAYS) hoIdx=rpHoDay;
-  else if(rpHoDay===-1 && n<RP_NUM_DAYS) hoIdx=Math.floor(Math.random()*RP_NUM_DAYS);
-  if(hoIdx>=0) rpSchedule[hoIdx]=-1;
-  // Fill remaining days with route groups; leftover days become Home Office / frei
-  var ci=0;
-  for(var d=0;d<RP_NUM_DAYS;d++){
-    if(rpSchedule[d]===null){
-      if(ci<order.length) rpSchedule[d]=order[ci++];
-      else rpSchedule[d]=-1;
-    }
-  }
-  rpSelDay=-1;
-}
-function rpInit(){RP_CL=getRPCL();if(!rpSchedule.length||rpSchedule.length!==RP_NUM_DAYS)rpGen();rpRender();}
-function rpRegen(){RP_CL=getRPCL();rpGen();rpRender();}
-function rpSetHO(d){rpHoDay=d;rpGen();rpRender();}
-function rpMapA(s){return 'https://maps.apple.com/?daddr='+encodeURIComponent(s.a)+'&dirflg=d';}
-function rpMapG(s){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(s.a);}
-function rpSelD(i){rpSelDay=(rpSelDay===i?-1:i);rpRender();}
-function rpRender(){
-  // Day chips: Zufällig + Mo..Sa (always 6)
-  var chips=['Zufällig'].concat(RP_DAYS).map(function(d,i){return '<button class="rp-chip'+(rpHoDay===(i-1)?' on':'')+'\" onclick="rpSetHO('+(i-1)+')">'+d+'</button>';}).join('');
-  document.getElementById('rp-ho-chips').innerHTML=chips;
-  // Count how many extra groups did not fit this week
-  var shownGroups=rpSchedule.filter(function(v){return v>=0;}).length;
-  var extra=Math.max(0,RP_CL.length-shownGroups);
-  var g=Array.from({length:RP_NUM_DAYS},function(_,i){
-    var isHO=rpSchedule[i]===-1, cl=isHO?null:RP_CL[rpSchedule[i]], isSel=rpSelDay===i;
-    if(!isHO&&!cl)return '';
-    var bc=isSel&&cl?cl.c:'var(--brd)',bw=isSel?'2px':'1.5px',bg=isHO?'var(--bg)':(cl.bg+'33');
-    return '<div class="rp-day'+(isHO?' ho':'')+'\" style="background:'+bg+';border-color:'+bc+';border-width:'+bw+'" onclick="'+(isHO?'':'rpSelD('+i+')')+'\">'
-      +'<div class="rp-day-lbl">'+RP_DAYS[i]+'</div>'
-      +(isHO?'<div style="font-size:12px;color:var(--mut)">🏠 Home Office</div>'
-      :'<div class="rp-day-name" style="color:'+cl.txt+'">'+cl.name+'</div>'
-      +(cl.km>0?'<div class="rp-day-meta" style="color:'+cl.txt+'">⏰ '+cl.dep+' · '+cl.km+' km</div>':'<div class="rp-day-meta" style="color:'+cl.txt+'">⏰ Abfahrt: '+cl.dep+'</div>'))+'</div>';
-  }).join('');
-  document.getElementById('rp-grid').innerHTML=g;
-  // Note about groups that didn't fit this week
-  var note=document.getElementById('rp-overflow-note');
-  if(note){
-    if(extra>0){note.style.display='block';note.innerHTML='ℹ️ '+extra+' weitere Gruppe(n) passen nicht in diese Woche — beim nächsten Würfeln drankommen. Tipp: Filialen zu max. 5 Clustern zusammenfassen.';}
-    else note.style.display='none';
-  }
-  rpRenderDetail();
-}
-function rpRenderDetail(){
-  var a=document.getElementById('rp-detail');
-  if(rpSelDay===-1||rpSchedule[rpSelDay]===undefined||rpSchedule[rpSelDay]===-1){a.innerHTML='';return;}
-  var cl=RP_CL[rpSchedule[rpSelDay]];if(!cl){a.innerHTML='';return;}
-  var wbg=cl.wt==='warn'?'#fff8e1':'#f0faf0',wc=cl.wt==='warn'?'#e65100':'#2e7d32';
-  var h='<div style="border:1.5px solid '+cl.c+'40;border-radius:10px;overflow:hidden;margin-bottom:8px">'
-    +'<div style="background:'+cl.bg+'80;padding:10px 14px;display:flex;justify-content:space-between;align-items:center">'
-    +'<div><div style="font-size:14px;font-weight:600;color:'+cl.txt+'">'+RP_DAYF[rpSelDay]+' \u2014 '+cl.name+'</div>'
-    +'<div style="font-size:12px;color:var(--mut);margin-top:2px">Abfahrt '+cl.dep+(cl.bk?' · Rückkehr '+cl.bk:'')+(cl.km>0?' · '+cl.km+' km':'')+'</div></div>'
-    +'<button onclick="rpSelD(-1)" style="background:none;border:none;color:var(--mut);cursor:pointer;font-size:18px">×</button></div>';
-  cl.stores.forEach(function(s){
-    h+='<div class="rp-store-row" style="padding:9px 14px">'
-      +'<div><div style="font-size:13px;font-weight:600;margin-bottom:2px">'+s.n+'</div>'
-      +'<div style="font-size:12px;color:var(--mut)">'+s.a+'</div>'
-      +'<div style="font-size:11px;color:var(--mut)">Öffnung: '+s.o+'</div></div>'
-      +'<div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">'
-      +'<a href="'+rpMapA(s)+'" class="rp-map-btn" style="background:'+cl.bg+';color:'+cl.txt+';border-color:'+cl.c+'50">🗺 Apple</a>'
-      +'<a href="'+rpMapG(s)+'" class="rp-map-btn" style="background:var(--bg);color:var(--txt);border-color:var(--brd)">🗺 Google</a>'
-      +'</div></div>';
-  });
-  if(cl.warn)h+='<div style="margin:0 14px 12px;padding:8px 10px;border-radius:8px;background:'+wbg+';color:'+wc+';font-size:12px;line-height:1.5">'+cl.warn+'</div>';
-  h+='</div>';a.innerHTML=h;
-}
-function rpCopyText(){
-  var txt=Array.from({length:RP_NUM_DAYS},function(_,i){
-    if(rpSchedule[i]===-1)return RP_DAYF[i]+': Home Office';
-    var cl=RP_CL[rpSchedule[i]];if(!cl)return RP_DAYF[i]+': —';
-    return RP_DAYF[i]+' (Abfahrt '+cl.dep+(cl.km>0?', '+cl.km+' km':'')+'): '+cl.stores.map(function(s){return s.n;}).join(' + ');
-  }).join('\n');
-  if(navigator.clipboard)navigator.clipboard.writeText(txt).then(function(){toast('✓ Fahrtplan kopiert!');});else prompt('Kopieren:',txt);
-}
-
-
-// ── AUTO-IMPORT FILIALEN FROM EMPLOYEE LIST ───────────────────
-function rpImportFromEmps(){
-  var emps=loadEmps().filter(function(e){return e.active!==false;});
-  var filialen=[...new Set(emps.map(function(e){return e.filiale||'';}).filter(Boolean))].sort();
-  if(!filialen.length){alert('Keine Filialen in der Mitarbeiterliste gefunden. Bitte zuerst CSV importieren.');return;}
-  var existing=loadRpGroups();
-  var existingNames=existing.map(function(g){return g.name.toLowerCase();});
-  var added=0;
-  filialen.forEach(function(f){
-    if(!existingNames.includes(f.toLowerCase())){
-      existing.push({name:f,s1name:f,s1addr:'',s1open:'08:00',s2name:'',s2addr:'',s2open:'',dep:'07:00',bk:'14:00',km:0});
-      added++;
-    }
-  });
-  if(!added){toast('Alle Filialen bereits vorhanden.');return;}
-  saveRpGroups(existing);renderRpGrpList();
-  RP_CL=getRPCL();rpSchedule=[];
-  if(document.getElementById('rp-grid'))rpRender();
-  toast('✓ '+added+' Filiale(n) importiert');
-}
-
 // ── SHOW/HIDE SIGNATURE OPTIONS ───────────────────────────────
 function toggleSigOption(panelId,optId){
   var sig=localStorage.getItem('sc_sig');
@@ -4370,247 +4034,8 @@ function renderEmpNotif(){
   </div>`).join('');
 }
 
-// ── MARKTSUCHE CSV IMPORT ─────────────────────────────────────────────
-const MK_TYPES={'R':'Rewe','E':'Edeka','M':'Marktkauf','MK':'Marktkauf','K':'Kaufland','T':'Tegut','RA':'Ratio'};
-const MK_COLORS={Rewe:'#cc0000',Edeka:'#e7a800',Kaufland:'#e30513',Tegut:'#005ca8',Ratio:'#7a3b8e',Marktkauf:'#e30513'};
 function loadMkStores(){try{var a=JSON.parse(localStorage.getItem('sc_mk_stores')||'[]');a.forEach(function(s){if(!s.id)s.id=((s.marktname||'').match(/^\s*(\d{3,})/)||[])[1]||s.name;});return a;}catch(e){return[];}}
 function saveMkStores(d){localStorage.setItem('sc_mk_stores',JSON.stringify(d));}
-
-function _parseMkText(text){
-  if(text.charCodeAt(0)===0xFEFF) text=text.slice(1);
-  const lines=text.split(/\r?\n/).map(l=>l.trimEnd()).filter(l=>l.trim());
-  if(lines.length<2) return null;
-  const fl=lines[0];
-  const sep=(fl.split(';').length>=fl.split(',').length)?';':',';
-  const header=lines[0].split(sep).map(h=>h.replace(/^"|"$/g,'').trim().toLowerCase());
-  const ci=(aliases)=>{for(const a of aliases){const idx=header.findIndex(h=>h===a.toLowerCase());if(idx>=0)return idx;}return -1;};
-  const iName=ci(['marktname','name','filialname','filiale','betrieb','markt','bezeichnung','storename']);
-  const iStr =ci(['strasse','straße','street','adresse','address']);
-  const iPLZ =ci(['plz','postleitzahl','zipcode','zip']);
-  const iOrt =ci(['ort','stadt','city','standort','gemeinde']);
-  if(iName<0) return {error:'Namensspalte nicht gefunden. Spalten: '+lines[0].split(sep).slice(0,8).join(' | ')};
-  const pf=(row,i)=>i>=0?((row[i]||'').replace(/^"|"$/g,'').trim()):'';
-  const imported=[];
-  lines.slice(1).forEach(line=>{
-    if(!line.trim())return;
-    const row=line.split(sep);
-    const rawName=pf(row,iName);if(!rawName)return;
-    const strasse=pf(row,iStr),plz=pf(row,iPLZ),ort=pf(row,iOrt);
-    const m=rawName.match(/:\s*([A-Z]+)-([^-]+)-(.+)/);   // "Nr: TYPE-City-Location"
-    const m2=rawName.match(/:\s*([A-Z]+)-(.+)/);           // fallback "Nr: TYPE-Rest"
-    let type='',displayName='';
-    if(m){
-      type=MK_TYPES[m[1]]||m[1];
-      const city=ort||m[2].trim();
-      const loc=m[3].split(' - ')[0].trim();
-      displayName=(type+' '+city+' '+loc).trim();
-    } else if(m2){
-      type=MK_TYPES[m2[1]]||m2[1];
-      const city=ort||m2[2].split('-')[0].trim();
-      displayName=(type+' '+city).trim();
-    } else {
-      displayName=ort||rawName.substring(0,40);
-    }
-    if(!displayName) return;
-    const addr=[strasse,plz&&ort?(plz+' '+ort):ort].filter(Boolean).join(', ');
-    const sid=(rawName.match(/^\s*(\d{3,})/)||[])[1]||displayName;
-    imported.push({id:sid,name:displayName,type,addr,marktname:rawName,ort:ort||''});
-  });
-  return imported;
-}
-
-function importMarktsuche(ev){
-  const file=ev.target.files[0]; if(!file)return;
-  const r=new FileReader();
-  r.onerror=function(){alert('Datei konnte nicht gelesen werden.');};
-  r.onload=function(e){
-    try{
-      const buf=e.target.result;
-      let imported=null;
-      // Decode with TextDecoder (reliable on iPhone Safari + Windows)
-      if(buf && typeof buf!=='string' && typeof TextDecoder!=='undefined'){
-        const bytes=new Uint8Array(buf);
-        // Try ISO-8859-1 (windows-1252) FIRST — company CSV uses it (ä,ö,ü,ß)
-        let txtIso='',txtUtf='';
-        try{txtIso=new TextDecoder('windows-1252').decode(bytes);}catch(x){try{txtIso=new TextDecoder('iso-8859-1').decode(bytes);}catch(y){}}
-        try{txtUtf=new TextDecoder('utf-8',{fatal:false}).decode(bytes);}catch(x){}
-        const rIso=txtIso?_parseMkText(txtIso):null;
-        const rUtf=txtUtf?_parseMkText(txtUtf):null;
-        // Prefer ISO result if it parsed stores; mojibake check: if UTF has replacement chars, use ISO
-        if(Array.isArray(rIso)&&rIso.length) imported=rIso;
-        else if(Array.isArray(rUtf)&&rUtf.length) imported=rUtf;
-        else if(rIso&&rIso.error){alert(rIso.error);return;}
-        else if(rUtf&&rUtf.error){alert(rUtf.error);return;}
-      } else {
-        // Fallback: treat result as text string
-        const res=_parseMkText(typeof buf==='string'?buf:String(buf));
-        if(Array.isArray(res)&&res.length) imported=res;
-        else if(res&&res.error){alert(res.error);return;}
-      }
-      if(!imported||!imported.length){alert('Keine Filialen gefunden. Bitte prüfen, ob die CSV eine Spalte "Marktname" enthält.');return;}
-
-      const existing=loadMkStores();
-      const existingNames=new Set(existing.map(s=>s.name.toLowerCase()));
-      let added=0;
-      imported.forEach(s=>{if(!existingNames.has(s.name.toLowerCase())){existing.push(s);added++;}});
-      saveMkStores(existing);
-      const fi=document.getElementById('mk-csv-file');if(fi)fi.value='';
-      renderMkStores();
-      filialenMetaWriteThroughFromMkStores(imported, activeRegion);
-      setTimeout(function(){
-        const card=document.getElementById('mk-cluster-card');
-        if(card&&card.scrollIntoView) card.scrollIntoView({behavior:'smooth',block:'center'});
-      },150);
-      toast('✓ '+imported.length+' Filiale(n) erkannt, '+added+' neu. Jetzt Cluster auswählen ↓');
-    }catch(err){
-      alert('Fehler beim Import: '+err.message);
-    }
-  };
-  r.readAsArrayBuffer(file);   // read raw bytes — encoding handled by TextDecoder above
-}
-
-function mkGetClusteredIds(){
-  var ids=new Set();
-  loadRpGroups().forEach(function(g){if(g.s1id)ids.add(String(g.s1id));if(g.s2id)ids.add(String(g.s2id));});
-  return ids;
-}
-function mkClusterEmoji(type){
-  var map={Rewe:'🛒',Edeka:'🛒',Kaufland:'🏬',Tegut:'🥬',Ratio:'🏪',Marktkauf:'🏪'};
-  return map[type]||'🏪';
-}
-function renderMkStores(){
-  const stores=loadMkStores();
-  const card=document.getElementById('mk-cluster-card');
-  if(!card)return;
-  const groups=loadRpGroups();
-  // a cluster icon = any group that references mk-store ids (created from Marktsuche)
-  const mkGroups=groups.map(function(g,i){return {g:g,i:i};}).filter(function(x){return x.g.s1id;});
-  if(!stores.length && !mkGroups.length){card.style.display='none';return;}
-  card.style.display='block';
-
-  // ── Cluster icons ──
-  const clSec=document.getElementById('mk-cl-section');
-  const clGrid=document.getElementById('mk-cl-grid');
-  const clCnt=document.getElementById('mk-cl-count');
-  if(clCnt)clCnt.textContent=mkGroups.length;
-  if(clSec)clSec.style.display=mkGroups.length?'block':'none';
-  if(clGrid){
-    clGrid.innerHTML=mkGroups.map(function(x){
-      var g=x.g, ci=x.i%RP_COLORS.length, col=RP_COLORS[ci];
-      var n2=g.s2name?2:1;
-      var emoji=mkClusterEmoji((stores.find(function(s){return String(s.id)===String(g.s1id);})||{}).type);
-      return '<button class="mk-cl-ico" style="background:'+col+'" onclick="mkClusterTap('+x.i+')">'
-        +'<span class="cl-x" onclick="event.stopPropagation();mkDissolveCluster('+x.i+')" title="Auflösen">&#x2715;</span>'
-        +'<span class="cl-emoji">'+emoji+'</span>'
-        +'<span class="cl-name">'+g.name+'</span>'
-        +'<span class="cl-sub">'+n2+' Filiale'+(n2>1?'n':'')+'</span>'
-        +'</button>';
-    }).join('');
-  }
-
-  // ── Available stores (not in any cluster) ──
-  const clustered=mkGetClusteredIds();
-  const available=stores.filter(function(s){return !clustered.has(String(s.id));});
-  const cnt=document.getElementById('mk-stores-count');
-  if(cnt)cnt.textContent=available.length;
-  const availSec=document.getElementById('mk-avail-section');
-  const allDone=document.getElementById('mk-all-clustered');
-  const list=document.getElementById('mk-stores-list');
-  if(!available.length){
-    if(availSec)availSec.style.display='none';
-    if(allDone)allDone.style.display=stores.length?'block':'none';
-  } else {
-    if(availSec)availSec.style.display='block';
-    if(allDone)allDone.style.display='none';
-    const sel=available.filter(function(s){return s._sel;});
-    if(list){
-      list.innerHTML=available.map(function(s){
-        var realIdx=stores.indexOf(s);
-        var isSel=!!s._sel;
-        var clr=MK_COLORS[s.type]||'#555';
-        return '<div onclick="mkToggleSel('+realIdx+')" style="cursor:pointer;padding:8px 12px;margin-bottom:5px;'
-          +'border:2px solid '+(isSel?'var(--red)':'var(--brd)')
-          +';border-radius:var(--rs);background:'+(isSel?'#fff0ee':'var(--bg)')
-          +';display:flex;align-items:center;gap:10px">'
-          +'<span style="font-size:18px;min-width:24px">'+(isSel?'✅':'⬜')+'</span>'
-          +'<span style="display:inline-block;padding:3px 8px;border-radius:10px;background:'+clr
-          +';color:#fff;font-size:11px;font-weight:700;min-width:56px;text-align:center">'+(s.type||'?')+'</span>'
-          +'<div style="flex:1"><div style="font-size:13px;font-weight:600">'+s.name+'</div>'
-          +'<div style="font-size:11px;color:var(--mut)">📍 '+(s.addr||'—')+'</div></div>'
-          +'</div>';
-      }).join('');
-    }
-    const hint=document.getElementById('mk-cluster-hint');
-    if(hint){
-      if(!sel.length) hint.textContent='Filialen antippen zum Auswählen (max. 2 pro Cluster)';
-      else if(sel.length===1) hint.innerHTML='<strong>1 ausgewählt</strong> — noch eine wählen oder direkt als Einzel-Cluster speichern';
-      else hint.innerHTML='<strong>'+sel.length+' ausgewählt</strong> — Cluster erstellen';
-    }
-  }
-}
-
-function mkToggleSel(i){
-  const stores=loadMkStores();
-  if(!stores[i])return;
-  const sel=stores.filter(s=>s._sel);
-  if(!stores[i]._sel&&sel.length>=2){toast('Max. 2 pro Cluster.');return;}
-  stores[i]._sel=!stores[i]._sel;
-  saveMkStores(stores);renderMkStores();
-}
-
-function mkClearSel(){
-  const stores=loadMkStores();
-  stores.forEach(s=>delete s._sel);
-  saveMkStores(stores);renderMkStores();
-}
-
-function mkClearAll(){
-  if(!confirm('Alle Marktsuche-Filialen UND daraus erstellte Cluster löschen?'))return;
-  // remove mk-store-backed groups
-  var grps=loadRpGroups().filter(function(g){return !g.s1id;});
-  saveRpGroups(grps);
-  localStorage.removeItem('sc_mk_stores');
-  renderRpGrpList();RP_CL=getRPCL();rpSchedule=[];
-  renderMkStores();toast('✓ Zurückgesetzt');
-}
-
-function mkClusterTap(idx){
-  // open the edit modal for this cluster
-  openRpGrpModal(idx);
-}
-
-function mkDissolveCluster(idx){
-  var grps=loadRpGroups();
-  if(!grps[idx])return;
-  if(!confirm('Cluster "'+grps[idx].name+'" auflösen? Die Filialen erscheinen wieder in der Liste.'))return;
-  grps.splice(idx,1);
-  saveRpGroups(grps);renderRpGrpList();
-  RP_CL=getRPCL();rpSchedule=[];
-  renderMkStores();
-  if(document.getElementById('rp-grid'))rpRender();
-  toast('✓ Cluster aufgelöst');
-}
-
-function mkCreateCluster(){
-  const stores=loadMkStores();
-  const sel=stores.filter(s=>s._sel);
-  if(!sel.length){toast('Bitte 1–2 Filialen auswählen.');return;}
-  function selCity(s){return s.ort||(s.type?s.name.replace(s.type+' ','').trim():s.name);}
-  const grpName=sel.length>1?(selCity(sel[0])+' / '+selCity(sel[1])):selCity(sel[0]);
-  const g={
-    name:grpName,
-    s1id:sel[0].id, s1name:sel[0].name,s1addr:sel[0].addr||'',s1open:'07:00',
-    s2id:sel[1]?sel[1].id:'', s2name:sel[1]?sel[1].name:'',s2addr:sel[1]?sel[1].addr||'':'',s2open:'08:00',
-    dep:'07:00',bk:'14:00',km:0
-  };
-  const grps=loadRpGroups();
-  grps.push(g);
-  saveRpGroups(grps);renderRpGrpList();
-  RP_CL=getRPCL();rpSchedule=[];
-  stores.forEach(s=>delete s._sel);
-  saveMkStores(stores);renderMkStores();
-  toast('✓ Cluster "'+grpName+'" erstellt');
-}
 
 // ── SAVED EMAIL ADDRESSES ─────────────────────────────────────────────
 function loadSavedEmails(){try{return JSON.parse(localStorage.getItem('sc_saved_emails')||'[]');}catch(e){return[];}}
@@ -4956,7 +4381,6 @@ function filialenSyncListener(){
     });
     saveMkStores(mk);
     filMetaSave(meta);
-    if(typeof renderMkStores==='function') renderMkStores();
     if(typeof filMetaRender==='function') filMetaRender();
     if(typeof stdPopulateFilialeSelect==='function') stdPopulateFilialeSelect();
   }, function(err){ console.warn('FB filialen_meta sync', err); });
@@ -5966,9 +5390,6 @@ function exportMaBundle(mode){
   }
 }
 
-renderRpGrpList();
-renderMkStores();
-RP_CL=getRPCL();
 fbBootStatus();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -6399,55 +5820,6 @@ function invExportCSV(){
   </div>
 </div>
 
-<!-- ===== RP-GRUPPE MODAL ===== -->
-<div class="modal-bg" id="rp-grp-modal">
-  <div class="modal" style="width:min(480px,95vw)">
-    <button class="modal-close" onclick="closeRpGrpModal()" title="Schließen">&#x2715;</button>
-    <h3 id="rp-grp-modal-title">Neue Fahrgruppe</h3>
-    <input type="hidden" id="rp-grp-idx" value="">
-    <input type="hidden" id="rp-s1-id" value="">
-    <input type="hidden" id="rp-s2-id" value="">
-    <label>Gruppenname *</label>
-    <input type="text" id="rp-grp-name" placeholder="z.B. Kassel / Baunatal" oninput="this.dataset.manual='1'">
-    <div style="background:var(--bg);border-radius:var(--rs);border:1px solid var(--brd);padding:12px;margin-top:10px">
-      <div style="font-size:13px;font-weight:600;margin-bottom:8px">Filiale 1 *</div>
-      <div id="rp-s1-pick" style="display:none">
-        <label>Aus CSV wählen</label>
-        <select id="rp-s1-sel" onchange="rpStoreSelect(1,this.value)" style="margin-bottom:6px">
-          <option value="">— Filiale wählen —</option>
-        </select>
-      </div>
-      <label>Name</label><input type="text" id="rp-s1-name" placeholder="Edeka Mustermarkt" oninput="rpUpdateGrpName()">
-      <label>Adresse</label><input type="text" id="rp-s1-addr" placeholder="Musterstr. 1, 30159 Hannover">
-      <label>Öffnungszeit</label><input type="text" id="rp-s1-open" placeholder="07:00">
-    </div>
-    <div style="background:var(--bg);border-radius:var(--rs);border:1px solid var(--brd);padding:12px;margin-top:8px">
-      <div style="font-size:13px;font-weight:600;margin-bottom:8px">Filiale 2 <span style="font-weight:400;color:var(--mut)">(optional)</span></div>
-      <div id="rp-s2-pick" style="display:none">
-        <label>Aus CSV wählen</label>
-        <select id="rp-s2-sel" onchange="rpStoreSelect(2,this.value)" style="margin-bottom:6px">
-          <option value="">— keine —</option>
-        </select>
-      </div>
-      <label>Name</label><input type="text" id="rp-s2-name" placeholder="Rewe Beispielstadt" oninput="rpUpdateGrpName()">
-      <label>Adresse</label><input type="text" id="rp-s2-addr" placeholder="Beispielstr. 5, 30159 Hannover">
-      <label>Öffnungszeit</label><input type="text" id="rp-s2-open" placeholder="08:00">
-    </div>
-    <div class="row2" style="margin-top:10px">
-      <div><label>Abfahrt</label><input type="text" id="rp-grp-dep" placeholder="07:00"></div>
-      <div><label>Rückkehr ca.</label><input type="text" id="rp-grp-bk" placeholder="14:00"></div>
-    </div>
-    <div style="margin-top:6px">
-      <label>Entfernung Hin+Rück (km) <span style="font-weight:400;color:var(--mut)">optional</span></label>
-      <input type="number" id="rp-grp-km" placeholder="z.B. 350" min="0">
-    </div>
-    <button id="rp-grp-dissolve" class="btn-del" style="display:none;width:100%;justify-content:center;margin-top:10px" onclick="rpDissolveFromModal()">🗑 Cluster auflösen</button>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeRpGrpModal()">Abbrechen</button>
-      <button class="btn btn-red" onclick="saveRpGrp()">Speichern</button>
-    </div>
-  </div>
-</div>
 
 </body>
 </html>
