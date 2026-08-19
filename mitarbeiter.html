@@ -1362,7 +1362,7 @@ de:{_name:'Deutsch',
  bl_st_new:'Eingereicht',bl_st_skovik:'In Skovik hochgeladen',bl_st_paid:'Überwiesen',
  bl_paid_banner:'💰 Geld wurde überwiesen!',bl_confirm_btn:'✓ Geld erhalten — bestätigen',bl_confirmed:'✓ Bestätigt, danke!',
  login_sub:'Sushi Circle · Bitte mit deiner Personalnummer anmelden.',lbl_pid:'Personalnummer',btn_login:'Anmelden',
- err_pid:'Bitte Personalnummer eingeben.',err_notfound:'Personalnummer nicht gefunden. Bitte prüfen.',err_nodata:'Keine Daten geladen. Bitte zuerst Daten laden.',err_conn:'Verbindungsfehler: ',
+ err_pid:'Bitte Personalnummer eingeben.',err_notfound:'Personalnummer nicht gefunden. Bitte prüfen.',err_nodata:'Keine Daten geladen. Bitte zuerst Daten laden.',err_conn:'Verbindungsfehler: ',err_inactive:'Dieser Zugang ist nicht mehr aktiv. Bitte an den Vorgesetzten wenden.',
  btn_logout:'Abmelden',q_logout:'Abmelden?',no_fil:'keine Filiale',
  dp_title:'📅 Mein Dienstplan',lbl_month:'Monat',fil:'Filiale',alloc_main:'Stammfiliale',alloc_backup:'Bei Bedarf Einsatz in',
  dp_not_pub:'Der Dienstplan für {m} wurde noch nicht veröffentlicht.',dp_loading:'⏳ Lade Dienstplan…',dp_load_err:'Fehler beim Laden: ',
@@ -1423,7 +1423,7 @@ de:{_name:'Deutsch',
 vi:{_name:'Tiếng Việt',
  nav_dp:'Lịch làm',nav_ul:'Nghỉ phép',nav_kr:'Báo ốm',nav_nw:'Thông báo',
  login_sub:'Sushi Circle · Đăng nhập bằng mã số nhân viên.',lbl_pid:'Mã số nhân viên',btn_login:'Đăng nhập',
- err_pid:'Vui lòng nhập mã số nhân viên.',err_notfound:'Không tìm thấy mã số. Vui lòng kiểm tra lại.',err_nodata:'Chưa có dữ liệu. Vui lòng tải dữ liệu trước.',err_conn:'Lỗi kết nối: ',
+ err_pid:'Vui lòng nhập mã số nhân viên.',err_notfound:'Không tìm thấy mã số. Vui lòng kiểm tra lại.',err_nodata:'Chưa có dữ liệu. Vui lòng tải dữ liệu trước.',err_conn:'Lỗi kết nối: ',err_inactive:'Tài khoản này không còn hoạt động. Vui lòng liên hệ quản lý.',
  btn_logout:'Đăng xuất',q_logout:'Đăng xuất?',no_fil:'chưa có cửa hàng',
  dp_title:'📅 Lịch làm của tôi',lbl_month:'Tháng',fil:'Cửa hàng',alloc_main:'Cửa hàng chính',alloc_backup:'Hỗ trợ khi cần tại',
  dp_not_pub:'Lịch làm tháng {m} chưa được công bố.',dp_loading:'⏳ Đang tải lịch…',dp_load_err:'Lỗi khi tải: ',
@@ -1484,7 +1484,7 @@ vi:{_name:'Tiếng Việt',
 en:{_name:'English',
  nav_dp:'Schedule',nav_ul:'Vacation',nav_kr:'Sick note',nav_nw:'News',
  login_sub:'Sushi Circle · Sign in with your employee number.',lbl_pid:'Employee number',btn_login:'Sign in',
- err_pid:'Please enter your employee number.',err_notfound:'Employee number not found. Please check.',err_nodata:'No data loaded. Please load data first.',err_conn:'Connection error: ',
+ err_pid:'Please enter your employee number.',err_notfound:'Employee number not found. Please check.',err_nodata:'No data loaded. Please load data first.',err_conn:'Connection error: ',err_inactive:'This account is no longer active. Please contact your manager.',
  btn_logout:'Log out',q_logout:'Log out?',no_fil:'no store',
  dp_title:'📅 My schedule',lbl_month:'Month',fil:'Store',alloc_main:'Main store',alloc_backup:'Backup duty at',
  dp_not_pub:'The schedule for {m} has not been published yet.',dp_loading:'⏳ Loading schedule…',dp_load_err:'Error loading: ',
@@ -1545,7 +1545,7 @@ en:{_name:'English',
 th:{_name:'ไทย',
  nav_dp:'ตารางงาน',nav_ul:'วันลา',nav_kr:'แจ้งป่วย',nav_nw:'ข่าวสาร',
  login_sub:'Sushi Circle · เข้าสู่ระบบด้วยรหัสพนักงาน',lbl_pid:'รหัสพนักงาน',btn_login:'เข้าสู่ระบบ',
- err_pid:'กรุณากรอกรหัสพนักงาน',err_notfound:'ไม่พบรหัสพนักงาน กรุณาตรวจสอบ',err_nodata:'ยังไม่มีข้อมูล กรุณาโหลดข้อมูลก่อน',err_conn:'การเชื่อมต่อล้มเหลว: ',
+ err_pid:'กรุณากรอกรหัสพนักงาน',err_notfound:'ไม่พบรหัสพนักงาน กรุณาตรวจสอบ',err_nodata:'ยังไม่มีข้อมูล กรุณาโหลดข้อมูลก่อน',err_conn:'การเชื่อมต่อล้มเหลว: ',err_inactive:'บัญชีนี้ไม่ได้ใช้งานแล้ว กรุณาติดต่อผู้จัดการ',
  btn_logout:'ออกจากระบบ',q_logout:'ออกจากระบบ?',no_fil:'ไม่มีสาขา',
  dp_title:'📅 ตารางงานของฉัน',lbl_month:'เดือน',fil:'สาขา',alloc_main:'สาขาหลัก',alloc_backup:'ช่วยงานเมื่อจำเป็นที่',
  dp_not_pub:'ตารางงานเดือน {m} ยังไม่ประกาศ',dp_loading:'⏳ กำลังโหลด…',dp_load_err:'โหลดไม่สำเร็จ: ',
@@ -1637,6 +1637,7 @@ function maRefreshProfile(){
   fbDb.collection('emps').doc(''+sess.id).get().then(function(doc){
     if(!doc.exists) return;
     var d=doc.data()||{};
+    if(d.active===false){ maSetSession(null); maShowLogin(); var err=document.getElementById('login-err'); if(err){err.textContent=t('err_inactive');err.style.display='block';} return; }
     var filialeChanged = (d.filiale||'')!==(sess.filiale||'');
     sess.name=d.name||sess.name;
     sess.filiale=d.filiale||'';
@@ -1743,6 +1744,7 @@ function maDoLogin(){
       fbDb.collection('emps').doc(pid).get().then(function(doc){
         if(!doc.exists){btnErr(t('err_notfound'));return;}
         var d=doc.data()||{};
+        if(d.active===false){btnErr(t('err_inactive'));return;}
         var sess={id:pid,name:d.name||'',filiale:d.filiale||'',zweit:d.zweit||[],region:d.region||''};
         maSetSession(sess);
         fbDb.collection('meta').doc('config').get().then(function(cfg){

@@ -104,7 +104,7 @@ canvas{display:block;max-width:100%;}
 .total-strip strong{font-size:17px;color:var(--red);}
 
 /* EMPLOYEE TABLE */
-.emp-table{width:100%;border-collapse:collapse;font-size:13px;}
+.emp-table{width:100%;min-width:640px;border-collapse:collapse;font-size:13px;}
 .emp-table th{text-align:left;font-size:11px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.4px;padding:6px 10px;border-bottom:1px solid var(--brd);}
 .emp-table td{padding:8px 10px;border-bottom:1px solid #F0EDE8;vertical-align:middle;}
 .emp-table tr:last-child td{border-bottom:none;}
@@ -792,6 +792,9 @@ window.onerror=function(msg,src,line){
     <div id="csv-preview" style="display:none; margin-top:12px">
       <div id="csv-preview-content"></div>
     </div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-grn" onclick="fbPublish()" style="flex:1;justify-content:center">☁️ Veröffentlichen (Mitarbeiter + Dienstpläne)</button>
+    </div>
   </div>
   <div id="emp-notif-card" class="card" style="display:none">
     <div class="card-title">⚠️ Hinweise <span class="badge badge-amb" id="emp-notif-count">0</span></div>
@@ -799,10 +802,12 @@ window.onerror=function(msg,src,line){
   </div>
   <div class="card">
     <div class="card-title">Mitarbeiterliste <span class="badge badge-blu" id="emp-count-badge">0 Einträge</span></div>
-    <table class="emp-table">
-      <thead><tr><th>Name</th><th>Personalnr.</th><th>Filiale</th><th>Eintritt</th><th>Austritt</th><th>Status</th><th></th></tr></thead>
-      <tbody id="emp-tbody"></tbody>
-    </table>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+      <table class="emp-table">
+        <thead><tr><th>Name</th><th>Personalnr.</th><th>Filiale</th><th>Eintritt</th><th>Austritt</th><th>Status</th><th></th></tr></thead>
+        <tbody id="emp-tbody"></tbody>
+      </table>
+    </div>
     <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-red" onclick="openAddModal()">+ Manuell hinzufügen</button>
       <button class="btn" onclick="exportCSVList()" style="margin-left:auto">⬇ Liste exportieren</button>
@@ -1005,6 +1010,15 @@ window.onerror=function(msg,src,line){
       </div>
       <div id="fil-csv-stat" style="font-size:12px;color:var(--mut);margin-top:8px"></div>
     </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🔀 Filialname-Migration (einmalig) <span class="badge badge-amb">Vor „Veröffentlichen" ausführen</span></div>
+    <div class="info">Prüft, ob sich durch die Namens-Korrektur (CSV-Import → Marktsuche-Name statt gekürztem Namen) Filialnamen ändern. Falls ja, werden bestehende Dienstpläne und Urlaubsdaten <strong>zusätzlich</strong> unter dem neuen Namen gespeichert — die alten Einträge bleiben erhalten, es wird nichts gelöscht. So bleibt für dich und die Mitarbeiter alles sichtbar. Zuerst „🔍 Prüfen", danach „📋 Jetzt kopieren".</div>
+    <div class="btn-row">
+      <button class="btn" onclick="filMigScan()">🔍 Prüfen</button>
+      <button class="btn btn-red" id="fil-mig-run" onclick="filMigRun()" style="display:none">📋 Jetzt kopieren</button>
+    </div>
+    <div id="fil-mig-stat" style="font-size:12px;color:var(--mut);margin-top:8px;line-height:1.7"></div>
   </div>
   <div class="card">
     <div class="card-title">👤 Persönliche Daten <span class="badge badge-red">Pflicht</span></div>
@@ -1281,10 +1295,16 @@ window.onerror=function(msg,src,line){
     <label>Personalnummer</label>
     <input type="text" id="m-id" placeholder="z.B. 1042">
     <label>Filiale (Standard)</label>
-    <input type="text" id="m-fil" placeholder="z.B. Hannover Hbf">
-    <label>Kostenstelle (Filiale-Nr., optional)</label>
-    <input type="text" id="m-filnr" placeholder="z.B. 401891">
-    <div id="m-region-hint" style="font-size:11px;color:var(--mut);margin-top:-4px;margin-bottom:10px">Region: —</div>
+    <select id="m-fil-select" onchange="mFilSelectChange()"><option value="">— Filiale wählen —</option><option value="_custom">✎ Andere (manuell)</option></select>
+    <div id="m-fil-manual-wrap" style="display:none;margin-top:8px">
+      <label>Filialname (manuell)</label>
+      <input type="text" id="m-fil" placeholder="z.B. Hannover Hbf">
+      <label>Kostenstelle (Filiale-Nr., optional)</label>
+      <input type="text" id="m-filnr" placeholder="z.B. 401891">
+    </div>
+    <label style="margin-top:10px">Zweitfiliale(n) <span style="font-weight:400;color:var(--mut);text-transform:none;letter-spacing:0">(optional, Mehrfachauswahl)</span></label>
+    <div id="m-zweit-list" style="max-height:160px;overflow-y:auto;border:1px solid var(--brd);border-radius:var(--rs);padding:8px"></div>
+    <div id="m-region-hint" style="font-size:11px;color:var(--mut);margin-top:8px;margin-bottom:10px">Region: —</div>
     <div style="display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 12px;background:var(--bg);border:1px solid var(--brd);border-radius:var(--rs)">
       <input type="checkbox" id="m-shopleiter" style="width:17px;height:17px;cursor:pointer">
       <div>
@@ -1709,7 +1729,7 @@ function renderEmpTable() {
 <td><span class="badge ${isActive?'badge-grn':'badge-gray'}">${isActive?'Aktiv':'Inaktiv'}</span></td>
 <td style="display:flex;gap:6px;white-space:nowrap">
   <button class="btn btn-sm" onclick="openEditModal(${i})">✏</button>
-  <button class="btn-del" onclick="delEmp(${i})">🗑</button>
+  <button class="btn-del" onclick="delEmp(${i})" title="Als inaktiv markieren">🗑</button>
 </td>`;
     tbody.appendChild(tr);
   });
@@ -1740,6 +1760,7 @@ function importCSV(ev) {
 
     // parse all rows
     const today=new Date();
+    const filMetaForImport=filMetaLoad();
     const parsed=lines.slice(1).map(line=>{
       const row=line.split(sep);
       const pid=parseField(row,iNr);
@@ -1763,9 +1784,16 @@ function importCSV(ev) {
         const ort=parseField(row,iOrt);
         const mNr=ort.match(/^(\d+)-\d+/);
         if(mNr) filialeNr=mNr[1];
-        const m2=ort.match(/:\s*[A-Z]+-(.+)/);
-        if(m2) filiale=m2[1].trim();
-        else filiale=ort.split('-').slice(1).join('-').trim();
+        // Bevorzugt den kanonischen Namen aus der Marktsuche-CSV (filMeta), damit derselbe
+        // Filialname überall im System identisch ist — sonst driftet er bei jedem CSV-Import
+        // leicht auseinander vom manuell/anders formatierten "Letzter Einsatzort"-Text.
+        if(filialeNr && filMetaForImport[filialeNr] && filMetaForImport[filialeNr].name){
+          filiale=filMetaForImport[filialeNr].name;
+        } else {
+          const m2=ort.match(/:\s*[A-Z]+-(.+)/);
+          if(m2) filiale=m2[1].trim();
+          else filiale=ort.split('-').slice(1).join('-').trim();
+        }
       }
       const eintritt=iEintritt>=0?parseField(row,iEintritt):'';
       const austritt=iAustritt>=0?parseField(row,iAustritt):'';
@@ -1821,6 +1849,55 @@ function exportCSVList() {
   a.download='Mitarbeiterliste_SushiCircle.csv'; a.click();
 }
 
+function mPopulateFilSelect(){
+  var sel=document.getElementById('m-fil-select'); if(!sel) return;
+  var meta=filMetaLoad();
+  var nrs=Object.keys(meta).sort(function(a,b){ return (meta[a].name||'').localeCompare(meta[b].name||''); });
+  sel.innerHTML='<option value="">— Filiale wählen —</option>'
+    +nrs.map(function(nr){ return '<option value="'+nr+'">'+(meta[nr].name||nr)+'</option>'; }).join('')
+    +'<option value="_custom">✎ Andere (manuell)</option>';
+}
+function mFilSelectChange(){
+  var sel=document.getElementById('m-fil-select'), wrap=document.getElementById('m-fil-manual-wrap');
+  var v=sel?sel.value:'';
+  if(v==='_custom'){
+    wrap.style.display='block';
+  } else if(v){
+    wrap.style.display='none';
+    var meta=filMetaLoad();
+    document.getElementById('m-fil').value=(meta[v]&&meta[v].name)||'';
+    document.getElementById('m-filnr').value=v;
+  } else {
+    wrap.style.display='none';
+    document.getElementById('m-fil').value='';
+    document.getElementById('m-filnr').value='';
+  }
+  mRenderZweitList();
+}
+function mRenderZweitList(selectedZweit){
+  var box=document.getElementById('m-zweit-list'); if(!box) return;
+  var meta=filMetaLoad();
+  var ownName=(document.getElementById('m-fil')||{}).value||'';
+  var nrs=Object.keys(meta).sort(function(a,b){ return (meta[a].name||'').localeCompare(meta[b].name||''); });
+  var prevChecked=selectedZweit!==undefined?selectedZweit:[].slice.call(document.querySelectorAll('.m-zweit-chk:checked')).map(function(x){return x.value;});
+  if(!nrs.length){ box.innerHTML='<div style="font-size:12px;color:var(--mut)">Keine Filialen — bitte zuerst Marktsuche-CSV importieren (Einstellungen).</div>'; return; }
+  box.innerHTML=nrs.filter(function(nr){ return (meta[nr].name||nr)!==ownName; }).map(function(nr){
+    var nm=meta[nr].name||nr;
+    var checked=prevChecked.indexOf(nm)>=0;
+    return '<label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-weight:400;text-transform:none;letter-spacing:0;font-size:13px;cursor:pointer">'
+      +'<input type="checkbox" class="m-zweit-chk" value="'+nm.replace(/"/g,'&quot;')+'" '+(checked?'checked':'')+' style="width:auto">'+nm+'</label>';
+  }).join('');
+}
+function mSetFilSelectForEdit(e){
+  var meta=filMetaLoad(), sel=document.getElementById('m-fil-select'), wrap=document.getElementById('m-fil-manual-wrap');
+  if(e.filialeNr && meta[e.filialeNr]){
+    sel.value=e.filialeNr;
+    wrap.style.display='none';
+  } else {
+    sel.value='_custom';
+    wrap.style.display=e.filiale?'block':'none';
+  }
+}
 function openAddModal() {
   editIdx=null;
   document.getElementById('modal-title').textContent='Mitarbeiter hinzufügen';
@@ -1828,6 +1905,10 @@ function openAddModal() {
   document.getElementById('m-id').value='';
   document.getElementById('m-fil').value='';
   document.getElementById('m-filnr').value='';
+  mPopulateFilSelect();
+  document.getElementById('m-fil-select').value='';
+  document.getElementById('m-fil-manual-wrap').style.display='none';
+  mRenderZweitList([]);
   document.getElementById('m-region-hint').textContent='Region: '+(REGION_LABELS[activeRegion]||activeRegion||'—');
   document.getElementById('m-shopleiter').checked=false;
   document.getElementById('emp-modal').classList.add('open');
@@ -1842,6 +1923,9 @@ function openEditModal(i) {
   document.getElementById('m-id').value=e.id;
   document.getElementById('m-fil').value=e.filiale||'';
   document.getElementById('m-filnr').value=e.filialeNr||'';
+  mPopulateFilSelect();
+  mSetFilSelectForEdit(e);
+  mRenderZweitList(e.zweit||[]);
   document.getElementById('m-region-hint').textContent='Region: '+(REGION_LABELS[activeRegion]||activeRegion||'—');
   document.getElementById('m-shopleiter').checked=!!(e.shopleiter);
   document.getElementById('emp-modal').classList.add('open');
@@ -1855,16 +1939,17 @@ function saveEmp() {
   const id=document.getElementById('m-id').value.trim();
   const fil=document.getElementById('m-fil').value.trim();
   const filnr=document.getElementById('m-filnr').value.trim();
+  const zweit=[].slice.call(document.querySelectorAll('.m-zweit-chk:checked')).map(function(x){return x.value;});
   const shopleiter=document.getElementById('m-shopleiter').checked;
   if(!name||!id){alert('Name und Personalnummer sind Pflichtfelder.');return;}
   if(!activeRegion){alert('Keine Region aktiv — bitte neu anmelden.');return;}
   const emps=loadEmps();
-  if(editIdx!==null) emps[editIdx]={...emps[editIdx],name,id,filiale:fil,filialeNr:filnr,shopleiter};
-  else emps.push({name,id,filiale:fil,filialeNr:filnr,shopleiter});
+  if(editIdx!==null) emps[editIdx]={...emps[editIdx],name,id,filiale:fil,filialeNr:filnr,zweit,shopleiter};
+  else emps.push({name,id,filiale:fil,filialeNr:filnr,zweit,shopleiter});
   saveEmps(emps);
   // Sofort in Firestore synchronisieren (Shopleiter-Rolle muss live verfügbar sein)
   if(fbReady&&fbDb&&id){
-    fbDb.collection('emps').doc(''+id).set({name,filiale:fil,filialeNr:filnr,shopleiter:shopleiter,active:true,region:activeRegion},{merge:true})
+    fbDb.collection('emps').doc(''+id).set({name,filiale:fil,filialeNr:filnr,zweit,shopleiter:shopleiter,active:true,region:activeRegion},{merge:true})
       .catch(function(e){ console.warn('shopleiter sync', e); });
   }
   closeModal();
@@ -1874,9 +1959,18 @@ function saveEmp() {
 }
 
 function delEmp(i) {
-  if(!confirm('Mitarbeiter wirklich löschen?'))return;
-  const emps=loadEmps(); emps.splice(i,1); saveEmps(emps);
-  renderEmpTable(); populateDropdowns(); toast('✓ Gelöscht');
+  if(!confirm('Mitarbeiter als inaktiv markieren? Er/sie kann sich danach nicht mehr in der Mitarbeiter-App anmelden.'))return;
+  const emps=loadEmps();
+  const e=emps[i]; if(!e) return;
+  e.active=false;
+  saveEmps(emps);
+  // Sofort in Firestore synchronisieren, sonst bleibt der alte active:true-Status stehen
+  // und die Person kann sich weiterhin anmelden (erst beim nächsten "Veröffentlichen" sonst).
+  if(fbReady&&fbDb&&e.id){
+    fbDb.collection('emps').doc(''+e.id).set({active:false},{merge:true})
+      .catch(function(err){ console.warn('delEmp sync', err); });
+  }
+  renderEmpTable(); populateDropdowns(); toast('✓ Als inaktiv markiert');
 }
 
 // close modal on bg click
@@ -4275,12 +4369,14 @@ function fbPublish(){
   if(!activeRegion){ alert('Keine Region aktiv — bitte neu anmelden.'); return; }
   var b=buildMaBundle();
   if(!b.employees.length){ alert('Keine aktiven Mitarbeiter gefunden. Bitte zuerst die Mitarbeiter-CSV importieren.'); return; }
-  var activeEmps=loadEmps().filter(function(e){return e.active!==false;});
   var jobs=[];
-  activeEmps.forEach(function(e){
+  // Alle Mitarbeiter (auch inaktive) veröffentlichen — sonst bleibt der Firestore-Status eines
+  // ausgeschiedenen Mitarbeiters auf active:true stehen (er wurde einfach nie überschrieben)
+  // und die Person könnte sich weiterhin in der Mitarbeiter-App anmelden.
+  loadEmps().forEach(function(e){
     jobs.push(fbDb.collection('emps').doc(''+e.id).set({
       name:e.name, filiale:e.filiale||'', filialeNr:e.filialeNr||'', eintritt:e.eintritt||'', austritt:e.austritt||'',
-      zweit:(e.zweit||[]), active:true, shopleiter:!!e.shopleiter, region:activeRegion
+      zweit:(e.zweit||[]), active:e.active!==false, shopleiter:!!e.shopleiter, region:activeRegion
     },{merge:true}));
   });
   var nPlan=0;
@@ -4379,10 +4475,85 @@ function regionSeedFilialenMeta(){
   var filMeta=filMetaLoad(), mkStores=loadMkStores();
   var nFil=Object.keys(filMeta).length, nMk=mkStores.length;
   if(!nFil && !nMk){ alert('Keine lokalen Filialdaten gefunden (weder Filialen-PLZ-Liste noch Marktsuche-Liste).'); return; }
-  if(!confirm('Filialen-Stammdaten aus lokalen Daten anlegen: '+nFil+' aus „Filialen — PLZ & Ort", '+nMk+' aus „Fahrtplan-Gruppen" — alle mit region:"ost". Fortfahren?')) return;
+  if(!confirm('Filialen-Stammdaten aus lokalen Daten anlegen: '+nFil+' aus „Filialen — PLZ & Ort", '+nMk+' aus dem Marktsuche-Cache — alle mit region:"ost". Fortfahren?')) return;
   filialenMetaWriteThroughFromFilMeta(filMeta, 'ost');
   filialenMetaWriteThroughFromMkStores(mkStores, 'ost');
   toast('✓ Filialen-Stammdaten werden angelegt…');
+}
+
+// ── FILIALNAME-MIGRATION (einmalig, vor "Veröffentlichen") ──
+// Wenn die Namens-Korrektur (importCSV löst jetzt über filMeta auf) den Filialnamen einer
+// bereits veröffentlichten Filiale ändert, ändert sich auch der darauf aufbauende Firestore-
+// Dokumentschlüssel (fbSlug) für Dienstplan/Urlaub — bestehende Einträge würden sonst für
+// Admin und Mitarbeiter unsichtbar werden (Daten bleiben erhalten, nur der Schlüssel passt
+// nicht mehr). Dieses Werkzeug kopiert die betroffenen Dokumente zusätzlich auf den neuen
+// Schlüssel, bevor "Veröffentlichen" die neuen Namen live schaltet.
+var filMigAffected=[], filMigPlans=[], filMigUrlaub=[];
+async function filMigScan(){
+  if(!fbReady||!fbDb||!fbManager){ alert('Bitte zuerst als Manager anmelden (Einstellungen).'); return; }
+  if(!activeRegion){ alert('Keine Region aktiv — bitte neu anmelden.'); return; }
+  var stat=document.getElementById('fil-mig-stat'), runBtn=document.getElementById('fil-mig-run');
+  stat.textContent='⏳ Prüfe…';
+  runBtn.style.display='none';
+  var filMeta=filMetaLoad();
+  try{
+    var snap=await fbDb.collection('emps').where('region','==',activeRegion).get();
+    var mapping={};
+    snap.forEach(function(doc){
+      var d=doc.data()||{};
+      var oldName=d.filiale||'', nr=d.filialeNr||'';
+      if(!oldName||!nr||!filMeta[nr]||!filMeta[nr].name) return;
+      var newName=filMeta[nr].name;
+      if(newName===oldName) return;
+      var oldSlug=fbSlug(oldName), newSlug=fbSlug(newName);
+      if(oldSlug===newSlug) return;
+      mapping[oldSlug]={oldName:oldName, newName:newName, oldSlug:oldSlug, newSlug:newSlug};
+    });
+    filMigAffected=Object.keys(mapping).map(function(k){return mapping[k];});
+    if(!filMigAffected.length){
+      stat.textContent='✓ Keine Filialnamen-Änderungen gefunden — nichts zu migrieren.';
+      return;
+    }
+    filMigPlans=[]; filMigUrlaub=[];
+    for(var i=0;i<filMigAffected.length;i++){
+      var m=filMigAffected[i];
+      var planSnap=await fbDb.collection('plan')
+        .where(firebase.firestore.FieldPath.documentId(),'>=',m.oldSlug+'__')
+        .where(firebase.firestore.FieldPath.documentId(),'<',m.oldSlug+'__'+'')
+        .get();
+      planSnap.forEach(function(doc){
+        var month=doc.id.slice(m.oldSlug.length+2);
+        filMigPlans.push({newId:m.newSlug+'__'+month, data:doc.data()});
+      });
+      var urlSnap=await fbDb.collection('filialen').doc(m.oldSlug).collection('urlaub').get();
+      urlSnap.forEach(function(doc){
+        filMigUrlaub.push({newSlug:m.newSlug, docId:doc.id, data:doc.data()});
+      });
+    }
+    var html='<strong>'+filMigAffected.length+'</strong> Filiale(n) ändern den Namen:<br>'
+      +filMigAffected.map(function(m){return '• '+m.oldName+' → '+m.newName;}).join('<br>')
+      +'<br><br>Werden kopiert: <strong>'+filMigPlans.length+'</strong> Dienstplan-Monat(e), <strong>'+filMigUrlaub.length+'</strong> Urlaubs-Eintrag(e).';
+    stat.innerHTML=html;
+    runBtn.style.display=(filMigPlans.length||filMigUrlaub.length)?'block':'none';
+  }catch(err){
+    stat.textContent='❌ Fehler: '+err.message;
+  }
+}
+async function filMigRun(){
+  if(!confirm('Dienstpläne und Urlaubsdaten unter dem neuen Filialnamen zusätzlich speichern? Die alten Einträge bleiben unverändert erhalten.')) return;
+  var stat=document.getElementById('fil-mig-stat'), runBtn=document.getElementById('fil-mig-run');
+  stat.textContent='⏳ Kopiere…';
+  try{
+    var jobs=[];
+    filMigPlans.forEach(function(p){ jobs.push(fbDb.collection('plan').doc(p.newId).set(p.data,{merge:true})); });
+    filMigUrlaub.forEach(function(u){ jobs.push(fbDb.collection('filialen').doc(u.newSlug).collection('urlaub').doc(u.docId).set(u.data,{merge:true})); });
+    await Promise.all(jobs);
+    stat.textContent='✓ Kopiert: '+filMigPlans.length+' Dienstplan-Monat(e), '+filMigUrlaub.length+' Urlaubs-Eintrag(e). Du kannst jetzt „Veröffentlichen" klicken.';
+    runBtn.style.display='none';
+    toast('✓ Migration abgeschlossen');
+  }catch(err){
+    stat.textContent='❌ Fehler beim Kopieren: '+err.message;
+  }
 }
 
 // ── Region-gebundene Sync-Listener: Cloud (Quelle der Wahrheit) -> lokaler Cache ──
