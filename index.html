@@ -1012,8 +1012,8 @@ window.onerror=function(msg,src,line){
     </div>
   </div>
   <div class="card">
-    <div class="card-title">🔀 Filialname-Migration (einmalig) <span class="badge badge-amb">Vor „Veröffentlichen" ausführen</span></div>
-    <div class="info">Prüft, ob sich durch die Namens-Korrektur (CSV-Import → Marktsuche-Name statt gekürztem Namen) Filialnamen ändern. Falls ja, werden bestehende Dienstpläne und Urlaubsdaten <strong>zusätzlich</strong> unter dem neuen Namen gespeichert — die alten Einträge bleiben erhalten, es wird nichts gelöscht. So bleibt für dich und die Mitarbeiter alles sichtbar. Zuerst „🔍 Prüfen", danach „📋 Jetzt kopieren".</div>
+    <div class="card-title">🔀 Filialname-Migration (einmalig) <span class="badge badge-amb">Bei fehlenden Dienstplänen/Urlaub prüfen</span></div>
+    <div class="info">Findet Filialnamen-Änderungen (egal ob schon veröffentlicht oder nicht) und stellt dadurch "verschwundene" Dienstpläne/Urlaubsdaten wieder her — sie waren nicht gelöscht, nur unter dem alten Namen unauffindbar. Findet die App zu einem alten Eintrag mehrere mögliche neue Filialen, wird nichts geraten, sondern zur manuellen Prüfung aufgelistet. Bestehende Einträge bleiben immer zusätzlich erhalten. Zuerst „🔍 Prüfen", danach „📋 Jetzt kopieren".</div>
     <div class="btn-row">
       <button class="btn" onclick="filMigScan()">🔍 Prüfen</button>
       <button class="btn btn-red" id="fil-mig-run" onclick="filMigRun()" style="display:none">📋 Jetzt kopieren</button>
@@ -4488,7 +4488,16 @@ function regionSeedFilialenMeta(){
 // Admin und Mitarbeiter unsichtbar werden (Daten bleiben erhalten, nur der Schlüssel passt
 // nicht mehr). Dieses Werkzeug kopiert die betroffenen Dokumente zusätzlich auf den neuen
 // Schlüssel, bevor "Veröffentlichen" die neuen Namen live schaltet.
-var filMigAffected=[], filMigPlans=[], filMigUrlaub=[];
+// Zwei Quellen für Migrations-Kandidaten:
+//  A) Direkter Vergleich: aktueller emps.filiale-Wert vs. kanonischer filMeta-Name (findet
+//     Änderungen, die "Veröffentlichen" noch NICHT live geschaltet hat).
+//  B) Verwaisungs-Suche: plan-Dokumente / filialen-Ordner, deren Namens-Schlüssel zu KEINEM
+//     aktuellen Mitarbeiter mehr passt (z.B. weil "Veröffentlichen" schon gedrückt wurde, bevor
+//     migriert wurde — der alte Schlüssel existiert dann nirgends mehr in emps). Für jeden
+//     Fund wird über die Personalnummern in den Schichten/Urlaubseinträgen geprüft, welcher
+//     aktuellen Filiale er zuzuordnen ist. Nur eindeutige Treffer werden zum Kopieren
+//     vorgeschlagen — mehrdeutige oder nicht zuordenbare Funde werden nur gemeldet, nie geraten.
+var filMigAffected=[], filMigPlans=[], filMigUrlaub=[], filMigUnresolved=[];
 async function filMigScan(){
   if(!fbReady||!fbDb||!fbManager){ alert('Bitte zuerst als Manager anmelden (Einstellungen).'); return; }
   if(!activeRegion){ alert('Keine Region aktiv — bitte neu anmelden.'); return; }
@@ -4497,9 +4506,17 @@ async function filMigScan(){
   runBtn.style.display='none';
   var filMeta=filMetaLoad();
   try{
-    var snap=await fbDb.collection('emps').where('region','==',activeRegion).get();
-    var mapping={};
-    snap.forEach(function(doc){
+    var empSnap=await fbDb.collection('emps').where('region','==',activeRegion).get();
+    var empById={}, liveSlugs={};
+    empSnap.forEach(function(doc){
+      var d=doc.data()||{};
+      empById[doc.id]=d;
+      if(d.filiale) liveSlugs[fbSlug(d.filiale)]=d.filiale;
+    });
+
+    // A) Direkter Vergleich
+    var directMap={};
+    empSnap.forEach(function(doc){
       var d=doc.data()||{};
       var oldName=d.filiale||'', nr=d.filialeNr||'';
       if(!oldName||!nr||!filMeta[nr]||!filMeta[nr].name) return;
@@ -4507,14 +4524,11 @@ async function filMigScan(){
       if(newName===oldName) return;
       var oldSlug=fbSlug(oldName), newSlug=fbSlug(newName);
       if(oldSlug===newSlug) return;
-      mapping[oldSlug]={oldName:oldName, newName:newName, oldSlug:oldSlug, newSlug:newSlug};
+      directMap[oldSlug]={oldName:oldName, newName:newName, oldSlug:oldSlug, newSlug:newSlug};
     });
-    filMigAffected=Object.keys(mapping).map(function(k){return mapping[k];});
-    if(!filMigAffected.length){
-      stat.textContent='✓ Keine Filialnamen-Änderungen gefunden — nichts zu migrieren.';
-      return;
-    }
-    filMigPlans=[]; filMigUrlaub=[];
+
+    filMigPlans=[]; filMigUrlaub=[]; filMigUnresolved=[];
+    filMigAffected=Object.keys(directMap).map(function(k){return directMap[k];});
     for(var i=0;i<filMigAffected.length;i++){
       var m=filMigAffected[i];
       var planSnap=await fbDb.collection('plan')
@@ -4523,16 +4537,85 @@ async function filMigScan(){
         .get();
       planSnap.forEach(function(doc){
         var month=doc.id.slice(m.oldSlug.length+2);
-        filMigPlans.push({newId:m.newSlug+'__'+month, data:doc.data()});
+        filMigPlans.push({newId:m.newSlug+'__'+month, data:doc.data(), label:m.newName+' · '+month});
       });
       var urlSnap=await fbDb.collection('filialen').doc(m.oldSlug).collection('urlaub').get();
       urlSnap.forEach(function(doc){
-        filMigUrlaub.push({newSlug:m.newSlug, docId:doc.id, data:doc.data()});
+        filMigUrlaub.push({newSlug:m.newSlug, docId:doc.id, data:doc.data(), label:m.newName});
       });
     }
-    var html='<strong>'+filMigAffected.length+'</strong> Filiale(n) ändern den Namen:<br>'
-      +filMigAffected.map(function(m){return '• '+m.oldName+' → '+m.newName;}).join('<br>')
-      +'<br><br>Werden kopiert: <strong>'+filMigPlans.length+'</strong> Dienstplan-Monat(e), <strong>'+filMigUrlaub.length+'</strong> Urlaubs-Eintrag(e).';
+
+    // B) Verwaisungs-Suche in plan
+    var planAllSnap=await fbDb.collection('plan').get();
+    var planOrphans={}; // slug -> {months:[{id,data,month}], guesses:{name:count}}
+    planAllSnap.forEach(function(doc){
+      var mm=doc.id.match(/^(.*)__(\d{4}-\d{2})$/);
+      if(!mm) return;
+      var slug=mm[1], month=mm[2];
+      if(liveSlugs[slug]||directMap[slug]) return;
+      if(!planOrphans[slug]) planOrphans[slug]={months:[], guesses:{}};
+      planOrphans[slug].months.push({id:doc.id, data:doc.data()||{}, month:month});
+      var shifts=(doc.data()||{}).shifts||{};
+      Object.keys(shifts).forEach(function(key){
+        var idm=key.match(/^(\d+)-/);
+        if(!idm) return;
+        var emp=empById[idm[1]];
+        if(emp&&emp.filiale) planOrphans[slug].guesses[emp.filiale]=(planOrphans[slug].guesses[emp.filiale]||0)+1;
+      });
+    });
+    Object.keys(planOrphans).forEach(function(slug){
+      var grp=planOrphans[slug], names=Object.keys(grp.guesses);
+      if(names.length===1){
+        var newName=names[0], newSlug=fbSlug(newName);
+        grp.months.forEach(function(mo){
+          filMigPlans.push({newId:newSlug+'__'+mo.month, data:mo.data, label:newName+' · '+mo.month+' (wiederhergestellt)'});
+        });
+      } else {
+        filMigUnresolved.push({type:'Dienstplan', oldSlug:slug, count:grp.months.length, candidates:names, months:grp.months.map(function(mo){return mo.month;})});
+      }
+    });
+
+    // B) Verwaisungs-Suche in filialen/urlaub — per collectionGroup, weil das Auflisten der
+    // "filialen"-Sammlung selbst über Firestore-Regeln nicht erlaubt ist (nur die verschachtelte
+    // urlaub-Sammlung ist per collectionGroup lesbar).
+    var urlAllSnap=await fbDb.collectionGroup('urlaub').get();
+    var urlOrphans={}; // slug -> {docs:[{docId,data}], guesses:{name:count}}
+    urlAllSnap.forEach(function(doc){
+      var slug2=doc.ref.parent&&doc.ref.parent.parent?doc.ref.parent.parent.id:null;
+      if(!slug2) return;
+      if(liveSlugs[slug2]||directMap[slug2]) return;
+      if(!urlOrphans[slug2]) urlOrphans[slug2]={docs:[], guesses:{}};
+      var d=doc.data()||{};
+      urlOrphans[slug2].docs.push({docId:doc.id, data:d});
+      var emp=d.empId?empById[''+d.empId]:null;
+      if(emp&&emp.filiale) urlOrphans[slug2].guesses[emp.filiale]=(urlOrphans[slug2].guesses[emp.filiale]||0)+1;
+    });
+    Object.keys(urlOrphans).forEach(function(slug2){
+      var grp2=urlOrphans[slug2], names2=Object.keys(grp2.guesses);
+      if(names2.length===1){
+        var newName2=names2[0], newSlug2=fbSlug(newName2);
+        grp2.docs.forEach(function(u){ filMigUrlaub.push({newSlug:newSlug2, docId:u.docId, data:u.data, label:newName2+' (wiederhergestellt)'}); });
+      } else {
+        filMigUnresolved.push({type:'Urlaub', oldSlug:slug2, count:grp2.docs.length, candidates:names2});
+      }
+    });
+
+    if(!filMigPlans.length&&!filMigUrlaub.length&&!filMigUnresolved.length){
+      stat.textContent='✓ Keine Filialnamen-Änderungen oder verwaisten Daten gefunden — nichts zu migrieren.';
+      return;
+    }
+    var html='';
+    if(filMigAffected.length){
+      html+='<strong>'+filMigAffected.length+'</strong> Filiale(n) ändern gerade den Namen:<br>'
+        +filMigAffected.map(function(m){return '• '+m.oldName+' → '+m.newName;}).join('<br>')+'<br><br>';
+    }
+    html+='Werden kopiert: <strong>'+filMigPlans.length+'</strong> Dienstplan-Monat(e), <strong>'+filMigUrlaub.length+'</strong> Urlaubs-Eintrag(e).';
+    if(filMigUnresolved.length){
+      html+='<div style="margin-top:8px;padding:8px;background:#FDECEA;border-radius:6px">⚠️ <strong>'+filMigUnresolved.length+'</strong> verwaiste Eintrag(e) konnten nicht eindeutig zugeordnet werden — bitte manuell prüfen:<br>'
+        +filMigUnresolved.map(function(u){
+          return '• '+u.type+' „'+u.oldSlug+'" ('+u.count+' Eintrag/Einträge)'+(u.candidates.length?' — mögliche Filialen: '+u.candidates.join(', '):' — keine passenden Mitarbeiter mehr gefunden');
+        }).join('<br>')+'</div>';
+    }
     stat.innerHTML=html;
     runBtn.style.display=(filMigPlans.length||filMigUrlaub.length)?'block':'none';
   }catch(err){
@@ -4548,7 +4631,8 @@ async function filMigRun(){
     filMigPlans.forEach(function(p){ jobs.push(fbDb.collection('plan').doc(p.newId).set(p.data,{merge:true})); });
     filMigUrlaub.forEach(function(u){ jobs.push(fbDb.collection('filialen').doc(u.newSlug).collection('urlaub').doc(u.docId).set(u.data,{merge:true})); });
     await Promise.all(jobs);
-    stat.textContent='✓ Kopiert: '+filMigPlans.length+' Dienstplan-Monat(e), '+filMigUrlaub.length+' Urlaubs-Eintrag(e). Du kannst jetzt „Veröffentlichen" klicken.';
+    stat.textContent='✓ Kopiert: '+filMigPlans.length+' Dienstplan-Monat(e), '+filMigUrlaub.length+' Urlaubs-Eintrag(e). Du kannst jetzt „Veröffentlichen" klicken.'
+      +(filMigUnresolved.length?' ('+filMigUnresolved.length+' verwaiste Eintrag(e) weiterhin ungeklärt — siehe oben.)':'');
     runBtn.style.display='none';
     toast('✓ Migration abgeschlossen');
   }catch(err){
