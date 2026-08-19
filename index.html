@@ -406,6 +406,29 @@ window.onerror=function(msg,src,line){
       </div>
     </div>
   </div>
+
+  <div class="card">
+    <div class="card-title">➕ Umlagerung manuell eintragen <span class="badge badge-grn">HR</span></div>
+    <div class="info">Für Warentransporte, die du selbst zwischen Filialen durchführst. Erscheint zusammen mit den Mitarbeiter-Meldungen in der Monatsübersicht.</div>
+    <div class="row2">
+      <div><label>Von Filiale</label><select id="ugm-von"><option value="">— Filiale wählen —</option></select></div>
+      <div><label>Nach Filiale</label><select id="ugm-fil"><option value="">— Filiale wählen —</option></select></div>
+    </div>
+    <div style="margin-top:8px"><label>Datum</label><input type="date" id="ugm-datum"></div>
+    <div style="margin-top:12px">
+      <label>Artikel suchen</label>
+      <input type="text" id="ugm-search" placeholder="Artikelname oder -nummer…" oninput="ugmRenderList()">
+      <div id="ugm-list" style="max-height:220px;overflow-y:auto;border:1px solid var(--brd);border-radius:var(--rs);margin-top:6px"></div>
+    </div>
+    <div style="margin-top:12px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">Gewählte Artikel</div>
+      <div id="ugm-cart"></div>
+    </div>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-grn" onclick="ugmSubmit()" style="flex:1;justify-content:center">📤 Umlagerung eintragen</button>
+    </div>
+    <p id="ugm-status" style="font-size:12px;color:var(--mut);text-align:center;margin-top:8px"></p>
+  </div>
 </div>
 
 <!-- ===== URLAUBSANTRAG ===== -->
@@ -1302,7 +1325,7 @@ checkFirstStart();
   if(id==='inventur'){invOnShow();}
   if(id==='belege'){blPopulateFilFilter();blRenderAdmin();}
   if(id==='we'){wePopulateFilFilter();weRenderAdmin();}
-  if(id==='ug'){ugPopulateFilters();ugRenderCurrent();}
+  if(id==='ug'){ugPopulateFilters();ugRenderCurrent();ugmOnShow();}
   if(id==='av'){avPopulateDropdown();avRenderList();}
 }
 
@@ -5030,6 +5053,102 @@ function ugStatusMeta(st){
   return {c:'#6B6860',bg:'#F5F3F0',txt:st};
 }
 function ugFind(id){ return fbUmlagerung.find(function(x){return x.docId===id;}); }
+
+// ── UMLAGERUNG MANUELL (HR trägt eigene Warentransporte ein) ──
+var ugmItems=[], ugmItemSeq=1;
+function ugmOnShow(){
+  ugmPopulateFilialen();
+  var dtEl=document.getElementById('ugm-datum'); if(dtEl&&!dtEl.value) dtEl.value=new Date().toISOString().slice(0,10);
+  ugmRenderList();
+  ugmRenderCart();
+}
+function ugmPopulateFilialen(){
+  var list=fvUniverse();
+  ['ugm-von','ugm-fil'].forEach(function(id){
+    var sel=document.getElementById(id); if(!sel) return;
+    var cur=sel.value;
+    sel.innerHTML='<option value="">— Filiale wählen —</option>'+list.map(function(f){return '<option value="'+f+'">'+f+'</option>';}).join('');
+    if(cur && list.indexOf(cur)!==-1) sel.value=cur;
+  });
+}
+function ugmRenderList(){
+  var box=document.getElementById('ugm-list'); if(!box||typeof INVENTUR_ITEMS==='undefined') return;
+  var q=(document.getElementById('ugm-search').value||'').toLowerCase().trim();
+  var items=q?INVENTUR_ITEMS.filter(function(it){return (it[0]+' '+it[3]).toLowerCase().indexOf(q)!==-1;}):INVENTUR_ITEMS;
+  if(!items.length){ box.innerHTML='<div style="padding:14px;color:var(--mut);font-size:13px">Keine Artikel gefunden.</div>'; return; }
+  box.innerHTML=items.map(function(it){
+    var art=it[0], einheit=it[2], de=it[3];
+    var inCart=ugmItems.some(function(x){return x.artikelnr===art;});
+    return '<div onclick="ugmAddToCart(\''+art+'\')" style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-bottom:0.5px solid var(--brd);cursor:pointer">'
+      +'<div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:500">'+de+'</div>'
+      +'<div style="font-size:11px;color:var(--mut)">Art. '+art+' · '+einheit+'</div></div>'
+      +'<div style="font-size:18px;color:'+(inCart?'var(--grn)':'var(--mut)')+'">'+(inCart?'✓':'➕')+'</div>'
+      +'</div>';
+  }).join('');
+}
+function ugmAddToCart(art){
+  var it=INVENTUR_ITEMS.find(function(x){return x[0]===art;}); if(!it) return;
+  var ex=ugmItems.find(function(x){return x.artikelnr===art;});
+  if(ex){ ex.menge=(parseFloat(ex.menge)||0)+1; }
+  else { ugmItems.push({lid:'ugm'+(ugmItemSeq++), artikelnr:art, artikelname:it[3], einheit:it[2], menge:1}); }
+  ugmRenderList();
+  ugmRenderCart();
+}
+function ugmCartQty(lid,val){
+  var it=ugmItems.find(function(x){return x.lid===lid;});
+  if(it) it.menge=val;
+}
+function ugmCartRemove(lid){
+  ugmItems=ugmItems.filter(function(x){return x.lid!==lid;});
+  ugmRenderList();
+  ugmRenderCart();
+}
+function ugmRenderCart(){
+  var box=document.getElementById('ugm-cart'); if(!box) return;
+  if(!ugmItems.length){ box.innerHTML='<div style="font-size:13px;color:var(--mut)">Noch keine Artikel gewählt.</div>'; return; }
+  box.innerHTML=ugmItems.map(function(it){
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--brd)">'
+      +'<div style="flex:1;min-width:0"><div style="font-size:13.5px;font-weight:500">'+it.artikelname+'</div>'
+      +'<div style="font-size:11px;color:var(--mut)">Art. '+it.artikelnr+' · '+it.einheit+'</div></div>'
+      +'<input type="number" min="0" step="0.1" value="'+it.menge+'" oninput="ugmCartQty(\''+it.lid+'\',this.value)" style="width:70px;text-align:center">'
+      +'<button class="btn-del" onclick="ugmCartRemove(\''+it.lid+'\')" title="Entfernen">🗑</button>'
+      +'</div>';
+  }).join('');
+}
+function ugmValidate(){
+  var von=document.getElementById('ugm-von').value, fil=document.getElementById('ugm-fil').value;
+  if(!von||!fil){ alert('Bitte Von- und Ziel-Filiale wählen.'); return false; }
+  if(von===fil){ alert('Von- und Ziel-Filiale müssen unterschiedlich sein.'); return false; }
+  if(!document.getElementById('ugm-datum').value){ alert('Bitte Datum wählen.'); return false; }
+  if(!ugmItems.length){ alert('Bitte mindestens einen Artikel wählen.'); return false; }
+  for(var i=0;i<ugmItems.length;i++){
+    if(!(parseFloat(ugmItems[i].menge)>0)){ alert('Bitte gültige Menge für alle Artikel angeben.'); return false; }
+  }
+  return true;
+}
+function ugmSubmit(){
+  if(!ugmValidate()) return;
+  if(!fbReady||!fbDb){ alert('Keine Verbindung zur Cloud.'); return; }
+  var st=document.getElementById('ugm-status');
+  var doc={
+    empId:'HR', empName:(loadSettings().name||'HR'), filiale:document.getElementById('ugm-fil').value, region:activeRegion||'',
+    vonFiliale:document.getElementById('ugm-von').value,
+    datum:document.getElementById('ugm-datum').value,
+    items:ugmItems.map(function(it){ return {artikelnr:it.artikelnr, artikelname:it.artikelname, einheit:it.einheit, menge:parseFloat(it.menge)||0}; }),
+    status:'offen', createdAt:new Date().toISOString(), uebertragenAt:null
+  };
+  fbDb.collection('umlagerung').add(doc).then(function(){
+    toast('✓ Umlagerung eingetragen');
+    if(st) st.textContent='';
+    document.getElementById('ugm-von').value='';
+    document.getElementById('ugm-fil').value='';
+    document.getElementById('ugm-datum').value=new Date().toISOString().slice(0,10);
+    document.getElementById('ugm-search').value='';
+    ugmItems=[];
+    ugmRenderList();
+    ugmRenderCart();
+  }).catch(function(e){ if(st) st.textContent='Fehler: '+e.message; });
+}
 function ugShowTab(tab){
   ugTab=tab;
   ['log','sum'].forEach(function(x){
