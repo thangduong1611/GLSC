@@ -4498,6 +4498,32 @@ function regionSeedFilialenMeta(){
 //     aktuellen Filiale er zuzuordnen ist. Nur eindeutige Treffer werden zum Kopieren
 //     vorgeschlagen — mehrdeutige oder nicht zuordenbare Funde werden nur gemeldet, nie geraten.
 var filMigAffected=[], filMigPlans=[], filMigUrlaub=[], filMigUnresolved=[];
+// Verwaiste Schlüssel enthalten oft Mitarbeiter, die dort nur als Zweitfiliale aushelfen —
+// deren aktuelle Filiale ist dann eine andere als die des verwaisten Dokuments, was reine
+// Mitarbeiter-Abstimmung unzuverlässig macht. Zuverlässiger: der neue kanonische Name ist
+// IMMER "{MarktNr}: {Typ}-" + genau dem alten (zuvor abgeschnittenen) Namen — der alte Slug
+// ist also garantiert ein exaktes Suffix des neuen Slugs. Das wird zuerst geprüft; die
+// Mitarbeiter-Abstimmung dient nur noch als Rückfallebene, falls das nichts Eindeutiges liefert.
+function filMigResolveOrphan(oldSlug, empGuesses, filMeta){
+  var lexical=[];
+  Object.keys(filMeta).forEach(function(nr){
+    var name=filMeta[nr]&&filMeta[nr].name; if(!name) return;
+    var slug=fbSlug(name);
+    if(slug.length>oldSlug.length && slug.slice(slug.length-oldSlug.length)===oldSlug && lexical.indexOf(name)<0){
+      lexical.push(name);
+    }
+  });
+  if(lexical.length===1) return {confidence:'high', newName:lexical[0]};
+  var empNames=Object.keys(empGuesses||{});
+  if(lexical.length>1){
+    var overlap=lexical.filter(function(n){return empNames.indexOf(n)>=0;});
+    if(overlap.length===1) return {confidence:'high', newName:overlap[0]};
+  } else if(empNames.length===1){
+    return {confidence:'high', newName:empNames[0]};
+  }
+  var candidates=[]; lexical.concat(empNames).forEach(function(n){ if(candidates.indexOf(n)<0) candidates.push(n); });
+  return {confidence:'ambiguous', candidates:candidates};
+}
 async function filMigScan(){
   if(!fbReady||!fbDb||!fbManager){ alert('Bitte zuerst als Manager anmelden (Einstellungen).'); return; }
   if(!activeRegion){ alert('Keine Region aktiv — bitte neu anmelden.'); return; }
@@ -4564,14 +4590,14 @@ async function filMigScan(){
       });
     });
     Object.keys(planOrphans).forEach(function(slug){
-      var grp=planOrphans[slug], names=Object.keys(grp.guesses);
-      if(names.length===1){
-        var newName=names[0], newSlug=fbSlug(newName);
+      var grp=planOrphans[slug], resolved=filMigResolveOrphan(slug, grp.guesses, filMeta);
+      if(resolved.confidence==='high'){
+        var newSlug=fbSlug(resolved.newName);
         grp.months.forEach(function(mo){
-          filMigPlans.push({newId:newSlug+'__'+mo.month, data:mo.data, label:newName+' · '+mo.month+' (wiederhergestellt)'});
+          filMigPlans.push({newId:newSlug+'__'+mo.month, data:mo.data, label:resolved.newName+' · '+mo.month+' (wiederhergestellt)'});
         });
       } else {
-        filMigUnresolved.push({type:'Dienstplan', oldSlug:slug, count:grp.months.length, candidates:names, months:grp.months.map(function(mo){return mo.month;})});
+        filMigUnresolved.push({type:'Dienstplan', oldSlug:slug, count:grp.months.length, candidates:resolved.candidates, months:grp.months.map(function(mo){return mo.month;})});
       }
     });
 
@@ -4591,12 +4617,12 @@ async function filMigScan(){
       if(emp&&emp.filiale) urlOrphans[slug2].guesses[emp.filiale]=(urlOrphans[slug2].guesses[emp.filiale]||0)+1;
     });
     Object.keys(urlOrphans).forEach(function(slug2){
-      var grp2=urlOrphans[slug2], names2=Object.keys(grp2.guesses);
-      if(names2.length===1){
-        var newName2=names2[0], newSlug2=fbSlug(newName2);
-        grp2.docs.forEach(function(u){ filMigUrlaub.push({newSlug:newSlug2, docId:u.docId, data:u.data, label:newName2+' (wiederhergestellt)'}); });
+      var grp2=urlOrphans[slug2], resolved2=filMigResolveOrphan(slug2, grp2.guesses, filMeta);
+      if(resolved2.confidence==='high'){
+        var newSlug2=fbSlug(resolved2.newName);
+        grp2.docs.forEach(function(u){ filMigUrlaub.push({newSlug:newSlug2, docId:u.docId, data:u.data, label:resolved2.newName+' (wiederhergestellt)'}); });
       } else {
-        filMigUnresolved.push({type:'Urlaub', oldSlug:slug2, count:grp2.docs.length, candidates:names2});
+        filMigUnresolved.push({type:'Urlaub', oldSlug:slug2, count:grp2.docs.length, candidates:resolved2.candidates});
       }
     });
 
