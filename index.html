@@ -429,6 +429,19 @@ window.onerror=function(msg,src,line){
     </div>
     <p id="ugm-status" style="font-size:12px;color:var(--mut);text-align:center;margin-top:8px"></p>
   </div>
+
+  <div class="card">
+    <div class="card-title">📥 Umlagerungsliste automatisch ausfüllen</div>
+    <div class="info">Lade die leere Umlagerungsliste hoch, die du monatlich bekommst. Die App gleicht die 5 Standort-Paare (Alter/Neuer Standort) und Artikelnummern mit den Meldungen ab und trägt die Mengen an der richtigen Stelle ein — Formeln bleiben unberührt.</div>
+    <div class="row2">
+      <div><label>Monat</label><input type="month" id="ugl-month"></div>
+      <div><label>Leere Liste (.xlsx)</label><input type="file" id="ugl-file" accept=".xlsx" onchange="uglLoadFile(event)"></div>
+    </div>
+    <div id="ugl-report" style="margin-top:10px"></div>
+    <div class="btn-row" style="margin-top:10px">
+      <button class="btn btn-grn" id="ugl-download-btn" onclick="uglDownload()" style="display:none;flex:1;justify-content:center">⬇ Ausgefüllte Datei herunterladen</button>
+    </div>
+  </div>
 </div>
 
 <!-- ===== URLAUBSANTRAG ===== -->
@@ -5061,6 +5074,7 @@ function ugmOnShow(){
   var dtEl=document.getElementById('ugm-datum'); if(dtEl&&!dtEl.value) dtEl.value=new Date().toISOString().slice(0,10);
   ugmRenderList();
   ugmRenderCart();
+  var mEl=document.getElementById('ugl-month'); if(mEl&&!mEl.value) mEl.value=invDefaultMonth();
 }
 function ugmPopulateFilialen(){
   var list=fvUniverse();
@@ -5148,6 +5162,181 @@ function ugmSubmit(){
     ugmRenderList();
     ugmRenderCart();
   }).catch(function(e){ if(st) st.textContent='Fehler: '+e.message; });
+}
+
+// ── UMLAGERUNGSLISTE AUTOMATISCH AUSFÜLLEN (Excel-Vorlage) ──
+// Nutzt ExcelJS (statt SheetJS) für den Lese/Schreib-Durchlauf, weil SheetJS beim Zurückschreiben
+// Formatierung und Dropdown-Validierungen verwirft. Zusätzlich werden xl/workbook.xml (definierte
+// Namen) und xl/tables/*.xml 1:1 aus der Originaldatei zurückkopiert, weil ExcelJS den auf eine
+// Excel-Tabelle verweisenden benannten Bereich ("awl_StO") beim Schreiben verliert — ohne diesen
+// Patch würden die Standort-Dropdowns in der Datei nicht mehr funktionieren.
+var uglOutName='', uglOutBuf=null;
+function uglLoadFile(ev){
+  var file=ev.target.files[0]; if(!file) return;
+  var report=document.getElementById('ugl-report'), dlBtn=document.getElementById('ugl-download-btn');
+  if(dlBtn) dlBtn.style.display='none';
+  uglOutBuf=null;
+  if(report) report.innerHTML='⏳ Datei wird gelesen…';
+  if(typeof ExcelJS==='undefined'||typeof JSZip==='undefined'){ if(report) report.innerHTML='❌ Excel-Bibliothek konnte nicht geladen werden (Internetverbindung prüfen).'; return; }
+  var reader=new FileReader();
+  reader.onload=function(e){
+    uglOutName=file.name.replace(/\.xlsx$/i,'')+'_ausgefuellt.xlsx';
+    uglProcessWorkbook(e.target.result).catch(function(err){
+      if(report) report.innerHTML='❌ Fehler: '+err.message;
+    });
+  };
+  reader.onerror=function(){ if(report) report.innerHTML='❌ Datei konnte nicht gelesen werden.'; };
+  reader.readAsArrayBuffer(file);
+}
+function uglNorm(s){ return (''+(s||'')).trim().toLowerCase(); }
+function uglMarktNrToName(raw, filMeta){
+  var m=(''+(raw||'')).match(/^\s*(\d+)/);
+  if(!m) return null;
+  var meta=filMeta[m[1]]||filMeta[String(parseInt(m[1],10))];
+  return meta?meta.name:null;
+}
+async function uglProcessWorkbook(arrBuf){
+  var report=document.getElementById('ugl-report'), dlBtn=document.getElementById('ugl-download-btn');
+  var month=document.getElementById('ugl-month').value;
+  if(!month){ report.innerHTML='⚠️ Bitte zuerst den Monat wählen.'; return; }
+
+  var wb=new ExcelJS.Workbook();
+  await wb.xlsx.load(arrBuf);
+  var ws=wb.worksheets.find(function(s){return /umlager/i.test(s.name);})||wb.worksheets[0];
+  if(!ws){ report.innerHTML='❌ Leeres oder ungültiges Tabellenblatt.'; return; }
+
+  var headerRow=-1;
+  for(var r=1;r<=ws.rowCount&&headerRow<0;r++){
+    for(var c=1;c<=ws.columnCount;c++){
+      if(ws.getCell(r,c).value==='Buchungskonto'){ headerRow=r; break; }
+    }
+  }
+  if(headerRow<0){ report.innerHTML='❌ Kopfzeile ("Buchungskonto") nicht gefunden — falsches Blatt in der Datei?'; return; }
+
+  var colArtikel=-1, mengeCols=[];
+  for(var c=1;c<=ws.columnCount;c++){
+    var hv=ws.getCell(headerRow,c).value;
+    if(typeof hv!=='string') continue;
+    if(colArtikel<0 && /artikel[\s\-]*n(r|ummer)/i.test(hv)) colArtikel=c;
+    if(hv==='Menge') mengeCols.push(c);
+  }
+  if(colArtikel<0||!mengeCols.length){ report.innerHTML='❌ Spalten "Artikelnummer"/"Menge" nicht gefunden.'; return; }
+
+  var rAlt=-1, rNeu=-1;
+  for(var r=1;r<headerRow;r++){
+    for(var c=1;c<=ws.columnCount;c++){
+      var v=ws.getCell(r,c).value;
+      if(v==='Alter Standort') rAlt=r;
+      if(v==='Neuer Standort') rNeu=r;
+    }
+  }
+  if(rAlt<0||rNeu<0){ report.innerHTML='❌ Zeilen "Alter Standort"/"Neuer Standort" nicht gefunden.'; return; }
+
+  var filMeta=filMetaLoad();
+  var blocks=mengeCols.map(function(c){
+    var altRaw=ws.getCell(rAlt,c).value, neuRaw=ws.getCell(rNeu,c).value;
+    return {col:c, altRaw:altRaw, neuRaw:neuRaw, von:uglMarktNrToName(altRaw,filMeta), nach:uglMarktNrToName(neuRaw,filMeta), map:{}};
+  });
+
+  var pairAgg={};
+  fbUmlagerung.forEach(function(w){
+    var d=w.d;
+    if(!d.datum||d.datum.slice(0,7)!==month) return;
+    var key=uglNorm(d.vonFiliale)+'→'+uglNorm(d.filiale);
+    if(!pairAgg[key]) pairAgg[key]={von:d.vonFiliale,nach:d.filiale,items:{}};
+    (d.items||[]).forEach(function(it){
+      pairAgg[key].items[it.artikelnr]=(pairAgg[key].items[it.artikelnr]||0)+(parseFloat(it.menge)||0);
+    });
+  });
+
+  var usedKeys={};
+  blocks.forEach(function(b){
+    if(!b.von||!b.nach) return;
+    var key=uglNorm(b.von)+'→'+uglNorm(b.nach);
+    var agg=pairAgg[key];
+    if(agg){ b.map=agg.items; usedKeys[key]=true; }
+  });
+  var unusedTransfers=Object.keys(pairAgg).filter(function(k){return !usedKeys[k];}).map(function(k){return pairAgg[k];});
+
+  var filledCount=0, unknownArt={}, skipped=[], knownArt={};
+  for(var r=headerRow+1;r<=ws.rowCount;r++){
+    var artVal=ws.getCell(r,colArtikel).value;
+    if(artVal==null||artVal==='') continue;
+    var art=(''+artVal).trim();
+    knownArt[art]=true;
+    blocks.forEach(function(b){
+      var qty=b.map[art];
+      if(!qty) return;
+      var targetCell=ws.getCell(r,b.col);
+      var existing=targetCell.value;
+      if(existing!=null&&existing!==''&&Number(existing)!==0){
+        skipped.push({art:art, row:r, existing:existing, wanted:qty});
+        delete b.map[art];
+        return;
+      }
+      targetCell.value=qty;
+      filledCount++;
+      delete b.map[art];
+    });
+  }
+  blocks.forEach(function(b){ Object.keys(b.map).forEach(function(art){ if(!knownArt[art]) unknownArt[art]=true; }); });
+
+  var outBuf=await wb.xlsx.writeBuffer();
+  try{
+    var origZip=await JSZip.loadAsync(arrBuf);
+    var origWorkbookXml=await origZip.file('xl/workbook.xml').async('string');
+    var definedNamesXml=(origWorkbookXml.match(/<definedNames>[\s\S]*?<\/definedNames>/)||[null])[0];
+    var tableFiles={};
+    for(var tn in origZip.files){
+      if(/^xl\/tables\/table\d+\.xml$/.test(tn)) tableFiles[tn]=await origZip.file(tn).async('string');
+    }
+    var outZip=await JSZip.loadAsync(outBuf);
+    if(definedNamesXml){
+      var outWbXml=await outZip.file('xl/workbook.xml').async('string');
+      outWbXml=/<definedNames>[\s\S]*?<\/definedNames>/.test(outWbXml)
+        ? outWbXml.replace(/<definedNames>[\s\S]*?<\/definedNames>/, definedNamesXml)
+        : outWbXml.replace('</sheets>', '</sheets>'+definedNamesXml);
+      outZip.file('xl/workbook.xml', outWbXml);
+    }
+    Object.keys(tableFiles).forEach(function(tn){ if(outZip.file(tn)) outZip.file(tn, tableFiles[tn]); });
+    outBuf=await outZip.generateAsync({type:'arraybuffer'});
+  }catch(patchErr){
+    console.warn('ugl: Patch für definierte Namen/Tabellen fehlgeschlagen, nutze unbehandelte Ausgabe', patchErr);
+  }
+  uglOutBuf=outBuf;
+
+  var html='<div style="font-size:13px;margin-bottom:8px"><strong>'+filledCount+'</strong> Positionen eingetragen.</div>';
+  html+=blocks.map(function(b,i){
+    var ok=b.von&&b.nach;
+    var key=ok?uglNorm(b.von)+'→'+uglNorm(b.nach):null;
+    var matched=key&&pairAgg[key];
+    return '<div style="padding:6px 0;border-bottom:1px solid var(--brd);font-size:12.5px">'
+      +'Block '+(i+1)+': '+(ok?(b.von+' → '+b.nach):('<span style="color:#B7791F">Filiale nicht erkannt ('+(b.altRaw||'?')+' / '+(b.neuRaw||'?')+')</span>'))
+      +(ok?(matched?' <span style="color:#1E8449">✓ Meldungen gefunden</span>':' <span style="color:var(--mut)">— keine Meldungen diesen Monat</span>'):'')
+      +'</div>';
+  }).join('');
+  if(unusedTransfers.length){
+    html+='<div style="margin-top:8px;padding:8px;background:#FFF7E6;border-radius:6px;font-size:12.5px"><strong>⚠️ '+unusedTransfers.length+' Meldung(en) passen zu keinem der 5 Blöcke — bitte manuell prüfen/eintragen:</strong><br>'
+      +unusedTransfers.map(function(p){return (p.von||'?')+' → '+(p.nach||'?');}).join('<br>')+'</div>';
+  }
+  var unknownList=Object.keys(unknownArt);
+  if(unknownList.length){
+    html+='<div style="margin-top:8px;padding:8px;background:#FFF7E6;border-radius:6px;font-size:12.5px"><strong>⚠️ '+unknownList.length+' Artikelnummer(n) nicht in der Liste gefunden:</strong><br>'+unknownList.join(', ')+'</div>';
+  }
+  if(skipped.length){
+    html+='<div style="margin-top:8px;padding:8px;background:#FDECEA;border-radius:6px;font-size:12.5px"><strong>⛔ '+skipped.length+' Zelle(n) hatten bereits einen Wert — NICHT überschrieben, bitte manuell prüfen:</strong><br>'
+      +skipped.map(function(s){return 'Art. '+s.art+' (Zeile '+s.row+'): vorhanden '+s.existing+', neu wäre '+s.wanted;}).join('<br>')+'</div>';
+  }
+  report.innerHTML=html;
+  if(dlBtn) dlBtn.style.display=filledCount>0?'block':'none';
+}
+function uglDownload(){
+  if(!uglOutBuf) return;
+  var blob=new Blob([uglOutBuf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a'); a.href=url; a.download=uglOutName||'Umlagerungsliste_ausgefuellt.xlsx';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 function ugShowTab(tab){
   ugTab=tab;
@@ -5512,6 +5701,8 @@ function exportMaBundle(mode){
 fbBootStatus();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
 if("serviceWorker" in navigator){
   window.addEventListener("load",function(){
