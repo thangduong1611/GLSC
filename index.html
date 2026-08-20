@@ -5551,6 +5551,81 @@ function uglMarktNrToName(raw, filMeta){
   var meta=filMeta[m[1]]||filMeta[String(parseInt(m[1],10))];
   return meta?meta.name:null;
 }
+// Zell-Schreibzugriffe erfolgen NICHT über ExcelJS' eigenen Writer (verwirft Formatierung/
+// Dropdowns) und auch NICHT über DOMParser/XMLSerializer (Browser serialisiert Attribute auf dem
+// <worksheet>-Root-Element in anderer Reihenfolge um — mc:Ignorable landet hinter statt vor den
+// xmlns:x14ac/xr/xr2/xr3-Deklarationen, was Excel beim Öffnen als Beschädigung meldet). Stattdessen
+// wird die Original-Datei als reiner Text behandelt und nur die einzelnen betroffenen <c>-Zellen
+// per Regex ersetzt — der Rest der Datei bleibt Byte-für-Byte unverändert.
+function uglXmlEscape(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;'); }
+function uglFindSharedStringIndex(sharedXml, text){
+  var siList=sharedXml.match(/<si>[\s\S]*?<\/si>/g)||[];
+  for(var i=0;i<siList.length;i++){
+    var m=siList[i].match(/<t[^>]*>([\s\S]*?)<\/t>/);
+    var t=(m?m[1]:'').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&amp;/g,'&');
+    if(t===text) return i;
+  }
+  return -1;
+}
+function uglAddSharedString(sharedXml, text){
+  var siCount=(sharedXml.match(/<si>[\s\S]*?<\/si>/g)||[]).length;
+  var newXml=sharedXml.replace('</sst>', '<si><t>'+uglXmlEscape(text)+'</t></si></sst>');
+  newXml=newXml.replace(/(<sst[^>]*\buniqueCount=")(\d+)(")/, function(m,a,n,c){ return a+(parseInt(n,10)+1)+c; });
+  newXml=newXml.replace(/(<sst[^>]*\bcount=")(\d+)(")/, function(m,a,n,c){ return a+(parseInt(n,10)+1)+c; });
+  return {xml:newXml, index:siCount};
+}
+function uglBumpSharedStringCount(sharedXml){
+  return sharedXml.replace(/(<sst[^>]*\bcount=")(\d+)(")/, function(m,a,n,c){ return a+(parseInt(n,10)+1)+c; });
+}
+function uglSetCellValue(sheetXml, ref, opts){
+  var attrsExtra, newInner;
+  if(opts.type==='shared'){ attrsExtra=' t="s"'; newInner='<v>'+opts.index+'</v>'; }
+  else { attrsExtra=''; newInner='<v>'+opts.value+'</v>'; }
+  var selfCloseRe=new RegExp('<c r="'+ref+'"((?:\\s+[a-zA-Z0-9:]+="[^"]*")*)\\s*/>');
+  var openRe=new RegExp('<c r="'+ref+'"((?:\\s+[a-zA-Z0-9:]+="[^"]*")*)\\s*>[\\s\\S]*?</c>');
+  if(selfCloseRe.test(sheetXml)){
+    return sheetXml.replace(selfCloseRe, function(m, attrs){ return '<c r="'+ref+'"'+attrs.replace(/\s+t="[^"]*"/,'')+attrsExtra+'>'+newInner+'</c>'; });
+  } else if(openRe.test(sheetXml)){
+    return sheetXml.replace(openRe, function(m, attrs){ return '<c r="'+ref+'"'+attrs.replace(/\s+t="[^"]*"/,'')+attrsExtra+'>'+newInner+'</c>'; });
+  }
+  return sheetXml;
+}
+function uglUpdateFormulaCachedValue(sheetXml, ref, newValue){
+  var re=new RegExp('(<c r="'+ref+'"[^>]*><f>[\\s\\S]*?</f>)<v>[^<]*</v>(</c>)');
+  if(re.test(sheetXml)) return sheetXml.replace(re, '$1<v>'+newValue+'</v>$2');
+  var re2=new RegExp('(<c r="'+ref+'"[^>]*><f>[\\s\\S]*?</f>)(</c>)');
+  if(re2.test(sheetXml)) return sheetXml.replace(re2, '$1<v>'+newValue+'</v>$2');
+  return sheetXml;
+}
+function uglFixCalcPr(wbXml){
+  // Vorlage ist auf calcMode="manual" gestellt; fullCalcOnLoad wird von Excel beim automatisierten
+  // Öffnen nicht zuverlässig ausgewertet — der eigentliche Fix ist, den Betrag-Cache direkt korrekt
+  // mitzuschreiben (s.u.). fullCalcOnLoad wird trotzdem zusätzlich gesetzt, schadet nicht.
+  if(/<calcPr\b[^>]*fullCalcOnLoad="1"/.test(wbXml)) return wbXml;
+  if(/<calcPr\b[^>]*fullCalcOnLoad="[^"]*"/.test(wbXml)) return wbXml.replace(/(<calcPr\b[^>]*fullCalcOnLoad=")[^"]*(")/, '$11$2');
+  if(/<calcPr\b/.test(wbXml)) return wbXml.replace(/<calcPr\b/, '<calcPr fullCalcOnLoad="1" ');
+  return wbXml;
+}
+async function uglResolveSheetXmlPath(zip, sheetName){
+  try{
+    var wbXml=await zip.file('xl/workbook.xml').async('string');
+    var relsXml=await zip.file('xl/_rels/workbook.xml.rels').async('string');
+    var esc=sheetName.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    var sheetTags=wbXml.match(/<sheet\b[^>]*\/>/g)||[];
+    var rid=null;
+    for(var i=0;i<sheetTags.length;i++){
+      if(new RegExp('name="'+esc+'"').test(sheetTags[i])){
+        var m=sheetTags[i].match(/r:id="([^"]+)"/);
+        if(m){ rid=m[1]; break; }
+      }
+    }
+    if(!rid) return 'xl/worksheets/sheet1.xml';
+    var relMatch=relsXml.match(new RegExp('<Relationship[^>]*Id="'+rid+'"[^>]*/>'))||relsXml.match(new RegExp('<Relationship[^>]*/>'));
+    var relTag=relsXml.match(new RegExp('<Relationship[^>]*Id="'+rid+'"[^>]*Target="([^"]+)"'))||relsXml.match(new RegExp('<Relationship[^>]*Target="([^"]+)"[^>]*Id="'+rid+'"'));
+    if(!relTag) return 'xl/worksheets/sheet1.xml';
+    return 'xl/'+relTag[1].replace(/^\/?/,'');
+  }catch(e){ return 'xl/worksheets/sheet1.xml'; }
+}
 async function uglProcessWorkbook(arrBuf){
   var report=document.getElementById('ugl-report'), dlBtn=document.getElementById('ugl-download-btn');
   var month=document.getElementById('ugl-month').value;
@@ -5621,11 +5696,14 @@ async function uglProcessWorkbook(arrBuf){
   unusedTransfers.sort(function(a,b){ return uglTotalQty(b)-uglTotalQty(a); });
   var emptyBlocks=blocks.filter(function(b){ return !b.altRaw && !b.neuRaw; });
   var autoAssigned=[];
+  var stringWrites=[]; // {ref, text} — Alter/Neuer Standort Zellen
+  var numberWrites=[]; // {ref, value}
+  var betragFixups=[]; // {ref, value} — Cache-Wert der Betrag-Formel (Menge*Preis), direkt mitgeschrieben
   unusedTransfers=unusedTransfers.filter(function(t){
     var block=emptyBlocks.shift();
     if(!block) return true;
-    ws.getCell(rAlt,block.col).value=t.von;
-    ws.getCell(rNeu,block.col).value=t.nach;
+    stringWrites.push({ref:ws.getCell(rAlt,block.col).address, text:t.von});
+    stringWrites.push({ref:ws.getCell(rNeu,block.col).address, text:t.nach});
     block.von=t.von; block.nach=t.nach; block.altRaw=t.von; block.neuRaw=t.nach; block.map=t.items;
     autoAssigned.push(block);
     return false;
@@ -5647,36 +5725,46 @@ async function uglProcessWorkbook(arrBuf){
         delete b.map[art];
         return;
       }
-      targetCell.value=qty;
+      numberWrites.push({ref:targetCell.address, value:qty});
+      // Betrag-Spalte (2 Spalten rechts von Menge) hat eine Formel Menge*Preis; Preis-Cache direkt
+      // aus ExcelJS lesen und den neuen Betrag-Wert mitschreiben, statt auf Excel-Neuberechnung beim
+      // Öffnen zu vertrauen (calcMode der Vorlage ist "manual" und fullCalcOnLoad wird von Excel beim
+      // Öffnen nicht zuverlässig ausgewertet — ohne diesen Fixup bleibt der Betrag auf 0 stehen bis
+      // der Nutzer manuell neu berechnet).
+      var preisCell=ws.getCell(r,b.col+1), betragCell=ws.getCell(r,b.col+2);
+      var preisVal=(preisCell.value&&typeof preisCell.value==='object'&&'result' in preisCell.value)?preisCell.value.result:preisCell.value;
+      var betragHasFormula=betragCell.value&&typeof betragCell.value==='object'&&betragCell.value.formula;
+      if(betragHasFormula&&typeof preisVal==='number'){
+        betragFixups.push({ref:betragCell.address, value:+(qty*preisVal).toFixed(10)});
+      }
       filledCount++;
       delete b.map[art];
     });
   }
   blocks.forEach(function(b){ Object.keys(b.map).forEach(function(art){ if(!knownArt[art]) unknownArt[art]=true; }); });
 
-  var outBuf=await wb.xlsx.writeBuffer();
-  try{
-    var origZip=await JSZip.loadAsync(arrBuf);
-    var origWorkbookXml=await origZip.file('xl/workbook.xml').async('string');
-    var definedNamesXml=(origWorkbookXml.match(/<definedNames>[\s\S]*?<\/definedNames>/)||[null])[0];
-    var tableFiles={};
-    for(var tn in origZip.files){
-      if(/^xl\/tables\/table\d+\.xml$/.test(tn)) tableFiles[tn]=await origZip.file(tn).async('string');
+  var outZip=await JSZip.loadAsync(arrBuf);
+  var sheetXmlPath=await uglResolveSheetXmlPath(outZip, ws.name);
+  var sheetXml=await outZip.file(sheetXmlPath).async('string');
+  var sharedXml=outZip.file('xl/sharedStrings.xml')?await outZip.file('xl/sharedStrings.xml').async('string'):null;
+  var wbXml=await outZip.file('xl/workbook.xml').async('string');
+
+  stringWrites.forEach(function(w){
+    if(sharedXml){
+      var idx=uglFindSharedStringIndex(sharedXml, w.text);
+      if(idx<0){ var added=uglAddSharedString(sharedXml, w.text); sharedXml=added.xml; idx=added.index; }
+      else { sharedXml=uglBumpSharedStringCount(sharedXml); }
+      sheetXml=uglSetCellValue(sheetXml, w.ref, {type:'shared', index:idx});
     }
-    var outZip=await JSZip.loadAsync(outBuf);
-    if(definedNamesXml){
-      var outWbXml=await outZip.file('xl/workbook.xml').async('string');
-      outWbXml=/<definedNames>[\s\S]*?<\/definedNames>/.test(outWbXml)
-        ? outWbXml.replace(/<definedNames>[\s\S]*?<\/definedNames>/, definedNamesXml)
-        : outWbXml.replace('</sheets>', '</sheets>'+definedNamesXml);
-      outZip.file('xl/workbook.xml', outWbXml);
-    }
-    Object.keys(tableFiles).forEach(function(tn){ if(outZip.file(tn)) outZip.file(tn, tableFiles[tn]); });
-    outBuf=await outZip.generateAsync({type:'arraybuffer'});
-  }catch(patchErr){
-    console.warn('ugl: Patch für definierte Namen/Tabellen fehlgeschlagen, nutze unbehandelte Ausgabe', patchErr);
-  }
-  uglOutBuf=outBuf;
+  });
+  numberWrites.forEach(function(w){ sheetXml=uglSetCellValue(sheetXml, w.ref, {type:'number', value:w.value}); });
+  betragFixups.forEach(function(w){ sheetXml=uglUpdateFormulaCachedValue(sheetXml, w.ref, w.value); });
+  wbXml=uglFixCalcPr(wbXml);
+
+  outZip.file(sheetXmlPath, sheetXml);
+  if(sharedXml) outZip.file('xl/sharedStrings.xml', sharedXml);
+  outZip.file('xl/workbook.xml', wbXml);
+  uglOutBuf=await outZip.generateAsync({type:'arraybuffer', compression:'DEFLATE', compressionOptions:{level:6}});
 
   var html='<div style="font-size:13px;margin-bottom:8px"><strong>'+filledCount+'</strong> Positionen eingetragen.</div>';
   if(autoAssigned.length){
