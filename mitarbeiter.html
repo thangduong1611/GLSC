@@ -52,11 +52,12 @@ header .hbtn{background:rgba(255,255,255,.18);border:none;color:#fff;font-size:1
 /* FORMS */
 label{display:block;font-size:12px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 5px;}
 label:first-child{margin-top:0;}
-input[type=text],input[type=date],input[type=month],input[type=tel],textarea,select{
+input[type=text],input[type=date],input[type=month],input[type=tel],input[type=search],input[type=number],input[type=email],input[type=password],textarea,select{
   width:100%;padding:11px 13px;border:1.5px solid var(--brd);border-radius:var(--rs);
   font-size:16px;font-family:inherit;background:var(--bg);color:var(--txt);outline:none;transition:border .15s;
 }
 input:focus,textarea:focus,select:focus{border-color:var(--red);}
+input[type=search]{-webkit-appearance:none;appearance:none;}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 
 /* BUTTONS */
@@ -361,6 +362,27 @@ window.onerror=function(msg,src,line){
 
   <!-- ── WARENEINGANG-REKLAMATION ── -->
   <div class="panel" id="p-we">
+    <div class="card" style="border:2px solid var(--grn)">
+      <div class="card-title" data-i18n="we_quick_title">⚡ Schnellmeldung</div>
+      <div class="info" data-i18n="we_quick_info"></div>
+      <label data-i18n="lbl_we_quick_photos">Fotos (Lieferschein + Ware)</label>
+      <div class="drop" id="we-quick-drop" onclick="document.getElementById('we-quick-file').click()">
+        <div class="drop-icon">📷</div><span data-i18n="drop_txt_multi">Fotos hochladen oder Kamera öffnen</span>
+        <input type="file" id="we-quick-file" accept="image/*" multiple style="display:none" onchange="weQuickPhotos(event)">
+      </div>
+      <div id="we-quick-prev" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"></div>
+      <div style="margin-top:14px">
+        <div style="height:6px;border-radius:4px;background:var(--brd);overflow:hidden">
+          <div id="we-quick-budget-bar" style="height:100%;width:0%;background:var(--red);transition:width .2s"></div>
+        </div>
+        <div id="we-quick-budget-txt" style="font-size:11px;color:var(--mut);margin-top:4px"></div>
+      </div>
+      <label data-i18n="lbl_we_quick_note" style="margin-top:14px">Was ist passiert?</label>
+      <textarea id="we-quick-note" data-i18n-placeholder="we_quick_note_placeholder" placeholder="z.B. 5 Stück Avocado beschädigt, 2 Kisten fehlen"></textarea>
+      <div class="btn-row">
+        <button class="btn btn-grn" onclick="weQuickSubmit()" data-i18n="btn_we_quick_submit">⚡ Schnellmeldung senden</button>
+      </div>
+    </div>
     <div class="card">
       <div class="card-title" data-i18n="we_title">🚚 Wareneingang-Reklamation</div>
       <div class="info" data-i18n="we_info"></div>
@@ -1398,6 +1420,9 @@ de:{_name:'Deutsch',
  nav_iv:'📦 Inventur',iv_title:'📦 Inventur',iv_progress:'Fortschritt',iv_save:'💾 Entwurf speichern',iv_submit:'✓ An HR senden',iv_saved:'✓ Entwurf gespeichert',iv_sent:'✓ An HR gesendet – danke!',iv_none:'Aktuell läuft keine Inventur.',iv_active:'🟢 Inventur aktiv',iv_count:'Bitte alle Artikel zählen und Menge eintragen.',iv_search:'Suchen…',nav_sl:'📋 Planung',sl_title:'📋 Dienstplan-Planung',sl_loading:'⏳ Lade Dienstplan…',sl_empty:'Noch kein Dienstplan für diesen Monat.',sl_pub_ok:'✓ KW {kw} veröffentlicht',sl_pub_err:'Fehler beim Veröffentlichen',sl_pub_btn:'☁️ KW {kw} veröffentlichen',sl_no_emps:'Keine Mitarbeiter in dieser Filiale. Bitte HR kontaktieren.',err_net:'Keine Verbindung – bitte erneut versuchen.',
  wa_missing:'WhatsApp-Nummer fehlt. Nachricht kopieren:',inst_title:'App auf dem Startbildschirm',inst_btn:'Jetzt installieren',inst_ios:'1️⃣ Diese Seite in <strong>Safari</strong> öffnen (in WhatsApp: Teilen → „In Safari öffnen")<br>2️⃣ Unten auf <strong>Teilen</strong> ⬆️ tippen<br>3️⃣ <strong>„Zum Home-Bildschirm"</strong> wählen',
  nav_we:'Wareneingang',we_title:'🚚 Wareneingang-Reklamation',
+ we_quick_title:'⚡ Schnellmeldung',we_quick_info:'Für den schnellen Weg: einfach Fotos von Lieferschein und betroffener Ware machen und kurz beschreiben, was fehlt oder beschädigt ist.',
+ lbl_we_quick_photos:'Fotos (Lieferschein + Ware)',drop_txt_multi:'Fotos hochladen oder Kamera öffnen',lbl_we_quick_note:'Was ist passiert?',we_quick_note_placeholder:'z.B. 5 Stück Avocado beschädigt, 2 Kisten fehlen',
+ btn_we_quick_submit:'⚡ Schnellmeldung senden',we_quick_need_photo:'Bitte mindestens ein Foto hinzufügen.',we_quick_need_note:'Bitte kurz beschreiben, was passiert ist.',
  we_info:'Bei Problemen mit einer Lieferung (fehlende Ware, beschädigt, nicht frisch...) hier melden. Foto vom Lieferschein + betroffenen Artikeln machen und kurz beschreiben — dein Gebietsleiter kümmert sich um die Reklamation beim Lieferanten.',
  lbl_we_lieferant:'Lieferant',lbl_we_lsnr:'Lieferschein-Nr.',lbl_we_lsdatum:'Lieferdatum',lbl_we_lsfoto:'Foto vom Lieferschein',
  lbl_we_ganze_fehlt:'Die gesamte Lieferung ist nicht angekommen',lbl_we_ganze_beschreibung:'Was ist passiert?',
@@ -1459,6 +1484,9 @@ vi:{_name:'Tiếng Việt',
  nav_iv:'📦 Kiểm kê',iv_title:'📦 Kiểm kê kho',iv_progress:'Tiến độ',iv_save:'💾 Lưu nháp',iv_submit:'✓ Gửi cho HR',iv_saved:'✓ Đã lưu nháp',iv_sent:'✓ Đã gửi cho HR – cảm ơn!',iv_none:'Hiện không có đợt kiểm kê nào.',iv_active:'🟢 Đang kiểm kê',iv_count:'Vui lòng đếm và nhập số lượng từng món.',iv_search:'Tìm kiếm…',nav_sl:'📋 Lập lịch',sl_title:'📋 Lập lịch làm việc',sl_loading:'⏳ Đang tải lịch…',sl_empty:'Chưa có lịch làm cho tháng này.',sl_pub_ok:'✓ Đã đăng tuần {kw}',sl_pub_err:'Lỗi khi đăng lịch',sl_pub_btn:'☁️ Đăng tuần {kw}',sl_no_emps:'Chưa có nhân viên ở tiệm này. Vui lòng liên hệ HR.',err_net:'Mất kết nối – vui lòng thử lại.',
  wa_missing:'Thiếu số WhatsApp. Sao chép tin nhắn:',inst_title:'Cài app ra màn hình chính',inst_btn:'Cài đặt ngay',inst_ios:'1️⃣ Mở trang này bằng <strong>Safari</strong> (trong WhatsApp: Chia sẻ → „Mở bằng Safari")<br>2️⃣ Bấm nút <strong>Chia sẻ</strong> ⬆️ phía dưới<br>3️⃣ Chọn <strong>„Thêm vào Màn hình chính"</strong>',
  nav_we:'Hàng nhận',we_title:'🚚 Báo cáo hàng nhận có vấn đề',
+ we_quick_title:'⚡ Báo cáo nhanh',we_quick_info:'Cách nhanh nhất: chụp ảnh phiếu giao hàng và hàng bị lỗi, rồi mô tả ngắn gọn thiếu gì hoặc hỏng gì.',
+ lbl_we_quick_photos:'Ảnh (phiếu giao hàng + hàng hóa)',drop_txt_multi:'Tải ảnh lên hoặc mở camera',lbl_we_quick_note:'Chuyện gì đã xảy ra?',we_quick_note_placeholder:'VD: 5 quả bơ bị hỏng, thiếu 2 thùng',
+ btn_we_quick_submit:'⚡ Gửi báo cáo nhanh',we_quick_need_photo:'Vui lòng thêm ít nhất 1 ảnh.',we_quick_need_note:'Vui lòng mô tả ngắn gọn chuyện gì đã xảy ra.',
  we_info:'Khi hàng giao có vấn đề (thiếu hàng, hư hỏng, không tươi...) hãy báo ở đây. Chụp ảnh phiếu giao hàng + các mặt hàng bị lỗi và mô tả ngắn gọn — quản lý khu vực sẽ liên hệ nhà cung cấp để khiếu nại.',
  lbl_we_lieferant:'Nhà cung cấp',lbl_we_lsnr:'Số phiếu giao hàng (Lieferschein)',lbl_we_lsdatum:'Ngày giao hàng',lbl_we_lsfoto:'Ảnh phiếu giao hàng',
  lbl_we_ganze_fehlt:'Toàn bộ lô hàng không đến',lbl_we_ganze_beschreibung:'Chuyện gì đã xảy ra?',
@@ -1520,6 +1548,9 @@ en:{_name:'English',
  nav_iv:'📦 Inventory',iv_title:'📦 Inventory count',iv_progress:'Progress',iv_save:'💾 Save draft',iv_submit:'✓ Send to HR',iv_saved:'✓ Draft saved',iv_sent:'✓ Sent to HR – thank you!',iv_none:'No inventory is currently running.',iv_active:'🟢 Inventory active',iv_count:'Please count and enter the quantity for each item.',iv_search:'Search…',nav_sl:'📋 Planning',sl_title:'📋 Schedule Planning',sl_loading:'⏳ Loading schedule…',sl_empty:'No schedule published for this month yet.',sl_pub_ok:'✓ Week {kw} published',sl_pub_err:'Error publishing',sl_pub_btn:'☁️ Publish week {kw}',sl_no_emps:'No employees in this store. Please contact HR.',err_net:'No connection – please try again.',
  wa_missing:'WhatsApp number missing. Copy the message:',inst_title:'Install app to home screen',inst_btn:'Install now',inst_ios:'1️⃣ Open this page in <strong>Safari</strong> (in WhatsApp: Share → "Open in Safari")<br>2️⃣ Tap <strong>Share</strong> ⬆️ at the bottom<br>3️⃣ Choose <strong>"Add to Home Screen"</strong>',
  nav_we:'Goods Receipt',we_title:'🚚 Goods Receipt Complaint',
+ we_quick_title:'⚡ Quick Report',we_quick_info:'The fastest way: just take photos of the delivery note and the affected goods, then briefly describe what is missing or damaged.',
+ lbl_we_quick_photos:'Photos (delivery note + goods)',drop_txt_multi:'Upload photos or open camera',lbl_we_quick_note:'What happened?',we_quick_note_placeholder:'e.g. 5 avocados damaged, 2 boxes missing',
+ btn_we_quick_submit:'⚡ Send quick report',we_quick_need_photo:'Please add at least one photo.',we_quick_need_note:'Please briefly describe what happened.',
  we_info:'If a delivery has a problem (missing items, damaged, not fresh...) report it here. Take a photo of the delivery note plus the affected items and add a short description — your area manager will file the complaint with the supplier.',
  lbl_we_lieferant:'Supplier',lbl_we_lsnr:'Delivery note no. (Lieferschein)',lbl_we_lsdatum:'Delivery date',lbl_we_lsfoto:'Photo of delivery note',
  lbl_we_ganze_fehlt:'The entire delivery did not arrive',lbl_we_ganze_beschreibung:'What happened?',
@@ -1581,6 +1612,9 @@ th:{_name:'ไทย',
  nav_iv:'📦 สต็อก',iv_title:'📦 ตรวจนับสต็อก',iv_progress:'ความคืบหน้า',iv_save:'💾 บันทึกร่าง',iv_submit:'✓ ส่งให้ HR',iv_saved:'✓ บันทึกร่างแล้ว',iv_sent:'✓ ส่งให้ HR แล้ว – ขอบคุณ!',iv_none:'ขณะนี้ไม่มีการตรวจนับ',iv_active:'🟢 กำลังตรวจนับ',iv_count:'กรุณานับและกรอกจำนวนของแต่ละรายการ',iv_search:'ค้นหา…',nav_sl:'📋 วางแผน',sl_title:'📋 วางแผนตารางงาน',sl_loading:'⏳ กำลังโหลดตาราง…',sl_empty:'ยังไม่มีตารางงานสำหรับเดือนนี้',sl_pub_ok:'✓ เผยแพร่สัปดาห์ {kw} แล้ว',sl_pub_err:'เกิดข้อผิดพลาดขึ้น',sl_pub_btn:'☁️ เผยแพร่สัปดาห์ {kw}',sl_no_emps:'ไม่มีพนักงานในสาขานี้ กรุณาติดต่อ HR',err_net:'ไม่มีการเชื่อมต่อ กรุณาลองใหม่',
  wa_missing:'ไม่มีเบอร์ WhatsApp คัดลอกข้อความ:',inst_title:'ติดตั้งแอปบนหน้าจอหลัก',inst_btn:'ติดตั้งเลย',inst_ios:'1️⃣ เปิดหน้านี้ใน <strong>Safari</strong> (ใน WhatsApp: แชร์ → „เปิดใน Safari")<br>2️⃣ แตะปุ่ม <strong>แชร์</strong> ⬆️ ด้านล่าง<br>3️⃣ เลือก <strong>„เพิ่มลงในหน้าจอโฮม"</strong>',
  nav_we:'รับสินค้า',we_title:'🚚 แจ้งปัญหาสินค้าที่รับเข้า',
+ we_quick_title:'⚡ แจ้งด่วน',we_quick_info:'วิธีเร็วที่สุด: ถ่ายรูปใบส่งของและสินค้าที่มีปัญหา แล้วอธิบายสั้นๆ ว่าขาดอะไรหรือเสียหายอะไร',
+ lbl_we_quick_photos:'รูปภาพ (ใบส่งของ + สินค้า)',drop_txt_multi:'อัปโหลดรูปหรือเปิดกล้อง',lbl_we_quick_note:'เกิดอะไรขึ้น?',we_quick_note_placeholder:'เช่น อะโวคาโด 5 ลูกเสียหาย ขาด 2 ลัง',
+ btn_we_quick_submit:'⚡ ส่งแจ้งด่วน',we_quick_need_photo:'กรุณาเพิ่มรูปอย่างน้อย 1 รูป',we_quick_need_note:'กรุณาอธิบายสั้นๆ ว่าเกิดอะไรขึ้น',
  we_info:'หากการจัดส่งมีปัญหา (สินค้าขาด เสียหาย ไม่สด...) กรุณาแจ้งที่นี่ ถ่ายรูปใบส่งของ (Lieferschein) และสินค้าที่มีปัญหา พร้อมอธิบายสั้นๆ — ผู้จัดการเขตจะติดต่อร้องเรียนกับผู้จัดจำหน่ายให้',
  lbl_we_lieferant:'ผู้จัดจำหน่าย',lbl_we_lsnr:'เลขที่ใบส่งของ (Lieferschein)',lbl_we_lsdatum:'วันที่จัดส่ง',lbl_we_lsfoto:'รูปใบส่งของ',
  lbl_we_ganze_fehlt:'สินค้าทั้งล็อตไม่มาถึง',lbl_we_ganze_beschreibung:'เกิดอะไรขึ้น?',
@@ -1619,6 +1653,7 @@ function setLang(l){
 function applyLang(){
   MA_WD=I18N[MA_LANG].wdS; MA_WDF=I18N[MA_LANG].wdL; MA_MON=I18N[MA_LANG].months;
   document.querySelectorAll('[data-i18n]').forEach(function(el){ el.innerHTML=t(el.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el){ el.placeholder=t(el.getAttribute('data-i18n-placeholder')); });
   document.querySelectorAll('.lang-btn').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-lang')===MA_LANG); });
   var sel=document.getElementById('lang-sel'); if(sel) sel.value=MA_LANG;
   var sess=maSession();
@@ -2010,6 +2045,86 @@ function weResetForm(){
   weItems=[];
   weRenderItems();
   weUpdateBudget();
+}
+
+/* ── Wareneingang: Schnellmeldung (nur Fotos + Kurztext) ── */
+var weQuickPhotos_=[];
+var weQuickPhotoSeq=0;
+function weQuickCheckBudget(){
+  var total=0; weQuickPhotos_.forEach(function(p){ total+=p.img.length; });
+  return total;
+}
+function weQuickUpdateBudget(){
+  var total=weQuickCheckBudget();
+  var pct=Math.min(100, Math.round(total/WE_PHOTO_BUDGET*100));
+  var bar=document.getElementById('we-quick-budget-bar'); if(bar) bar.style.width=pct+'%';
+  var txt=document.getElementById('we-quick-budget-txt');
+  if(txt) txt.textContent=t('we_photo_budget_txt',{kb:Math.round(total/1024),max:Math.round(WE_PHOTO_BUDGET/1024)});
+}
+function weQuickPhotos(ev){
+  var files=[].slice.call(ev.target.files||[]);
+  ev.target.value='';
+  files.forEach(function(f){
+    var r=new FileReader();
+    r.onload=function(e){
+      var img=new Image();
+      img.onload=function(){
+        var maxW=520, sc=Math.min(1, maxW/img.width);
+        var cv=document.createElement('canvas');
+        cv.width=Math.round(img.width*sc); cv.height=Math.round(img.height*sc);
+        cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+        var data=cv.toDataURL('image/jpeg',0.7);
+        if(data.length>300000) data=cv.toDataURL('image/jpeg',0.5);
+        var otherTotal=weQuickCheckBudget();
+        if(otherTotal+data.length>WE_PHOTO_BUDGET){
+          toast(t('we_photo_too_big',{kb:Math.round((otherTotal+data.length)/1024),max:Math.round(WE_PHOTO_BUDGET/1024)}),true);
+          return;
+        }
+        weQuickPhotos_.push({lid:'q'+(weQuickPhotoSeq++), img:data});
+        weQuickRenderPreview();
+        weQuickUpdateBudget();
+      };
+      img.src=e.target.result;
+    };
+    r.readAsDataURL(f);
+  });
+}
+function weQuickRemovePhoto(lid){
+  weQuickPhotos_=weQuickPhotos_.filter(function(p){ return p.lid!==lid; });
+  weQuickRenderPreview();
+  weQuickUpdateBudget();
+}
+function weQuickRenderPreview(){
+  var box=document.getElementById('we-quick-prev'); if(!box) return;
+  box.innerHTML=weQuickPhotos_.map(function(p){
+    return '<div style="position:relative"><img src="'+p.img+'" style="width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--brd)">'
+      +'<button onclick="weQuickRemovePhoto(\''+p.lid+'\')" style="position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:var(--red);color:#fff;border:none;font-size:13px;line-height:1;cursor:pointer">×</button></div>';
+  }).join('');
+}
+function weQuickSubmit(){
+  var sess=maSession(); if(!sess) return;
+  var note=document.getElementById('we-quick-note').value.trim();
+  if(!weQuickPhotos_.length){ toast(t('we_quick_need_photo'),true); return; }
+  if(!note){ toast(t('we_quick_need_note'),true); return; }
+  if(!fbReady||!fbDb){ toast(t('we_fail')+'offline',true); return; }
+  var doc={
+    type:'quick',
+    empId:''+sess.id, empName:sess.name, filiale:sess.filiale||'', region:sess.region||'',
+    photos:weQuickPhotos_.map(function(p){ return p.img; }),
+    note:note,
+    status:'offen',
+    createdAt:new Date().toISOString(), gemeldetAt:null, erledigtAt:null
+  };
+  fbDb.collection('wareneingang').add(doc).then(function(){
+    toast(t('we_sent'));
+    weQuickResetForm();
+  }).catch(function(e){ toast(t('we_fail')+e.message,true); });
+}
+function weQuickResetForm(){
+  weQuickPhotos_=[];
+  document.getElementById('we-quick-note').value='';
+  weQuickRenderPreview();
+  weQuickUpdateBudget();
 }
 
 /* ════════════════════════════════════════════════

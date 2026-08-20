@@ -57,11 +57,12 @@ header .sub{font-size:12px;opacity:.85;}
 /* FORMS */
 label{display:block;font-size:11px;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 4px;}
 label:first-child{margin-top:0;}
-input[type=text],input[type=date],input[type=month],input[type=time],input[type=email],textarea,select{
+input[type=text],input[type=date],input[type=month],input[type=time],input[type=email],input[type=password],input[type=number],input[type=search],input[type=tel],textarea,select{
   width:100%;padding:8px 11px;border:1.5px solid var(--brd);border-radius:var(--rs);
   font-size:13px;font-family:inherit;background:var(--bg);color:var(--txt);outline:none;transition:border .15s;
 }
 input:focus,textarea:focus,select:focus{border-color:var(--red);}
+input[type=search]{-webkit-appearance:none;appearance:none;}
 textarea{min-height:72px;resize:vertical;line-height:1.6;}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .row3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;}
@@ -143,7 +144,7 @@ body{padding-bottom:env(safe-area-inset-bottom);}
 header{padding-top:max(14px,env(safe-area-inset-top));}
 
 /* Prevent iOS input zoom (must be 16px+) */
-input[type=text],input[type=date],input[type=month],input[type=time],input[type=email],select,textarea{
+input[type=text],input[type=date],input[type=month],input[type=time],input[type=email],input[type=password],input[type=number],input[type=search],input[type=tel],select,textarea{
   font-size:16px !important;
 }
 
@@ -1013,7 +1014,7 @@ window.onerror=function(msg,src,line){
   </div>
   <div class="card">
     <div class="card-title">🔀 Filialname-Migration (einmalig) <span class="badge badge-amb">Bei fehlenden Dienstplänen/Urlaub prüfen</span></div>
-    <div class="info">Findet Filialnamen-Änderungen (egal ob schon veröffentlicht oder nicht) und stellt dadurch "verschwundene" Dienstpläne/Urlaubsdaten wieder her — sie waren nicht gelöscht, nur unter dem alten Namen unauffindbar. Findet die App zu einem alten Eintrag mehrere mögliche neue Filialen, wird nichts geraten, sondern zur manuellen Prüfung aufgelistet. Bestehende Einträge bleiben immer zusätzlich erhalten. Zuerst „🔍 Prüfen", danach „📋 Jetzt kopieren".</div>
+    <div class="info">Findet Filialnamen-Änderungen (egal ob schon veröffentlicht oder nicht) und stellt dadurch "verschwundene" Dienstpläne/Urlaubsdaten wieder her — sie waren nicht gelöscht, nur unter dem alten Namen unauffindbar. Korrigiert außerdem veraltete Filialnamen in Umlagerung-Meldungen (nötig, damit z.B. die Umlagerungsliste-Automatik sie erkennt). Findet die App zu einem alten Eintrag mehrere mögliche neue Filialen, wird nichts geraten, sondern zur manuellen Prüfung aufgelistet. Bestehende Einträge bleiben immer zusätzlich erhalten (nur Umlagerung-Meldungen werden direkt korrigiert). Zuerst „🔍 Prüfen", danach „📋 Jetzt kopieren".</div>
     <div class="btn-row">
       <button class="btn" onclick="filMigScan()">🔍 Prüfen</button>
       <button class="btn btn-red" id="fil-mig-run" onclick="filMigRun()" style="display:none">📋 Jetzt kopieren</button>
@@ -4497,7 +4498,21 @@ function regionSeedFilialenMeta(){
 //     Fund wird über die Personalnummern in den Schichten/Urlaubseinträgen geprüft, welcher
 //     aktuellen Filiale er zuzuordnen ist. Nur eindeutige Treffer werden zum Kopieren
 //     vorgeschlagen — mehrdeutige oder nicht zuordenbare Funde werden nur gemeldet, nie geraten.
-var filMigAffected=[], filMigPlans=[], filMigUrlaub=[], filMigUnresolved=[];
+var filMigAffected=[], filMigPlans=[], filMigUrlaub=[], filMigUgFixes=[], filMigUnresolved=[];
+// Für Umlagerung-Meldungen (kein Pfad/Slug-Problem, nur ein veralteter Textwert im Feld
+// vonFiliale/filiale): findet den EINEN kanonischen filMeta-Namen, der exakt auf den alten
+// Namen endet (siehe Kommentar bei filMigResolveOrphan — gleiches Präfix-Prinzip, hier direkt
+// auf Namen statt auf Slugs angewandt).
+function filResolveOldName(oldName, filMeta){
+  var matches=[];
+  Object.keys(filMeta).forEach(function(nr){
+    var name=filMeta[nr]&&filMeta[nr].name; if(!name) return;
+    if(name.length>oldName.length && name.slice(name.length-oldName.length)===oldName && matches.indexOf(name)<0){
+      matches.push(name);
+    }
+  });
+  return matches.length===1?matches[0]:null;
+}
 // Verwaiste Schlüssel enthalten oft Mitarbeiter, die dort nur als Zweitfiliale aushelfen —
 // deren aktuelle Filiale ist dann eine andere als die des verwaisten Dokuments, was reine
 // Mitarbeiter-Abstimmung unzuverlässig macht. Zuverlässiger: der neue kanonische Name ist
@@ -4626,7 +4641,29 @@ async function filMigScan(){
       }
     });
 
-    if(!filMigPlans.length&&!filMigUrlaub.length&&!filMigUnresolved.length){
+    // C) Umlagerung-Meldungen: vonFiliale/filiale sind reine Textfelder (kein Pfad/Slug),
+    // aber wenn sie noch den alten (ungekürzten) Namen enthalten, matchen sie weder die
+    // Filter-Dropdowns noch die Umlagerungsliste-Automatik. Direkt im Dokument korrigieren.
+    filMigUgFixes=[];
+    var ugSnap=await fbDb.collection('umlagerung').get();
+    ugSnap.forEach(function(doc){
+      var d=doc.data()||{}, updates={}, changeParts=[];
+      ['vonFiliale','filiale'].forEach(function(field){
+        var val=d[field]; if(!val) return;
+        if(liveSlugs[fbSlug(val)]) return;
+        var resolved=filResolveOldName(val, filMeta);
+        if(resolved){
+          updates[field]=resolved; changeParts.push(val+' → '+resolved);
+        } else {
+          filMigUnresolved.push({type:'Umlagerung ('+field+', '+(d.empName||'?')+')', oldSlug:val, count:1, candidates:[]});
+        }
+      });
+      if(Object.keys(updates).length){
+        filMigUgFixes.push({ref:doc.ref, updates:updates, label:(d.empName||'?')+': '+changeParts.join(', ')});
+      }
+    });
+
+    if(!filMigPlans.length&&!filMigUrlaub.length&&!filMigUgFixes.length&&!filMigUnresolved.length){
       stat.textContent='✓ Keine Filialnamen-Änderungen oder verwaisten Daten gefunden — nichts zu migrieren.';
       return;
     }
@@ -4636,29 +4673,34 @@ async function filMigScan(){
         +filMigAffected.map(function(m){return '• '+m.oldName+' → '+m.newName;}).join('<br>')+'<br><br>';
     }
     html+='Werden kopiert: <strong>'+filMigPlans.length+'</strong> Dienstplan-Monat(e), <strong>'+filMigUrlaub.length+'</strong> Urlaubs-Eintrag(e).';
+    if(filMigUgFixes.length){
+      html+='<br>Werden korrigiert: <strong>'+filMigUgFixes.length+'</strong> Umlagerung-Meldung(en) mit veraltetem Filialnamen:<br>'
+        +filMigUgFixes.map(function(f){return '• '+f.label;}).join('<br>');
+    }
     if(filMigUnresolved.length){
-      html+='<div style="margin-top:8px;padding:8px;background:#FDECEA;border-radius:6px">⚠️ <strong>'+filMigUnresolved.length+'</strong> verwaiste Eintrag(e) konnten nicht eindeutig zugeordnet werden — bitte manuell prüfen:<br>'
+      html+='<div style="margin-top:8px;padding:8px;background:#FDECEA;border-radius:6px">⚠️ <strong>'+filMigUnresolved.length+'</strong> Eintrag(e) konnten nicht eindeutig zugeordnet werden — bitte manuell prüfen:<br>'
         +filMigUnresolved.map(function(u){
-          return '• '+u.type+' „'+u.oldSlug+'" ('+u.count+' Eintrag/Einträge)'+(u.candidates.length?' — mögliche Filialen: '+u.candidates.join(', '):' — keine passenden Mitarbeiter mehr gefunden');
+          return '• '+u.type+' „'+u.oldSlug+'" ('+u.count+' Eintrag/Einträge)'+(u.candidates&&u.candidates.length?' — mögliche Filialen: '+u.candidates.join(', '):' — keine eindeutige Zuordnung gefunden');
         }).join('<br>')+'</div>';
     }
     stat.innerHTML=html;
-    runBtn.style.display=(filMigPlans.length||filMigUrlaub.length)?'block':'none';
+    runBtn.style.display=(filMigPlans.length||filMigUrlaub.length||filMigUgFixes.length)?'block':'none';
   }catch(err){
     stat.textContent='❌ Fehler: '+err.message;
   }
 }
 async function filMigRun(){
-  if(!confirm('Dienstpläne und Urlaubsdaten unter dem neuen Filialnamen zusätzlich speichern? Die alten Einträge bleiben unverändert erhalten.')) return;
+  if(!confirm('Dienstpläne, Urlaubsdaten unter dem neuen Filialnamen zusätzlich speichern und veraltete Filialnamen in Umlagerung-Meldungen korrigieren? Die alten Einträge bleiben unverändert erhalten (nur Umlagerung-Meldungen werden direkt korrigiert).')) return;
   var stat=document.getElementById('fil-mig-stat'), runBtn=document.getElementById('fil-mig-run');
   stat.textContent='⏳ Kopiere…';
   try{
     var jobs=[];
     filMigPlans.forEach(function(p){ jobs.push(fbDb.collection('plan').doc(p.newId).set(p.data,{merge:true})); });
     filMigUrlaub.forEach(function(u){ jobs.push(fbDb.collection('filialen').doc(u.newSlug).collection('urlaub').doc(u.docId).set(u.data,{merge:true})); });
+    filMigUgFixes.forEach(function(f){ jobs.push(f.ref.update(f.updates)); });
     await Promise.all(jobs);
-    stat.textContent='✓ Kopiert: '+filMigPlans.length+' Dienstplan-Monat(e), '+filMigUrlaub.length+' Urlaubs-Eintrag(e). Du kannst jetzt „Veröffentlichen" klicken.'
-      +(filMigUnresolved.length?' ('+filMigUnresolved.length+' verwaiste Eintrag(e) weiterhin ungeklärt — siehe oben.)':'');
+    stat.textContent='✓ Kopiert: '+filMigPlans.length+' Dienstplan-Monat(e), '+filMigUrlaub.length+' Urlaubs-Eintrag(e). Korrigiert: '+filMigUgFixes.length+' Umlagerung-Meldung(en). Du kannst jetzt „Veröffentlichen" klicken.'
+      +(filMigUnresolved.length?' ('+filMigUnresolved.length+' Eintrag(e) weiterhin ungeklärt — siehe oben.)':'');
     runBtn.style.display='none';
     toast('✓ Migration abgeschlossen');
   }catch(err){
@@ -5181,17 +5223,23 @@ function weRenderAdmin(){
   if(cnt) cnt.textContent=openCount;
   if(!items.length){ list.innerHTML='<div style="color:#6B6860;font-size:13px;padding:6px 0">Keine Wareneingang-Reklamationen für diesen Filter.</div>'; return; }
   list.innerHTML=items.map(function(w){
-    var d=w.d, m=weStatusMeta(d.status);
+    var d=w.d, m=weStatusMeta(d.status), isQuick=d.type==='quick';
     var dt=d.createdAt?new Date(d.createdAt).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
     var photos=[];
-    if(d.lieferscheinImg) photos.push({src:d.lieferscheinImg,label:'Lieferschein'});
-    (d.items||[]).forEach(function(it,i){ if(it.img) photos.push({src:it.img,label:'Artikel '+(i+1)+': '+(it.artikel||'')}); });
+    if(isQuick){
+      (d.photos||[]).forEach(function(src,i){ photos.push({src:src,label:'Foto '+(i+1)}); });
+    } else {
+      if(d.lieferscheinImg) photos.push({src:d.lieferscheinImg,label:'Lieferschein'});
+      (d.items||[]).forEach(function(it,i){ if(it.img) photos.push({src:it.img,label:'Artikel '+(i+1)+': '+(it.artikel||'')}); });
+    }
     var thumbs=photos.map(function(p){
       var safeSrc=p.src.replace(/'/g,"\\'"), safeLabel=(p.label||'').replace(/'/g,"\\'");
       return '<img src="'+p.src+'" style="width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid #E8E4E0;cursor:pointer;margin-right:4px" onclick="weOpenImg(\''+safeSrc+'\',\''+safeLabel+'\')" title="'+(p.label||'')+'">';
     }).join('');
     var body;
-    if(d.ganzeLieferungFehlt){
+    if(isQuick){
+      body='<div style="font-size:13px;color:#1A1A18">'+(d.note||'')+'</div>';
+    } else if(d.ganzeLieferungFehlt){
       body='<div style="font-size:13px;color:#C0392B;font-weight:700;margin:4px 0">⚠️ Gesamte Lieferung fehlt</div>'
         +'<div style="font-size:13px;color:#1A1A18">'+(d.ganzeLieferungBeschreibung||'')+'</div>';
     } else {
@@ -5210,10 +5258,13 @@ function weRenderAdmin(){
     actions+='<button class="btn btn-sm" onclick="weCopyText(\''+w.docId+'\',this)">📋 Text kopieren</button>';
     if(photos.length) actions+='<button class="btn btn-sm" onclick="weDownloadPhotos(\''+w.docId+'\')">⬇️ Fotos ('+photos.length+')</button>';
     actions+='<button class="btn btn-sm" onclick="weDelete(\''+w.docId+'\')">🗑 Löschen</button>';
+    var subline=isQuick
+      ? '<span style="font-size:13px"><span style="display:inline-block;padding:1px 7px;border-radius:8px;font-size:10px;font-weight:700;background:#EAFAF1;color:#1E8449;margin-right:4px">⚡ SCHNELL</span></span><br>'
+      : '<span style="font-size:13px">'+(d.lieferant||'?')+' · Lieferschein '+(d.lieferscheinNr||'—')+' · '+fmtDate(d.lieferdatum)+'</span><br>';
     return '<div style="padding:12px;border:1px solid #E8E4E0;border-left:4px solid '+m.c+';border-radius:6px;margin-bottom:10px">'
       +'<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px">'
       +'<div><strong>'+(d.empName||'?')+'</strong> · '+(d.filiale||'')+'<br>'
-      +'<span style="font-size:13px">'+(d.lieferant||'?')+' · Lieferschein '+(d.lieferscheinNr||'—')+' · '+fmtDate(d.lieferdatum)+'</span><br>'
+      +subline
       +'<span style="font-size:12px;color:#6B6860">'+dt+'</span> '
       +'<span style="display:inline-block;margin-left:6px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:'+m.bg+';color:'+m.c+'">'+m.txt+'</span></div>'
       +'</div>'
@@ -5253,6 +5304,18 @@ function weCloseImgModal(){
 }
 function weFormatText(d){
   var lines=[];
+  if(d.type==='quick'){
+    lines.push('⚡ WARENEINGANG — SCHNELLMELDUNG');
+    lines.push('');
+    lines.push('Filiale: '+(d.filiale||''));
+    lines.push('Gemeldet von: '+(d.empName||'?')+' (Pers.-Nr. '+(d.empId||'?')+')');
+    lines.push('');
+    lines.push(d.note||'');
+    lines.push('');
+    lines.push('---');
+    lines.push('Erstellt am: '+(d.createdAt?new Date(d.createdAt).toLocaleString('de-DE'):''));
+    return lines.join('\n');
+  }
   lines.push('🚚 WARENEINGANG-REKLAMATION');
   lines.push('');
   lines.push('Filiale: '+(d.filiale||''));
@@ -5285,12 +5348,16 @@ function weCopyText(id, btn){
 function weDownloadPhotos(id){
   var w=weFind(id); if(!w) return;
   var d=w.d;
-  var base=((d.lieferant||'Lieferant')+'_'+(d.lieferscheinNr||w.docId)).replace(/[^a-zA-Z0-9_-]+/g,'_');
+  var base=((d.lieferant||d.empName||'Meldung')+'_'+(d.lieferscheinNr||w.docId)).replace(/[^a-zA-Z0-9_-]+/g,'_');
   var files=[];
-  if(d.lieferscheinImg) files.push({name:base+'_Lieferschein.jpg', src:d.lieferscheinImg});
-  (d.items||[]).forEach(function(it,i){
-    if(it.img) files.push({name:base+'_Artikel'+(i+1)+'_'+((it.artikel||'x').replace(/[^a-zA-Z0-9_-]+/g,'_'))+'.jpg', src:it.img});
-  });
+  if(d.type==='quick'){
+    (d.photos||[]).forEach(function(src,i){ files.push({name:base+'_Foto'+(i+1)+'.jpg', src:src}); });
+  } else {
+    if(d.lieferscheinImg) files.push({name:base+'_Lieferschein.jpg', src:d.lieferscheinImg});
+    (d.items||[]).forEach(function(it,i){
+      if(it.img) files.push({name:base+'_Artikel'+(i+1)+'_'+((it.artikel||'x').replace(/[^a-zA-Z0-9_-]+/g,'_'))+'.jpg', src:it.img});
+    });
+  }
   if(!files.length){ toast('Keine Fotos in dieser Reklamation.'); return; }
   files.forEach(function(f,i){
     setTimeout(function(){
