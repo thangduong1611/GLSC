@@ -4652,6 +4652,14 @@ async function filMigScan(){
         var val=d[field]; if(!val) return;
         if(liveSlugs[fbSlug(val)]) return;
         var resolved=filResolveOldName(val, filMeta);
+        // "filiale" ist die eigene Filiale des meldenden Mitarbeiters zum Zeitpunkt der Meldung.
+        // Wenn der Name (z.B. "00 (nicht vorhanden)") nicht per Textvergleich auflösbar ist, der
+        // Mitarbeiter aber inzwischen manuell einer echten Filiale zugeordnet wurde, dessen
+        // AKTUELLE Filiale als Auflösung verwenden.
+        if(!resolved && field==='filiale' && d.empId){
+          var repEmp=empById[''+d.empId];
+          if(repEmp && repEmp.filiale && liveSlugs[fbSlug(repEmp.filiale)]) resolved=repEmp.filiale;
+        }
         if(resolved){
           updates[field]=resolved; changeParts.push(val+' → '+resolved);
         } else {
