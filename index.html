@@ -433,7 +433,7 @@ window.onerror=function(msg,src,line){
 
   <div class="card">
     <div class="card-title">📥 Umlagerungsliste automatisch ausfüllen</div>
-    <div class="info">Lade die leere Umlagerungsliste hoch, die du monatlich bekommst. Die App gleicht die 5 Standort-Paare (Alter/Neuer Standort) und Artikelnummern mit den Meldungen ab und trägt die Mengen an der richtigen Stelle ein — Formeln bleiben unberührt.</div>
+    <div class="info">Lade die leere Umlagerungsliste hoch, die du monatlich bekommst. Bereits ausgefüllte Standort-Paare werden mit den Meldungen abgeglichen; <strong>leere</strong> Standort-Paare füllt die App selbst mit den aktivsten noch unzugeordneten Meldungen — danach werden die Artikelnummern und Mengen an der richtigen Stelle eingetragen. Formeln bleiben unberührt.</div>
     <div class="row2">
       <div><label>Monat</label><input type="month" id="ugl-month"></div>
       <div><label>Leere Liste (.xlsx)</label><input type="file" id="ugl-file" accept=".xlsx" onchange="uglLoadFile(event)"></div>
@@ -5614,6 +5614,23 @@ async function uglProcessWorkbook(arrBuf){
   });
   var unusedTransfers=Object.keys(pairAgg).filter(function(k){return !usedKeys[k];}).map(function(k){return pairAgg[k];});
 
+  // Leere Blöcke (Alter/Neuer Standort in der Datei wirklich unbeschrieben — kein Rateversuch
+  // bei bereits vorhandenem, nur nicht erkanntem Inhalt) automatisch mit den aktivsten noch
+  // unzugeordneten Meldungen belegen: Standort-Zellen UND Menge werden geschrieben.
+  function uglTotalQty(t){ return Object.keys(t.items).reduce(function(s,k){ return s+(t.items[k]||0); },0); }
+  unusedTransfers.sort(function(a,b){ return uglTotalQty(b)-uglTotalQty(a); });
+  var emptyBlocks=blocks.filter(function(b){ return !b.altRaw && !b.neuRaw; });
+  var autoAssigned=[];
+  unusedTransfers=unusedTransfers.filter(function(t){
+    var block=emptyBlocks.shift();
+    if(!block) return true;
+    ws.getCell(rAlt,block.col).value=t.von;
+    ws.getCell(rNeu,block.col).value=t.nach;
+    block.von=t.von; block.nach=t.nach; block.altRaw=t.von; block.neuRaw=t.nach; block.map=t.items;
+    autoAssigned.push(block);
+    return false;
+  });
+
   var filledCount=0, unknownArt={}, skipped=[], knownArt={};
   for(var r=headerRow+1;r<=ws.rowCount;r++){
     var artVal=ws.getCell(r,colArtikel).value;
@@ -5662,17 +5679,21 @@ async function uglProcessWorkbook(arrBuf){
   uglOutBuf=outBuf;
 
   var html='<div style="font-size:13px;margin-bottom:8px"><strong>'+filledCount+'</strong> Positionen eingetragen.</div>';
+  if(autoAssigned.length){
+    html+='<div style="margin-bottom:8px;padding:8px;background:#EAFAF1;border-radius:6px;font-size:12.5px"><strong>🆕 '+autoAssigned.length+' leere(r) Block(e) automatisch zugewiesen</strong> (aktivste Meldungen zuerst) — bitte in Excel kurz gegenprüfen.</div>';
+  }
   html+=blocks.map(function(b,i){
     var ok=b.von&&b.nach;
     var key=ok?uglNorm(b.von)+'→'+uglNorm(b.nach):null;
     var matched=key&&pairAgg[key];
+    var isAuto=autoAssigned.indexOf(b)>=0;
     return '<div style="padding:6px 0;border-bottom:1px solid var(--brd);font-size:12.5px">'
       +'Block '+(i+1)+': '+(ok?(b.von+' → '+b.nach):('<span style="color:#B7791F">Filiale nicht erkannt ('+(b.altRaw||'?')+' / '+(b.neuRaw||'?')+')</span>'))
-      +(ok?(matched?' <span style="color:#1E8449">✓ Meldungen gefunden</span>':' <span style="color:var(--mut)">— keine Meldungen diesen Monat</span>'):'')
+      +(isAuto?' <span style="color:#1E8449">🆕 automatisch zugewiesen</span>':(ok?(matched?' <span style="color:#1E8449">✓ Meldungen gefunden</span>':' <span style="color:var(--mut)">— keine Meldungen diesen Monat</span>'):''))
       +'</div>';
   }).join('');
   if(unusedTransfers.length){
-    html+='<div style="margin-top:8px;padding:8px;background:#FFF7E6;border-radius:6px;font-size:12.5px"><strong>⚠️ '+unusedTransfers.length+' Meldung(en) passen zu keinem der 5 Blöcke — bitte manuell prüfen/eintragen:</strong><br>'
+    html+='<div style="margin-top:8px;padding:8px;background:#FFF7E6;border-radius:6px;font-size:12.5px"><strong>⚠️ '+unusedTransfers.length+' Meldung(en) passen zu keinem der 5 Blöcke (auch nach automatischer Zuweisung kein freier Block mehr übrig) — bitte manuell prüfen/eintragen:</strong><br>'
       +unusedTransfers.map(function(p){return (p.von||'?')+' → '+(p.nach||'?');}).join('<br>')+'</div>';
   }
   var unknownList=Object.keys(unknownArt);
