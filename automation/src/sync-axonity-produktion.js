@@ -5,7 +5,11 @@
 //    hinterherhinkt (siehe Projekt-Notiz), während dieser Wert hier direkt
 //    aus Axonity kommt und nicht künstlich verzögert ist.
 //  - Produktionsbericht (heutiges Datum, ist beim Laden schon vorausgewählt):
-//    erste Zeile = SX-Start, letzte Zeile (nach "Letzte Seite") = SX-Ende
+//    Zusammenfassung oben = umsatzHeute ("Produktion:") + produzierteWare
+//    ("Produzierte Ware:") — Stand zum Zeitpunkt des Laufs (z.B. 14 Uhr, je
+//    nach Zeitplan). Erste Zeile = SX-Start. Über alle Seiten paginiert für
+//    anzahlSorten (Anzahl unterschiedlicher Produkt-Namen) und SX-Ende
+//    (letzte Zeile der letzten Seite).
 //  - Renner-Penner (laufender Monat): erste Zeile = Topseller
 // Schreibt pro Filiale einen Doc nach filiale_produktion/{marktNr}_{datum}.
 //
@@ -95,6 +99,15 @@ async function readUmsatz30Tage(page) {
   return parseGermanNumber(text);
 }
 
+// Liest ein "Label: Wert"-Paar aus der Zusammenfassung (<label class="form-label">
+// gefolgt vom Wert im nächsten Geschwister-Element — mal <span>, mal <div>).
+async function readZusammenfassungLabel(page, exactLabelText) {
+  const label = page.locator('label.form-label', { hasText: new RegExp(`^${exactLabelText}$`) }).first();
+  if ((await label.count()) === 0) return null;
+  const value = await label.locator('xpath=following-sibling::*[1]').innerText();
+  return value.trim();
+}
+
 async function readProduktionsbericht(page) {
   const tab = navTab(page, 'Produktionsbericht');
   const uhrzeitHeader = page.locator('table th', { hasText: 'Uhrzeit' });
@@ -107,22 +120,38 @@ async function readProduktionsbericht(page) {
   }
   await page.waitForTimeout(800); // Blazor-Datenfetch nach Tab-Wechsel braucht kurz
 
-  const rows = page.locator('table tbody tr');
-  const count = await rows.count();
-  if (count === 0) return { sxStart: null, sxEnde: null };
+  const umsatzHeute = parseGermanNumber(await readZusammenfassungLabel(page, 'Produktion:'));
+  const produzierteWareText = await readZusammenfassungLabel(page, 'Produzierte Ware:');
+  const produzierteWare = produzierteWareText ? parseInt(produzierteWareText.replace(/\D/g, ''), 10) : null;
+
+  let rows = page.locator('table tbody tr');
+  let count = await rows.count();
+  if (count === 0) {
+    return { sxStart: null, sxEnde: null, umsatzHeute, produzierteWare, anzahlSorten: 0 };
+  }
 
   const sxStart = (await rows.first().locator('td[data-label="Uhrzeit"]').innerText()).trim();
 
-  const letzteSeite = page.getByRole('button', { name: 'Letzte Seite' });
-  if (await letzteSeite.isEnabled()) {
-    await letzteSeite.click();
+  // Über alle Seiten paginieren, um jedes produzierte Produkt einmal zu sehen
+  // (für die Sortenzahl) — SX-Ende ergibt sich dabei automatisch aus der
+  // letzten Zeile der letzten Seite. Obergrenze gegen Endlosschleife, falls
+  // "Nächste Seite" aus irgendeinem Grund nie disabled wird.
+  const sorten = new Set();
+  let sxEnde = null;
+  const naechsteSeite = page.getByRole('button', { name: 'Nächste Seite' });
+  for (let i = 0; i < 20; i++) {
+    rows = page.locator('table tbody tr');
+    count = await rows.count();
+    const produkte = await rows.locator('td[data-label="Produkt"]').allInnerTexts();
+    produkte.forEach((p) => sorten.add(p.trim()));
+    sxEnde = (await rows.nth(count - 1).locator('td[data-label="Uhrzeit"]').innerText()).trim();
+
+    if (!(await naechsteSeite.isEnabled())) break;
+    await naechsteSeite.click();
     await page.waitForTimeout(500);
   }
-  const rowsAfter = page.locator('table tbody tr');
-  const lastIdx = (await rowsAfter.count()) - 1;
-  const sxEnde = (await rowsAfter.nth(lastIdx).locator('td[data-label="Uhrzeit"]').innerText()).trim();
 
-  return { sxStart, sxEnde };
+  return { sxStart, sxEnde, umsatzHeute, produzierteWare, anzahlSorten: sorten.size };
 }
 
 async function readTopProdukt(page) {
@@ -144,9 +173,9 @@ async function readTopProdukt(page) {
 async function scrapeOneMarkt(page, markt) {
   await openUmsaetzeTab(page, markt.href);
   const umsatz30Tage = await readUmsatz30Tage(page);
-  const { sxStart, sxEnde } = await readProduktionsbericht(page);
+  const { sxStart, sxEnde, umsatzHeute, produzierteWare, anzahlSorten } = await readProduktionsbericht(page);
   const topProdukt = await readTopProdukt(page);
-  return { ...markt, umsatz30Tage, sxStart, sxEnde, topProdukt };
+  return { ...markt, umsatz30Tage, sxStart, sxEnde, umsatzHeute, produzierteWare, anzahlSorten, topProdukt };
 }
 
 async function main() {
@@ -179,7 +208,7 @@ async function main() {
           }
           const result = await scrapeOneMarkt(page, markt);
           results.push(result);
-          console.log(`  ✓ ${markt.marktNr} ${markt.standort}: Umsatz30T ${result.umsatz30Tage}, SX ${result.sxStart}–${result.sxEnde}, Top: ${result.topProdukt}`);
+          console.log(`  ✓ ${markt.marktNr} ${markt.standort}: Umsatz30T ${result.umsatz30Tage}, UmsatzHeute ${result.umsatzHeute}, Ware ${result.produzierteWare}, Sorten ${result.anzahlSorten}, SX ${result.sxStart}–${result.sxEnde}, Top: ${result.topProdukt}`);
           ok = true;
         } catch (err) {
           lastErr = err;
@@ -201,6 +230,9 @@ async function main() {
           datum,
           standort: r.standort,
           umsatz30Tage: r.umsatz30Tage,
+          umsatzHeute: r.umsatzHeute,
+          produzierteWare: r.produzierteWare,
+          anzahlSorten: r.anzahlSorten,
           sxStart: r.sxStart,
           sxEnde: r.sxEnde,
           topProdukt: r.topProdukt,

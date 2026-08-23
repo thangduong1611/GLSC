@@ -25,8 +25,9 @@ sind in `.gitignore` bereits ausgeschlossen.
 
 | Befehl | Was es macht | Quelle | Braucht Browser? |
 |---|---|---|---|
-| `npm run sync:umsatz` | Umsatz/Personalkosten/Ertrag pro Filiale & Monat → `filiale_umsatz` | Welo CSV-Export | Nein — reiner HTTP-GET |
-| `npm run sync:produktion` | Produktionsbeginn/-ende & Topseller pro Filiale & Tag → `filiale_produktion` | Axonity (Playwright) | Ja — Playwright/Chromium |
+| `npm run sync:umsatz` | Umsatz/Personalkosten/Ertrag pro Filiale & Monat → `filiale_umsatz` (Fallback-Quelle) | Welo CSV-Export | Nein — reiner HTTP-GET |
+| `npm run sync:produktion` | Umsatz heute, produzierte Ware, Sortenzahl, SX-Start/-Ende & Topseller pro Filiale & Tag → `filiale_produktion` | Axonity (Playwright) | Ja — Playwright/Chromium |
+| `npm run sync:bestellungen` | Neueste Webshop-Bestellungen (inkl. Artikel + Kundennotiz bei neuen) → `filiale_bestellungen` | Axonity (Playwright) | Ja — Playwright/Chromium |
 
 ## Firestore-Collections
 
@@ -34,15 +35,30 @@ sind in `.gitignore` bereits ausgeschlossen.
   Felder: `marktNr`, `periode`, `kundengruppe`, `teammanager`, `umsatz`,
   `personalkosten`, `ertrag`, `produktivitaet`, `qualitaetMonat`, `updatedAt`.
 - **`filiale_produktion/{marktNr}_{datum}`** — `datum` im Format `YYYY-MM-DD`.
-  Felder: `marktNr`, `datum`, `standort`, `sxStart`, `sxEnde`, `topProdukt`, `updatedAt`.
+  Felder: `marktNr`, `datum`, `standort`, `umsatz30Tage`, `umsatzHeute`,
+  `produzierteWare`, `anzahlSorten`, `sxStart`, `sxEnde`, `topProdukt`, `updatedAt`.
+- **`filiale_bestellungen/{bestellnummer}`** — Felder: `bestellnummer`, `marktNr`,
+  `standort`, `bestellzeit`, `abholzeit`, `storniert`, `artikel` (Array aus
+  `{name, menge}`, nur bei Erstsichtung gefüllt), `notiz` (Kundenanmerkung, nur
+  bei Erstsichtung gefüllt), `createdAt` (Zeitpunkt der Erstsichtung — bleibt
+  bei erneutem Sehen unverändert, steuert die "neu"-Markierung im Dashboard),
+  `updatedAt`. Absichtlich NICHT gespeichert: Kundenname/Telefon/E-Mail aus
+  demselben Axonity-Dialog — nicht gebraucht, unnötige personenbezogene Daten.
 
-Beide Collections werden ausschließlich serverseitig über das Firebase-Admin-SDK
-beschrieben (Service-Account-Key, umgeht die Firestore-Regeln). Aus dem Client
-(GLSC-App, `dashboard.html`) sind sie nur lesbar für angemeldete Manager — siehe
-`firestore.rules`.
+Alle drei Collections werden ausschließlich serverseitig über das
+Firebase-Admin-SDK beschrieben (Service-Account-Key, umgeht die Firestore-
+Regeln). Aus dem Client (GLSC-App, `dashboard.html`) sind sie nur lesbar für
+angemeldete Manager — siehe `firestore.rules`.
 
-## Geplanter Zeitplan
+## Zeitplan
 
-Noch nicht final entschieden (siehe Memo, Abschnitt "Was noch offen ist"):
-lokaler Task Scheduler zum Testen, danach Cloud Scheduler + Cloud Functions für
-den Dauerbetrieb ohne laufenden PC.
+Windows Task Scheduler auf dem lokalen Rechner (Testphase, noch keine Cloud
+Functions):
+- **"GLSC Filial Radar - Produktion Sync"** — täglich 14:00 (`run-sync-produktion.bat`)
+- **"GLSC Filial Radar - Umsatz Sync"** — täglich 06:00 (`run-sync-umsatz.bat`)
+- **Bestellungen-Sync** — noch kein Scheduled Task angelegt; manuell mit
+  `npm run sync:bestellungen` starten, bis Zeitplan/Intervall entschieden ist.
+
+Beide Tasks laufen im Logon-Modus "Nur interaktiv" (kein gespeichertes Passwort
+nötig, läuft aber nur während der Nutzer angemeldet ist). Logs landen in
+`automation/logs/`.

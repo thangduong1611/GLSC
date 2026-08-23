@@ -68,14 +68,27 @@ td.name .nr{display:block;font-size:11px;color:var(--mut);font-family:'Consolas'
 .badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:100px;font-size:11px;font-weight:700;}
 .badge-red{background:var(--red);color:#fff;}
 
-.order-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--brd);font-size:13px;}
+.order-row{padding:10px 0;border-bottom:1px solid var(--brd);font-size:13px;}
 .order-row:last-child{border-bottom:none;}
 .order-row.is-new{background:var(--red-l);margin:0 -8px;padding:10px 8px;border-radius:var(--rs);border-bottom:none;}
-.order-row .o-standort{flex:1;min-width:0;}
+.order-row .o-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;}
+.order-row .o-standort{min-width:0;}
 .order-row .o-standort .o-nr{display:block;font-size:11px;color:var(--mut);font-family:'Consolas',monospace;}
-.order-row .o-zeit{font-variant-numeric:tabular-nums;color:var(--mut);white-space:nowrap;font-size:12.5px;}
-.order-row .o-storno{color:var(--red);font-weight:600;font-size:11px;text-transform:uppercase;white-space:nowrap;}
+.order-row .o-zeit{font-variant-numeric:tabular-nums;color:var(--mut);white-space:nowrap;font-size:12.5px;flex-shrink:0;}
+.order-row .o-storno{color:var(--red);font-weight:600;font-size:11px;text-transform:uppercase;}
 .order-empty{color:var(--mut);font-size:13px;padding:6px 0;}
+.order-row .o-items{font-size:12.5px;color:var(--mut);margin-top:4px;}
+.order-row .o-items .o-notiz{display:block;color:var(--txt);font-style:italic;margin-top:2px;}
+.order-row .o-foot{margin-top:8px;display:flex;justify-content:flex-end;}
+
+.copy-btn{border:1.5px solid var(--brd);background:var(--surf);border-radius:var(--rs);padding:5px 10px;font-size:11.5px;font-weight:600;cursor:pointer;color:var(--txt);white-space:nowrap;font-family:inherit;}
+.copy-btn:hover{border-color:var(--red);}
+.copy-btn.copied{background:var(--grn-bg);border-color:var(--grn);color:var(--grn);}
+
+.summary-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;padding:9px 0;border-bottom:1px solid var(--brd);font-size:13px;}
+.summary-row:last-child{border-bottom:none;}
+.summary-row .s-standort{flex:1;min-width:0;font-weight:500;}
+.summary-row .s-nums{color:var(--mut);font-variant-numeric:tabular-nums;font-size:12.5px;white-space:nowrap;}
 </style>
 </head>
 <body>
@@ -115,6 +128,11 @@ td.name .nr{display:block;font-size:11px;color:var(--mut);font-family:'Consolas'
         <a href="#" onclick="drMarkOrdersSeen();return false;" style="font-size:12.5px;color:var(--mut);">Als gelesen markieren</a>
       </div>
       <div id="dr-orders-list"></div>
+    </div>
+
+    <div class="card" id="dr-summary-card" style="display:none;">
+      <div style="font-weight:600;font-size:14px;margin-bottom:12px;">📊 Tagesüberblick — kurze Version zum Weitergeben</div>
+      <div id="dr-summary-list"></div>
     </div>
 
     <div id="dr-content"></div>
@@ -259,6 +277,31 @@ function drOrderStandortName(o){
   var meta = drFilialen[o.marktNr];
   return (meta && meta.name) ? meta.name : (o.standort || o.marktNr);
 }
+
+function drEsc(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function drCopyToClipboard(text, btnEl){
+  navigator.clipboard.writeText(text).then(function(){
+    var orig = btnEl.textContent;
+    btnEl.textContent = '✓ Kopiert';
+    btnEl.classList.add('copied');
+    setTimeout(function(){ btnEl.textContent = orig; btnEl.classList.remove('copied'); }, 1800);
+  }).catch(function(){ alert('Kopieren fehlgeschlagen. Text manuell markieren.'); });
+}
+
+function drOrderMessage(o){
+  var artikelText = (o.artikel||[]).map(function(a){ return a.name + ' x' + a.menge; }).join(', ') || '—';
+  return '⚠️ Neue Bestellung – ' + drOrderStandortName(o) + '\n' +
+    '📅 Abholung: ' + (o.abholzeit||'—') + '\n' +
+    '🍱 Artikel: ' + artikelText + '\n' +
+    '📝 Anmerkung: ' + (o.notiz ? o.notiz : '–');
+}
+window.drCopyOrderMsg = function(idx, btnEl){
+  drCopyToClipboard(drOrderMessage(drOrders[idx]), btnEl);
+};
+
 function drRenderOrders(){
   var card = document.getElementById('dr-orders-card');
   var badge = document.getElementById('dr-orders-badge');
@@ -269,14 +312,18 @@ function drRenderOrders(){
   var lastSeen = drOrdersLastSeen();
   var neuCount = 0;
 
-  var rows = drOrders.map(function(o){
+  var rows = drOrders.map(function(o, idx){
     var createdIso = o.createdAt && o.createdAt.toDate ? o.createdAt.toDate().toISOString() : '';
     var isNew = createdIso && (!lastSeen || createdIso > lastSeen);
     if(isNew) neuCount++;
+    var artikelText = (o.artikel||[]).map(function(a){ return drEsc(a.name)+' x'+drEsc(a.menge); }).join(', ');
     return '<div class="order-row'+(isNew?' is-new':'')+'">'+
-      '<div class="o-standort">'+drOrderStandortName(o)+'<span class="o-nr">#'+o.bestellnummer+'</span></div>'+
-      '<div class="o-zeit">Abholung '+(o.abholzeit||'—')+'</div>'+
-      (o.storniert ? '<div class="o-storno">Storniert</div>' : '')+
+      '<div class="o-head">'+
+        '<div class="o-standort">'+drEsc(drOrderStandortName(o))+'<span class="o-nr">#'+drEsc(o.bestellnummer)+'</span></div>'+
+        '<div class="o-zeit">Abholung '+drEsc(o.abholzeit||'—')+(o.storniert ? ' · <span class="o-storno">Storniert</span>' : '')+'</div>'+
+      '</div>'+
+      '<div class="o-items">'+(artikelText||'—')+(o.notiz ? '<span class="o-notiz">„'+drEsc(o.notiz)+'“</span>' : '')+'</div>'+
+      '<div class="o-foot"><button class="copy-btn" onclick="drCopyOrderMsg('+idx+',this)">📋 Nachricht kopieren</button></div>'+
       '</div>';
   }).join('');
 
@@ -296,7 +343,36 @@ function drStandortName(marktNr, umsatzDoc){
   return marktNr;
 }
 
+function drSummaryMessage(nr, p){
+  var name = drStandortName(nr, drUmsatz[nr]);
+  return '📊 ' + name + '\n' +
+    'Umsatz heute: ' + (typeof p.umsatzHeute === 'number' ? drFmtEUR(p.umsatzHeute) : '—') + '\n' +
+    'Produziert: ' + (p.produzierteWare!=null ? p.produzierteWare : '—') + ' Stück in ' + (p.anzahlSorten!=null ? p.anzahlSorten : '—') + ' Sorten';
+}
+window.drCopySummaryMsg = function(nr, btnEl){
+  drCopyToClipboard(drSummaryMessage(nr, drProd[nr]), btnEl);
+};
+function drRenderSummary(){
+  var card = document.getElementById('dr-summary-card');
+  var list = document.getElementById('dr-summary-list');
+  var nrs = Object.keys(drProd).filter(function(nr){
+    return typeof drProd[nr].umsatzHeute === 'number' || drProd[nr].produzierteWare != null;
+  }).sort();
+  if(!nrs.length){ card.style.display = 'none'; return; }
+  card.style.display = 'block';
+  list.innerHTML = nrs.map(function(nr){
+    var p = drProd[nr];
+    var name = drStandortName(nr, drUmsatz[nr]);
+    return '<div class="summary-row">'+
+      '<div class="s-standort">'+drEsc(name)+'</div>'+
+      '<div class="s-nums">'+(typeof p.umsatzHeute==='number'?drFmtEUR(p.umsatzHeute):'—')+' · '+(p.produzierteWare!=null?p.produzierteWare:'—')+' Stück · '+(p.anzahlSorten!=null?p.anzahlSorten:'—')+' Sorten</div>'+
+      '<button class="copy-btn" onclick="drCopySummaryMsg(\''+nr+'\',this)">📋 Kopieren</button>'+
+      '</div>';
+  }).join('');
+}
+
 function drRender(){
+  drRenderSummary();
   var marktNrs = {};
   Object.keys(drUmsatz).forEach(function(nr){ marktNrs[nr]=true; });
   Object.keys(drProd).forEach(function(nr){ marktNrs[nr]=true; });

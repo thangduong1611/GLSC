@@ -9,6 +9,15 @@
 // aktuellen Spaltenwerten aktualisiert (z.B. falls "Storniert" sich ändert),
 // aber createdAt bleibt unangetastet, damit die "neu"-Markierung im
 // Dashboard nicht bei jedem Lauf zurückgesetzt wird.
+//
+// Nur für NEUE Bestellungen wird zusätzlich das Detail-Dialogfenster
+// geöffnet, um die bestellten Artikel + die Kundennotiz zu lesen (für die
+// "Nachricht kopieren"-Funktion im Dashboard). Kundenname/Telefon/E-Mail im
+// selben Dialog werden bewusst NICHT gelesen/gespeichert — nicht gebraucht,
+// unnötige personenbezogene Daten. Das Dialogfenster hat auch einen
+// "Stornieren"-Button, der die Bestellung beim Kunden stornieren würde —
+// das Skript schließt den Dialog ausschließlich über den exakt benannten
+// "Abbrechen"-Button, nie über Storno-Buttons.
 require('dotenv').config();
 const { chromium } = require('playwright');
 const { getDb, admin } = require('./firestore-client');
@@ -45,6 +54,55 @@ async function readBestellungen(page) {
   return bestellungen;
 }
 
+async function closeStrayDialog(page) {
+  const dialog = page.locator('.mud-dialog-content');
+  if ((await dialog.count()) > 0) {
+    await page.keyboard.press('Escape');
+    await dialog.waitFor({ state: 'hidden', timeout: 3000 }).catch(() => {});
+  }
+}
+
+async function readOrderDetail(page, rowIndex) {
+  // Falls ein vorheriger Dialog aus irgendeinem Grund offen geblieben ist,
+  // erst aufräumen — sonst blockiert dessen Overlay den nächsten Klick.
+  await closeStrayDialog(page);
+
+  const row = page.locator('table tbody tr').nth(rowIndex);
+  const detailsBtn = row.locator('td:last-child').locator('a, button').last();
+  await detailsBtn.click();
+
+  const dialog = page.locator('.mud-dialog-content');
+  await dialog.waitFor({ timeout: 10000 });
+
+  const items = [];
+  const itemEls = await dialog.locator('ul.list-group li.list-group-item').all();
+  for (const el of itemEls) {
+    const badge = el.locator('.badge');
+    const menge = (await badge.count()) ? (await badge.innerText()).trim() : '1';
+    const fullText = (await el.innerText()).trim();
+    const name = menge ? fullText.replace(menge, '').trim() : fullText;
+    items.push({ name, menge });
+  }
+
+  let notiz = '';
+  const notizFeld = dialog.locator('textarea[name="PickupOrder.Notice"]');
+  if ((await notizFeld.count()) > 0) {
+    notiz = (await notizFeld.inputValue()).trim();
+  }
+
+  // Dialog per Escape schließen — NIE einen Button im Dialog klicken (dort
+  // steht auch "Stornieren", was die Bestellung beim Kunden stornieren
+  // würde). Escape löst bei MudDialog denselben Abbrechen-Pfad aus und ist
+  // in der Praxis zuverlässiger als der direkte Klick auf "Abbrechen".
+  await page.keyboard.press('Escape');
+  await dialog.waitFor({ state: 'hidden', timeout: 5000 }).catch(async () => {
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(500);
+  });
+
+  return { items, notiz };
+}
+
 async function main() {
   if (!USER || !PASSWORD) {
     throw new Error('AXONITY_USER / AXONITY_PASSWORD fehlen in der .env-Datei.');
@@ -63,13 +121,19 @@ async function main() {
 
     const db = getDb();
     const now = admin.firestore.FieldValue.serverTimestamp();
-    let neu = 0;
 
-    for (const b of bestellungen) {
+    // Erst prüfen, welche Bestellnummern neu sind, bevor irgendein
+    // Detail-Dialog geöffnet wird (Detail-Öffnen ist der langsame Teil,
+    // nur für tatsächliche Neuzugänge nötig).
+    const flags = await Promise.all(
+      bestellungen.map((b) => db.collection(COLLECTION).doc(b['Bestellnummer']).get().then((d) => !d.exists))
+    );
+
+    let neu = 0;
+    for (let i = 0; i < bestellungen.length; i++) {
+      const b = bestellungen[i];
       const bestellnummer = b['Bestellnummer'];
-      const ref = db.collection(COLLECTION).doc(bestellnummer);
-      const existing = await ref.get();
-      const isNeu = !existing.exists;
+      const isNeu = flags[i];
 
       const payload = {
         bestellnummer,
@@ -80,11 +144,20 @@ async function main() {
         storniert: !!(b['Storniert'] && b['Storniert'].trim()),
         updatedAt: now,
       };
+
       if (isNeu) {
-        payload.createdAt = now;
         neu++;
+        try {
+          const { items, notiz } = await readOrderDetail(page, i);
+          payload.artikel = items;
+          payload.notiz = notiz;
+        } catch (err) {
+          console.error(`  ⚠️ Details für #${bestellnummer} konnten nicht gelesen werden:`, err.message);
+        }
+        payload.createdAt = now;
       }
-      await ref.set(payload, { merge: true });
+
+      await db.collection(COLLECTION).doc(bestellnummer).set(payload, { merge: true });
     }
 
     console.log(`✓ ${bestellungen.length} Bestellungen geprüft, ${neu} davon neu in "${COLLECTION}" angelegt.`);
