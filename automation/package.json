@@ -1,0 +1,19 @@
+{
+  "name": "glsc-filial-radar-automation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Scheduled jobs that sync branch Umsatz (Welo/SuCi-Net) and Produktionszeiten (Axonity) into the GLSC Firestore project for the Filial Radar dashboard.",
+  "type": "commonjs",
+  "scripts": {
+    "sync:umsatz": "cross-env NODE_EXTRA_CA_CERTS=./certs/globalsign-gcc-r6-alphassl-ca-2025.pem node src/sync-welo-umsatz.js",
+    "sync:produktion": "node src/sync-axonity-produktion.js",
+    "sync:bestellungen": "node src/sync-axonity-bestellungen.js"
+  },
+  "dependencies": {
+    "cross-env": "^7.0.3",
+    "csv-parse": "^5.5.6",
+    "dotenv": "^16.4.5",
+    "firebase-admin": "^12.3.1",
+    "playwright": "^1.46.0"
+  }
+}

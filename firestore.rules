@@ -202,5 +202,24 @@ service cloud.firestore {
     match /inventur_links/{id}    { allow read, write: if isAuthed(); }
     match /inventur_storemap/{id} { allow read, write: if isAuthed(); }
     match /inventur_counts/{id}   { allow read, write: if isAuthed(); }
+
+    // ══════════════════════════════════════════════════════════
+    // FILIAL RADAR — Umsatz (Welo) + Produktionszeiten (Axonity),
+    // regionsübergreifend. Nur vom Automation-Skript per Admin-SDK
+    // beschrieben (Service-Account umgeht diese Regeln) — Client-Writes
+    // sind daher bewusst gesperrt.
+    // ══════════════════════════════════════════════════════════
+    match /filiale_umsatz/{docId} {
+      allow get, list: if isManager();
+      allow write: if false;
+    }
+    match /filiale_produktion/{docId} {
+      allow get, list: if isManager();
+      allow write: if false;
+    }
+    match /filiale_bestellungen/{docId} {
+      allow get, list: if isManager();
+      allow write: if false;
+    }
   }
 }

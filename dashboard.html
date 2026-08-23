@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Filial Radar — GLSC</title>
+<script src="fb-config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<style>
+:root {
+  --red:#C0392B;--red-d:#922B21;--red-l:#FADBD8;
+  --bg:#FAFAF9;--surf:#FFFFFF;--brd:#E8E4E0;
+  --txt:#1A1A18;--mut:#6B6860;
+  --grn:#1E8449;--grn-bg:#EAFAF1;
+  --blu:#1A5276;--blu-bg:#EBF5FB;
+  --amb:#7D6608;--amb-bg:#FEF9E7;
+  --r:10px;--rs:6px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;padding-bottom:env(safe-area-inset-bottom);}
+header{background:var(--red);color:#fff;padding:14px 24px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,.15);}
+header .logo{font-size:20px;font-weight:700;letter-spacing:-.5px;}
+header .sub{font-size:12px;opacity:.85;}
+.wrap{max-width:1120px;margin:0 auto;padding:20px 14px 60px;}
+
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);padding:18px 20px;margin-bottom:16px;}
+
+.login-card{max-width:360px;margin:60px auto;}
+.login-card h2{font-size:16px;margin-bottom:14px;}
+.login-card label{display:block;font-size:12.5px;color:var(--mut);margin:10px 0 4px;}
+.login-card input{width:100%;padding:9px 11px;border:1.5px solid var(--brd);border-radius:var(--rs);font-size:14px;font-family:inherit;background:var(--bg);color:var(--txt);outline:none;}
+.login-card input:focus{border-color:var(--red);}
+.btn{padding:9px 18px;border-radius:var(--rs);border:1.5px solid var(--brd);background:var(--surf);font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;color:var(--txt);}
+.btn-red{background:var(--red);border-color:var(--red);color:#fff;}
+.btn-red:hover{background:var(--red-d);}
+.login-card .btn{width:100%;justify-content:center;margin-top:16px;padding:11px;}
+.login-err{color:var(--red);font-size:12.5px;margin-top:10px;min-height:1em;}
+
+.status-line{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.status-line b{color:var(--txt);}
+
+.empty-state{text-align:center;padding:40px 20px;color:var(--mut);font-size:13.5px;line-height:1.7;}
+.empty-state .big{font-size:32px;margin-bottom:8px;}
+
+.table-scroll{overflow-x:auto;border:1px solid var(--brd);border-radius:var(--r);background:var(--surf);}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:760px;}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--brd);white-space:nowrap;}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut);font-weight:600;background:var(--bg);}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:var(--bg);}
+td.num{text-align:right;font-variant-numeric:tabular-nums;font-family:'Consolas',monospace;font-size:12.5px;}
+td.name{white-space:normal;min-width:180px;}
+td.name .nr{display:block;font-size:11px;color:var(--mut);font-family:'Consolas',monospace;}
+
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:600;}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;}
+.pill-ok{background:var(--grn-bg);color:var(--grn);}
+.pill-ok::before{background:var(--grn);}
+.pill-warn{background:var(--amb-bg);color:var(--amb);}
+.pill-warn::before{background:var(--amb);}
+.pill-mut{background:var(--bg);color:var(--mut);}
+.pill-mut::before{background:var(--mut);}
+
+.foot-note{font-size:11.5px;color:var(--mut);margin-top:14px;}
+
+.badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:100px;font-size:11px;font-weight:700;}
+.badge-red{background:var(--red);color:#fff;}
+
+.order-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--brd);font-size:13px;}
+.order-row:last-child{border-bottom:none;}
+.order-row.is-new{background:var(--red-l);margin:0 -8px;padding:10px 8px;border-radius:var(--rs);border-bottom:none;}
+.order-row .o-standort{flex:1;min-width:0;}
+.order-row .o-standort .o-nr{display:block;font-size:11px;color:var(--mut);font-family:'Consolas',monospace;}
+.order-row .o-zeit{font-variant-numeric:tabular-nums;color:var(--mut);white-space:nowrap;font-size:12.5px;}
+.order-row .o-storno{color:var(--red);font-weight:600;font-size:11px;text-transform:uppercase;white-space:nowrap;}
+.order-empty{color:var(--mut);font-size:13px;padding:6px 0;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🍣 Filial Radar</div>
+  <div class="sub">Umsatz &amp; Produktion — dein Gebiet</div>
+</header>
+
+<div class="wrap">
+
+  <div id="login-view" class="card login-card" style="display:none;">
+    <h2>Als Manager anmelden</h2>
+    <label for="dr-mail">E-Mail</label>
+    <input id="dr-mail" type="email" autocomplete="username" placeholder="name@sushi-circle.de">
+    <label for="dr-pass">Passwort</label>
+    <input id="dr-pass" type="password" autocomplete="current-password">
+    <button class="btn btn-red" onclick="drLogin()">Anmelden</button>
+    <div id="dr-login-err" class="login-err"></div>
+  </div>
+
+  <div id="dash-view" style="display:none;">
+    <div class="status-line">
+      <span id="dr-user-stat">—</span>
+      <span>·</span>
+      <span>Periode <b id="dr-periode">—</b></span>
+      <span>·</span>
+      <a href="#" onclick="drLogout();return false;" style="color:var(--mut);">Abmelden</a>
+    </div>
+
+    <div class="card" id="dr-orders-card" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="font-weight:600;font-size:14px;">
+          🔔 Neue Bestellungen
+          <span class="badge badge-red" id="dr-orders-badge" style="display:none;">0</span>
+        </div>
+        <a href="#" onclick="drMarkOrdersSeen();return false;" style="font-size:12.5px;color:var(--mut);">Als gelesen markieren</a>
+      </div>
+      <div id="dr-orders-list"></div>
+    </div>
+
+    <div id="dr-content"></div>
+
+    <p class="foot-note">
+      Umsatz = rollierende letzte 30 Tage direkt aus Axonity (täglich aktuell) — nur falls für eine Filiale noch keine
+      Axonity-Daten vorliegen, zeigt die Zeile ersatzweise den Monatswert aus dem Welo-Export (steht dann als Quelle
+      unter der Zahl). SX-Start/-Ende = aus Axonity, Stand heute. Fehlt eine Spalte, hat der jeweilige Sync-Job für
+      diese Filiale noch keine Daten geschrieben. Bestellungen = neueste Seite der Webshop-Bestellungen aus Axonity,
+      Erkennung neuer Bestellungen läuft alle paar Minuten über den Sync-Job.
+    </p>
+  </div>
+
+</div>
+
+<script>
+var drDb = null, drManager = false;
+var drUnsubUmsatz = null, drUnsubProd = null, drUnsubOrders = null;
+var drUmsatz = {}, drProd = {}, drFilialen = {}, drOrders = [];
+
+function drPad(n){ return String(n).padStart(2,'0'); }
+function drTodayISO(){
+  var d = new Date();
+  return d.getFullYear()+'-'+drPad(d.getMonth()+1)+'-'+drPad(d.getDate());
+}
+function drPeriodeISO(){
+  var d = new Date();
+  return d.getFullYear()+'-'+drPad(d.getMonth()+1);
+}
+function drFmtEUR(n){
+  return (n||0).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+}
+
+function drInit(){
+  if(!window.FB_CONFIG){ document.getElementById('dr-content').innerHTML = '<div class="empty-state">⚠️ fb-config.js fehlt oder ist leer.</div>'; return; }
+  if(!firebase.apps.length) firebase.initializeApp(FB_CONFIG);
+  drDb = firebase.firestore();
+
+  firebase.auth().onAuthStateChanged(function(user){
+    if(user && user.email){
+      drDb.collection('managers').doc(user.email).get().then(function(doc){
+        var regions = (doc.exists && doc.data().regions) || [];
+        if(!regions.length){
+          drManager = false;
+          drShowLogin('Angemeldet als '+user.email+', aber keiner Region zugewiesen. Bitte Admin kontaktieren.');
+          return;
+        }
+        drManager = true;
+        document.getElementById('dr-user-stat').textContent = '✓ ' + user.email;
+        document.getElementById('dr-periode').textContent = drPeriodeISO();
+        drShowDash();
+        drStartListeners();
+      }).catch(function(e){
+        drShowLogin('Fehler beim Prüfen der Manager-Zuweisung: '+e.message);
+      });
+    } else {
+      drManager = false;
+      if(drUnsubUmsatz){ drUnsubUmsatz(); drUnsubUmsatz=null; }
+      if(drUnsubProd){ drUnsubProd(); drUnsubProd=null; }
+      drShowLogin('');
+    }
+  });
+}
+
+function drShowLogin(err){
+  document.getElementById('login-view').style.display = 'block';
+  document.getElementById('dash-view').style.display = 'none';
+  document.getElementById('dr-login-err').textContent = err || '';
+}
+function drShowDash(){
+  document.getElementById('login-view').style.display = 'none';
+  document.getElementById('dash-view').style.display = 'block';
+}
+
+function drLogin(){
+  var mail = document.getElementById('dr-mail').value.trim();
+  var pass = document.getElementById('dr-pass').value;
+  if(!mail || !pass){ document.getElementById('dr-login-err').textContent = 'E-Mail und Passwort eingeben.'; return; }
+  firebase.auth().signInWithEmailAndPassword(mail, pass)
+    .then(function(){ document.getElementById('dr-pass').value=''; })
+    .catch(function(e){ document.getElementById('dr-login-err').textContent = 'Login fehlgeschlagen: '+e.message; });
+}
+function drLogout(){
+  firebase.auth().signOut();
+}
+
+function drStartListeners(){
+  var heute = drTodayISO();
+
+  // Nicht auf den aktuellen Kalendermonat filtern: der Welo-Export hinkt der
+  // Kalenderperiode hinterher (bis der Sync-Job für den laufenden Monat
+  // Daten geschrieben hat, ist "aktueller Monat" leer). Stattdessen die
+  // jeweils neueste tatsächlich vorhandene Periode ermitteln und anzeigen.
+  if(drUnsubUmsatz) drUnsubUmsatz();
+  drUnsubUmsatz = drDb.collection('filiale_umsatz')
+    .onSnapshot(function(snap){
+      var byPeriode = {};
+      snap.forEach(function(doc){
+        var d = doc.data();
+        (byPeriode[d.periode] = byPeriode[d.periode] || []).push(d);
+      });
+      var perioden = Object.keys(byPeriode).sort();
+      var neuestePeriode = perioden[perioden.length-1] || null;
+      document.getElementById('dr-periode').textContent = neuestePeriode || '—';
+
+      drUmsatz = {};
+      (byPeriode[neuestePeriode] || []).forEach(function(d){ drUmsatz[d.marktNr] = d; });
+      drRender();
+    }, function(e){ drRenderError('filiale_umsatz: '+e.message); });
+
+  if(drUnsubProd) drUnsubProd();
+  drUnsubProd = drDb.collection('filiale_produktion').where('datum','==',heute)
+    .onSnapshot(function(snap){
+      drProd = {};
+      snap.forEach(function(doc){ drProd[doc.data().marktNr] = doc.data(); });
+      drRender();
+    }, function(e){ drRenderError('filiale_produktion: '+e.message); });
+
+  drDb.collection('filialen_meta').get().then(function(snap){
+    drFilialen = {};
+    snap.forEach(function(doc){ drFilialen[doc.id] = doc.data(); });
+    drRender();
+  }).catch(function(){ /* optional Anreicherung — kein Hard-Fail */ });
+
+  if(drUnsubOrders) drUnsubOrders();
+  drUnsubOrders = drDb.collection('filiale_bestellungen').orderBy('createdAt', 'desc').limit(30)
+    .onSnapshot(function(snap){
+      drOrders = [];
+      snap.forEach(function(doc){ drOrders.push(doc.data()); });
+      drRenderOrders();
+    }, function(e){ console.warn('filiale_bestellungen:', e.message); });
+}
+
+function drOrdersLastSeen(){
+  return localStorage.getItem('sc_orders_last_seen') || '';
+}
+function drMarkOrdersSeen(){
+  localStorage.setItem('sc_orders_last_seen', new Date().toISOString());
+  drRenderOrders();
+}
+function drOrderStandortName(o){
+  var meta = drFilialen[o.marktNr];
+  return (meta && meta.name) ? meta.name : (o.standort || o.marktNr);
+}
+function drRenderOrders(){
+  var card = document.getElementById('dr-orders-card');
+  var badge = document.getElementById('dr-orders-badge');
+  var list = document.getElementById('dr-orders-list');
+  if(!drOrders.length){ card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  var lastSeen = drOrdersLastSeen();
+  var neuCount = 0;
+
+  var rows = drOrders.map(function(o){
+    var createdIso = o.createdAt && o.createdAt.toDate ? o.createdAt.toDate().toISOString() : '';
+    var isNew = createdIso && (!lastSeen || createdIso > lastSeen);
+    if(isNew) neuCount++;
+    return '<div class="order-row'+(isNew?' is-new':'')+'">'+
+      '<div class="o-standort">'+drOrderStandortName(o)+'<span class="o-nr">#'+o.bestellnummer+'</span></div>'+
+      '<div class="o-zeit">Abholung '+(o.abholzeit||'—')+'</div>'+
+      (o.storniert ? '<div class="o-storno">Storniert</div>' : '')+
+      '</div>';
+  }).join('');
+
+  list.innerHTML = rows || '<div class="order-empty">Keine Bestellungen.</div>';
+  if(neuCount > 0){ badge.style.display='inline-flex'; badge.textContent = neuCount; }
+  else { badge.style.display = 'none'; }
+}
+
+function drRenderError(msg){
+  document.getElementById('dr-content').innerHTML = '<div class="empty-state"><div class="big">⚠️</div>'+msg+'</div>';
+}
+
+function drStandortName(marktNr, umsatzDoc){
+  var meta = drFilialen[marktNr];
+  if(meta && meta.name) return meta.name;
+  if(umsatzDoc && umsatzDoc.kundengruppe) return umsatzDoc.kundengruppe + ' ' + marktNr;
+  return marktNr;
+}
+
+function drRender(){
+  var marktNrs = {};
+  Object.keys(drUmsatz).forEach(function(nr){ marktNrs[nr]=true; });
+  Object.keys(drProd).forEach(function(nr){ marktNrs[nr]=true; });
+  var list = Object.keys(marktNrs).sort();
+
+  if(!list.length){
+    document.getElementById('dr-content').innerHTML =
+      '<div class="empty-state"><div class="big">🍣</div>'+
+      'Noch keine Daten für die aktuelle Periode ('+drPeriodeISO()+').<br>'+
+      'Der Sync-Job (<code>automation/</code>) muss mindestens einmal gelaufen sein.</div>';
+    return;
+  }
+
+  var rows = list.map(function(nr){
+    var u = drUmsatz[nr];
+    var p = drProd[nr];
+    var name = drStandortName(nr, u);
+
+    var umsatzCell, umsatzSrc;
+    if(p && typeof p.umsatz30Tage === 'number'){
+      umsatzCell = drFmtEUR(p.umsatz30Tage);
+      umsatzSrc = '30 Tage · Axonity';
+    } else if(u){
+      umsatzCell = drFmtEUR(u.umsatz);
+      umsatzSrc = 'Monat ' + u.periode + ' · Welo';
+    } else {
+      umsatzCell = '—';
+      umsatzSrc = '';
+    }
+    var sxStart = p && p.sxStart ? p.sxStart : '—';
+    var sxEnde = p && p.sxEnde ? p.sxEnde : '—';
+    var top = p && p.topProdukt ? p.topProdukt : '—';
+
+    var pill;
+    if(!p){ pill = '<span class="pill pill-mut">keine Daten</span>'; }
+    else if(p.sxEnde){ pill = '<span class="pill pill-ok">fertig</span>'; }
+    else { pill = '<span class="pill pill-warn">läuft</span>'; }
+
+    return '<tr>'+
+      '<td class="name">'+name+'<span class="nr">'+nr+'</span></td>'+
+      '<td class="num">'+umsatzCell+(umsatzSrc ? '<span class="nr" style="display:block;text-align:right;">'+umsatzSrc+'</span>' : '')+'</td>'+
+      '<td class="num">'+sxStart+'</td>'+
+      '<td class="num">'+sxEnde+'</td>'+
+      '<td>'+top+'</td>'+
+      '<td>'+pill+'</td>'+
+      '</tr>';
+  }).join('');
+
+  document.getElementById('dr-content').innerHTML =
+    '<div class="table-scroll"><table>'+
+    '<thead><tr><th>Standort</th><th>Umsatz</th><th>SX Start</th><th>SX Ende</th><th>Top-Produkt</th><th>Status</th></tr></thead>'+
+    '<tbody>'+rows+'</tbody>'+
+    '</table></div>';
+}
+
+drInit();
+</script>
+</body>
+</html>

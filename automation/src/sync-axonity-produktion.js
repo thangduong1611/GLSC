@@ -1,0 +1,222 @@
+// Loggt sich in Axonity ein, geht jede Filiale aus /markets/ durch und liest:
+//  - Übersicht: "Umsätze der letzten 30 Tage" (Produktion) — rollierendes
+//    30-Tage-Fenster, täglich aktuell. Ersetzt den Welo-CSV-Export als
+//    Umsatz-Quelle im Dashboard, weil dessen Export dem laufenden Monat
+//    hinterherhinkt (siehe Projekt-Notiz), während dieser Wert hier direkt
+//    aus Axonity kommt und nicht künstlich verzögert ist.
+//  - Produktionsbericht (heutiges Datum, ist beim Laden schon vorausgewählt):
+//    erste Zeile = SX-Start, letzte Zeile (nach "Letzte Seite") = SX-Ende
+//  - Renner-Penner (laufender Monat): erste Zeile = Topseller
+// Schreibt pro Filiale einen Doc nach filiale_produktion/{marktNr}_{datum}.
+//
+// Braucht Playwright + Chromium (npx playwright install chromium).
+// Axonity ist eine Blazor-Server-App mit gelegentlichen SignalR-Aussetzern
+// ("An error has occurred... reload") — deshalb pro Filiale ein Retry.
+require('dotenv').config();
+const { chromium } = require('playwright');
+const { getDb, admin } = require('./firestore-client');
+
+const BASE_URL = process.env.AXONITY_BASE_URL || 'https://erp.axonity.de';
+const USER = process.env.AXONITY_USER;
+const PASSWORD = process.env.AXONITY_PASSWORD;
+const COLLECTION = 'filiale_produktion';
+const RETRIES_PER_MARKT = 2;
+
+function parseGermanNumber(raw) {
+  if (raw == null || raw === '') return null;
+  const n = parseFloat(String(raw).replace(/[€\s]/g, '').replace(/\./g, '').replace(',', '.'));
+  return Number.isFinite(n) ? n : null;
+}
+
+function heuteISO() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+async function login(page) {
+  await page.goto(`${BASE_URL}/signin`);
+  await page.locator('input[name="username"]').fill(USER);
+  await page.locator('input[name="password"]').fill(PASSWORD);
+  await page.getByRole('button', { name: 'Anmelden' }).click();
+  await page.waitForURL((url) => !url.pathname.startsWith('/signin'), { timeout: 15000 });
+}
+
+async function listMarkets(page) {
+  await page.goto(`${BASE_URL}/markets/`);
+  await page.locator('table tbody tr').first().waitFor({ timeout: 15000 });
+  const rows = await page.locator('table tbody tr').all();
+  const markets = [];
+  for (const row of rows) {
+    const marktNr = (await row.locator('td[data-label="Kostenstelle"]').innerText()).trim();
+    const standort = (await row.locator('td[data-label="Markt"]').innerText()).trim();
+    const href = await row.locator('a[href^="/markets/"]').getAttribute('href');
+    if (marktNr && href) markets.push({ marktNr, standort, href });
+  }
+  return markets;
+}
+
+// Die Unter-Tabs (Übersicht/Produktionsbericht/Monatsbericht/Renner-Penner/
+// Wundertüte) sind <a class="nav-link"> OHNE href — laut ARIA-Spec zählt ein
+// <a> ohne href nicht als role="link", darum hier gezielt über die Klasse
+// suchen statt über getByRole('link'). Es existiert zusätzlich ein <option>
+// mit demselben Text in einem (bei Desktop-Breite verstecktem) Mobile-
+// Dropdown — ".nav-link" grenzt eindeutig auf die klickbare Variante ein.
+function navTab(page, text) {
+  return page.locator('a.nav-link', { hasText: text });
+}
+
+async function openUmsaetzeTab(page, href) {
+  await page.goto(`${BASE_URL}${href}`);
+  const umsaetzeLink = page.getByRole('link', { name: /Umsätze/ }).first();
+  const produktionsberichtTab = navTab(page, 'Produktionsbericht');
+
+  // Der erste Klick markiert den Nav-Punkt oft nur, ohne den Inhalt zu
+  // wechseln (beobachtet beim manuellen Testen) — bei Bedarf ein zweites
+  // Mal klicken.
+  await umsaetzeLink.click();
+  try {
+    await produktionsberichtTab.waitFor({ timeout: 3000 });
+  } catch {
+    await umsaetzeLink.click();
+    await produktionsberichtTab.waitFor({ timeout: 15000 });
+  }
+}
+
+// Übersicht ist der Default-Unterreiter beim Betreten von "Umsätze" — hier
+// direkt lesen, ohne extra hinzuklicken. Struktur laut DOM-Inspektion:
+// <h4>Umsätze der letzten 30 Tage</h4> gefolgt von
+// <div class="card-body"><span><strong>Produktion:</strong><span>43.143,41 €</span></span>...</div>
+async function readUmsatz30Tage(page) {
+  const heading = page.locator('h4', { hasText: 'Umsätze der letzten 30 Tage' });
+  await heading.waitFor({ timeout: 15000 });
+  const card = page.locator('.card-body', { has: heading });
+  const produktionWert = card.locator('span:has(> strong:text-is("Produktion:")) > span');
+  const text = await produktionWert.innerText();
+  return parseGermanNumber(text);
+}
+
+async function readProduktionsbericht(page) {
+  const tab = navTab(page, 'Produktionsbericht');
+  const uhrzeitHeader = page.locator('table th', { hasText: 'Uhrzeit' });
+  await tab.click();
+  try {
+    await uhrzeitHeader.waitFor({ timeout: 3000 });
+  } catch {
+    await tab.click();
+    await uhrzeitHeader.waitFor({ timeout: 15000 });
+  }
+  await page.waitForTimeout(800); // Blazor-Datenfetch nach Tab-Wechsel braucht kurz
+
+  const rows = page.locator('table tbody tr');
+  const count = await rows.count();
+  if (count === 0) return { sxStart: null, sxEnde: null };
+
+  const sxStart = (await rows.first().locator('td[data-label="Uhrzeit"]').innerText()).trim();
+
+  const letzteSeite = page.getByRole('button', { name: 'Letzte Seite' });
+  if (await letzteSeite.isEnabled()) {
+    await letzteSeite.click();
+    await page.waitForTimeout(500);
+  }
+  const rowsAfter = page.locator('table tbody tr');
+  const lastIdx = (await rowsAfter.count()) - 1;
+  const sxEnde = (await rowsAfter.nth(lastIdx).locator('td[data-label="Uhrzeit"]').innerText()).trim();
+
+  return { sxStart, sxEnde };
+}
+
+async function readTopProdukt(page) {
+  const tab = navTab(page, 'Renner-Penner');
+  const produktHeader = page.locator('table th', { hasText: 'Produkt' });
+  await tab.click();
+  try {
+    await produktHeader.waitFor({ timeout: 3000 });
+  } catch {
+    await tab.click();
+    await produktHeader.waitFor({ timeout: 15000 });
+  }
+  await page.waitForTimeout(800);
+  const rows = page.locator('table tbody tr');
+  if ((await rows.count()) === 0) return null;
+  return (await rows.first().locator('td[data-label="Produkt"]').innerText()).trim();
+}
+
+async function scrapeOneMarkt(page, markt) {
+  await openUmsaetzeTab(page, markt.href);
+  const umsatz30Tage = await readUmsatz30Tage(page);
+  const { sxStart, sxEnde } = await readProduktionsbericht(page);
+  const topProdukt = await readTopProdukt(page);
+  return { ...markt, umsatz30Tage, sxStart, sxEnde, topProdukt };
+}
+
+async function main() {
+  if (!USER || !PASSWORD) {
+    throw new Error('AXONITY_USER / AXONITY_PASSWORD fehlen in der .env-Datei.');
+  }
+
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
+
+  try {
+    console.log('Login bei Axonity…');
+    await login(page);
+
+    console.log('Lade Filialliste…');
+    const markets = await listMarkets(page);
+    console.log(`${markets.length} Filialen gefunden.`);
+
+    const db = getDb();
+    const datum = heuteISO();
+    const results = [];
+
+    for (const markt of markets) {
+      let lastErr = null;
+      let ok = false;
+      for (let attempt = 0; attempt <= RETRIES_PER_MARKT && !ok; attempt++) {
+        try {
+          if (attempt > 0) {
+            console.log(`  Retry ${attempt} für ${markt.marktNr} (${markt.standort})…`);
+          }
+          const result = await scrapeOneMarkt(page, markt);
+          results.push(result);
+          console.log(`  ✓ ${markt.marktNr} ${markt.standort}: Umsatz30T ${result.umsatz30Tage}, SX ${result.sxStart}–${result.sxEnde}, Top: ${result.topProdukt}`);
+          ok = true;
+        } catch (err) {
+          lastErr = err;
+        }
+      }
+      if (!ok) {
+        console.error(`  ✗ ${markt.marktNr} (${markt.standort}) übersprungen:`, lastErr.message);
+      }
+    }
+
+    const batch = db.batch();
+    const now = admin.firestore.FieldValue.serverTimestamp();
+    results.forEach((r) => {
+      const ref = db.collection(COLLECTION).doc(`${r.marktNr}_${datum}`);
+      batch.set(
+        ref,
+        {
+          marktNr: r.marktNr,
+          datum,
+          standort: r.standort,
+          umsatz30Tage: r.umsatz30Tage,
+          sxStart: r.sxStart,
+          sxEnde: r.sxEnde,
+          topProdukt: r.topProdukt,
+          updatedAt: now,
+        },
+        { merge: true }
+      );
+    });
+    await batch.commit();
+    console.log(`✓ ${results.length}/${markets.length} Filialen in "${COLLECTION}" geschrieben.`);
+  } finally {
+    await browser.close();
+  }
+}
+
+main().catch((err) => {
+  console.error('✗ Sync fehlgeschlagen:', err.message);
+  process.exitCode = 1;
+});
