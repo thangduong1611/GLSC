@@ -221,5 +221,14 @@ service cloud.firestore {
       allow get, list: if isManager();
       allow write: if false;
     }
+
+    // Manueller "Jetzt aktualisieren"-Knopf im Dashboard: Manager darf ein
+    // Trigger-Dokument schreiben, ein dauerhaft laufendes Watcher-Skript auf
+    // dem Automation-Rechner sieht es (onSnapshot) und stößt die drei
+    // Sync-Skripte an — Ersatz/Ergänzung zu den zeitgesteuerten Tasks, falls
+    // der PC gerade an ist statt zur festen Uhrzeit.
+    match /sync_triggers/{id} {
+      allow read, write: if isManager();
+    }
   }
 }

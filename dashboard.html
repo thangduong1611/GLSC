@@ -27,6 +27,13 @@ header .sub{font-size:12px;opacity:.85;}
 
 .card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);padding:18px 20px;margin-bottom:16px;}
 
+.update-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:16px;}
+.update-status{font-size:12.5px;color:var(--mut);}
+.update-status.is-pending{color:var(--amb);font-weight:600;}
+.update-status.is-error{color:var(--red);font-weight:600;}
+.update-status.is-done{color:var(--grn);font-weight:600;}
+#dr-update-btn:disabled{opacity:.6;cursor:default;}
+
 .login-card{max-width:360px;margin:60px auto;}
 .login-card h2{font-size:16px;margin-bottom:14px;}
 .login-card label{display:block;font-size:12.5px;color:var(--mut);margin:10px 0 4px;}
@@ -119,6 +126,11 @@ td.name .nr{display:block;font-size:11px;color:var(--mut);font-family:'Consolas'
       <a href="#" onclick="drLogout();return false;" style="color:var(--mut);">Abmelden</a>
     </div>
 
+    <div class="update-bar">
+      <button class="btn" id="dr-update-btn" onclick="drRequestUpdate()">🔄 Jetzt aktualisieren</button>
+      <span id="dr-update-status" class="update-status">—</span>
+    </div>
+
     <div class="card" id="dr-orders-card" style="display:none;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
         <div style="font-weight:600;font-size:14px;">
@@ -150,8 +162,8 @@ td.name .nr{display:block;font-size:11px;color:var(--mut);font-family:'Consolas'
 
 <script>
 var drDb = null, drManager = false;
-var drUnsubUmsatz = null, drUnsubProd = null, drUnsubOrders = null;
-var drUmsatz = {}, drProd = {}, drFilialen = {}, drOrders = [];
+var drUnsubUmsatz = null, drUnsubProd = null, drUnsubOrders = null, drUnsubTrigger = null;
+var drUmsatz = {}, drProd = {}, drFilialen = {}, drOrders = [], drTrigger = null;
 
 function drPad(n){ return String(n).padStart(2,'0'); }
 function drTodayISO(){
@@ -192,6 +204,8 @@ function drInit(){
       drManager = false;
       if(drUnsubUmsatz){ drUnsubUmsatz(); drUnsubUmsatz=null; }
       if(drUnsubProd){ drUnsubProd(); drUnsubProd=null; }
+      if(drUnsubOrders){ drUnsubOrders(); drUnsubOrders=null; }
+      if(drUnsubTrigger){ drUnsubTrigger(); drUnsubTrigger=null; }
       drShowLogin('');
     }
   });
@@ -249,7 +263,15 @@ function drStartListeners(){
       drProd = {};
       snap.forEach(function(doc){ drProd[doc.data().marktNr] = doc.data(); });
       drRender();
+      drRenderUpdateStatus();
     }, function(e){ drRenderError('filiale_produktion: '+e.message); });
+
+  if(drUnsubTrigger) drUnsubTrigger();
+  drUnsubTrigger = drDb.collection('sync_triggers').doc('manual')
+    .onSnapshot(function(doc){
+      drTrigger = doc.exists ? doc.data() : null;
+      drRenderUpdateStatus();
+    }, function(e){ console.warn('sync_triggers:', e.message); });
 
   drDb.collection('filialen_meta').get().then(function(snap){
     drFilialen = {};
@@ -263,7 +285,63 @@ function drStartListeners(){
       drOrders = [];
       snap.forEach(function(doc){ drOrders.push(doc.data()); });
       drRenderOrders();
+      drRenderUpdateStatus();
     }, function(e){ console.warn('filiale_bestellungen:', e.message); });
+}
+
+function drMaxUpdatedAt(){
+  var max = null;
+  Object.keys(drProd).forEach(function(nr){
+    var d = drProd[nr].updatedAt;
+    if(d && d.toDate){ var t = d.toDate(); if(!max || t > max) max = t; }
+  });
+  drOrders.forEach(function(o){
+    var d = o.updatedAt;
+    if(d && d.toDate){ var t = d.toDate(); if(!max || t > max) max = t; }
+  });
+  return max;
+}
+function drFmtTime(d){
+  return d.toLocaleDateString('de-DE')+' '+d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+}
+
+function drRequestUpdate(){
+  var btn = document.getElementById('dr-update-btn');
+  btn.disabled = true;
+  drDb.collection('sync_triggers').doc('manual').set({
+    status: 'requested',
+    requestedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    requestedBy: firebase.auth().currentUser ? firebase.auth().currentUser.email : null,
+  }).catch(function(e){ alert('Anfrage fehlgeschlagen: '+e.message); btn.disabled = false; });
+}
+
+function drRenderUpdateStatus(){
+  var el = document.getElementById('dr-update-status');
+  var btn = document.getElementById('dr-update-btn');
+  el.className = 'update-status';
+
+  var status = drTrigger && drTrigger.status;
+  if(status === 'requested'){
+    el.className = 'update-status is-pending';
+    el.textContent = '⏳ Update angefordert — läuft, sobald der PC an ist und der Watcher läuft.';
+    btn.disabled = true;
+    return;
+  }
+  if(status === 'running'){
+    el.className = 'update-status is-pending';
+    el.textContent = '⏳ Läuft gerade auf dem PC…';
+    btn.disabled = true;
+    return;
+  }
+
+  btn.disabled = false;
+  var max = drMaxUpdatedAt();
+  if(status === 'error'){
+    el.className = 'update-status is-error';
+    el.textContent = '⚠️ Letztes Update fehlgeschlagen' + (max ? ' — Daten von '+drFmtTime(max) : '') + '.';
+    return;
+  }
+  el.textContent = max ? 'Zuletzt aktualisiert: '+drFmtTime(max) : 'Noch keine Daten.';
 }
 
 function drOrdersLastSeen(){
