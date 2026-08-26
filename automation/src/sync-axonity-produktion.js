@@ -19,12 +19,27 @@
 require('dotenv').config();
 const { chromium } = require('playwright');
 const { getDb, admin } = require('./firestore-client');
+const { GEBIETSLEITER_NAME } = require('./branches');
 
 const BASE_URL = process.env.AXONITY_BASE_URL || 'https://erp.axonity.de';
 const USER = process.env.AXONITY_USER;
 const PASSWORD = process.env.AXONITY_PASSWORD;
 const COLLECTION = 'filiale_produktion';
 const RETRIES_PER_MARKT = 2;
+const RETRIES_STARTUP = 2;
+
+async function withRetry(fn, retries, label) {
+  let lastErr;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      if (attempt > 0) console.log(`  Retry ${attempt} (${label})…`);
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  throw lastErr;
+}
 
 function parseGermanNumber(raw) {
   if (raw == null || raw === '') return null;
@@ -48,13 +63,44 @@ async function login(page) {
 async function listMarkets(page) {
   await page.goto(`${BASE_URL}/markets/`);
   await page.locator('table tbody tr').first().waitFor({ timeout: 15000 });
+
+  // Seit dem Axonity-Update vom 25.08.2026 zeigt /markets/ standardmäßig
+  // alle ~346 Standorte firmenweit statt nur die eigenen 11 (und die
+  // Tabellenzellen haben kein data-label mehr, darum jetzt Spaltenposition
+  // statt data-label). Gebietsleiter-Filter im Tabellenkopf setzen, um
+  // wieder auf die eigenen Filialen zu kommen.
+  // Das eigentliche <input> ist type="hidden" (MudBlazor-Interna) — den
+  // sichtbaren Wrapper anklicken, sonst verweigert Playwright den Klick.
+  // Braucht wie viele Klicks in dieser App zwei Anläufe: der erste öffnet
+  // das Popover nicht wirklich (0 Optionen im DOM), erst der zweite Klick
+  // öffnet es tatsächlich — per Diagnose-Skript bestätigt.
+  const gebietsleiterFilter = page.locator('th', { hasText: 'Gebietsleiter' }).locator('.mud-select').last();
+  const options = page.locator('[role="option"]');
+  await gebietsleiterFilter.click();
+  await page.waitForTimeout(400);
+  if ((await options.count()) === 0) {
+    await gebietsleiterFilter.click();
+    await page.waitForTimeout(400);
+  }
+  await page.getByRole('option', { name: GEBIETSLEITER_NAME, exact: true }).click();
+  await page.waitForTimeout(800);
+  await page.locator('table tbody tr').first().waitFor({ timeout: 15000 });
+
   const rows = await page.locator('table tbody tr').all();
   const markets = [];
   for (const row of rows) {
-    const marktNr = (await row.locator('td[data-label="Kostenstelle"]').innerText()).trim();
-    const standort = (await row.locator('td[data-label="Markt"]').innerText()).trim();
+    const cells = row.locator('td');
+    const marktNr = (await cells.nth(0).innerText()).trim();
+    const standort = (await cells.nth(1).innerText()).trim();
     const href = await row.locator('a[href^="/markets/"]').getAttribute('href');
     if (marktNr && href) markets.push({ marktNr, standort, href });
+  }
+
+  // Sicherheitsnetz: nach dem Update zeigt die Seite ohne wirksamen Filter
+  // hunderte Standorte firmenweit — lieber laut scheitern als versehentlich
+  // fremde Filialen verarbeiten.
+  if (markets.length === 0 || markets.length > 20) {
+    throw new Error(`Unerwartete Anzahl Filialen nach Gebietsleiter-Filter: ${markets.length} (erwartet ~11) — Filter vermutlich nicht angewendet.`);
   }
   return markets;
 }
@@ -188,10 +234,10 @@ async function main() {
 
   try {
     console.log('Login bei Axonity…');
-    await login(page);
+    await withRetry(() => login(page), RETRIES_STARTUP, 'Login');
 
     console.log('Lade Filialliste…');
-    const markets = await listMarkets(page);
+    const markets = await withRetry(() => listMarkets(page), RETRIES_STARTUP, 'Filialliste');
     console.log(`${markets.length} Filialen gefunden.`);
 
     const db = getDb();

@@ -16,16 +16,32 @@
 // selben Dialog werden bewusst NICHT gelesen/gespeichert — nicht gebraucht,
 // unnötige personenbezogene Daten. Das Dialogfenster hat auch einen
 // "Stornieren"-Button, der die Bestellung beim Kunden stornieren würde —
-// das Skript schließt den Dialog ausschließlich über den exakt benannten
-// "Abbrechen"-Button, nie über Storno-Buttons.
+// das Skript schließt den Dialog ausschließlich über die Escape-Taste, nie
+// über einen Button im Dialog (ein Klick auf "Abbrechen" hing beim Testen
+// zuverlässig fest und blockierte danach jeden weiteren Dialog).
 require('dotenv').config();
 const { chromium } = require('playwright');
 const { getDb, admin } = require('./firestore-client');
+const { BEKANNTE_KOSTENSTELLEN } = require('./branches');
 
 const BASE_URL = process.env.AXONITY_BASE_URL || 'https://erp.axonity.de';
 const USER = process.env.AXONITY_USER;
 const PASSWORD = process.env.AXONITY_PASSWORD;
 const COLLECTION = 'filiale_bestellungen';
+const RETRIES_STARTUP = 2;
+
+async function withRetry(fn, retries, label) {
+  let lastErr;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      if (attempt > 0) console.log(`  Retry ${attempt} (${label})…`);
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  throw lastErr;
+}
 
 async function login(page) {
   await page.goto(`${BASE_URL}/signin`);
@@ -35,21 +51,44 @@ async function login(page) {
   await page.waitForURL((url) => !url.pathname.startsWith('/signin'), { timeout: 15000 });
 }
 
+// Spaltenreihenfolge auf /pickups/ (kein data-label mehr seit dem
+// Axonity-Update vom 25.08.2026 — darum Position statt Label):
+// Bestellnummer, Kostenstelle, Standort, Adresse, Übertragen, Bestellzeit,
+// Abholzeit, Gedruckt, Bearbeitet, Storniert.
+const PICKUPS_SPALTEN = ['Bestellnummer', 'Kostenstelle', 'Standort', 'Adresse', 'Übertragen', 'Bestellzeit', 'Abholzeit', 'Gedruckt', 'Bearbeitet', 'Storniert'];
+
 async function readBestellungen(page) {
   await page.goto(`${BASE_URL}/pickups/`);
   await page.locator('table tbody tr').first().waitFor({ timeout: 15000 });
 
+  // Seit dem Update ist "Nicht übertragen" die Standardgruppe (meist nur
+  // 1-2 Zeilen firmenweit) — auf "Alle Bestellungen" wechseln für die
+  // bisherige Sicht (neueste Bestellungen aller Filialen, absteigend nach
+  // Bestellzeit). Zwei gleiche Links im DOM (Desktop/Mobile-Variante) — nur
+  // den sichtbaren anklicken. Wie an mehreren Stellen in dieser App
+  // registriert der erste Klick oft nicht wirklich — zweimal klicken.
+  const alleBestellungen = page.locator('a:has-text("Alle Bestellungen"):visible');
+  await alleBestellungen.click();
+  await page.waitForTimeout(600);
+  await alleBestellungen.click();
+  await page.waitForTimeout(600);
+  await page.locator('table tbody tr').first().waitFor({ timeout: 15000 });
+  await page.waitForTimeout(500); // Blazor rendert kurz nach — sonst evtl. 0 Zeilen mitten im Re-Render erwischt
+
   const rows = await page.locator('table tbody tr').all();
   const bestellungen = [];
-  for (const row of rows) {
-    const cells = await row.locator('td[data-label]').all();
+  for (let domIndex = 0; domIndex < rows.length; domIndex++) {
+    const cells = rows[domIndex].locator('td');
     const data = {};
-    for (const cell of cells) {
-      const label = await cell.getAttribute('data-label');
-      const value = (await cell.innerText()).trim();
-      if (label) data[label] = value;
+    for (let i = 0; i < PICKUPS_SPALTEN.length; i++) {
+      data[PICKUPS_SPALTEN[i]] = (await cells.nth(i).innerText()).trim();
     }
-    if (data['Bestellnummer']) bestellungen.push(data);
+    if (!data['Bestellnummer']) continue;
+    // /pickups/ zeigt seit dem Update firmenweite Bestellungen — nur die
+    // eigenen 11 Filialen behalten.
+    if (!BEKANNTE_KOSTENSTELLEN.has(data['Kostenstelle'])) continue;
+    data._domIndex = domIndex;
+    bestellungen.push(data);
   }
   return bestellungen;
 }
@@ -113,10 +152,17 @@ async function main() {
 
   try {
     console.log('Login bei Axonity…');
-    await login(page);
+    await withRetry(() => login(page), RETRIES_STARTUP, 'Login');
 
     console.log('Lade neueste Webshop-Bestellungen…');
-    const bestellungen = await readBestellungen(page);
+    let bestellungen = await withRetry(() => readBestellungen(page), RETRIES_STARTUP, 'Bestellliste');
+    if (bestellungen.length === 0) {
+      // 0 Zeilen ist plausibel (gerade keine offenen Bestellungen), aber
+      // auch das Symptom eines mitten im Re-Render erwischten Ladevorgangs
+      // — sicherheitshalber einmal neu laden und prüfen, bevor "0" akzeptiert wird.
+      console.log('  0 Bestellungen gelesen — lade sicherheitshalber erneut…');
+      bestellungen = await readBestellungen(page);
+    }
     console.log(`${bestellungen.length} Bestellungen auf Seite 1 gelesen.`);
 
     const db = getDb();
@@ -148,7 +194,7 @@ async function main() {
       if (isNeu) {
         neu++;
         try {
-          const { items, notiz } = await readOrderDetail(page, i);
+          const { items, notiz } = await readOrderDetail(page, b._domIndex);
           payload.artikel = items;
           payload.notiz = notiz;
         } catch (err) {

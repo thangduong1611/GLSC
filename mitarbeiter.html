@@ -684,6 +684,7 @@ function maNewsMarkRead(){
    - Eine Zählung pro Filiale (gemeinsam): inventur_counts/{month__slug}
    ════════════════════════════════════════════════ */
 var ivMonth=null, ivPeriod=null, ivCounts={}, ivCat='fisch', ivLoaded=false, ivLocalAt='';
+var ivDirtyItems={}; // Artikelnummern, die seit dem letzten bestätigten Sync lokal geändert wurden
 var ivPrevMonth=null, ivPeriodCur=null, ivPeriodPrev=null, ivMonthActive=null, ivMonthUsed=null, ivPeriodUnsub2=null;
 var ivPeriodUnsub=null, ivCountUnsub=null, ivSaveTimer=null;
 var ivCfg={catOrder:[],itemCat:{}}, ivPhotos={}, ivCfgUnsub=null, ivPhotoUnsub=null;
@@ -731,19 +732,32 @@ function ivRebindCounts(){
   var sess=maSession(); if(!sess||!fbReady||!fbDb) return;
   if(ivCountUnsub){try{ivCountUnsub();}catch(e){}}
   var loc=ivLocalLoad();
-  if(loc&&loc.counts){ ivCounts=Object.assign({}, loc.counts); ivLocalAt=loc.at||''; ivLoaded=true; }
+  if(loc&&loc.counts){
+    ivCounts=Object.assign({}, loc.counts);
+    ivDirtyItems=loc.dirtyItems||{};
+    ivLocalAt=loc.at||'';
+    ivLoaded=true;
+    ivSyncBadge(Object.keys(ivDirtyItems).length>0);
+    // Seite wurde neu geladen, bevor der letzte Sync bestätigt war (z.B. Bildschirm
+    // gesperrt/App gewechselt im Lager) — Sync-Versuch erneut anstoßen, sonst bleibt
+    // die Bestätigung für immer aus, weil das alte Promise beim Reload verloren ging.
+    if(Object.keys(ivDirtyItems).length>0) ivSaveDraft(true);
+  }
   ivCountUnsub=fbDb.collection('inventur_counts').doc(ivDocId(sess)).onSnapshot(function(doc){
     var d=doc.exists?doc.data():null;
-    if(d&&d.counts&&!ivCounts._dirty){
+    if(d&&d.counts){
+      // Pro Artikel mergen (nicht das ganze Objekt ersetzen): so werden Eingaben von
+      // Kollegen am selben Standort live sichtbar, ohne eigene noch nicht bestätigte
+      // Änderungen zu überschreiben — mehrere Leute können gleichzeitig zählen.
       var remoteAt=d.at||'';
-      if(!ivLocalAt || remoteAt>=ivLocalAt){
-        ivCounts=Object.assign({},d.counts);
-        ivLocalAt=remoteAt;
-        ivLocalSave();
-      }
+      Object.keys(d.counts).forEach(function(art){
+        if(!ivDirtyItems[art]) ivCounts[art]=d.counts[art];
+      });
+      if(!ivLocalAt || remoteAt>ivLocalAt) ivLocalAt=remoteAt;
+      ivLocalSave();
     }
     ivLoaded=true;
-    ivSyncBadge(!!ivCounts._dirty);
+    ivSyncBadge(Object.keys(ivDirtyItems).length>0);
     if(document.getElementById('p-iv') && document.getElementById('p-iv').classList.contains('active')) ivRender();
   }, function(e){ console.warn('iv count', e); });
 }
@@ -751,15 +765,16 @@ function ivSlug(f){ return (''+f).replace(/\s+/g,'_').toLowerCase(); }
 function ivDocId(sess){ return (ivMonthUsed||ivMonth)+'__'+ivSlug(sess.filiale||''); }
 
 /* ── OFFLINE-SCHUTZ ──────────────────────────────────────────
-   Jede Eingabe wird SOFORT lokal gespeichert (localStorage).
-   Damit gehen im Lager ohne Netz keine Daten verloren, auch wenn
-   die App neu lädt. Sync mit Firestore passiert zusätzlich. */
+   Jede Eingabe wird SOFORT lokal gespeichert (localStorage), inklusive welche
+   Artikel noch nicht bestätigt synchronisiert sind (ivDirtyItems) — das übersteht
+   auch einen Reload, damit im Lager ohne Netz nichts verloren geht oder von einer
+   älteren Server-Version überschrieben wird. Sync mit Firestore passiert zusätzlich. */
 function ivLocalKey(sess){ return 'sc_iv_'+(ivMonthUsed||ivMonth)+'__'+ivSlug(sess.filiale||''); }
 function ivLocalSave(){
   var sess=maSession(); if(!sess||!ivMonth) return;
   try{
     localStorage.setItem(ivLocalKey(sess), JSON.stringify({
-      counts: ivCleanCounts(), at: new Date().toISOString()
+      counts: ivCleanCounts(), at: new Date().toISOString(), dirtyItems: ivDirtyItems
     }));
   }catch(e){ console.warn('iv local save', e); }
 }
@@ -788,6 +803,7 @@ function ivInit(sess){
   var loc=ivLocalLoad();
   if(loc&&loc.counts){
     ivCounts=Object.assign({}, loc.counts);
+    ivDirtyItems=loc.dirtyItems||{};
     ivLocalAt=loc.at||'';
     ivLoaded=true;
   }
@@ -1042,7 +1058,7 @@ function ivCellInput(inp){
   var art=inp.dataset.art, v=inp.value.trim();
   if(v==='') delete ivCounts[art];
   else ivCounts[art]=parseFloat(v.replace(',','.'))||0;
-  ivCounts._dirty=true;
+  ivDirtyItems[art]=true;
   ivLocalSave();          // SOFORT lokal sichern — überlebt Reload/Offline
   ivSyncBadge(true);
   ivRenderProgress();
@@ -1064,16 +1080,35 @@ function ivCleanCounts(){
   return out;
 }
 
+/* Baut Dot-Notation-Feldpfade NUR für die übergebenen (lokal geänderten) Artikel —
+   nie das ganze counts-Objekt. So schreibt jeder Mitarbeiter nur seine eigenen
+   Positionen; Firestore merge:true fasst Feldpfade einzeln zusammen, ohne die
+   Einträge eines Kollegen zu überschreiben, der zeitgleich am selben Standort zählt. */
+function ivBuildFieldUpdates(items){
+  var upd={};
+  Object.keys(items).forEach(function(art){
+    if(Object.prototype.hasOwnProperty.call(ivCounts,art) && ivCounts[art]!==''&&ivCounts[art]!==undefined){
+      upd['counts.'+art]=ivCounts[art];
+    } else {
+      upd['counts.'+art]=firebase.firestore.FieldValue.delete();
+    }
+  });
+  return upd;
+}
+
 function ivSaveDraft(silent){
   var sess=maSession(); if(!sess||!fbReady||!fbDb) return;
   var now=new Date().toISOString();
   ivLocalAt=now; ivLocalSave();
-  fbDb.collection('inventur_counts').doc(ivDocId(sess)).set({
-    filiale:sess.filiale||'', month:(ivMonthUsed||ivMonth), counts:ivCleanCounts(),
-    by:sess.name||'', at:now, submitted:false
-  },{merge:true}).then(function(){
-    ivCounts._dirty=false;
-    ivSyncBadge(false);
+  var pending=Object.assign({}, ivDirtyItems);
+  if(!Object.keys(pending).length){ if(!silent) toast(t('iv_saved')); return; }
+  var payload=Object.assign({filiale:sess.filiale||'', month:(ivMonthUsed||ivMonth), by:sess.name||'', at:now, submitted:false}, ivBuildFieldUpdates(pending));
+  fbDb.collection('inventur_counts').doc(ivDocId(sess)).set(payload,{merge:true}).then(function(){
+    // Nur die Artikel entfernen, die in DIESEM Aufruf gesendet wurden — währenddessen
+    // neu eingetippte Artikel (weiterer ivCellInput-Aufruf) bleiben als "ausstehend" markiert.
+    Object.keys(pending).forEach(function(art){ delete ivDirtyItems[art]; });
+    ivLocalSave();
+    ivSyncBadge(Object.keys(ivDirtyItems).length>0);
     if(!silent) toast(t('iv_saved'));
   }).catch(function(e){
     // Offline: Daten bleiben lokal + in der Firestore-Warteschlange
@@ -1086,12 +1121,12 @@ function ivSubmit(){
   var sess=maSession(); if(!sess||!fbReady||!fbDb) return;
   var now=new Date().toISOString();
   ivLocalAt=now; ivLocalSave();
-  fbDb.collection('inventur_counts').doc(ivDocId(sess)).set({
-    filiale:sess.filiale||'', month:(ivMonthUsed||ivMonth), counts:ivCleanCounts(),
-    by:sess.name||'', at:now, submitted:true
-  },{merge:true}).then(function(){
-    ivCounts._dirty=false;
-    ivSyncBadge(false);
+  var pending=Object.assign({}, ivDirtyItems);
+  var payload=Object.assign({filiale:sess.filiale||'', month:(ivMonthUsed||ivMonth), by:sess.name||'', at:now, submitted:true}, ivBuildFieldUpdates(pending));
+  fbDb.collection('inventur_counts').doc(ivDocId(sess)).set(payload,{merge:true}).then(function(){
+    Object.keys(pending).forEach(function(art){ delete ivDirtyItems[art]; });
+    ivLocalSave();
+    ivSyncBadge(Object.keys(ivDirtyItems).length>0);
     toast(t('iv_sent'));
   }).catch(function(e){ toast(t('iv_offline_saved'),true); console.warn('iv submit', e); });
 }
