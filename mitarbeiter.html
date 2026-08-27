@@ -181,6 +181,7 @@ window.onerror=function(msg,src,line){
       <button class="lang-btn" data-lang="vi" onclick="setLang('vi')">🇻🇳 VI</button>
       <button class="lang-btn" data-lang="en" onclick="setLang('en')">🇬🇧 EN</button>
       <button class="lang-btn" data-lang="th" onclick="setLang('th')">🇹🇭 TH</button>
+      <button class="lang-btn" data-lang="zh" onclick="setLang('zh')">🇨🇳 中文</button>
     </div>
     <div id="install-box" style="display:none;background:var(--blu-bg);border:1px solid #AED6F1;border-radius:8px;padding:12px;margin-bottom:14px;text-align:left">
       <div style="font-weight:700;font-size:14px;margin-bottom:6px">📲 <span data-i18n="inst_title">App auf dem Startbildschirm</span></div>
@@ -207,7 +208,7 @@ window.onerror=function(msg,src,line){
   </div>
   <div style="display:flex;gap:8px;align-items:center">
     <select id="lang-sel" onchange="setLang(this.value)">
-      <option value="de">DE</option><option value="vi">VI</option><option value="en">EN</option><option value="th">TH</option>
+      <option value="de">DE</option><option value="vi">VI</option><option value="en">EN</option><option value="th">TH</option><option value="zh">中文</option>
     </select>
     <button class="hbtn" onclick="maLogout()" data-i18n="btn_logout">Abmelden</button>
   </div>
@@ -880,7 +881,7 @@ function ivRender(){
 function ivRenderCats(){
   var box=document.getElementById('iv-cats'); if(!box) return;
   var lang=(typeof MA_LANG!=='undefined'?MA_LANG:'de');
-  var idx={de:1,vi:2,en:3,th:4}[lang]||1;
+  var idx={de:1,vi:2,en:3,th:4,zh:5}[lang]||1;
   // nur Kategorien mit Artikeln
   var present={}; INVENTUR_ITEMS.forEach(function(it){ present[ivItemCat(it)]=true; });
   box.innerHTML=ivEffCats().filter(function(c){return present[c[0]];}).map(function(c){
@@ -900,14 +901,14 @@ function ivSearchInput(){
 function ivRenderList(){
   var box=document.getElementById('iv-list'); if(!box) return;
   var lang=(typeof MA_LANG!=='undefined'?MA_LANG:'de');
-  var li={de:3,vi:4,en:5,th:6}[lang]||3;          // Index der Sprachspalte
+  var li={de:3,vi:4,en:5,th:6,zh:7}[lang]||3;          // Index der Sprachspalte
   var sEl=document.getElementById('iv-search');
   var q=sEl?(sEl.value||'').toLowerCase().trim():'';
   var items;
   if(q){
     // Suche über ALLE Kategorien (Name DE/VI/EN/TH + Artikelnummer)
     items=INVENTUR_ITEMS.filter(function(it){
-      return (it[0]+' '+it[3]+' '+it[4]+' '+it[5]+' '+it[6]).toLowerCase().indexOf(q)!==-1;
+      return (it[0]+' '+it[3]+' '+it[4]+' '+it[5]+' '+it[6]+' '+it[7]).toLowerCase().indexOf(q)!==-1;
     });
   } else {
     items=INVENTUR_ITEMS.filter(function(it){return ivItemCat(it)===ivCat;});
@@ -1022,7 +1023,7 @@ function ivZoom(art){
   var it=null, all=(typeof INVENTUR_ITEMS!=='undefined')?INVENTUR_ITEMS:[];
   for(var i=0;i<all.length;i++){ if(all[i][0]===art){ it=all[i]; break; } }
   var lang=(typeof MA_LANG!=='undefined'?MA_LANG:'de');
-  var li={de:3,vi:4,en:5,th:6}[lang]||3;
+  var li={de:3,vi:4,en:5,th:6,zh:7}[lang]||3;
   var de=it?it[3]:art, tr=it?it[li]:'';
   var ov=document.createElement('div');
   ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:100000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;cursor:zoom-out';
@@ -1671,7 +1672,88 @@ th:{_name:'ไทย',
  ug_need_items:'กรุณาเพิ่มสินค้าอย่างน้อยหนึ่งรายการ',ug_need_menge:'กรุณาระบุจำนวนมากกว่า 0 สำหรับทุกรายการ',
  months:['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'],
  wdS:['อา','จ','อ','พ','พฤ','ศ','ส'],
- wdL:['วันอาทิตย์','วันจันทร์','วันอังคาร','วันพุธ','วันพฤหัสบดี','วันศุกร์','วันเสาร์']}
+ wdL:['วันอาทิตย์','วันจันทร์','วันอังคาร','วันพุธ','วันพฤหัสบดี','วันศุกร์','วันเสาร์']},
+zh:{_name:'中文',
+ nav_dp:'排班表',nav_ul:'休假',nav_kr:'病假',nav_bl:'报销',nav_av:'合同',nav_nw:'通知',
+ iv_offline_note:'尚未发送。您输入的数据已保存在本设备上，一旦恢复网络会自动上传。中途可以关闭本应用。',
+ iv_offline_saved:'已离线保存 — 网络恢复后会自动发送。',
+ iv_photo_add:'拍照',iv_photo_ok:'✓ 照片已上传 — 谢谢！',
+ iv_no_result:'未找到相关商品。',
+ 'av-e_title':'📝 劳动合同变更协议','av-e_none':'目前没有需要签署的文件。',
+ 'av-e_info':'请核对以下信息。此处无法修改内容——如有疑问请直接联系您的区域经理。',
+ 'av-e_lbl_ort':'地点、日期','av-e_lbl_sig':'签名（用手指绘制）',
+ 'av-e_btn_send':'✍️ 签字并发送','av-e_need_sig':'请先签名。',
+ bl_title:'🧾 提交报销单',bl_info:'您在超市为门店采购了东西吗？请上传收据照片——区域经理会提交给Skovik并将款项转给您。',
+ lbl_bl_amount:'金额 (€)',lbl_bl_note:'备注（购买了什么？）',lbl_foto_bl:'收据照片',
+ btn_bl:'📤 发送报销单',bl_list_title:'📋 我的报销记录',bl_none:'尚未提交过报销单。',
+ bl_sent:'✓ 报销单已发送',bl_fail:'错误：',bl_need_photo:'请先上传收据照片。',
+ lbl_bl_paytype:'您希望以什么方式收款？',lbl_bl_payinfo:'IBAN账号',lbl_bl_payinfo_other:'详细信息（转到哪里？）',
+ bl_payinfo_hint:'将被保存 — 下次报销时自动填入。',
+ bl_need_pay:'请填写IBAN账号或PayPal地址。',
+ bl_st_new:'已提交',bl_st_skovik:'已上传至Skovik',bl_st_paid:'已转账',
+ bl_paid_banner:'💰 款项已转账！',bl_confirm_btn:'✓ 已收到款项 — 确认',bl_confirmed:'✓ 已确认，谢谢！',
+ login_sub:'Sushi Circle · 请使用您的员工编号登录。',lbl_pid:'员工编号',btn_login:'登录',
+ err_pid:'请输入员工编号。',err_notfound:'未找到该员工编号，请检查。',err_nodata:'尚未加载数据，请先加载数据。',err_conn:'连接错误：',err_inactive:'此账号已不再激活，请联系您的主管。',
+ btn_logout:'退出登录',q_logout:'确定要退出登录吗？',no_fil:'暂无门店',
+ dp_title:'📅 我的排班表',lbl_month:'月份',fil:'门店',alloc_main:'主要门店',alloc_backup:'需要时支援',
+ dp_not_pub:'{m}的排班表尚未发布。',dp_loading:'⏳ 正在加载排班表…',dp_load_err:'加载失败：',
+ my_shifts:'👤 我的班次',dp_pdf:'下载PDF',dp_pdf_none:'暂无PDF文件。',whole_store:'🏪 整个门店',th_emp:'员工',no_entries:'本月您还没有排班。',
+ v_frei:'休息',v_url:'休假',v_krank:'病假',
+ ul_title:'🌴 休假 – 门店',leg_ok:'已批准',leg_wait:'等待批准',leg_no:'已拒绝',st_wait:'等待中',
+ ul_year:'📋 今年的休假',ul_none:'{y}年还没有休假记录。',
+ req_title:'✏️ 申请我的休假',
+ rules:'规定：至少<strong>提前10天</strong>申请 · <strong>不得与</strong>同门店同事的休假时间重叠。发送后，申请将等待区域经理批准 (🟧)。',
+ lbl_von:'开始日期',lbl_bis:'结束日期',btn_req:'🌴 申请休假',
+ sent_fb:'✓ 申请已发送（🟧 等待批准）。区域经理会立即看到——批准结果会自动显示在这里。',
+ sent_off:'✓ 申请已保存（🟧 等待批准）。请通过WhatsApp发送给区域经理以确认。',
+ send_fail:'✗ 发送失败：',
+ v_pick:'请选择开始日期和结束日期。',v_invalid:'日期无效。',v_endb4:'结束日期早于开始日期。',
+ v_min10:'休假申请必须至少提前10天（目前只剩{n}天）。',
+ v_ov_self:'您已有的休假',v_ov:'与{who}的休假时间重叠，请选择其他时间段。',
+ updf_title:'📄 休假申请单（官方表格）',
+ updf_info:'将填写到Sushi Circle官方表格中。请填写信息，在<strong>Arbeitnehmer</strong>（员工）栏签名，然后保存为PDF或发送给区域经理。主管签名部分由区域经理补充。',
+ lbl_einsatz:'恢复工作日期',lbl_ruf:'电话号码',lbl_vorg:'上级（可选）',lbl_ort:'地点（用于地点/日期栏）',
+ lbl_sig:'员工签名（用手指绘制）',btn_clear_sig:'↺ 清除签名',btn_pdf:'💾 保存PDF',btn_chef:'📨 发送给主管',
+ chef_hint:'「发送给主管」会将带有您签名的申请直接发送给区域经理。他会以雇主身份签字并提交完整的PDF。',
+ t_dates:'请选择开始日期和结束日期。',t_sign:'请以员工身份签名。',t_pdf_ok:'✓ PDF已保存',
+ t_attach:'✓ PDF已保存 – 请在WhatsApp中添加附件 📎',t_packet:'✓ 申请文件已保存 – 请在WhatsApp中添加附件 📎',an_sent:'✓ 申请已发送给区域经理 — 他会签字并提交。',an_fail:'✗ 发送失败：',
+ img_fail:'表格图片加载失败。',t_err:'创建时出错：',
+ kr_title:'🏥 病假报告',kr_info:'请填写病假天数，上传病假条（黄色单据）照片——报告会直接发送给区域经理。',kr_sent:'✓ 病假报告已发送给区域经理。祝早日康复！',kr_fail:'✗ 发送失败：',
+ lbl_kr_von:'生病起始日期',lbl_kr_bis:'预计持续至',lbl_foto:'病假条（照片）',drop_txt:'上传照片或打开相机',
+ btn_kr:'📤 发送病假报告',
+ kr_hint:'ℹ️ WhatsApp会自动打开并附上消息。照片已保存在设备中——请记得在WhatsApp中添加附件 (📎)。',
+ t_kr_from:'请至少选择开始日期。',t_wa:'✓ WhatsApp已打开',t_wa_attach:' – 请记得添加照片附件 📎',
+ nw_title:'📢 来自区域经理的通知',nw_none:'暂无通知。',
+ push_info:'🔔 开启推送通知，即使应用已关闭，也能在有新通知时立即收到提醒。',push_btn:'🔔 开启通知',push_on:'✓ 通知已开启',push_denied:'通知已在浏览器中被屏蔽，请在浏览器设置中允许通知。',push_unsupported:'此设备/浏览器不支持推送通知。',push_newinfo:'📢 区域经理发布了新通知',
+ nw_read_btn:'✓ 已读 – 确认',nw_read_done:'✓ 已确认阅读',nw_read_toast:'✓ 已读确认已发送',
+ nav_iv:'📦 盘点',iv_title:'📦 库存盘点',iv_progress:'进度',iv_save:'💾 保存草稿',iv_submit:'✓ 发送给HR',iv_saved:'✓ 草稿已保存',iv_sent:'✓ 已发送给HR – 谢谢！',iv_none:'目前没有正在进行的盘点。',iv_active:'🟢 盘点进行中',iv_count:'请清点并填写每件商品的数量。',iv_search:'搜索…',nav_sl:'📋 排班管理',sl_title:'📋 排班表管理',sl_loading:'⏳ 正在加载排班表…',sl_empty:'本月还没有发布排班表。',sl_pub_ok:'✓ 第{kw}周已发布',sl_pub_err:'发布时出错',sl_pub_btn:'☁️ 发布第{kw}周',sl_no_emps:'此门店没有员工，请联系HR。',err_net:'无网络连接 – 请重试。',
+ wa_missing:'缺少WhatsApp号码。复制消息内容：',inst_title:'将应用添加到主屏幕',inst_btn:'立即安装',inst_ios:'1️⃣ 用<strong>Safari</strong>打开此页面（在WhatsApp中：分享 → 「用Safari打开」）<br>2️⃣ 点击底部的<strong>分享</strong> ⬆️ 按钮<br>3️⃣ 选择<strong>「添加到主屏幕」</strong>',
+ nav_we:'收货',we_title:'🚚 收货问题反馈',
+ we_quick_title:'⚡ 快速反馈',we_quick_info:'最快的方式：直接拍下送货单和有问题商品的照片，然后简单描述缺少或损坏的情况。',
+ lbl_we_quick_photos:'照片（送货单 + 商品）',drop_txt_multi:'上传照片或打开相机',lbl_we_quick_note:'发生了什么？',we_quick_note_placeholder:'例如：5个牛油果损坏，缺少2箱',
+ btn_we_quick_submit:'⚡ 发送快速反馈',we_quick_need_photo:'请至少添加一张照片。',we_quick_need_note:'请简单描述发生了什么。',
+ we_info:'如果送货出现问题（缺货、损坏、不新鲜等），请在此报告。拍下送货单和受影响商品的照片并简单描述——区域经理会联系供应商处理投诉。',
+ lbl_we_lieferant:'供应商',lbl_we_lsnr:'送货单号',lbl_we_lsdatum:'送货日期',lbl_we_lsfoto:'送货单照片',
+ lbl_we_ganze_fehlt:'整批货物都没有送达',lbl_we_ganze_beschreibung:'发生了什么？',
+ btn_we_add_item:'➕ 添加商品',lbl_we_artikel:'商品（名称/编号）',lbl_we_bestellt:'订购数量',lbl_we_erhalten:'实收数量',
+ lbl_we_fehlerart:'问题类型',we_fa_fehlmenge:'数量不足',we_fa_beschaedigt:'损坏',we_fa_nicht_frisch:'不新鲜',we_fa_falscher_artikel:'商品错误',we_fa_sonstiges:'其他',
+ lbl_we_beschreibung:'简短描述',lbl_we_foto_item:'照片（可选）',btn_we_remove:'🗑 删除',btn_we_submit:'📤 发送投诉',
+ we_sent:'✓ 投诉已发送 – 谢谢！',we_fail:'错误：',
+ we_need_lieferant:'请填写供应商名称。',we_need_lsdatum:'请填写送货日期。',we_need_lsnr:'请填写送货单号。',
+ we_need_items:'请至少添加一件商品。',we_need_artikel:'请为每件商品填写名称。',we_need_fehlerart:'请为每件商品选择问题类型。',
+ we_need_ganze_beschreibung:'请简单描述发生了什么。',
+ we_photo_budget_txt:'照片已使用 {kb} KB / {max} KB',we_photo_too_big:'照片过大 – 本次报告中的照片总大小：{kb} KB / 允许{max} KB。请删除一张照片或重新拍摄。',
+ nav_ug:'调货',ug_title:'🔄 门店间调货',
+ ug_info:'您是否非正式地从其他门店拿了货物（例如因为本店缺货）？请在此报告以免遗漏——区域经理会每月汇总到调货清单中。',
+ lbl_ug_von:'从哪个门店取的货？',ug_von_placeholder:'— 选择门店 —',lbl_ug_datum:'日期',
+ ug_cart_title:'🛒 已选商品',ug_cart_empty:'尚未选择任何商品。请在上方搜索或选择分类，然后点击添加。',
+ btn_ug_submit:'📤 发送调货报告',ug_sent:'✓ 调货报告已发送 – 谢谢！',ug_fail:'错误：',
+ ug_need_own_filiale:'您的员工编号未关联任何门店，请联系区域经理。',
+ ug_need_von:'请选择货物是从哪个门店取的。',ug_need_datum:'请选择日期。',
+ ug_need_items:'请至少添加一件商品。',ug_need_menge:'请为每件商品填写大于0的数量。',
+ months:['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'],
+ wdS:['周日','周一','周二','周三','周四','周五','周六'],
+ wdL:['星期日','星期一','星期二','星期三','星期四','星期五','星期六']}
 };
 var MA_LANG=localStorage.getItem('ma_lang')||'de';
 if(!I18N[MA_LANG])MA_LANG='de';
@@ -2224,7 +2306,7 @@ function ugOnShow(){
 function ugRenderCats(){
   var box=document.getElementById('ug-cats'); if(!box) return;
   var lang=(typeof MA_LANG!=='undefined'?MA_LANG:'de');
-  var idx={de:1,vi:2,en:3,th:4}[lang]||1;
+  var idx={de:1,vi:2,en:3,th:4,zh:5}[lang]||1;
   var present={}; INVENTUR_ITEMS.forEach(function(it){ present[ugItemCat(it)]=true; });
   box.innerHTML=ugEffCats().filter(function(c){return present[c[0]];}).map(function(c){
     var on=c[0]===ugCat;
@@ -2241,13 +2323,13 @@ function ugSearchInput(){
 function ugRenderList(){
   var box=document.getElementById('ug-list'); if(!box) return;
   var lang=(typeof MA_LANG!=='undefined'?MA_LANG:'de');
-  var li={de:3,vi:4,en:5,th:6}[lang]||3;
+  var li={de:3,vi:4,en:5,th:6,zh:7}[lang]||3;
   var sEl=document.getElementById('ug-search');
   var q=sEl?(sEl.value||'').toLowerCase().trim():'';
   var items;
   if(q){
     items=INVENTUR_ITEMS.filter(function(it){
-      return (it[0]+' '+it[3]+' '+it[4]+' '+it[5]+' '+it[6]).toLowerCase().indexOf(q)!==-1;
+      return (it[0]+' '+it[3]+' '+it[4]+' '+it[5]+' '+it[6]+' '+it[7]).toLowerCase().indexOf(q)!==-1;
     });
   } else {
     items=INVENTUR_ITEMS.filter(function(it){return ugItemCat(it)===ugCat;});
