@@ -188,8 +188,17 @@ service cloud.firestore {
     }
 
     // ══════════════════════════════════════════════════════════
-    // INVENTUR — geteilter Produktkatalog + Betriebsdaten, regionsübergreifend
-    // (bewusst NICHT regionsgetrennt — siehe Projekt-Follow-up-Notiz)
+    // INVENTUR
+    // config/photos/storemap = geteilter Produktkatalog (165 Artikel, Kategorien,
+    // Fotos, Markt-Nr.->Name-Verzeichnis) — bewusst regionsübergreifend, dieselben
+    // physischen Artikel für Ost und West.
+    // period/links/counts = Betriebsdaten pro Filiale/Monat — SEIT der Inventur-
+    // Region-Trennung app-seitig nach region gefiltert/getaggt (Dokument-ID bei
+    // period/links jetzt "{month}__{region}"; counts trägt ein region-Feld).
+    // Regeln bleiben bewusst offen (isAuthed statt isManagerForRegion): Mitarbeiter
+    // schreiben ihre eigene Zählung wiederholt über eine anonyme Session ohne
+    // stabile Identität — dieselbe Vertrauensbasis wie bei emps/filialen_meta
+    // get/list. Die Trennung passiert über den Dokument-ID/Feld-Filter, nicht die Regel.
     // ══════════════════════════════════════════════════════════
     match /inventur_config/{id} {
       allow read: if isAuthed();

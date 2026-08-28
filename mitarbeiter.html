@@ -746,13 +746,14 @@ function ivRebindCounts(){
   }
   ivCountUnsub=fbDb.collection('inventur_counts').doc(ivDocId(sess)).onSnapshot(function(doc){
     var d=doc.exists?doc.data():null;
-    if(d&&d.counts){
+    if(d){
       // Pro Artikel mergen (nicht das ganze Objekt ersetzen): so werden Eingaben von
       // Kollegen am selben Standort live sichtbar, ohne eigene noch nicht bestätigte
       // Änderungen zu überschreiben — mehrere Leute können gleichzeitig zählen.
       var remoteAt=d.at||'';
-      Object.keys(d.counts).forEach(function(art){
-        if(!ivDirtyItems[art]) ivCounts[art]=d.counts[art];
+      var remoteCounts=ivReconstructCounts(d);
+      Object.keys(remoteCounts).forEach(function(art){
+        if(!ivDirtyItems[art]) ivCounts[art]=remoteCounts[art];
       });
       if(!ivLocalAt || remoteAt>ivLocalAt) ivLocalAt=remoteAt;
       ivLocalSave();
@@ -814,11 +815,12 @@ function ivInit(sess){
   if(ivPeriodUnsub){try{ivPeriodUnsub();}catch(e){}}
   if(ivPeriodUnsub2){try{ivPeriodUnsub2();}catch(e){}}
   ivPeriodCur=null; ivPeriodPrev=null;
-  ivPeriodUnsub=fbDb.collection('inventur_period').doc(ivMonth).onSnapshot(function(doc){
+  var ivReg=sess.region||'ost';
+  ivPeriodUnsub=fbDb.collection('inventur_period').doc(ivMonth+'__'+ivReg).onSnapshot(function(doc){
     ivPeriodCur=doc.exists?doc.data():null;
     ivPickPeriod();
   }, function(e){ console.warn('iv period', e); });
-  ivPeriodUnsub2=fbDb.collection('inventur_period').doc(ivPrevMonth).onSnapshot(function(doc){
+  ivPeriodUnsub2=fbDb.collection('inventur_period').doc(ivPrevMonth+'__'+ivReg).onSnapshot(function(doc){
     ivPeriodPrev=doc.exists?doc.data():null;
     ivPickPeriod();
   }, function(e){ console.warn('iv period prev', e); });
@@ -851,7 +853,7 @@ function ivUpdateVisibility(){
 
 function ivLoadFromFirestore(sess, cb){
   fbDb.collection('inventur_counts').doc(ivDocId(sess)).get().then(function(doc){
-    ivCounts = (doc.exists&&doc.data().counts) ? Object.assign({},doc.data().counts) : {};
+    ivCounts = doc.exists ? ivReconstructCounts(doc.data()) : {};
     ivLoaded=true; if(cb) cb();
   }).catch(function(e){ console.warn('iv load', e); ivLoaded=true; if(cb) cb(); });
 }
@@ -1083,8 +1085,15 @@ function ivCleanCounts(){
 
 /* Baut Dot-Notation-Feldpfade NUR für die übergebenen (lokal geänderten) Artikel —
    nie das ganze counts-Objekt. So schreibt jeder Mitarbeiter nur seine eigenen
-   Positionen; Firestore merge:true fasst Feldpfade einzeln zusammen, ohne die
-   Einträge eines Kollegen zu überschreiben, der zeitgleich am selben Standort zählt. */
+   Positionen, ohne die Einträge eines Kollegen zu überschreiben, der zeitgleich am
+   selben Standort zählt.
+   WICHTIG: set(data,{merge:true}) interpretiert Punkt-Schlüssel wie "counts.80191"
+   NICHT als verschachtelten Pfad — Firestore legt dann ein wörtliches Feld mit einem
+   Punkt im Namen an, "counts" bleibt leer (real gegen Firestore getestet). Nur echtes
+   update() wertet Punkt-Notation als Pfad aus — update() schlägt aber fehl, wenn das
+   Dokument noch nicht existiert. Deshalb zweistufig: zuerst set(...,{merge:true}) nur
+   mit den Metadaten (legt das Dokument bei Bedarf an), danach update() nur mit den
+   counts.*-Pfaden (Dokument existiert an dieser Stelle garantiert bereits). */
 function ivBuildFieldUpdates(items){
   var upd={};
   Object.keys(items).forEach(function(art){
@@ -1096,6 +1105,22 @@ function ivBuildFieldUpdates(items){
   });
   return upd;
 }
+// Liest ein Inventur-Dokument robust aus, auch falls es noch die alte, fehlerhafte
+// Feldform hat (Mengen als Einzelfelder "counts.80191" statt im counts-Objekt —
+// siehe "Inventur-Datenreparatur" in der Admin-App).
+function ivReconstructCounts(d){
+  var out=Object.assign({}, (d&&d.counts)||{});
+  if(d) Object.keys(d).forEach(function(k){ if(k.indexOf('counts.')===0) out[k.slice('counts.'.length)]=d[k]; });
+  return out;
+}
+function ivWriteDoc(docId, metaPayload, fieldUpdates){
+  var ref=fbDb.collection('inventur_counts').doc(docId);
+  var p=ref.set(metaPayload,{merge:true});
+  if(fieldUpdates && Object.keys(fieldUpdates).length){
+    p=p.then(function(){ return ref.update(fieldUpdates); });
+  }
+  return p;
+}
 
 function ivSaveDraft(silent){
   var sess=maSession(); if(!sess||!fbReady||!fbDb) return;
@@ -1103,8 +1128,8 @@ function ivSaveDraft(silent){
   ivLocalAt=now; ivLocalSave();
   var pending=Object.assign({}, ivDirtyItems);
   if(!Object.keys(pending).length){ if(!silent) toast(t('iv_saved')); return; }
-  var payload=Object.assign({filiale:sess.filiale||'', month:(ivMonthUsed||ivMonth), by:sess.name||'', at:now, submitted:false}, ivBuildFieldUpdates(pending));
-  fbDb.collection('inventur_counts').doc(ivDocId(sess)).set(payload,{merge:true}).then(function(){
+  var meta={filiale:sess.filiale||'', month:(ivMonthUsed||ivMonth), by:sess.name||'', at:now, submitted:false, region:sess.region||'ost'};
+  ivWriteDoc(ivDocId(sess), meta, ivBuildFieldUpdates(pending)).then(function(){
     // Nur die Artikel entfernen, die in DIESEM Aufruf gesendet wurden — währenddessen
     // neu eingetippte Artikel (weiterer ivCellInput-Aufruf) bleiben als "ausstehend" markiert.
     Object.keys(pending).forEach(function(art){ delete ivDirtyItems[art]; });
@@ -1123,8 +1148,8 @@ function ivSubmit(){
   var now=new Date().toISOString();
   ivLocalAt=now; ivLocalSave();
   var pending=Object.assign({}, ivDirtyItems);
-  var payload=Object.assign({filiale:sess.filiale||'', month:(ivMonthUsed||ivMonth), by:sess.name||'', at:now, submitted:true}, ivBuildFieldUpdates(pending));
-  fbDb.collection('inventur_counts').doc(ivDocId(sess)).set(payload,{merge:true}).then(function(){
+  var meta={filiale:sess.filiale||'', month:(ivMonthUsed||ivMonth), by:sess.name||'', at:now, submitted:true, region:sess.region||'ost'};
+  ivWriteDoc(ivDocId(sess), meta, ivBuildFieldUpdates(pending)).then(function(){
     Object.keys(pending).forEach(function(art){ delete ivDirtyItems[art]; });
     ivLocalSave();
     ivSyncBadge(Object.keys(ivDirtyItems).length>0);

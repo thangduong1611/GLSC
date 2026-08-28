@@ -1016,13 +1016,31 @@ window.onerror=function(msg,src,line){
     </div>
   </div>
   <div class="card">
-    <div class="card-title">🔀 Filialname-Migration (einmalig) <span class="badge badge-amb">Bei fehlenden Dienstplänen/Urlaub prüfen</span></div>
-    <div class="info">Findet Filialnamen-Änderungen (egal ob schon veröffentlicht oder nicht) und stellt dadurch "verschwundene" Dienstpläne/Urlaubsdaten wieder her — sie waren nicht gelöscht, nur unter dem alten Namen unauffindbar. Korrigiert außerdem veraltete Filialnamen in Umlagerung-Meldungen (nötig, damit z.B. die Umlagerungsliste-Automatik sie erkennt). Findet die App zu einem alten Eintrag mehrere mögliche neue Filialen, wird nichts geraten, sondern zur manuellen Prüfung aufgelistet. Bestehende Einträge bleiben immer zusätzlich erhalten (nur Umlagerung-Meldungen werden direkt korrigiert). Zuerst „🔍 Prüfen", danach „📋 Jetzt kopieren".</div>
+    <div class="card-title">🔧 Inventur-Datenreparatur (einmalig) <span class="badge badge-red">Zuerst hier prüfen, danach Filialname-Migration</span></div>
+    <div class="info">Ein zwischenzeitlicher Fehler beim Speichern hat Artikel-Mengen als fehlerhafte Einzelfelder (z.B. „counts.80191") statt im richtigen counts-Feld abgelegt — dadurch zeigt HR 0 Artikel an, obwohl Mitarbeiter fertig gezählt und gesendet haben. Die Mengen sind nicht verloren, nur falsch abgelegt. Dieses Werkzeug führt sie im richtigen counts-Feld zusammen und entfernt die fehlerhaften Einzelfelder — nichts wird überschrieben oder gelöscht, was schon korrekt war. Zuerst „🔍 Prüfen", danach „🔧 Jetzt reparieren".</div>
+    <div class="btn-row">
+      <button class="btn" onclick="invRepairScan()">🔍 Prüfen</button>
+      <button class="btn btn-red" id="inv-repair-run" onclick="invRepairRun()" style="display:none">🔧 Jetzt reparieren</button>
+    </div>
+    <div id="inv-repair-stat" style="font-size:12px;color:var(--mut);margin-top:8px;line-height:1.7"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">🔀 Filialname-Migration (einmalig) <span class="badge badge-amb">Bei fehlenden Dienstplänen/Urlaub/Inventur prüfen</span></div>
+    <div class="info">Findet Filialnamen-Änderungen (egal ob schon veröffentlicht oder nicht) und stellt dadurch "verschwundene" Dienstpläne/Urlaubsdaten wieder her — sie waren nicht gelöscht, nur unter dem alten Namen unauffindbar. Korrigiert außerdem veraltete Filialnamen in Umlagerung-Meldungen (nötig, damit z.B. die Umlagerungsliste-Automatik sie erkennt) und führt Inventur-Zählungen zusammen, die während einer laufenden Zählperiode durch eine Namensänderung auf zwei Dokumente gesplittet wurden (Mengen werden addiert, nichts wird überschrieben). Findet die App zu einem alten Eintrag mehrere mögliche neue Filialen, wird nichts geraten, sondern zur manuellen Prüfung aufgelistet. Bestehende Einträge bleiben immer zusätzlich erhalten (nur Umlagerung-Meldungen werden direkt korrigiert). Zuerst „🔍 Prüfen", danach „📋 Jetzt kopieren".</div>
     <div class="btn-row">
       <button class="btn" onclick="filMigScan()">🔍 Prüfen</button>
       <button class="btn btn-red" id="fil-mig-run" onclick="filMigRun()" style="display:none">📋 Jetzt kopieren</button>
     </div>
     <div id="fil-mig-stat" style="font-size:12px;color:var(--mut);margin-top:8px;line-height:1.7"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">🌍 Inventur-Region-Trennung (einmalig) <span class="badge badge-amb">Nach obigen zwei Schritten prüfen</span></div>
+    <div class="info">Inventur-Zeiträume, Welo-Links und Zählungen waren bisher nicht nach Region (Ost/West) getrennt — Ost und West zeigten sich gegenseitig ihre Filialen an. Dieses Werkzeug ordnet jedes bestehende Dokument anhand der hinterlegten Filiale der richtigen Region zu und trägt den aktuell gesetzten Zeitraum sowie die Welo-Links einmalig für beide Regionen nach, damit niemand mitten in der laufenden Zählung etwas neu eingeben muss. Bestehende Daten werden nur ergänzt, nichts wird gelöscht. Zuerst „🔍 Prüfen", danach „🌍 Jetzt trennen".</div>
+    <div class="btn-row">
+      <button class="btn" onclick="invRegionScan()">🔍 Prüfen</button>
+      <button class="btn btn-red" id="inv-region-run" onclick="invRegionRun()" style="display:none">🌍 Jetzt trennen</button>
+    </div>
+    <div id="inv-region-stat" style="font-size:12px;color:var(--mut);margin-top:8px;line-height:1.7"></div>
   </div>
   <div class="card">
     <div class="card-title">👤 Persönliche Daten <span class="badge badge-red">Pflicht</span></div>
@@ -4501,6 +4519,163 @@ function regionSeedFilialenMeta(){
 //     Fund wird über die Personalnummern in den Schichten/Urlaubseinträgen geprüft, welcher
 //     aktuellen Filiale er zuzuordnen ist. Nur eindeutige Treffer werden zum Kopieren
 //     vorgeschlagen — mehrdeutige oder nicht zuordenbare Funde werden nur gemeldet, nie geraten.
+// ── INVENTUR-DATENREPARATUR (einmalig) ──
+// Ein zwischenzeitlicher Fehler im Speicher-Code des Mitarbeiter-Formulars hat
+// Artikel-Mengen als wörtliche Einzelfelder wie "counts.80191" statt verschachtelt im
+// counts-Feld abgelegt (set(...,{merge:true}) wertet Punkt-Schlüssel NICHT als Pfad
+// aus — das tut nur update(), real gegen Firestore geprüft). Die Werte sind vollständig
+// vorhanden, nur an der falschen Stelle — dieses Werkzeug führt sie zusammen.
+var invRepairFixes=[];
+// Robust auch dann, wenn „Inventur-Datenreparatur" noch nicht gelaufen ist: fehlerhafte
+// Einzelfelder wie "counts.80191" (siehe invRepairScan) werden hier zusätzlich zum
+// eigentlichen counts-Feld eingelesen, damit nichts übersehen wird.
+function invReconstructCounts(d){
+  var out=Object.assign({}, (d&&d.counts)||{});
+  if(d) Object.keys(d).forEach(function(k){ if(k.indexOf('counts.')===0) out[k.slice('counts.'.length)]=d[k]; });
+  return out;
+}
+async function invRepairScan(){
+  if(!fbReady||!fbDb||!fbManager){ alert('Bitte zuerst als Manager anmelden (Einstellungen).'); return; }
+  var stat=document.getElementById('inv-repair-stat'), runBtn=document.getElementById('inv-repair-run');
+  stat.textContent='⏳ Prüfe…';
+  runBtn.style.display='none';
+  try{
+    var snap=await fbDb.collection('inventur_counts').get();
+    invRepairFixes=[];
+    snap.forEach(function(doc){
+      var d=doc.data()||{};
+      var flatKeys=Object.keys(d).filter(function(k){ return k.indexOf('counts.')===0; });
+      if(!flatKeys.length) return;
+      var rebuilt=Object.assign({}, d.counts||{});
+      flatKeys.forEach(function(k){ rebuilt[k.slice('counts.'.length)]=d[k]; });
+      invRepairFixes.push({docId:doc.id, ref:doc.ref, rebuilt:rebuilt, flatKeys:flatKeys, filiale:d.filiale||doc.id, month:d.month||''});
+    });
+    if(!invRepairFixes.length){
+      stat.textContent='✓ Keine beschädigten Inventur-Dokumente gefunden.';
+      return;
+    }
+    var totalArt=invRepairFixes.reduce(function(s,f){ return s+f.flatKeys.length; },0);
+    stat.innerHTML='<strong>'+invRepairFixes.length+'</strong> Dokument(e) mit <strong>'+totalArt+'</strong> betroffenen Artikel-Feldern gefunden:<br>'
+      +invRepairFixes.map(function(f){ return '• '+(f.filiale||f.docId)+' · '+f.month+' ('+f.flatKeys.length+' Artikel, '+Object.keys(f.rebuilt).length+' insgesamt nach Reparatur)'; }).join('<br>');
+    runBtn.style.display='block';
+  }catch(err){
+    stat.textContent='❌ Fehler: '+err.message;
+  }
+}
+async function invRepairRun(){
+  if(!confirm('Beschädigte Inventur-Dokumente reparieren? Die Artikel-Mengen werden im richtigen counts-Feld zusammengeführt, die fehlerhaften Einzelfelder werden entfernt. Es gehen keine Mengen verloren.')) return;
+  var stat=document.getElementById('inv-repair-stat'), runBtn=document.getElementById('inv-repair-run');
+  stat.textContent='⏳ Repariere…';
+  try{
+    var jobs=invRepairFixes.map(function(f){
+      // WICHTIG: "counts" (Objekt) und "counts.80191" (Punkt-Feldname) dürfen NICHT im
+      // selben update()-Aufruf als Objekt-Keys gemischt werden — Firestore verwirft dabei
+      // den Lösch-Teil für die fehlerhaften Einzelfelder still und leise (real getestet).
+      // Über FieldPath (Einzelsegment = kompletter Feldname inkl. Punkt) funktioniert es korrekt.
+      var args=['counts', f.rebuilt];
+      f.flatKeys.forEach(function(k){ args.push(new firebase.firestore.FieldPath(k)); args.push(firebase.firestore.FieldValue.delete()); });
+      return f.ref.update.apply(f.ref, args);
+    });
+    await Promise.all(jobs);
+    stat.textContent='✓ '+invRepairFixes.length+' Dokument(e) repariert.';
+    runBtn.style.display='none';
+    toast('✓ Inventur-Reparatur abgeschlossen');
+  }catch(err){
+    stat.textContent='❌ Fehler bei der Reparatur: '+err.message;
+  }
+}
+
+// ════════ INVENTUR-REGION-TRENNUNG (einmalig, siehe Einstellungen) ════════
+// inventur_period/inventur_links/inventur_counts waren bislang nicht nach Region getrennt
+// (beide Regionen teilten sich denselben Zeitraum/dieselben Links/dieselbe Zählungsliste).
+// Ordnet bestehende Zählungen per Filialname der richtigen Region zu (Quelle: filialen_meta,
+// Fallback emps) und dupliziert den aktuell gesetzten Zeitraum/Links einmalig für beide
+// Regionen, damit niemand mitten in der laufenden Zählung neu eingeben muss.
+var invRegionCountFixes=[], invRegionPeriodDup=[], invRegionLinksDup=[], invRegionUnresolved=[];
+async function invRegionScan(){
+  if(!fbReady||!fbDb||!fbManager){ alert('Bitte zuerst als Manager anmelden (Einstellungen).'); return; }
+  var stat=document.getElementById('inv-region-stat'), runBtn=document.getElementById('inv-region-run');
+  stat.textContent='⏳ Prüfe…'; runBtn.style.display='none';
+  try{
+    // 1) Filiale -> Region Landkarte aus filialen_meta (autoritativ), Fallback emps
+    var nameToRegion={};
+    var fmSnap=await fbDb.collection('filialen_meta').get();
+    fmSnap.forEach(function(doc){ var d=doc.data()||{}; if(d.name&&d.region) nameToRegion[d.name.trim()]=d.region; });
+    var empSnap=await fbDb.collection('emps').get();
+    empSnap.forEach(function(doc){ var d=doc.data()||{}; if(d.filiale&&d.region&&!nameToRegion[d.filiale.trim()]) nameToRegion[d.filiale.trim()]=d.region; });
+
+    // 2) inventur_counts ohne (oder mit falschem) region-Feld
+    invRegionCountFixes=[]; invRegionUnresolved=[];
+    var icSnap=await fbDb.collection('inventur_counts').get();
+    icSnap.forEach(function(doc){
+      var d=doc.data()||{};
+      var resolved=d.filiale?nameToRegion[(''+d.filiale).trim()]:null;
+      if(resolved){ if(d.region!==resolved) invRegionCountFixes.push({ref:doc.ref, docId:doc.id, filiale:d.filiale, region:resolved}); }
+      else if(!d.region) invRegionUnresolved.push({docId:doc.id, filiale:d.filiale||'(kein Filialname)'});
+    });
+
+    // 3) inventur_period / inventur_links: alte Dokumente ohne Region-Suffix ("2026-08")
+    //    für beide Regionen duplizieren, sofern die region-spezifische Version noch fehlt.
+    invRegionPeriodDup=[]; invRegionLinksDup=[];
+    var perSnap=await fbDb.collection('inventur_period').get();
+    var perIds={}; perSnap.forEach(function(doc){ perIds[doc.id]=true; });
+    perSnap.forEach(function(doc){
+      if(doc.id.indexOf('__')>=0) return; // schon migriert
+      var d=doc.data()||{};
+      ['ost','west'].forEach(function(r){
+        var newId=doc.id+'__'+r;
+        if(!perIds[newId]) invRegionPeriodDup.push({newId:newId, data:{start:d.start||'', end:d.end||'', region:r}});
+      });
+    });
+    var lnkSnap=await fbDb.collection('inventur_links').get();
+    var lnkIds={}; lnkSnap.forEach(function(doc){ lnkIds[doc.id]=true; });
+    lnkSnap.forEach(function(doc){
+      if(doc.id.indexOf('__')>=0) return;
+      var d=doc.data()||{};
+      ['ost','west'].forEach(function(r){
+        var newId=doc.id+'__'+r;
+        if(!lnkIds[newId]) invRegionLinksDup.push({newId:newId, data:{links:d.links||{}, region:r}});
+      });
+    });
+
+    var total=invRegionCountFixes.length+invRegionPeriodDup.length+invRegionLinksDup.length;
+    var lines=[
+      invRegionCountFixes.length+' Inventur-Zählung(en) werden der richtigen Region zugeordnet',
+      invRegionPeriodDup.length+' Zeitraum-Dokument(e) werden für beide Regionen übernommen',
+      invRegionLinksDup.length+' Welo-Link-Dokument(e) werden für beide Regionen übernommen'
+    ];
+    if(invRegionUnresolved.length) lines.push('⚠️ '+invRegionUnresolved.length+' Zählung(en) ohne erkennbare Filiale — bleiben unverändert: '+invRegionUnresolved.map(function(u){return u.filiale+' ('+u.docId+')';}).join(', '));
+    stat.innerHTML=lines.join('<br>')+(total?'':'<br>✓ Nichts zu tun.');
+    runBtn.style.display=total?'block':'none';
+  }catch(err){ stat.textContent='❌ Fehler: '+err.message; }
+}
+async function invRegionRun(){
+  if(!confirm('Bestehende Inventur-Daten nach Region trennen? Zählungen werden ihrer Filiale entsprechend markiert, der aktuelle Zeitraum/die Welo-Links werden für Ost und West übernommen. Nichts wird gelöscht.')) return;
+  var stat=document.getElementById('inv-region-stat'), runBtn=document.getElementById('inv-region-run');
+  stat.textContent='⏳ Trenne…';
+  try{
+    var chunks=[]; for(var i=0;i<invRegionCountFixes.length;i+=400){ chunks.push(invRegionCountFixes.slice(i,i+400)); }
+    var chain=Promise.resolve();
+    chunks.forEach(function(chunk){
+      chain=chain.then(function(){
+        var batch=fbDb.batch();
+        chunk.forEach(function(f){ batch.update(f.ref,{region:f.region}); });
+        return batch.commit();
+      });
+    });
+    await chain;
+    var dupJobs=[];
+    invRegionPeriodDup.forEach(function(p){ dupJobs.push(fbDb.collection('inventur_period').doc(p.newId).set(p.data,{merge:true})); });
+    invRegionLinksDup.forEach(function(l){ dupJobs.push(fbDb.collection('inventur_links').doc(l.newId).set(l.data,{merge:true})); });
+    await Promise.all(dupJobs);
+    stat.textContent='✓ '+invRegionCountFixes.length+' Zählung(en) zugeordnet, '+(invRegionPeriodDup.length+invRegionLinksDup.length)+' Dokument(e) übernommen.'
+      +(invRegionUnresolved.length?' ⚠️ '+invRegionUnresolved.length+' Zählung(en) weiterhin ohne Region — siehe oben.':'');
+    runBtn.style.display='none';
+    toast('✓ Inventur-Region-Trennung abgeschlossen');
+    if(typeof invBindMonth==='function') invBindMonth();
+  }catch(err){ stat.textContent='❌ Fehler: '+err.message; }
+}
+
 var filMigAffected=[], filMigPlans=[], filMigUrlaub=[], filMigUgFixes=[], filMigInvFixes=[], filMigUnresolved=[];
 // Für Umlagerung-Meldungen (kein Pfad/Slug-Problem, nur ein veralteter Textwert im Feld
 // vonFiliale/filiale): findet den EINEN kanonischen filMeta-Namen, der exakt auf den alten
@@ -4700,14 +4875,15 @@ async function filMigScan(){
         invBySlug[slug].forEach(function(entry){
           var newDocId=entry.month+'__'+newSlug;
           if(newDocId===entry.docId) return;
-          var n=Object.keys(entry.data.counts||{}).length;
+          var counts=invReconstructCounts(entry.data);
+          var n=Object.keys(counts).length;
           filMigInvFixes.push({oldDocId:entry.docId, newDocId:newDocId, filiale:resolved.newName,
-            counts:entry.data.counts||{}, submitted:!!entry.data.submitted, by:entry.data.by||'',
+            counts:counts, submitted:!!entry.data.submitted, by:entry.data.by||'',
             label:resolved.newName+' · '+entry.month+' ('+n+' Artikel aus „'+entry.docId+'" wiederhergestellt)'});
         });
       } else {
         invBySlug[slug].forEach(function(entry){
-          filMigUnresolved.push({type:'Inventur ('+entry.month+')', oldSlug:slug, count:Object.keys(entry.data.counts||{}).length, candidates:resolved.candidates});
+          filMigUnresolved.push({type:'Inventur ('+entry.month+')', oldSlug:slug, count:Object.keys(invReconstructCounts(entry.data)).length, candidates:resolved.candidates});
         });
       }
     });
@@ -4754,11 +4930,17 @@ async function filMigRun(){
     filMigInvFixes.forEach(function(f){
       // Feldpfade statt ganzes counts-Objekt: mergt Artikel für Artikel, überschreibt keine
       // Mengen, die andere Mitarbeiter am selben Standort gerade jetzt (Zählperiode läuft noch)
-      // parallel eintippen.
-      var updates={filiale:f.filiale};
-      Object.keys(f.counts).forEach(function(art){ updates['counts.'+art]=f.counts[art]; });
-      if(f.submitted) updates.submitted=true;
-      jobs.push(fbDb.collection('inventur_counts').doc(f.newDocId).set(updates,{merge:true}));
+      // parallel eintippen. set(...,{merge:true}) wertet Punkt-Schlüssel NICHT als Pfad aus (real
+      // gegen Firestore geprüft) — deshalb zuerst set() nur mit Metadaten (legt Dokument bei Bedarf
+      // an), danach update() mit den counts.*-Pfaden (Dokument existiert dann garantiert).
+      var meta={filiale:f.filiale, region:activeRegion};
+      if(f.submitted) meta.submitted=true;
+      var fieldUpdates={};
+      Object.keys(f.counts).forEach(function(art){ fieldUpdates['counts.'+art]=f.counts[art]; });
+      var ref=fbDb.collection('inventur_counts').doc(f.newDocId);
+      var job=ref.set(meta,{merge:true});
+      if(Object.keys(fieldUpdates).length) job=job.then(function(){ return ref.update(fieldUpdates); });
+      jobs.push(job);
     });
     await Promise.all(jobs);
     stat.textContent='✓ Kopiert: '+filMigPlans.length+' Dienstplan-Monat(e), '+filMigUrlaub.length+' Urlaubs-Eintrag(e). Korrigiert: '+filMigUgFixes.length+' Umlagerung-Meldung(en). Zusammengeführt: '+filMigInvFixes.length+' Inventur-Fragment(e). Du kannst jetzt „Veröffentlichen" klicken.'
@@ -6439,23 +6621,23 @@ function invStartListeners(){
 
 // Monatsabhängige Listener (neu binden bei Monatswechsel)
 function invBindMonth(){
-  if(!fbReady||!fbDb) return;
+  if(!fbReady||!fbDb||!activeRegion) return;
   var month=document.getElementById('inv-month').value; if(!month) return;
   if(invPeriodUnsub){try{invPeriodUnsub();}catch(e){}}
   if(invLinksUnsub){try{invLinksUnsub();}catch(e){}}
   if(invCountsUnsub){try{invCountsUnsub();}catch(e){}}
-  invPeriodUnsub=fbDb.collection('inventur_period').doc(month).onSnapshot(function(doc){
+  invPeriodUnsub=fbDb.collection('inventur_period').doc(month+'__'+activeRegion).onSnapshot(function(doc){
     var d=doc.exists?doc.data():{};
     var s=document.getElementById('inv-start'), e=document.getElementById('inv-end');
     if(s&&document.activeElement!==s) s.value=d.start||'';
     if(e&&document.activeElement!==e) e.value=d.end||'';
     invRenderPeriodStatus();
   }, function(e){ console.warn('inv period',e); });
-  invLinksUnsub=fbDb.collection('inventur_links').doc(month).onSnapshot(function(doc){
+  invLinksUnsub=fbDb.collection('inventur_links').doc(month+'__'+activeRegion).onSnapshot(function(doc){
     invLinks=(doc.exists&&doc.data().links)||{};
     invRenderLinksResult();
   }, function(e){ console.warn('inv links',e); });
-  invCountsUnsub=fbDb.collection('inventur_counts').where('month','==',month).onSnapshot(function(snap){
+  invCountsUnsub=fbDb.collection('inventur_counts').where('month','==',month).where('region','==',activeRegion).onSnapshot(function(snap){
     invCounts={}; snap.forEach(function(doc){ invCounts[doc.id]=doc.data(); });
     invRenderSubmissions();
   }, function(e){ console.warn('inv counts',e); });
@@ -6464,10 +6646,10 @@ function invBindMonth(){
 function invRenderAll(){ invBindMonth(); invRenderPeriodStatus(); invRenderLinksResult(); invRenderSubmissions(); }
 
 function invSavePeriod(){
-  if(!fbReady||!fbDb||!fbManager){ alert('Bitte zuerst als Manager anmelden (☁️ Cloud).'); return; }
+  if(!fbReady||!fbDb||!fbManager||!activeRegion){ alert('Bitte zuerst als Manager anmelden (☁️ Cloud).'); return; }
   var month=document.getElementById('inv-month').value;
   var start=document.getElementById('inv-start').value, end=document.getElementById('inv-end').value;
-  fbDb.collection('inventur_period').doc(month).set({start:start,end:end},{merge:true})
+  fbDb.collection('inventur_period').doc(month+'__'+activeRegion).set({start:start,end:end,region:activeRegion},{merge:true})
     .then(function(){ toast('✓ Zeitraum gespeichert'); invRenderPeriodStatus(); })
     .catch(function(e){ alert('Fehler: '+e.message); });
 }
@@ -6483,7 +6665,7 @@ function invRenderPeriodStatus(){
 }
 
 function invParseLinks(){
-  if(!fbReady||!fbDb||!fbManager){ alert('Bitte zuerst als Manager anmelden (☁️ Cloud).'); return; }
+  if(!fbReady||!fbDb||!fbManager||!activeRegion){ alert('Bitte zuerst als Manager anmelden (☁️ Cloud).'); return; }
   var raw=document.getElementById('inv-links-raw').value.trim();
   if(!raw){ toast('Bitte Links einfügen.',true); return; }
   var month=document.getElementById('inv-month').value;
@@ -6495,7 +6677,7 @@ function invParseLinks(){
     found[nr]=url.trim();
   });
   if(!Object.keys(found).length){ toast('Keine gültigen Welo-Links erkannt.',true); return; }
-  fbDb.collection('inventur_links').doc(month).set({links:found},{merge:true}).then(function(){
+  fbDb.collection('inventur_links').doc(month+'__'+activeRegion).set({links:found,region:activeRegion},{merge:true}).then(function(){
     var msg='✓ '+Object.keys(found).length+' Links gespeichert';
     if(wrongMonth.length) msg+=' · ⚠️ anderer Monat: '+wrongMonth.join(', ');
     toast(msg);
@@ -6557,7 +6739,8 @@ function invRenderSubmissions(){
   if(!keys.length){ box.innerHTML='<div style="font-size:13px;color:var(--mut)">Noch keine Zählungen für diesen Monat eingereicht.</div>'; return; }
   box.innerHTML=keys.map(function(k){
     var c=invCounts[k];
-    var filled=c.counts?Object.keys(c.counts).filter(function(a){return (+c.counts[a])>0;}).length:0;
+    var cc=invReconstructCounts(c);
+    var filled=Object.keys(cc).filter(function(a){return (+cc[a])>0;}).length;
     var status=c.submitted?'<span class="badge badge-grn" style="font-size:11px">✓ Eingereicht</span>':'<span class="badge badge-amb" style="font-size:11px">✎ Entwurf</span>';
     var nrForStore=null; for(var nr in invStoreMap){ if(invSlug(invStoreMap[nr])===invSlug(c.filiale)) nrForStore=nr; }
     var hasLink=nrForStore&&invLinks[nrForStore];
@@ -6583,7 +6766,7 @@ function invCloseTypeMode(){ document.getElementById('inv-typemode').classList.r
 
 function invRenderTypeMode(){
   var list=document.getElementById('inv-tm-list'); if(!list||!invTmKey) return;
-  var c=invCounts[invTmKey]||{}; var counts=c.counts||{};
+  var c=invCounts[invTmKey]||{}; var counts=invReconstructCounts(c);
   var only0=document.getElementById('inv-tm-only0').checked;
   // In Welo-Reihenfolge = INVENTUR_ITEMS-Reihenfolge
   var rows=INVENTUR_ITEMS.filter(function(it){
@@ -6615,7 +6798,7 @@ function invOpenWelo(){
 }
 
 function invExportCSV(){
-  var c=invCounts[invTmKey]; if(!c) return; var counts=c.counts||{};
+  var c=invCounts[invTmKey]; if(!c) return; var counts=invReconstructCounts(c);
   var only0=document.getElementById('inv-tm-only0').checked;
   var rows=[['MarktNr.','ArtikelNr.','Artikelbezeichnung','Einheit','Menge']];
   INVENTUR_ITEMS.forEach(function(it){
