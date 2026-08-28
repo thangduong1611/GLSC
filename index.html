@@ -1135,11 +1135,16 @@ window.onerror=function(msg,src,line){
 <div id="panel-inventur" class="panel">
   <div class="card">
     <div class="card-h"><span>🗂 Kategorien &amp; Artikel ordnen</span></div>
-    <p style="font-size:13px;color:var(--mut);margin:0 0 12px">Reihenfolge der Kategorien ändern und Artikel in die richtige Kategorie verschieben. Änderungen gelten sofort für alle Mitarbeiter.</p>
+    <p style="font-size:13px;color:var(--mut);margin:0 0 12px">Reihenfolge der Kategorien ändern und Artikel in die richtige Kategorie verschieben. Änderungen gelten erst für alle Mitarbeiter, sobald du auf „💾 Speichern" tippst.</p>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
       <button class="btn btn-sm" onclick="icShowTab('order')" id="ic-tab-order">↕ Reihenfolge</button>
       <button class="btn btn-sm" onclick="icShowTab('items')" id="ic-tab-items">📦 Artikel zuordnen</button>
       <button class="btn btn-sm" onclick="icShowTab('photos')" id="ic-tab-photos">🖼 Produktfotos</button>
+    </div>
+    <div id="ic-save-bar" style="display:none;align-items:center;gap:10px;padding:10px 12px;margin-bottom:12px;border-radius:8px;background:var(--bg);border:1px solid var(--amb)">
+      <span style="flex:1;font-size:13px;color:var(--amb)">⚠️ Ungespeicherte Änderungen — gelten erst nach „Speichern" für Mitarbeiter.</span>
+      <button class="btn btn-sm" onclick="icDiscardCfg()">↺ Verwerfen</button>
+      <button class="btn btn-sm btn-red" onclick="icSaveCfg()">💾 Speichern</button>
     </div>
     <div id="ic-order" style="display:none"></div>
     <div id="ic-items" style="display:none">
@@ -6436,19 +6441,35 @@ function invParseMonthFromUrl(url){ var m=(''+url).match(/\/\d{5,7}-(\d{6})-/); 
 // INVENTUR-KONFIGURATION: Kategorien ordnen, Artikel zuordnen, Fotos
 // Firestore: inventur_config/current  +  inventur_photos/{art}
 // ═══════════════════════════════════════════════════════
-var icCfg={catOrder:[],itemCat:{}}, icPhotos={}, icCfgUnsub=null, icPhotoUnsub=null, icTab='order';
+// icCfg = Arbeitskopie (kann unsaved Änderungen enthalten), icCfgServer = zuletzt von
+// Firestore bestätigter Stand (Basis für "Verwerfen"). icCfgLoaded schützt davor, dass ein
+// Klick auf ↕/📦 VOR dem ersten Laden von der leeren Standard-Reihenfolge ausgeht und beim
+// Speichern die echte, bereits gespeicherte Reihenfolge überschreibt (das war die Ursache
+// des "Reihenfolge springt nach Neustart zurück"-Fehlers: ohne diese Sperre + mit Auto-Save
+// bei jedem Klick konnte ein Klick kurz nach dem Öffnen — bevor Firestore geantwortet hat —
+// die falsche Basis dauerhaft speichern).
+var icCfg={catOrder:[],itemCat:{}}, icCfgServer={catOrder:[],itemCat:{}}, icCfgLoaded=false, icDirty=false;
+var icPhotos={}, icCfgUnsub=null, icPhotoUnsub=null, icTab='order';
 
 function icStatus(msg,color){
   var el=document.getElementById('ic-status'); if(!el) return;
   el.textContent=msg||''; el.style.color=color||'var(--mut)'; el.style.display=msg?'block':'none';
   if(msg&&color!=='#C0392B') setTimeout(function(){ if(el.textContent===msg) el.style.display='none'; },2500);
 }
+function icRenderSaveBar(){
+  var bar=document.getElementById('ic-save-bar'); if(!bar) return;
+  bar.style.display=icDirty?'flex':'none';
+}
 function icStartListeners(){
   if(!fbReady||!fbDb) return;
   if(icCfgUnsub){try{icCfgUnsub();}catch(e){}}
   icCfgUnsub=fbDb.collection('inventur_config').doc('current').onSnapshot(function(doc){
     var d=doc.exists?doc.data():null;
-    icCfg={catOrder:(d&&d.catOrder)||[], itemCat:(d&&d.itemCat)||{}};
+    icCfgServer={catOrder:(d&&d.catOrder)||[], itemCat:(d&&d.itemCat)||{}};
+    icCfgLoaded=true;
+    // Laufende, unsaved Änderungen NICHT überschreiben (z.B. eigener Echo-Snapshot oder
+    // gleichzeitige Bearbeitung durch jemand anderen) — erst nach Speichern/Verwerfen wieder syncen.
+    if(!icDirty) icCfg={catOrder:icCfgServer.catOrder.slice(), itemCat:Object.assign({},icCfgServer.itemCat)};
     var p=document.getElementById('panel-inventur');
     if(p&&p.classList.contains('active')) icRenderCurrent();
   }, function(e){ console.warn('ic cfg', e); icStatus('⚠️ Kein Zugriff auf inventur_config ('+e.code+') — Firestore-Regel fehlt.','#C0392B'); });
@@ -6461,10 +6482,17 @@ function icStartListeners(){
 }
 function icSaveCfg(){
   if(!fbReady||!fbDb){ icStatus('Keine Verbindung','#C0392B'); return; }
+  if(!icCfgLoaded){ icStatus('Bitte kurz warten, bis die aktuelle Konfiguration geladen ist.','#C0392B'); return; }
   fbDb.collection('inventur_config').doc('current').set({
     catOrder:icCfg.catOrder, itemCat:icCfg.itemCat, at:new Date().toISOString()
-  },{merge:true}).then(function(){ icStatus('✓ Gespeichert — gilt sofort für alle Mitarbeiter','var(--grn)'); })
-   .catch(function(e){ icStatus('Fehler: '+e.message,'#C0392B'); });
+  },{merge:true}).then(function(){
+    icDirty=false; icRenderSaveBar();
+    icStatus('✓ Gespeichert — gilt jetzt für alle Mitarbeiter','var(--grn)');
+  }).catch(function(e){ icStatus('Fehler: '+e.message,'#C0392B'); });
+}
+function icDiscardCfg(){
+  icCfg={catOrder:icCfgServer.catOrder.slice(), itemCat:Object.assign({},icCfgServer.itemCat)};
+  icDirty=false; icRenderSaveBar(); icRenderCurrent();
 }
 function icEffCatOrder(){
   var base=(typeof INVENTUR_CATS!=='undefined')?INVENTUR_CATS.map(function(c){return c[0];}):[];
@@ -6485,6 +6513,7 @@ function icShowTab(tab){
     var b=document.getElementById('ic-tab-'+x);
     if(b){ b.style.background=(x===tab)?'var(--red)':''; b.style.color=(x===tab)?'#fff':''; b.style.borderColor=(x===tab)?'var(--red)':''; }
   });
+  icRenderSaveBar();
   icRenderCurrent();
 }
 function icRenderCurrent(){
@@ -6494,6 +6523,7 @@ function icRenderCurrent(){
 }
 function icRenderOrder(){
   var box=document.getElementById('ic-order'); if(!box) return;
+  if(!icCfgLoaded){ box.innerHTML='<div style="padding:16px;color:var(--mut);font-size:13px">⏳ Lade aktuelle Reihenfolge…</div>'; return; }
   var order=icEffCatOrder();
   box.innerHTML=order.map(function(key,i){
     var count=(typeof INVENTUR_ITEMS!=='undefined')?INVENTUR_ITEMS.filter(function(it){return icItemCat(it)===key;}).length:0;
@@ -6506,11 +6536,13 @@ function icRenderOrder(){
   }).join('');
 }
 function icMoveCat(i,dir){
+  if(!icCfgLoaded) return;
   var order=icEffCatOrder(), j=i+dir;
   if(j<0||j>=order.length) return;
   var tmp=order[i]; order[i]=order[j]; order[j]=tmp;
   icCfg.catOrder=order;
-  icRenderOrder(); icSaveCfg();
+  icDirty=true; icRenderSaveBar();
+  icRenderOrder();
 }
 function icPopulateFilter(){
   var sel=document.getElementById('ic-item-filter'); if(!sel) return;
@@ -6522,6 +6554,7 @@ function icPopulateFilter(){
 }
 function icRenderItems(){
   var box=document.getElementById('ic-item-list'); if(!box||typeof INVENTUR_ITEMS==='undefined') return;
+  if(!icCfgLoaded){ box.innerHTML='<div style="padding:16px;color:var(--mut);font-size:13px">⏳ Lade aktuelle Zuordnung…</div>'; return; }
   var q=(document.getElementById('ic-item-search').value||'').toLowerCase().trim();
   var filt=document.getElementById('ic-item-filter').value||'';
   var order=icEffCatOrder();
@@ -6545,11 +6578,13 @@ function icRenderItems(){
   }).join('');
 }
 function icSetItemCat(art,cat){
+  if(!icCfgLoaded) return;
   var orig=null;
   for(var i=0;i<INVENTUR_ITEMS.length;i++) if(INVENTUR_ITEMS[i][0]===art){ orig=INVENTUR_ITEMS[i][1]; break; }
   if(cat===orig) delete icCfg.itemCat[art];
   else icCfg.itemCat[art]=cat;
-  icSaveCfg(); icRenderItems();
+  icDirty=true; icRenderSaveBar();
+  icRenderItems();
 }
 function icRenderPhotos(){
   var box=document.getElementById('ic-photo-list'); if(!box||typeof INVENTUR_ITEMS==='undefined') return;
