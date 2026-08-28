@@ -4501,7 +4501,7 @@ function regionSeedFilialenMeta(){
 //     Fund wird über die Personalnummern in den Schichten/Urlaubseinträgen geprüft, welcher
 //     aktuellen Filiale er zuzuordnen ist. Nur eindeutige Treffer werden zum Kopieren
 //     vorgeschlagen — mehrdeutige oder nicht zuordenbare Funde werden nur gemeldet, nie geraten.
-var filMigAffected=[], filMigPlans=[], filMigUrlaub=[], filMigUgFixes=[], filMigUnresolved=[];
+var filMigAffected=[], filMigPlans=[], filMigUrlaub=[], filMigUgFixes=[], filMigInvFixes=[], filMigUnresolved=[];
 // Für Umlagerung-Meldungen (kein Pfad/Slug-Problem, nur ein veralteter Textwert im Feld
 // vonFiliale/filiale): findet den EINEN kanonischen filMeta-Namen, der exakt auf den alten
 // Namen endet (siehe Kommentar bei filMigResolveOrphan — gleiches Präfix-Prinzip, hier direkt
@@ -4674,7 +4674,45 @@ async function filMigScan(){
       }
     });
 
-    if(!filMigPlans.length&&!filMigUrlaub.length&&!filMigUgFixes.length&&!filMigUnresolved.length){
+    // D) Inventur-Zählungen: inventur_counts/{month}__{slug} ist EIN gemeinsames Dokument pro
+    // Filiale (nicht pro Mitarbeiter). Ändert sich während einer laufenden Zählperiode der
+    // Filialname eines Mitarbeiters (z.B. durch diese Migration selbst, oder durch eine manuelle
+    // Korrektur), berechnet sein Gerät ab dem nächsten Speichern einen ANDEREN Dokumentschlüssel
+    // — seine bereits eingetippten Mengen landen dann in einem zweiten, verwaisten Dokument,
+    // während HR nur das unter dem aktuellen Namen sieht (oft mit 0 Positionen, obwohl der
+    // Mitarbeiter fertig war und "Gesendet" angetippt hat). Alle Fragmente pro Filiale werden
+    // hier zusammengeführt (Mengen additiv gemerged, alte Dokumente bleiben unverändert erhalten).
+    filMigInvFixes=[];
+    var invAllSnap=await fbDb.collection('inventur_counts').get();
+    var invBySlug={};
+    invAllSnap.forEach(function(doc){
+      var mm=doc.id.match(/^(\d{4}-\d{2})__(.+)$/);
+      if(!mm) return;
+      var month=mm[1], slug=mm[2];
+      if(liveSlugs[slug]||slug===fbSlug('')) return;
+      if(!invBySlug[slug]) invBySlug[slug]=[];
+      invBySlug[slug].push({docId:doc.id, month:month, data:doc.data()||{}});
+    });
+    Object.keys(invBySlug).forEach(function(slug){
+      var resolved=filMigResolveOrphan(slug, {}, filMeta);
+      if(resolved.confidence==='high'){
+        var newSlug=fbSlug(resolved.newName);
+        invBySlug[slug].forEach(function(entry){
+          var newDocId=entry.month+'__'+newSlug;
+          if(newDocId===entry.docId) return;
+          var n=Object.keys(entry.data.counts||{}).length;
+          filMigInvFixes.push({oldDocId:entry.docId, newDocId:newDocId, filiale:resolved.newName,
+            counts:entry.data.counts||{}, submitted:!!entry.data.submitted, by:entry.data.by||'',
+            label:resolved.newName+' · '+entry.month+' ('+n+' Artikel aus „'+entry.docId+'" wiederhergestellt)'});
+        });
+      } else {
+        invBySlug[slug].forEach(function(entry){
+          filMigUnresolved.push({type:'Inventur ('+entry.month+')', oldSlug:slug, count:Object.keys(entry.data.counts||{}).length, candidates:resolved.candidates});
+        });
+      }
+    });
+
+    if(!filMigPlans.length&&!filMigUrlaub.length&&!filMigUgFixes.length&&!filMigInvFixes.length&&!filMigUnresolved.length){
       stat.textContent='✓ Keine Filialnamen-Änderungen oder verwaisten Daten gefunden — nichts zu migrieren.';
       return;
     }
@@ -4687,6 +4725,10 @@ async function filMigScan(){
     if(filMigUgFixes.length){
       html+='<br>Werden korrigiert: <strong>'+filMigUgFixes.length+'</strong> Umlagerung-Meldung(en) mit veraltetem Filialnamen:<br>'
         +filMigUgFixes.map(function(f){return '• '+f.label;}).join('<br>');
+    }
+    if(filMigInvFixes.length){
+      html+='<div style="margin-top:8px;padding:8px;background:#EAFAF1;border-radius:6px"><strong>⚠️ '+filMigInvFixes.length+'</strong> verwaiste Inventur-Zählung(en) werden zusammengeführt (Mitarbeiter-Daten waren gesplittet):<br>'
+        +filMigInvFixes.map(function(f){return '• '+f.label;}).join('<br>')+'</div>';
     }
     if(filMigUnresolved.length){
       html+='<div style="margin-top:8px;padding:8px;background:#FDECEA;border-radius:6px">⚠️ <strong>'+filMigUnresolved.length+'</strong> Eintrag(e) konnten nicht eindeutig zugeordnet werden — bitte manuell prüfen:<br>'
@@ -4701,7 +4743,7 @@ async function filMigScan(){
   }
 }
 async function filMigRun(){
-  if(!confirm('Dienstpläne, Urlaubsdaten unter dem neuen Filialnamen zusätzlich speichern und veraltete Filialnamen in Umlagerung-Meldungen korrigieren? Die alten Einträge bleiben unverändert erhalten (nur Umlagerung-Meldungen werden direkt korrigiert).')) return;
+  if(!confirm('Dienstpläne, Urlaubsdaten unter dem neuen Filialnamen zusätzlich speichern, veraltete Filialnamen in Umlagerung-Meldungen korrigieren und gesplittete Inventur-Zählungen zusammenführen? Die alten Einträge bleiben unverändert erhalten (nur Umlagerung-Meldungen werden direkt korrigiert; Inventur-Mengen werden additiv in das aktuelle Dokument gemerged, nichts wird überschrieben).')) return;
   var stat=document.getElementById('fil-mig-stat'), runBtn=document.getElementById('fil-mig-run');
   stat.textContent='⏳ Kopiere…';
   try{
@@ -4709,8 +4751,17 @@ async function filMigRun(){
     filMigPlans.forEach(function(p){ jobs.push(fbDb.collection('plan').doc(p.newId).set(p.data,{merge:true})); });
     filMigUrlaub.forEach(function(u){ jobs.push(fbDb.collection('filialen').doc(u.newSlug).collection('urlaub').doc(u.docId).set(u.data,{merge:true})); });
     filMigUgFixes.forEach(function(f){ jobs.push(f.ref.update(f.updates)); });
+    filMigInvFixes.forEach(function(f){
+      // Feldpfade statt ganzes counts-Objekt: mergt Artikel für Artikel, überschreibt keine
+      // Mengen, die andere Mitarbeiter am selben Standort gerade jetzt (Zählperiode läuft noch)
+      // parallel eintippen.
+      var updates={filiale:f.filiale};
+      Object.keys(f.counts).forEach(function(art){ updates['counts.'+art]=f.counts[art]; });
+      if(f.submitted) updates.submitted=true;
+      jobs.push(fbDb.collection('inventur_counts').doc(f.newDocId).set(updates,{merge:true}));
+    });
     await Promise.all(jobs);
-    stat.textContent='✓ Kopiert: '+filMigPlans.length+' Dienstplan-Monat(e), '+filMigUrlaub.length+' Urlaubs-Eintrag(e). Korrigiert: '+filMigUgFixes.length+' Umlagerung-Meldung(en). Du kannst jetzt „Veröffentlichen" klicken.'
+    stat.textContent='✓ Kopiert: '+filMigPlans.length+' Dienstplan-Monat(e), '+filMigUrlaub.length+' Urlaubs-Eintrag(e). Korrigiert: '+filMigUgFixes.length+' Umlagerung-Meldung(en). Zusammengeführt: '+filMigInvFixes.length+' Inventur-Fragment(e). Du kannst jetzt „Veröffentlichen" klicken.'
       +(filMigUnresolved.length?' ('+filMigUnresolved.length+' Eintrag(e) weiterhin ungeklärt — siehe oben.)':'');
     runBtn.style.display='none';
     toast('✓ Migration abgeschlossen');

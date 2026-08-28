@@ -1849,7 +1849,13 @@ function maRefreshProfile(){
     maSetSession(sess);
     maAllocInfo(sess);
     document.getElementById('hdr-sub').textContent=sess.name+' · '+(sess.filiale||t('no_fil'));
-    if(filialeChanged){ maFbPlans={}; maPlanKey=null; if(maPlanUnsub){try{maPlanUnsub();}catch(e){}maPlanUnsub=null;} maClearPlanSubs(); maFbPlanPdfs={}; maClearPlanPdfSubs(); maGridStore=null; maStartFbUrlaub(sess); maRenderDP(); maRenderCal(); maRenderUlList(); }
+    if(filialeChanged){ maFbPlans={}; maPlanKey=null; if(maPlanUnsub){try{maPlanUnsub();}catch(e){}maPlanUnsub=null;} maClearPlanSubs(); maFbPlanPdfs={}; maClearPlanPdfSubs(); maGridStore=null; maStartFbUrlaub(sess); maRenderDP(); maRenderCal(); maRenderUlList();
+      // Inventur-Dokumentschlüssel hängt ebenfalls von der Filiale ab (inventur_counts/{month}__{slug}).
+      // Ohne Neu-Bindung hier würden weitere Eingaben in ein anderes Dokument als bisher gespeichert
+      // werden — bereits eingetippte Mengen (im Speicher/lokal) bleiben dabei erhalten, nur der
+      // Ziel-Schlüssel für künftige Speicherungen wird aktualisiert.
+      if(typeof ivRebindCounts==='function' && ivMonth) ivRebindCounts();
+    }
   }).catch(function(e){ console.warn('profile refresh', e); });
 }
 function maAllocInfo(sess){
