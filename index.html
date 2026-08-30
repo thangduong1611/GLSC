@@ -126,6 +126,7 @@ canvas{display:block;max-width:100%;}
 /* TOAST */
 .toast{position:fixed;bottom:22px;right:22px;background:var(--grn);color:#fff;padding:10px 18px;border-radius:var(--r);font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.2);transform:translateY(80px);opacity:0;transition:all .3s;z-index:999;}
 .toast.show{transform:translateY(0);opacity:1;}
+.toast.warn{background:var(--amb,#B7791F);}
 
 /* MODAL */
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:flex-start;justify-content:center;padding:16px 0;overflow-y:auto;}
@@ -188,6 +189,9 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 .dp-cell-frei{background:#F0EDE8;}.dp-cell-urlaub{background:#EAFAF1;}.dp-cell-krank{background:#FDEDEC;}
 .dp-cell-pend{background:#FEF6E6;}
 .dp-pend-badge{display:block;font-size:8.5px;font-weight:700;color:#a06600;line-height:1.1;text-align:center;margin-top:1px;}
+.dp-cell-clash{box-shadow:inset 0 0 0 2px #C0392B;}
+.dp-other-badge{display:block;font-size:8.5px;font-weight:600;color:#6B6860;line-height:1.15;text-align:center;margin-top:1px;}
+.dp-other-badge.clash{color:#C0392B;font-weight:700;}
 .dp-th-ft{background:#FCF3E0 !important;color:#8a5a00;}
 .dp-fn{display:block;font-weight:600;font-size:8px;color:#a06600;line-height:1.1;margin-top:1px;}
 .dp-cell-ft{box-shadow:inset 0 0 0 1px #f0d9a8;}
@@ -1255,6 +1259,7 @@ window.onerror=function(msg,src,line){
         <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#FDEDEC;border:1px solid #C0392B"></span>🏥 Krankmeldung</span>
         <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#FEF6E6;border:1px solid #f0c674"></span>🌴 Urlaub beantragt (offen)</span>
         <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#FCF3E0;border:1px solid #f0d9a8"></span>Feiertag</span>
+        <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#fff;box-shadow:inset 0 0 0 2px #C0392B"></span>⚠️ Doppelbelegung · 🏪 = arbeitet an dem Tag auch woanders</span>
       </div>
       <div id="dp-weeks-wrap"></div>
       <div id="dp-sig-opt" style="margin-bottom:10px"><label style="display:flex;align-items:center;gap:9px;cursor:pointer;padding:9px 12px;background:var(--bg);border:1px solid var(--brd);border-radius:var(--rs)"><input type="checkbox" id="dp-sig-check" style="width:16px;height:16px;accent-color:var(--red)"><span style="font-size:13px">✍️ <strong>Unterschrift des Gebietsleiters</strong> auf PDF anfügen</span></label></div>      <div class="btn-row">
@@ -1369,8 +1374,9 @@ checkFirstStart();
 // ─── HELPERS ─────────────────────────────────────────────────
 function fmtDate(v) { if(!v) return '___'; const [y,m,d]=v.split('-'); return `${d}.${m}.${y}`; }
 function fmtMonth(v) { if(!v) return '[Monat]'; return new Date(v+'-01').toLocaleDateString('de-DE',{month:'long',year:'numeric'}); }
-function toast(msg) {
+function toast(msg, warn) {
   const t=document.getElementById('toast'); t.textContent=msg||'✓ Kopiert!';
+  t.classList.toggle('warn', !!warn);       // Warnungen nicht in Grün (Erfolgsfarbe) zeigen
   t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500);
 }
 function markDrop(p) {
@@ -3307,6 +3313,7 @@ function dpInit(){
   var blSel=document.getElementById('dp-bundesland');if(blSel){var savedBl=localStorage.getItem('sc_dp_bl_'+f.replace(/\s+/g,'_').toLowerCase());if(savedBl)blSel.value=savedBl;}
   dpRenderEmpTags();dpRenderWeeks();dpPopulateAddSel();
   dpBindCloud(f,m);
+  dpLoadElsewhere();
 }
 // Liest den Plan live aus Firestore – damit von Shopleitern veröffentlichte
 // Pläne im HR-Portal automatisch erscheinen.
@@ -3381,7 +3388,34 @@ function dpBL(){var s=document.getElementById('dp-bundesland');return s?s.value:
 function dpMonthHolidays(){var m=document.getElementById('dp-month').value;if(!m)return {};var y=+m.split('-')[0],bl=dpBL();return Object.assign({},dpHolidays(y-1,bl),dpHolidays(y,bl),dpHolidays(y+1,bl));}
 function dpGetKW(date){var d=new Date(date);d.setHours(0,0,0,0);d.setDate(d.getDate()+4-(d.getDay()||7));return Math.ceil((((d-new Date(d.getFullYear(),0,1))/86400000)+1)/7);}
 function dpGetWeeks(ym){var p=ym.split('-'),year=+p[0],month=+p[1];var first=new Date(year,month-1,1,12),last=new Date(year,month,0,12);var weeks=[],d=new Date(first),dow=d.getDay();if(dow!==1)d.setDate(d.getDate()-(dow===0?6:dow-1));while(d<=last){var dates=[];for(var i=0;i<6;i++){dates.push(dpISO(d));d.setDate(d.getDate()+1);}d.setDate(d.getDate()+1);weeks.push({kw:dpGetKW(dpParse(dates[0])),dates:dates});}return weeks;}
-function dpCellChanged(inp){var ek=inp.dataset.emp,dt=inp.dataset.date,val=inp.value;if(!dpShifts[ek])dpShifts[ek]={};dpShifts[ek][dt]=val;dpDirty=true;var td=inp.parentElement;td.className='';if(val==='Frei')td.className='dp-cell-frei';else if(val==='Urlaub')td.className='dp-cell-urlaub';else if(val==='Krank')td.className='dp-cell-krank';}
+function dpCellChanged(inp){
+  var ek=inp.dataset.emp,dt=inp.dataset.date,eid=inp.dataset.eid||'',val=inp.value;
+  if(!dpShifts[ek])dpShifts[ek]={};
+  dpShifts[ek][dt]=val;dpDirty=true;
+  var td=inp.parentElement,cls='';
+  if(val==='Frei')cls='dp-cell-frei';else if(val==='Urlaub')cls='dp-cell-urlaub';else if(val==='Krank')cls='dp-cell-krank';
+  // Live-Warnung: arbeitet diese Person am selben Tag schon in einer anderen Filiale?
+  var clash=dpClashAt(eid,dt,val);
+  if(clash.length){
+    cls=(cls?cls+' ':'')+'dp-cell-clash';
+    td.title='Doppelbelegung: arbeitet am selben Tag auch in '+clash.map(function(o){return o.filiale+' ('+o.val+')';}).join(', ');
+    // Nur beim Auftreten melden, nicht bei jedem Tastendruck
+    if(td.dataset.clash!=='1'){
+      td.dataset.clash='1';
+      toast('⚠️ '+dpFmtClashToast(inp,clash),true);
+    }
+  } else {
+    td.removeAttribute('title'); td.dataset.clash='0';
+  }
+  td.className=cls;
+  dpRenderCellBadge(td,eid,dt,val);
+}
+function dpFmtClashToast(inp,clash){
+  var row=inp.closest?inp.closest('tr'):null;
+  var name=row&&row.cells[0]?row.cells[0].textContent.trim():'';
+  var d=dpParse(inp.dataset.date).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+  return (name?name+' — ':'')+d+': arbeitet auch in '+clash.map(function(o){return dpShortFil(o.filiale)+' '+o.val;}).join(', ');
+}
 // Feiertage als "Frei" vorbelegen (nur leere Zellen, manuelle Eingaben bleiben unberührt)
 function dpAutofillFeiertage(){
   var hol=dpMonthHolidays();
@@ -3439,6 +3473,74 @@ function dpPendingFor(){
   return ov;
 }
 
+/* ── EINSATZ IN ANDEREN FILIALEN (Live-Warnung gegen Doppelbelegung) ──
+   Die Plaene der uebrigen Filialen desselben Monats werden einmal geladen und als
+   Index dpElsewhere[empId][datum] = [{filiale,val,range}] gehalten. Damit sieht man
+   beim Planen direkt in der Zelle, ob jemand an dem Tag schon woanders eingeteilt ist —
+   statt es erst nachtraeglich ueber "Doppelbelegung pruefen" zu entdecken. */
+var dpElsewhere={}, dpElsewhereKey=null, dpElsewhereLoading=false;
+function dpShortFil(f){
+  var s=''+(f||'');
+  var m=s.match(/^\s*\d+\s*:\s*[A-Za-zÄÖÜäöüß]+-(.+)$/);
+  return m?m[1]:s;
+}
+function dpLoadElsewhere(force){
+  if(!fbReady||!fbDb) return;
+  var m=document.getElementById('dp-month').value, cur=dpGetFiliale();
+  if(!m||!cur) return;
+  var key=m+'||'+fbSlug(cur)+'||'+(activeRegion||'');
+  if(!force && (dpElsewhereKey===key || dpElsewhereLoading)) return;
+  dpElsewhereLoading=true;
+  var fils=ovAllFilialen().filter(function(f){ return !dpFilEq(f,cur); });
+  Promise.all(fils.map(function(f){
+    return fbDb.collection('plan').doc(fbSlug(f)+'__'+m).get()
+      .then(function(d){ return {filiale:f, data:d.exists?(d.data()||{}):null}; })
+      .catch(function(){ return {filiale:f, data:null}; });
+  })).then(function(all){
+    var idx={};
+    all.forEach(function(p){
+      if(!p.data||!p.data.shifts) return;
+      var idByKey={};
+      (p.data.employees||[]).forEach(function(e){ idByKey[dpEmpKey(e)]=''+(e.id||''); });
+      Object.keys(p.data.shifts).forEach(function(ek){
+        var eid=idByKey[ek]||(ek.split('-')[0]||'');
+        if(!eid) return;
+        Object.keys(p.data.shifts[ek]).forEach(function(dt){
+          var v=p.data.shifts[ek][dt];
+          if(!dpIsWorkValue(v)) return;                  // Frei/Urlaub/Krank sind keine Doppelbelegung
+          if(!idx[eid]) idx[eid]={};
+          if(!idx[eid][dt]) idx[eid][dt]=[];
+          idx[eid][dt].push({filiale:p.filiale, val:v, range:dpParseRange(v)});
+        });
+      });
+    });
+    dpElsewhere=idx; dpElsewhereKey=key; dpElsewhereLoading=false;
+    dpRefreshIfOpen();
+  }).catch(function(e){ dpElsewhereLoading=false; console.warn('dp elsewhere', e); });
+}
+// Einsaetze in anderen Filialen, die sich zeitlich mit "val" ueberschneiden.
+function dpClashAt(eid,dt,val){
+  var list=(dpElsewhere[eid]&&dpElsewhere[eid][dt])||[];
+  if(!list.length||!dpIsWorkValue(val)) return [];
+  var r=dpParseRange(val);
+  return list.filter(function(o){
+    if(r&&o.range) return r.s<o.range.e && o.range.s<r.e;
+    return true;                                        // Zeit nicht eindeutig -> sicherheitshalber melden
+  });
+}
+function dpCellBadgeHtml(eid,dt,val){
+  var others=(dpElsewhere[eid]&&dpElsewhere[eid][dt])||[];
+  if(!others.length) return '';
+  var clash=dpClashAt(eid,dt,val);
+  var src=clash.length?clash:others;
+  var txt=src.map(function(o){ return dpShortFil(o.filiale)+' '+o.val; }).join(' · ');
+  return '<span class="dp-other-badge'+(clash.length?' clash':'')+'">'+(clash.length?'⚠️ ':'🏪 ')+txt+'</span>';
+}
+function dpRenderCellBadge(td,eid,dt,val){
+  var old=td.querySelector('.dp-other-badge'); if(old) old.parentNode.removeChild(old);
+  var html=dpCellBadgeHtml(eid,dt,val);
+  if(html) td.insertAdjacentHTML('beforeend', html);
+}
 function dpRenderWeeks(){
   var m=document.getElementById('dp-month').value;if(!m)return;
   dpAutofillFeiertage();
@@ -3467,9 +3569,14 @@ function dpRenderWeeks(){
             var val=stored,cls=val==='Frei'?'dp-cell-frei':val==='Urlaub'?'dp-cell-urlaub':val==='Krank'?'dp-cell-krank':'';
             if(isF&&!cls)cls='dp-cell-frei';
             if(pend&&!cls)cls='dp-cell-pend';
-            h+='<td class="'+cls+(isF?' dp-cell-ft':'')+'"'+(pend?' title="Urlaubsantrag offen (noch nicht entschieden): '+pend+'"':'')
-              +'><input class="dp-shift dp-inp" list="dp-presets" value="'+val+'" data-emp="'+ek+'" data-date="'+dt+'" oninput="dpCellChanged(this)">'
+            var clash=dpClashAt(eid,dt,val);
+            if(clash.length) cls=(cls?cls+' ':'')+'dp-cell-clash';
+            var tip=pend?'Urlaubsantrag offen (noch nicht entschieden): '+pend
+                  :(clash.length?'Doppelbelegung: arbeitet am selben Tag auch in '+clash.map(function(o){return o.filiale+' ('+o.val+')';}).join(', '):'');
+            h+='<td class="'+cls+(isF?' dp-cell-ft':'')+'"'+(tip?' title="'+tip+'"':'')
+              +'><input class="dp-shift dp-inp" list="dp-presets" value="'+val+'" data-emp="'+ek+'" data-date="'+dt+'" data-eid="'+eid+'" oninput="dpCellChanged(this)">'
               +(pend?'<span class="dp-pend-badge">🌴 beantragt</span>':'')
+              +dpCellBadgeHtml(eid,dt,val)
               +'</td>';
           }
         });
@@ -3486,6 +3593,20 @@ function dpBLChange(){
   if(f)localStorage.setItem('sc_dp_bl_'+f.replace(/\s+/g,'_').toLowerCase(),document.getElementById('dp-bundesland').value);
   if(document.getElementById('dp-month').value){dpSaveFromDOM();dpRenderWeeks();}
 }
+// Stammdaten-Payload beim Veröffentlichen eines Plans — oder null, wenn die Stammdaten
+// dieses Mitarbeiters hier NICHT angefasst werden dürfen.
+// Wichtig: Im Plan stehen auch Zweitfiliale-Helfer, deren Stammfiliale eine andere ist.
+// Früher schrieb das Veröffentlichen für JEDEN dieser Mitarbeiter filiale/region der
+// gerade geöffneten Filiale — damit wanderte ein Aushilfe-Einsatz stillschweigend in die
+// Stammdaten: Filiale (und bei einer Filiale der anderen Region auch die Region) wurden
+// überschrieben. Folge: Krankmeldungen/Belege dieser Person landeten danach im Postfach
+// der falschen Region und tauchten beim zuständigen Gebietsleiter nicht mehr auf.
+function dpEmpMasterPayload(e,f){
+  if(!e.id) return null;
+  var known=loadEmps().find(function(x){return ''+x.id===''+e.id;});
+  if(known && !dpFilEq(known.filiale,f)) return null;   // Zweitfiliale/Aushilfe → nicht anfassen
+  return {name:e.name, filiale:f, active:true, region:activeRegion};
+}
 // Nur die aktuell geöffnete Filiale + Monat veröffentlichen (leichtgewichtig, gezielt)
 function dpPublishMonth(){
   if(typeof fbReady==='undefined'||!fbReady||!fbDb||!fbManager){alert('Bitte zuerst als Manager anmelden (Einstellungen → ☁️ Cloud).');return;}
@@ -3494,7 +3615,7 @@ function dpPublishMonth(){
   dpSaveFromDOM();dpStoreLS(dpKey(),{employees:dpEmployees,shifts:dpShifts});
   var st=document.getElementById('dp-status');if(st)st.textContent='⏳ '+f+' · '+m+' wird veröffentlicht…';
   var jobs=[fbDb.collection('plan').doc(fbSlug(f)+'__'+m).set({employees:dpEmployees,shifts:dpShifts})];
-  dpEmployees.forEach(function(e){if(e.id)jobs.push(fbDb.collection('emps').doc(''+e.id).set({name:e.name,filiale:f,active:true,region:activeRegion},{merge:true}));});
+  dpEmployees.forEach(function(e){var p=dpEmpMasterPayload(e,f);if(p)jobs.push(fbDb.collection('emps').doc(''+e.id).set(p,{merge:true}));});
   Promise.all(jobs).then(function(){dpDirty=false;if(st)st.textContent='✓ Veröffentlicht: '+f+' · '+fmtMonth(m);toast('☁️ '+f+' veröffentlicht');})
     .catch(function(e){if(st)st.textContent='⚠️ '+e.message;alert('Fehler: '+e.message);});
 }
@@ -3522,7 +3643,7 @@ function dpPublishWeek(wi){
       wk.dates.forEach(function(dt){ merged[ek][dt]=(dpShifts[ek]&&dpShifts[ek][dt])||''; });
     });
     var jobs=[ref.set({employees:dpEmployees,shifts:merged})];
-    dpEmployees.forEach(function(e){if(e.id)jobs.push(fbDb.collection('emps').doc(''+e.id).set({name:e.name,filiale:f,active:true,region:activeRegion},{merge:true}));});
+    dpEmployees.forEach(function(e){var p=dpEmpMasterPayload(e,f);if(p)jobs.push(fbDb.collection('emps').doc(''+e.id).set(p,{merge:true}));});
     return Promise.all(jobs);
   }).then(function(){dpDirty=false;if(st)st.textContent='✓ KW '+wk.kw+' veröffentlicht ('+f+')';toast('☁️ KW '+wk.kw+' veröffentlicht');})
     .catch(function(e){if(st)st.textContent='⚠️ '+e.message;alert('Fehler: '+e.message);});
@@ -5028,17 +5149,32 @@ function krShowStatus(msg,color){
   var st=document.getElementById('kr-live-status');
   if(st){ st.textContent=msg||''; st.style.color=color||'#6B6860'; st.style.display=msg?'block':'none'; }
 }
-var krUnsub=null;
+var krUnsub=null, krOrphanUnsub=null, krMain=[], krOrphans=[];
+// Eine Krankmeldung ohne Region (region:'') faellt durch die regionsgefilterte Abfrage und
+// waere fuer BEIDE Gebietsleiter unsichtbar — sie kann so lautlos verlorengehen. Deshalb
+// ein zweiter, sehr kleiner Listener genau auf diesen Fall; solche Meldungen werden in
+// beiden Regionen mit Warnhinweis angezeigt, damit sie niemand uebersieht.
+function krMerge(){
+  var seen={}, all=[];
+  krMain.concat(krOrphans).forEach(function(k){ if(!seen[k.docId]){ seen[k.docId]=1; all.push(k); } });
+  fbKrank=all.sort(function(a,b){ return (a.d.created||'')<(b.d.created||'')?1:-1; });
+  krShowStatus('','');
+  krRender();
+  dpRefreshIfOpen();
+}
 function krStartListener(){
   if(!fbReady||!fbDb||!activeRegion) return;
   if(krUnsub){ try{krUnsub();}catch(e){} }
+  if(krOrphanUnsub){ try{krOrphanUnsub();}catch(e){} }
+  krMain=[]; krOrphans=[];
   krShowStatus('🔄 Verbinde…','#6B6860');
+  krOrphanUnsub=fbDb.collection('krank').where('region','==','').onSnapshot(function(snap){
+    krOrphans=[]; snap.forEach(function(doc){ krOrphans.push({docId:doc.id, ref:doc.ref, d:doc.data()||{}, orphan:true}); });
+    krMerge();
+  }, function(err){ console.warn('FB krank ohne Region', err); });
   krUnsub=fbDb.collection('krank').where('region','==',activeRegion).onSnapshot(function(snap){
-    var raw=[]; snap.forEach(function(doc){ raw.push({docId:doc.id, ref:doc.ref, d:doc.data()||{}}); });
-    fbKrank=raw.sort(function(a,b){ return (a.d.created||'')<(b.d.created||'')?1:-1; });
-    krShowStatus('','');
-    krRender();
-    dpRefreshIfOpen();
+    krMain=[]; snap.forEach(function(doc){ krMain.push({docId:doc.id, ref:doc.ref, d:doc.data()||{}}); });
+    krMerge();
   }, function(err){
     console.warn('FB krank', err);
     krShowStatus('⚠️ Kein Zugriff auf Krankmeldungen ('+err.code+'). In den Firestore-Regeln fehlt vermutlich der Block für „krank" — bitte Regeln ergänzen und neu veröffentlichen.','#C0392B');
@@ -5055,7 +5191,8 @@ function krRender(){
     var dt=d.created?new Date(d.created).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
     return '<div style="display:flex;gap:12px;align-items:flex-start;padding:10px;border:1px solid #E8E4E0;border-left:4px solid #C0392B;border-radius:6px;margin-bottom:8px;flex-wrap:wrap">'
       +(d.img?'<img src="'+d.img+'" style="width:84px;height:84px;object-fit:cover;border-radius:6px;border:1px solid #E8E4E0;cursor:pointer" onclick="krOpenImg(\''+k.docId+'\')" title="Foto ansehen">':'<div style="width:84px;height:84px;display:flex;align-items:center;justify-content:center;background:#F5F3F0;border-radius:6px;font-size:11px;color:#6B6860;text-align:center">kein<br>Foto</div>')
-      +'<div style="flex:1;min-width:170px"><strong>'+(d.name||'?')+'</strong> · '+(d.filiale||'')+'<br>'
+      +'<div style="flex:1;min-width:170px"><strong>'+(d.name||'?')+'</strong> · '+(d.filiale||'')
+      +(k.orphan?' <span style="background:#FFF7E6;border:1px solid #F0C070;color:#8A5A00;border-radius:4px;padding:1px 5px;font-size:11px;font-weight:600" title="Diese Meldung wurde ohne Region gespeichert und wird deshalb in beiden Gebieten angezeigt.">⚠️ ohne Region</span>':'')+'<br>'
       +'<span style="font-size:13px;color:#6B6860">Krank: '+fmtDate(d.from)+(d.to?' – '+fmtDate(d.to):'')+'</span><br>'
       +'<span style="font-size:12px;color:#6B6860">'+dt+'</span></div>'
       +'<div style="display:flex;flex-direction:column;gap:6px">'

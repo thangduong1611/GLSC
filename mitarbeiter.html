@@ -3051,14 +3051,29 @@ function maKrPhoto(ev){
   };
   r.readAsDataURL(f);
 }
+// Ohne Region landet eine Meldung in keinem der beiden Gebietsleiter-Postfaecher (die
+// Abfrage dort filtert nach region) — sie waere praktisch verloren. Falls die Sitzung
+// noch keine Region kennt (alte Anmeldung von vor der Gebiets-Umstellung), wird sie
+// deshalb vor dem Senden einmal frisch aus dem eigenen Mitarbeiter-Datensatz geholt.
+function maEnsureRegion(sess){
+  if(sess.region) return Promise.resolve(sess.region);
+  if(!fbReady||!fbDb) return Promise.resolve('');
+  return fbDb.collection('emps').doc(''+sess.id).get().then(function(doc){
+    var r=(doc.exists&&(doc.data()||{}).region)||'';
+    if(r){ sess.region=r; maSetSession(sess); }
+    return r;
+  }).catch(function(){ return ''; });
+}
 function maSendKrank(){
   var sess=maSession();if(!sess)return;
   var from=document.getElementById('kr-from').value,to=document.getElementById('kr-to').value;
   if(!from){toast(t('t_kr_from'),true);return;}
   if(fbReady&&fbDb){
-    fbDb.collection('krank').add({
-      empId:''+sess.id, name:sess.name, filiale:sess.filiale||'', region:sess.region||'',
+    maEnsureRegion(sess).then(function(region){
+    return fbDb.collection('krank').add({
+      empId:''+sess.id, name:sess.name, filiale:sess.filiale||'', region:region||'',
       from:from, to:(to||''), img:(maKrImg||null), created:new Date().toISOString()
+    });
     }).then(function(){
       toast(t('kr_sent'));
       document.getElementById('kr-from').value='';document.getElementById('kr-to').value='';
