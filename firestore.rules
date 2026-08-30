@@ -91,9 +91,19 @@ service cloud.firestore {
     // ══════════════════════════════════════════════════════════
     // URLAUB
     // ══════════════════════════════════════════════════════════
+    // update: Manager der zustaendigen Region; ODER der Mitarbeiter korrigiert die Daten
+    // seines eigenen, noch nicht entschiedenen Antrags (statt einen zweiten zu stellen).
+    // Der Status muss dabei "pending" bleiben — niemand kann sich selbst genehmigen —
+    // und ausser from/to/updated darf kein Feld angefasst werden.
     match /filialen/{f}/urlaub/{u} {
       allow read, create: if isAuthed();
-      allow update, delete: if isManagerForRegion(docRegion(resource.data));
+      allow update: if isManagerForRegion(docRegion(resource.data))
+        || (isAuthed()
+            && resource.data.status == 'pending'
+            && request.resource.data.status == 'pending'
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['from', 'to', 'updated']));
+      allow delete: if isManagerForRegion(docRegion(resource.data));
     }
     match /{path=**}/urlaub/{u} {
       // list()/collectionGroup ohne .where() kann Firestore nicht gegen ein

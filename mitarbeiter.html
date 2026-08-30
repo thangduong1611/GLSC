@@ -268,9 +268,11 @@ window.onerror=function(msg,src,line){
         <div><label data-i18n="lbl_von">Von</label><input type="date" id="ul-from"></div>
         <div><label data-i18n="lbl_bis">Bis</label><input type="date" id="ul-to"></div>
       </div>
+      <div id="ul-edit-hint" style="display:none;margin-top:12px;padding:9px 11px;background:#FFF7E6;border:1px solid #F0C070;color:#8A5A00;border-radius:8px;font-size:13px;line-height:1.5"></div>
       <div id="ul-feedback" style="margin-top:12px;font-size:14px;font-weight:600;display:none"></div>
       <div class="btn-row">
-        <button class="btn btn-red" onclick="maRequestUrlaub()" data-i18n="btn_req">🌴 Urlaub beantragen</button>
+        <button class="btn btn-red" id="ul-submit" onclick="maRequestUrlaub()" data-i18n="btn_req">🌴 Urlaub beantragen</button>
+        <button class="btn" id="ul-cancel-edit" onclick="maEditReqCancel()" data-i18n="btn_cancel_edit" style="display:none">✕ Abbrechen</button>
       </div>
     </div>
 
@@ -1462,6 +1464,12 @@ de:{_name:'Deutsch',
  v_pick:'Bitte Start- und Enddatum wählen.',v_invalid:'Ungültiges Datum.',v_endb4:'Das Enddatum liegt vor dem Startdatum.',
  v_min10:'Urlaub muss mindestens 10 Tage im Voraus beantragt werden (aktuell nur {n} Tage).',
  v_ov_self:'deinem bestehenden Urlaub',v_ov:'Überschneidung mit {who}. Bitte einen anderen Zeitraum wählen.',
+ v_dup:'Diesen Zeitraum hast du bereits beantragt ({range}) — er wartet noch auf die Freigabe durch den Gebietsleiter.',
+ v_ov_own:'Überschneidung mit deinem eigenen offenen Antrag ({range}), der noch auf Freigabe wartet.',
+ v_ov_appr:'Für diesen Zeitraum hast du bereits genehmigten Urlaub ({range}).',
+ btn_edit_req:'✏️ Diesen Antrag ändern',btn_save_req:'💾 Änderung senden',btn_cancel_edit:'✕ Abbrechen',
+ edit_hint:'Du änderst deinen offenen Antrag vom {range}. Neuen Zeitraum wählen und speichern — es wird kein zweiter Antrag erstellt.',
+ edit_ok:'✓ Antrag geändert (🟧 wartet weiter auf Freigabe).',edit_fail:'✗ Änderung fehlgeschlagen: ',
  updf_title:'📄 Urlaubsantrag (offizielles Formular)',
  updf_info:'Wird auf das offizielle Sushi-Circle-Formular geschrieben. Ausfüllen, im Feld <strong>Arbeitnehmer</strong> unterschreiben, dann als PDF speichern oder an den Gebietsleiter senden. Die Unterschrift des Vorgesetzten ergänzt der Gebietsleiter.',
  lbl_einsatz:'Wieder im Einsatz am',lbl_ruf:'Rufnummer',lbl_vorg:'Vorgesetzter (optional)',lbl_ort:'Ort (für Ort/Datum)',
@@ -1543,6 +1551,12 @@ vi:{_name:'Tiếng Việt',
  v_pick:'Vui lòng chọn ngày bắt đầu và kết thúc.',v_invalid:'Ngày không hợp lệ.',v_endb4:'Ngày kết thúc trước ngày bắt đầu.',
  v_min10:'Phải đăng ký trước ít nhất 10 ngày (hiện chỉ còn {n} ngày).',
  v_ov_self:'lịch nghỉ hiện có của bạn',v_ov:'Trùng lịch với {who}. Vui lòng chọn thời gian khác.',
+ v_dup:'Bạn đã gửi đơn cho thời gian này rồi ({range}) — đang chờ Gebietsleiter duyệt.',
+ v_ov_own:'Trùng với đơn của chính bạn ({range}) đang chờ duyệt.',
+ v_ov_appr:'Bạn đã có lịch nghỉ được duyệt trong thời gian này ({range}).',
+ btn_edit_req:'✏️ Sửa đơn này',btn_save_req:'💾 Gửi thay đổi',btn_cancel_edit:'✕ Hủy',
+ edit_hint:'Bạn đang sửa đơn đang chờ duyệt ({range}). Chọn thời gian mới rồi lưu — sẽ không tạo thêm đơn mới.',
+ edit_ok:'✓ Đã sửa đơn (🟧 vẫn đang chờ duyệt).',edit_fail:'✗ Sửa không thành công: ',
  updf_title:'📄 Đơn nghỉ phép (mẫu chính thức)',
  updf_info:'Đơn được điền vào mẫu chính thức của Sushi Circle. Điền thông tin, ký vào ô <strong>Arbeitnehmer</strong>, sau đó lưu PDF hoặc gửi cho Gebietsleiter. Gebietsleiter sẽ ký phần Vorgesetzter.',
  lbl_einsatz:'Đi làm lại ngày',lbl_ruf:'Số điện thoại',lbl_vorg:'Cấp trên (tuỳ chọn)',lbl_ort:'Địa điểm (cho Ort/Datum)',
@@ -1624,6 +1638,12 @@ en:{_name:'English',
  v_pick:'Please choose start and end date.',v_invalid:'Invalid date.',v_endb4:'End date is before start date.',
  v_min10:'Vacation must be requested at least 10 days in advance (currently only {n} days).',
  v_ov_self:'your existing vacation',v_ov:'Overlap with {who}. Please choose another period.',
+ v_dup:'You already requested this period ({range}) — it is still waiting for approval by the area manager.',
+ v_ov_own:'Overlaps with your own open request ({range}), still waiting for approval.',
+ v_ov_appr:'You already have approved vacation for this period ({range}).',
+ btn_edit_req:'✏️ Change this request',btn_save_req:'💾 Send change',btn_cancel_edit:'✕ Cancel',
+ edit_hint:'You are changing your open request from {range}. Pick a new period and save — no second request is created.',
+ edit_ok:'✓ Request changed (🟧 still waiting for approval).',edit_fail:'✗ Change failed: ',
  updf_title:'📄 Vacation request (official form)',
  updf_info:'Written onto the official Sushi Circle form. Fill in, sign in the <strong>Arbeitnehmer</strong> field, then save as PDF or send to the area manager. The supervisor signature is added by the area manager.',
  lbl_einsatz:'Back at work on',lbl_ruf:'Phone number',lbl_vorg:'Supervisor (optional)',lbl_ort:'Place (for place/date)',
@@ -1705,6 +1725,12 @@ th:{_name:'ไทย',
  v_pick:'กรุณาเลือกวันเริ่มและวันสิ้นสุด',v_invalid:'วันที่ไม่ถูกต้อง',v_endb4:'วันสิ้นสุดอยู่ก่อนวันเริ่ม',
  v_min10:'ต้องยื่นล่วงหน้าอย่างน้อย 10 วัน (ตอนนี้เหลือเพียง {n} วัน)',
  v_ov_self:'วันลาเดิมของคุณ',v_ov:'ซ้ำกับ {who} กรุณาเลือกช่วงอื่น',
+ v_dup:'คุณยื่นคำขอช่วงนี้ไปแล้ว ({range}) — กำลังรอผู้จัดการเขตอนุมัติ',
+ v_ov_own:'ซ้ำกับคำขอของคุณเองที่ยังรออนุมัติ ({range})',
+ v_ov_appr:'คุณมีวันลาที่อนุมัติแล้วในช่วงนี้ ({range})',
+ btn_edit_req:'✏️ แก้ไขคำขอนี้',btn_save_req:'💾 ส่งการแก้ไข',btn_cancel_edit:'✕ ยกเลิก',
+ edit_hint:'คุณกำลังแก้ไขคำขอที่รออนุมัติ ({range}) เลือกช่วงใหม่แล้วบันทึก — จะไม่สร้างคำขอใหม่',
+ edit_ok:'✓ แก้ไขคำขอแล้ว (🟧 ยังรออนุมัติ)',edit_fail:'✗ แก้ไขไม่สำเร็จ: ',
  updf_title:'📄 ใบลาพักร้อน (แบบฟอร์มทางการ)',
  updf_info:'กรอกลงแบบฟอร์มทางการของ Sushi Circle กรอกข้อมูล เซ็นชื่อในช่อง <strong>Arbeitnehmer</strong> จากนั้นบันทึก PDF หรือส่งให้ผู้จัดการเขต ลายเซ็นหัวหน้าจะถูกเพิ่มโดยผู้จัดการเขต',
  lbl_einsatz:'กลับมาทำงานวันที่',lbl_ruf:'เบอร์โทร',lbl_vorg:'หัวหน้า (ไม่บังคับ)',lbl_ort:'สถานที่ (สำหรับ Ort/Datum)',
@@ -1786,6 +1812,12 @@ zh:{_name:'中文',
  v_pick:'请选择开始日期和结束日期。',v_invalid:'日期无效。',v_endb4:'结束日期早于开始日期。',
  v_min10:'休假申请必须至少提前10天（目前只剩{n}天）。',
  v_ov_self:'您已有的休假',v_ov:'与{who}的休假时间重叠，请选择其他时间段。',
+ v_dup:'您已经申请过这个时间段（{range}），正在等待区域经理审批。',
+ v_ov_own:'与您自己尚未审批的申请（{range}）时间重叠。',
+ v_ov_appr:'您在这个时间段已有获批的休假（{range}）。',
+ btn_edit_req:'✏️ 修改此申请',btn_save_req:'💾 提交修改',btn_cancel_edit:'✕ 取消',
+ edit_hint:'您正在修改待审批的申请（{range}）。选择新的时间段并保存——不会创建第二份申请。',
+ edit_ok:'✓ 申请已修改（🟧 仍在等待审批）。',edit_fail:'✗ 修改失败：',
  updf_title:'📄 休假申请单（官方表格）',
  updf_info:'将填写到Sushi Circle官方表格中。请填写信息，在<strong>Arbeitnehmer</strong>（员工）栏签名，然后保存为PDF或发送给区域经理。主管签名部分由区域经理补充。',
  lbl_einsatz:'恢复工作日期',lbl_ruf:'电话号码',lbl_vorg:'上级（可选）',lbl_ort:'地点（用于地点/日期栏）',
@@ -1854,6 +1886,7 @@ function applyLang(){
     maAllocInfo(sess);
     document.getElementById('hdr-sub').textContent=sess.name+' · '+(sess.filiale||t('no_fil'));
     maRenderDP(); maRenderCal(); maRenderUlList();
+    if(typeof maReqRenderMode==='function') maReqRenderMode();
     if(typeof maRenderNews==='function') maRenderNews();
     if(typeof ivRender==='function' && document.getElementById('p-iv') && document.getElementById('p-iv').classList.contains('active')) ivRender();
   }
@@ -1919,8 +1952,11 @@ function maFilialeUrlaub(filiale){
   return out;
 }
 
-// Validation: returns {ok:bool, reason:string}
-function maValidateUrlaub(fromStr,toStr,existing,todayStr,selfId){
+// Validation: returns {ok:bool, reason:string, own:entry}
+// "own" wird gesetzt, wenn die Ueberschneidung der eigene, noch nicht entschiedene Antrag
+// ist — dann bietet die Oberflaeche "aendern" an, statt einen zweiten Antrag zuzulassen.
+// skipDocId = der Antrag, der gerade geaendert wird (darf sich nicht selbst blockieren).
+function maValidateUrlaub(fromStr,toStr,existing,todayStr,selfId,skipDocId){
   if(!fromStr||!toStr)return{ok:false,reason:t('v_pick')};
   var f=maParseDate(fromStr),tt=maParseDate(toStr);
   if(!f||!tt)return{ok:false,reason:t('v_invalid')};
@@ -1930,10 +1966,16 @@ function maValidateUrlaub(fromStr,toStr,existing,todayStr,selfId){
   for(var i=0;i<existing.length;i++){
     var e=existing[i];
     if(e.status==='rejected')continue;
-    if(maRangesOverlap(fromStr,toStr,e.from,e.to)){
-      var who=(selfId&&(''+e.id===''+selfId))?t('v_ov_self'):(e.name+' ('+maFmtDE(e.from)+'–'+maFmtDE(e.to)+')');
-      return{ok:false,reason:t('v_ov',{who:who})};
+    if(skipDocId&&e.docId===skipDocId)continue;
+    if(!maRangesOverlap(fromStr,toStr,e.from,e.to))continue;
+    var range=maFmtDE(e.from)+'–'+maFmtDE(e.to);
+    var mine=selfId&&(''+e.id===''+selfId);
+    if(mine&&e.status!=='approved'){
+      var same=(e.from===fromStr&&e.to===toStr);
+      return{ok:false,reason:t(same?'v_dup':'v_ov_own',{range:range}),own:e};
     }
+    if(mine)return{ok:false,reason:t('v_ov_appr',{range:range})};
+    return{ok:false,reason:t('v_ov',{who:e.name+' ('+range+')'})};
   }
   return{ok:true};
 }
@@ -2750,21 +2792,90 @@ function maRenderUlList(){
       +'<span class="ustat '+c+'">'+stTxt+'</span></div>';
   }).join('');
 }
+/* ── Doppelte Antraege verhindern + bestehenden Antrag aendern ──
+   Bisher konnte derselbe Antrag mehrfach entstehen: der zweite Tap auf "beantragen"
+   (Doppel-Tap oder ungeduldiges Nachtippen bei langsamem Netz) lief los, bevor der erste
+   Antrag im Listener angekommen war — die Pruefung sah ihn also noch nicht. Deshalb hier
+   zusaetzlich eine kurze Sperre waehrend des Sendens; danach greift wieder die Pruefung,
+   weil Firestore den eigenen Schreibvorgang sofort lokal im Snapshot meldet (auch offline). */
+var maEditReq=null, maEditReqRange='', maReqBusy=false, maReqBusyTimer=null;
+function maReqSetBusy(b){
+  maReqBusy=b;
+  var btn=document.getElementById('ul-submit');
+  if(btn){ btn.disabled=b; btn.style.opacity=b?'0.55':''; }
+  clearTimeout(maReqBusyTimer);
+  // Sicherheitsnetz: ohne Netz loest Firestore das Promise erst nach der Server-Bestaetigung
+  // auf — die Sperre darf den Knopf deshalb nicht dauerhaft blockieren.
+  if(b) maReqBusyTimer=setTimeout(function(){ maReqSetBusy(false); }, 4000);
+}
+function maReqRenderMode(){
+  var btn=document.getElementById('ul-submit'); if(!btn) return;
+  var editing=!!maEditReq;
+  btn.setAttribute('data-i18n', editing?'btn_save_req':'btn_req');
+  btn.innerHTML=t(editing?'btn_save_req':'btn_req');
+  var cancel=document.getElementById('ul-cancel-edit');
+  if(cancel) cancel.style.display=editing?'':'none';
+  var hint=document.getElementById('ul-edit-hint');
+  if(hint){
+    hint.style.display=editing?'block':'none';
+    hint.textContent=editing?t('edit_hint',{range:maEditReqRange}):'';
+  }
+}
+function maEditReqStart(docId){
+  var e=(maFbUrlaub||[]).filter(function(x){return x.docId===docId;})[0];
+  if(!e) return;
+  maEditReq=docId; maEditReqRange=maFmtDE(e.from)+'–'+maFmtDE(e.to);
+  document.getElementById('ul-from').value=e.from||'';
+  document.getElementById('ul-to').value=e.to||'';
+  var fb=document.getElementById('ul-feedback'); fb.style.display='none'; fb.textContent='';
+  maReqRenderMode();
+}
+function maEditReqCancel(){
+  maEditReq=null; maEditReqRange='';
+  document.getElementById('ul-from').value=''; document.getElementById('ul-to').value='';
+  var fb=document.getElementById('ul-feedback'); fb.style.display='none'; fb.textContent='';
+  maReqRenderMode();
+}
+// Meldung + ggf. "Antrag aendern"-Knopf. Bewusst ueber textContent/DOM statt innerHTML,
+// damit ein Filial-/Mitarbeitername im Text kein Markup einschleusen kann.
+function maReqFeedback(v){
+  var fb=document.getElementById('ul-feedback');
+  fb.style.display='block'; fb.style.color='var(--red)';
+  fb.textContent='✗ '+v.reason;
+  if(v.own&&v.own.docId){
+    var wrap=document.createElement('div'); wrap.style.marginTop='8px';
+    var b=document.createElement('button'); b.className='btn btn-sm';
+    b.textContent=t('btn_edit_req');
+    b.onclick=function(){ maEditReqStart(v.own.docId); };
+    wrap.appendChild(b); fb.appendChild(wrap);
+  }
+}
 function maRequestUrlaub(){
+  if(maReqBusy) return;
   var sess=maSession();if(!sess)return;
   var from=document.getElementById('ul-from').value,to=document.getElementById('ul-to').value;
   var fb=document.getElementById('ul-feedback');
   var existing=maFilialeUrlaub(sess.filiale);
-  var v=maValidateUrlaub(from,to,existing,maTodayISO(),sess.id);
-  if(!v.ok){fb.style.display='block';fb.style.color='var(--red)';fb.textContent='✗ '+v.reason;return;}
+  var v=maValidateUrlaub(from,to,existing,maTodayISO(),sess.id,maEditReq);
+  if(!v.ok){ maReqFeedback(v); return; }
   if(fbReady&&fbDb){
-    fbDb.collection('filialen').doc(fbSlug(sess.filiale||'')).collection('urlaub').add(maBuildUrlaubDoc(sess,from,to))
-      .then(function(){
+    var col=fbDb.collection('filialen').doc(fbSlug(sess.filiale||'')).collection('urlaub');
+    var editing=maEditReq;
+    maReqSetBusy(true);
+    var p=editing ? col.doc(editing).update({from:from,to:to,updated:new Date().toISOString()})
+                  : col.add(maBuildUrlaubDoc(sess,from,to));
+    p.then(function(){
+        maReqSetBusy(false);
+        maEditReq=null; maEditReqRange=''; maReqRenderMode();
         fb.style.display='block';fb.style.color='var(--grn)';
-        fb.textContent=t('sent_fb');
+        fb.textContent=t(editing?'edit_ok':'sent_fb');
         document.getElementById('ul-from').value='';document.getElementById('ul-to').value='';
       })
-      .catch(function(e){ fb.style.display='block';fb.style.color='var(--red)';fb.textContent=t('send_fail')+e.message; });
+      .catch(function(e){
+        maReqSetBusy(false);
+        fb.style.display='block';fb.style.color='var(--red)';
+        fb.textContent=t(editing?'edit_fail':'send_fail')+e.message;
+      });
     return;
   }
   var reqs=maLoadReqs();

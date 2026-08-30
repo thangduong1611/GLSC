@@ -186,6 +186,8 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 .dp-shift{width:100%;border:none;background:transparent;font-size:11px;text-align:center;padding:3px 2px;font-family:inherit;outline:none;color:var(--txt);}
 .dp-shift:focus{background:#FFFBF0;border-radius:3px;}
 .dp-cell-frei{background:#F0EDE8;}.dp-cell-urlaub{background:#EAFAF1;}.dp-cell-krank{background:#FDEDEC;}
+.dp-cell-pend{background:#FEF6E6;}
+.dp-pend-badge{display:block;font-size:8.5px;font-weight:700;color:#a06600;line-height:1.1;text-align:center;margin-top:1px;}
 .dp-th-ft{background:#FCF3E0 !important;color:#8a5a00;}
 .dp-fn{display:block;font-weight:600;font-size:8px;color:#a06600;line-height:1.1;margin-top:1px;}
 .dp-cell-ft{box-shadow:inset 0 0 0 1px #f0d9a8;}
@@ -988,19 +990,6 @@ window.onerror=function(msg,src,line){
     </details>
   </div>
   <div class="card">
-    <div class="card-title">🔧 Region-Backfill (einmalig) <span class="badge badge-amb">Temporär — nach Gebrauch entfernen</span></div>
-    <div class="info">Einmaliger Schritt für die Umstellung auf mehrere Regionen: markiert alle bestehenden Datensätze (Mitarbeiter, Krankmeldungen, Belege, Wareneingang, Umlagerung, Urlaubsanträge, Änderungsvereinbarungen, Urlaub) ohne Region-Feld als <code>region:"ost"</code>. Zuerst „🔍 Prüfen" zum Zählen, danach „⚠️ Jetzt markieren". Diese Karte danach aus dem Code entfernen.</div>
-    <div class="btn-row">
-      <button class="btn" onclick="regionBackfillScan()">🔍 Prüfen</button>
-      <button class="btn btn-red" id="region-backfill-run" onclick="regionBackfillRun()" style="display:none">⚠️ Jetzt markieren</button>
-    </div>
-    <div id="region-backfill-stat" style="font-size:12px;color:var(--mut);margin-top:8px;line-height:1.7"></div>
-    <div style="margin-top:14px;padding-top:12px;border-top:1px dashed var(--brd)">
-      <div class="info" style="margin-bottom:8px">Einmalig: legt die geteilte Filialen-Stammdatenliste in der Cloud an, aus den bereits lokal importierten Filialen-Listen (PLZ/Ort + Fahrtplan-Gruppen) — alle mit <code>region:"ost"</code>. Danach kann eine zweite Region eigene Filialen importieren, ohne diese zu überschreiben.</div>
-      <button class="btn" onclick="regionSeedFilialenMeta()">🌱 Filialen-Stammdaten anlegen</button>
-    </div>
-  </div>
-  <div class="card">
     <div class="card-title">🏪 Filialen — PLZ &amp; Ort <span class="badge badge-blu" id="fil-meta-count">0</span></div>
     <div class="info">Wird für das offizielle Stundennachweis-Formular gebraucht. Marktsuche-CSV hochladen (unten) — PLZ, Ort und Straße werden automatisch für alle Filialen übernommen und gespeichert. Bei Bedarf können einzelne Werte unten manuell überschrieben werden.</div>
     <div id="fil-meta-list" style="margin-top:10px"></div>
@@ -1016,31 +1005,13 @@ window.onerror=function(msg,src,line){
     </div>
   </div>
   <div class="card">
-    <div class="card-title">🔧 Inventur-Datenreparatur (einmalig) <span class="badge badge-red">Zuerst hier prüfen, danach Filialname-Migration</span></div>
-    <div class="info">Ein zwischenzeitlicher Fehler beim Speichern hat Artikel-Mengen als fehlerhafte Einzelfelder (z.B. „counts.80191") statt im richtigen counts-Feld abgelegt — dadurch zeigt HR 0 Artikel an, obwohl Mitarbeiter fertig gezählt und gesendet haben. Die Mengen sind nicht verloren, nur falsch abgelegt. Dieses Werkzeug führt sie im richtigen counts-Feld zusammen und entfernt die fehlerhaften Einzelfelder — nichts wird überschrieben oder gelöscht, was schon korrekt war. Zuerst „🔍 Prüfen", danach „🔧 Jetzt reparieren".</div>
-    <div class="btn-row">
-      <button class="btn" onclick="invRepairScan()">🔍 Prüfen</button>
-      <button class="btn btn-red" id="inv-repair-run" onclick="invRepairRun()" style="display:none">🔧 Jetzt reparieren</button>
-    </div>
-    <div id="inv-repair-stat" style="font-size:12px;color:var(--mut);margin-top:8px;line-height:1.7"></div>
-  </div>
-  <div class="card">
-    <div class="card-title">🔀 Filialname-Migration (einmalig) <span class="badge badge-amb">Bei fehlenden Dienstplänen/Urlaub/Inventur prüfen</span></div>
+    <div class="card-title">🔀 Filialname-Migration <span class="badge badge-amb">Nach jeder Filial-Umbenennung erneut prüfen</span></div>
     <div class="info">Findet Filialnamen-Änderungen (egal ob schon veröffentlicht oder nicht) und stellt dadurch "verschwundene" Dienstpläne/Urlaubsdaten wieder her — sie waren nicht gelöscht, nur unter dem alten Namen unauffindbar. Korrigiert außerdem veraltete Filialnamen in Umlagerung-Meldungen (nötig, damit z.B. die Umlagerungsliste-Automatik sie erkennt) und führt Inventur-Zählungen zusammen, die während einer laufenden Zählperiode durch eine Namensänderung auf zwei Dokumente gesplittet wurden (Mengen werden addiert, nichts wird überschrieben). Findet die App zu einem alten Eintrag mehrere mögliche neue Filialen, wird nichts geraten, sondern zur manuellen Prüfung aufgelistet. Bestehende Einträge bleiben immer zusätzlich erhalten (nur Umlagerung-Meldungen werden direkt korrigiert). Zuerst „🔍 Prüfen", danach „📋 Jetzt kopieren".</div>
     <div class="btn-row">
       <button class="btn" onclick="filMigScan()">🔍 Prüfen</button>
       <button class="btn btn-red" id="fil-mig-run" onclick="filMigRun()" style="display:none">📋 Jetzt kopieren</button>
     </div>
     <div id="fil-mig-stat" style="font-size:12px;color:var(--mut);margin-top:8px;line-height:1.7"></div>
-  </div>
-  <div class="card">
-    <div class="card-title">🌍 Inventur-Region-Trennung (einmalig) <span class="badge badge-amb">Nach obigen zwei Schritten prüfen</span></div>
-    <div class="info">Inventur-Zeiträume, Welo-Links und Zählungen waren bisher nicht nach Region (Ost/West) getrennt — Ost und West zeigten sich gegenseitig ihre Filialen an. Dieses Werkzeug ordnet jedes bestehende Dokument anhand der hinterlegten Filiale der richtigen Region zu und trägt den aktuell gesetzten Zeitraum sowie die Welo-Links einmalig für beide Regionen nach, damit niemand mitten in der laufenden Zählung etwas neu eingeben muss. Bestehende Daten werden nur ergänzt, nichts wird gelöscht. Zuerst „🔍 Prüfen", danach „🌍 Jetzt trennen".</div>
-    <div class="btn-row">
-      <button class="btn" onclick="invRegionScan()">🔍 Prüfen</button>
-      <button class="btn btn-red" id="inv-region-run" onclick="invRegionRun()" style="display:none">🌍 Jetzt trennen</button>
-    </div>
-    <div id="inv-region-stat" style="font-size:12px;color:var(--mut);margin-top:8px;line-height:1.7"></div>
   </div>
   <div class="card">
     <div class="card-title">👤 Persönliche Daten <span class="badge badge-red">Pflicht</span></div>
@@ -1279,6 +1250,12 @@ window.onerror=function(msg,src,line){
       </div>
       <p id="dp-sug-status" style="font-size:12.5px;line-height:1.5;margin:0 0 8px;display:none"></p>
       <div id="dp-conflict-box" style="display:none;background:#FFF7E6;border:1px solid #F0C070;color:#8A5A00;border-radius:8px;padding:10px 12px;font-size:12.5px;line-height:1.5;margin-bottom:10px"></div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--mut);margin-bottom:8px">
+        <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#EAFAF1;border:1px solid #1E8449"></span>🌴 Urlaub genehmigt</span>
+        <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#FDEDEC;border:1px solid #C0392B"></span>🏥 Krankmeldung</span>
+        <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#FEF6E6;border:1px solid #f0c674"></span>🌴 Urlaub beantragt (offen)</span>
+        <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#FCF3E0;border:1px solid #f0d9a8"></span>Feiertag</span>
+      </div>
       <div id="dp-weeks-wrap"></div>
       <div id="dp-sig-opt" style="margin-bottom:10px"><label style="display:flex;align-items:center;gap:9px;cursor:pointer;padding:9px 12px;background:var(--bg);border:1px solid var(--brd);border-radius:var(--rs)"><input type="checkbox" id="dp-sig-check" style="width:16px;height:16px;accent-color:var(--red)"><span style="font-size:13px">✍️ <strong>Unterschrift des Gebietsleiters</strong> auf PDF anfügen</span></label></div>      <div class="btn-row">
         <button class="btn btn-red" onclick="dpExportPDF()" style="flex:1;justify-content:center">⬇ PDF herunterladen</button>
@@ -3416,9 +3393,6 @@ function dpAutofillFeiertage(){
     });
   });
 }
-// Baut eine Abwesenheits-Overlay { empId: { 'YYYY-MM-DD': 'Urlaub'|'Krank' } }
-// aus genehmigten Urlauben (fbDecided, status=approved) + Krankmeldungen (fbKrank).
-// Wird nur zur Anzeige verwendet – die gespeicherten Schichten bleiben unverändert.
 function dpFilEq(a,b){ return fbSlug(''+(a||''))===fbSlug(''+(b||'')); }
 function dpRefreshIfOpen(){
   var p=document.getElementById('panel-dienstplan');
@@ -3436,13 +3410,31 @@ function dpAddRange(ov,id,from,to,label){
     d.setDate(d.getDate()+1); guard++;
   }
 }
-function dpAbsenceFor(filiale){
+// Abwesenheits-Overlay { empId: { 'YYYY-MM-DD': 'Urlaub'|'Krank' } } aus genehmigten
+// Urlauben (fbDecided, status=approved) + Krankmeldungen (fbKrank). Nur zur Anzeige —
+// die gespeicherten Schichten bleiben unveraendert.
+// Zuordnung ausschliesslich ueber die Personalnummer, NICHT ueber den Filialnamen:
+// Wer im Urlaub/krank ist, ist es in jeder Filiale. Ueber den Filialnamen zu filtern
+// hat drei reale Faelle uebersehen — Mitarbeiter mit Zweitfiliale (der Antrag traegt
+// nur die Stammfiliale), umbenannte Filialen und Versetzungen. Die Zeilen des Plans
+// sind ohnehin schon die richtigen Personen, mehr Filter braucht es nicht.
+function dpAbsenceFor(){
   var ov={};
   (typeof fbDecided!=='undefined'?fbDecided:[]).forEach(function(r){
-    if(r.status==='approved' && dpFilEq(r.filiale,filiale)) dpAddRange(ov, ''+(r.empId||''), r.from, r.to, 'Urlaub');
+    if(r.status==='approved') dpAddRange(ov, ''+(r.empId||''), r.from, r.to, 'Urlaub');
   });
   (typeof fbKrank!=='undefined'?fbKrank:[]).forEach(function(k){
-    var d=k.d||{}; if(dpFilEq(d.filiale,filiale)) dpAddRange(ov, ''+(d.empId||''), d.from, d.to, 'Krank');
+    var d=k.d||{}; dpAddRange(ov, ''+(d.empId||''), d.from, d.to, 'Krank');
+  });
+  return ov;
+}
+// Noch nicht entschiedene Urlaubsantraege — nur als Hinweis im Plan, damit beim Planen
+// sichtbar ist, dass fuer diesen Tag bereits ein Antrag offen ist. Bewusst getrennt von
+// dpAbsenceFor(): diese Tage bleiben editierbar und landen weder im PDF noch im Autofill.
+function dpPendingFor(){
+  var ov={};
+  (typeof fbPending!=='undefined'?fbPending:[]).forEach(function(r){
+    dpAddRange(ov, ''+(r.empId||''), r.from, r.to, fmtDate(r.from)+'–'+fmtDate(r.to));
   });
   return ov;
 }
@@ -3457,7 +3449,33 @@ function dpRenderWeeks(){
     wk.dates.forEach(function(dt,di){var d=dpParse(dt),ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}),fn=hol[dt];h+='<th'+(fn?' class="dp-th-ft" title="'+fn+'"':'')+'>'+DAYS[di].substring(0,2)+'<br><small style="font-weight:400;font-size:10px">'+ds+'</small>'+(fn?'<br><small class="dp-fn">'+fn+'</small>':'')+'</th>';});
     h+='</tr></thead><tbody>';
     if(!dpEmployees.length){h+='<tr><td colspan="7" style="padding:12px 8px;text-align:center;font-size:12px;color:var(--mut)">Noch keine Mitarbeiter.</td></tr>';}
-    else{var dpAbs=dpAbsenceFor(dpGetFiliale());dpEmployees.forEach(function(emp){var ek=dpEmpKey(emp),eid=''+(emp.id||'');var zw=dpIsZweit(emp.id,dpGetFiliale());h+='<tr><td title="'+emp.name+(zw?' · Zweitfiliale':'')+'">'+(zw?'🔄 ':'')+emp.name.substring(0,15)+(emp.name.length>15?'…':'')+'</td>';wk.dates.forEach(function(dt){var abs=dpAbs[eid]&&dpAbs[eid][dt];var stored=(dpShifts[ek]&&dpShifts[ek][dt])||'';var isF=!!hol[dt];if(abs){var acls=abs==='Urlaub'?'dp-cell-urlaub':'dp-cell-krank';h+='<td class="'+acls+(isF?' dp-cell-ft':'')+'" title="Automatisch: '+abs+(stored?' (überschreibt: '+stored+')':'')+'"><div style="padding:4px 2px;text-align:center;font-size:12px;font-weight:600;color:'+(abs==='Urlaub'?'#1E8449':'#C0392B')+'">'+(abs==='Urlaub'?'🌴 Urlaub':'🏥 Krank')+'</div></td>';}else{var val=stored,cls=val==='Frei'?'dp-cell-frei':val==='Urlaub'?'dp-cell-urlaub':val==='Krank'?'dp-cell-krank':'';if(isF&&!cls)cls='dp-cell-frei';h+='<td class="'+cls+(isF?' dp-cell-ft':'')+'"><input class="dp-shift dp-inp" list="dp-presets" value="'+val+'" data-emp="'+ek+'" data-date="'+dt+'" oninput="dpCellChanged(this)"></td>';}});h+='</tr>';});}
+    else{
+      var dpAbs=dpAbsenceFor(), dpPend=dpPendingFor();
+      dpEmployees.forEach(function(emp){
+        var ek=dpEmpKey(emp),eid=''+(emp.id||'');
+        var zw=dpIsZweit(emp.id,dpGetFiliale());
+        h+='<tr><td title="'+emp.name+(zw?' · Zweitfiliale':'')+'">'+(zw?'🔄 ':'')+emp.name.substring(0,15)+(emp.name.length>15?'…':'')+'</td>';
+        wk.dates.forEach(function(dt){
+          var abs=dpAbs[eid]&&dpAbs[eid][dt];
+          var stored=(dpShifts[ek]&&dpShifts[ek][dt])||'';
+          var isF=!!hol[dt];
+          if(abs){
+            var acls=abs==='Urlaub'?'dp-cell-urlaub':'dp-cell-krank';
+            h+='<td class="'+acls+(isF?' dp-cell-ft':'')+'" title="Automatisch: '+abs+(stored?' (überschreibt: '+stored+')':'')+'"><div style="padding:4px 2px;text-align:center;font-size:12px;font-weight:600;color:'+(abs==='Urlaub'?'#1E8449':'#C0392B')+'">'+(abs==='Urlaub'?'🌴 Urlaub':'🏥 Krank')+'</div></td>';
+          } else {
+            var pend=dpPend[eid]&&dpPend[eid][dt];
+            var val=stored,cls=val==='Frei'?'dp-cell-frei':val==='Urlaub'?'dp-cell-urlaub':val==='Krank'?'dp-cell-krank':'';
+            if(isF&&!cls)cls='dp-cell-frei';
+            if(pend&&!cls)cls='dp-cell-pend';
+            h+='<td class="'+cls+(isF?' dp-cell-ft':'')+'"'+(pend?' title="Urlaubsantrag offen (noch nicht entschieden): '+pend+'"':'')
+              +'><input class="dp-shift dp-inp" list="dp-presets" value="'+val+'" data-emp="'+ek+'" data-date="'+dt+'" oninput="dpCellChanged(this)">'
+              +(pend?'<span class="dp-pend-badge">🌴 beantragt</span>':'')
+              +'</td>';
+          }
+        });
+        h+='</tr>';
+      });
+    }
     h+='</tbody></table></div></div>';
   });
   document.getElementById('dp-weeks-wrap').innerHTML=h;
@@ -3520,7 +3538,7 @@ function dpBuildPDFDoc(){
   var ML=8,MT=8,PW=194,CE=36,CD=(PW-CE)/6,RKW=7,RH=12,RE=7.5,pH=280,y=MT;
   var DAYS=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
   var holPDF=dpMonthHolidays();
-  var dpAbsPDF=dpAbsenceFor(f);   // genehmigter Urlaub / Krankmeldungen
+  var dpAbsPDF=dpAbsenceFor();   // genehmigter Urlaub / Krankmeldungen
   doc.setFontSize(13);doc.setFont('helvetica','bold');
   doc.text('Arbeitsplan \u2013 '+f,ML+PW/2,y+5.5,{align:'center'});y+=10;
   dpGetWeeks(m).forEach(function(wk){
@@ -3639,7 +3657,7 @@ function dpSuggest(){
     if(!Object.keys(pat).length){ dpSugStatus('⚠️ Im Vormonat sind keine Arbeitszeiten hinterlegt.','#B7791F'); return; }
 
     dpSaveFromDOM();                                  // aktuelle Eingaben sichern
-    var abs=dpAbsenceFor(f);                          // genehmigter Urlaub / Krank
+    var abs=dpAbsenceFor();                           // genehmigter Urlaub / Krank
     var weeks=dpGetWeeks(m);
     var filled=0, skippedUrlaub=0, skippedFilled=0, noPattern=0;
 
@@ -4422,59 +4440,6 @@ function fbPublish(){
   }).catch(function(e){ if(stat) stat.textContent='⚠️ Fehler: '+e.message; alert('Veröffentlichen fehlgeschlagen: '+e.message); });
 }
 
-// ════════ REGION-BACKFILL (einmalig, siehe Einstellungen) ════════
-var REGION_BACKFILL_COLLECTIONS=['emps','krank','receipts','wareneingang','umlagerung','antrag','aenderungsvertrag'];
-var __regionBackfillPending=null;
-function regionBackfillScan(){
-  if(!fbReady||!fbDb||!fbManager){ alert('Bitte zuerst als Manager anmelden (Einstellungen).'); return; }
-  var stat=document.getElementById('region-backfill-stat');
-  stat.textContent='🔄 Zähle Dokumente ohne Region…';
-  document.getElementById('region-backfill-run').style.display='none';
-  var counts={};
-  var jobs=REGION_BACKFILL_COLLECTIONS.map(function(col){
-    return fbDb.collection(col).get().then(function(snap){
-      var missing=[]; snap.forEach(function(doc){ if(!doc.data().region) missing.push(doc.ref); });
-      counts[col]=missing;
-    });
-  });
-  jobs.push(fbDb.collectionGroup('urlaub').get().then(function(snap){
-    var missing=[]; snap.forEach(function(doc){ if(!doc.data().region) missing.push(doc.ref); });
-    counts['urlaub (alle Filialen)']=missing;
-  }));
-  Promise.all(jobs).then(function(){
-    __regionBackfillPending=counts;
-    var total=Object.keys(counts).reduce(function(s,k){ return s+counts[k].length; },0);
-    var lines=Object.keys(counts).map(function(k){ return k+': '+counts[k].length; });
-    stat.innerHTML='Gefunden ohne Region-Feld:<br>'+lines.join('<br>')+'<br><strong>Gesamt: '+total+'</strong>'+(total?'':'<br>✓ Nichts zu tun.');
-    document.getElementById('region-backfill-run').style.display=total?'inline-flex':'none';
-  }).catch(function(e){ stat.textContent='⚠️ Fehler: '+e.message; });
-}
-function regionBackfillRun(){
-  if(!fbReady||!fbDb||!fbManager){ alert('Bitte zuerst als Manager anmelden (Einstellungen).'); return; }
-  if(!__regionBackfillPending){ alert('Bitte zuerst „🔍 Prüfen" ausführen.'); return; }
-  var allRefs=[];
-  Object.keys(__regionBackfillPending).forEach(function(k){ __regionBackfillPending[k].forEach(function(ref){ allRefs.push(ref); }); });
-  if(!allRefs.length){ alert('Nichts zu markieren.'); return; }
-  if(!confirm('Wirklich '+allRefs.length+' Dokumente mit region:"ost" markieren? Dies kann nicht automatisch rückgängig gemacht werden.')) return;
-  var stat=document.getElementById('region-backfill-stat');
-  stat.textContent='🔄 Schreibe '+allRefs.length+' Dokumente…';
-  var chunks=[]; for(var i=0;i<allRefs.length;i+=400){ chunks.push(allRefs.slice(i,i+400)); }
-  var chain=Promise.resolve();
-  chunks.forEach(function(chunk){
-    chain=chain.then(function(){
-      var batch=fbDb.batch();
-      chunk.forEach(function(ref){ batch.update(ref,{region:'ost'}); });
-      return batch.commit();
-    });
-  });
-  chain.then(function(){
-    stat.textContent='✓ Fertig — '+allRefs.length+' Dokumente auf region:"ost" gesetzt.';
-    document.getElementById('region-backfill-run').style.display='none';
-    __regionBackfillPending=null;
-    toast('✓ Region-Backfill abgeschlossen');
-  }).catch(function(e){ stat.textContent='⚠️ Fehler beim Schreiben: '+e.message; });
-}
-
 // ════════ FILIALEN_META (Region-fähige Filial-Stammdaten, ersetzt lokale-only Listen) ════════
 function filialenMetaWriteThrough(entries, region){
   if(!fbReady||!fbDb||!fbManager||!region) return;
@@ -4497,17 +4462,6 @@ function filialenMetaWriteThroughFromMkStores(stores, region){
     return {marktNr:nr, name:s.name, ort:s.ort};
   }), region);
 }
-function regionSeedFilialenMeta(){
-  if(!fbReady||!fbDb||!fbManager){ alert('Bitte zuerst als Manager anmelden (Einstellungen).'); return; }
-  var filMeta=filMetaLoad(), mkStores=loadMkStores();
-  var nFil=Object.keys(filMeta).length, nMk=mkStores.length;
-  if(!nFil && !nMk){ alert('Keine lokalen Filialdaten gefunden (weder Filialen-PLZ-Liste noch Marktsuche-Liste).'); return; }
-  if(!confirm('Filialen-Stammdaten aus lokalen Daten anlegen: '+nFil+' aus „Filialen — PLZ & Ort", '+nMk+' aus dem Marktsuche-Cache — alle mit region:"ost". Fortfahren?')) return;
-  filialenMetaWriteThroughFromFilMeta(filMeta, 'ost');
-  filialenMetaWriteThroughFromMkStores(mkStores, 'ost');
-  toast('✓ Filialen-Stammdaten werden angelegt…');
-}
-
 // ── FILIALNAME-MIGRATION (einmalig, vor "Veröffentlichen") ──
 // Wenn die Namens-Korrektur (importCSV löst jetzt über filMeta auf) den Filialnamen einer
 // bereits veröffentlichten Filiale ändert, ändert sich auch der darauf aufbauende Firestore-
@@ -4524,161 +4478,13 @@ function regionSeedFilialenMeta(){
 //     Fund wird über die Personalnummern in den Schichten/Urlaubseinträgen geprüft, welcher
 //     aktuellen Filiale er zuzuordnen ist. Nur eindeutige Treffer werden zum Kopieren
 //     vorgeschlagen — mehrdeutige oder nicht zuordenbare Funde werden nur gemeldet, nie geraten.
-// ── INVENTUR-DATENREPARATUR (einmalig) ──
-// Ein zwischenzeitlicher Fehler im Speicher-Code des Mitarbeiter-Formulars hat
-// Artikel-Mengen als wörtliche Einzelfelder wie "counts.80191" statt verschachtelt im
-// counts-Feld abgelegt (set(...,{merge:true}) wertet Punkt-Schlüssel NICHT als Pfad
-// aus — das tut nur update(), real gegen Firestore geprüft). Die Werte sind vollständig
-// vorhanden, nur an der falschen Stelle — dieses Werkzeug führt sie zusammen.
-var invRepairFixes=[];
-// Robust auch dann, wenn „Inventur-Datenreparatur" noch nicht gelaufen ist: fehlerhafte
-// Einzelfelder wie "counts.80191" (siehe invRepairScan) werden hier zusätzlich zum
-// eigentlichen counts-Feld eingelesen, damit nichts übersehen wird.
+// Liest ein Inventur-Dokument robust aus, auch falls es (durch einen inzwischen behobenen
+// Bug im Speicher-Code) noch die alte, fehlerhafte Feldform hat — Mengen als wörtliche
+// Einzelfelder "counts.80191" statt verschachtelt im counts-Feld.
 function invReconstructCounts(d){
   var out=Object.assign({}, (d&&d.counts)||{});
   if(d) Object.keys(d).forEach(function(k){ if(k.indexOf('counts.')===0) out[k.slice('counts.'.length)]=d[k]; });
   return out;
-}
-async function invRepairScan(){
-  if(!fbReady||!fbDb||!fbManager){ alert('Bitte zuerst als Manager anmelden (Einstellungen).'); return; }
-  var stat=document.getElementById('inv-repair-stat'), runBtn=document.getElementById('inv-repair-run');
-  stat.textContent='⏳ Prüfe…';
-  runBtn.style.display='none';
-  try{
-    var snap=await fbDb.collection('inventur_counts').get();
-    invRepairFixes=[];
-    snap.forEach(function(doc){
-      var d=doc.data()||{};
-      var flatKeys=Object.keys(d).filter(function(k){ return k.indexOf('counts.')===0; });
-      if(!flatKeys.length) return;
-      var rebuilt=Object.assign({}, d.counts||{});
-      flatKeys.forEach(function(k){ rebuilt[k.slice('counts.'.length)]=d[k]; });
-      invRepairFixes.push({docId:doc.id, ref:doc.ref, rebuilt:rebuilt, flatKeys:flatKeys, filiale:d.filiale||doc.id, month:d.month||''});
-    });
-    if(!invRepairFixes.length){
-      stat.textContent='✓ Keine beschädigten Inventur-Dokumente gefunden.';
-      return;
-    }
-    var totalArt=invRepairFixes.reduce(function(s,f){ return s+f.flatKeys.length; },0);
-    stat.innerHTML='<strong>'+invRepairFixes.length+'</strong> Dokument(e) mit <strong>'+totalArt+'</strong> betroffenen Artikel-Feldern gefunden:<br>'
-      +invRepairFixes.map(function(f){ return '• '+(f.filiale||f.docId)+' · '+f.month+' ('+f.flatKeys.length+' Artikel, '+Object.keys(f.rebuilt).length+' insgesamt nach Reparatur)'; }).join('<br>');
-    runBtn.style.display='block';
-  }catch(err){
-    stat.textContent='❌ Fehler: '+err.message;
-  }
-}
-async function invRepairRun(){
-  if(!confirm('Beschädigte Inventur-Dokumente reparieren? Die Artikel-Mengen werden im richtigen counts-Feld zusammengeführt, die fehlerhaften Einzelfelder werden entfernt. Es gehen keine Mengen verloren.')) return;
-  var stat=document.getElementById('inv-repair-stat'), runBtn=document.getElementById('inv-repair-run');
-  stat.textContent='⏳ Repariere…';
-  try{
-    var jobs=invRepairFixes.map(function(f){
-      // WICHTIG: "counts" (Objekt) und "counts.80191" (Punkt-Feldname) dürfen NICHT im
-      // selben update()-Aufruf als Objekt-Keys gemischt werden — Firestore verwirft dabei
-      // den Lösch-Teil für die fehlerhaften Einzelfelder still und leise (real getestet).
-      // Über FieldPath (Einzelsegment = kompletter Feldname inkl. Punkt) funktioniert es korrekt.
-      var args=['counts', f.rebuilt];
-      f.flatKeys.forEach(function(k){ args.push(new firebase.firestore.FieldPath(k)); args.push(firebase.firestore.FieldValue.delete()); });
-      return f.ref.update.apply(f.ref, args);
-    });
-    await Promise.all(jobs);
-    stat.textContent='✓ '+invRepairFixes.length+' Dokument(e) repariert.';
-    runBtn.style.display='none';
-    toast('✓ Inventur-Reparatur abgeschlossen');
-  }catch(err){
-    stat.textContent='❌ Fehler bei der Reparatur: '+err.message;
-  }
-}
-
-// ════════ INVENTUR-REGION-TRENNUNG (einmalig, siehe Einstellungen) ════════
-// inventur_period/inventur_links/inventur_counts waren bislang nicht nach Region getrennt
-// (beide Regionen teilten sich denselben Zeitraum/dieselben Links/dieselbe Zählungsliste).
-// Ordnet bestehende Zählungen per Filialname der richtigen Region zu (Quelle: filialen_meta,
-// Fallback emps) und dupliziert den aktuell gesetzten Zeitraum/Links einmalig für beide
-// Regionen, damit niemand mitten in der laufenden Zählung neu eingeben muss.
-var invRegionCountFixes=[], invRegionPeriodDup=[], invRegionLinksDup=[], invRegionUnresolved=[];
-async function invRegionScan(){
-  if(!fbReady||!fbDb||!fbManager){ alert('Bitte zuerst als Manager anmelden (Einstellungen).'); return; }
-  var stat=document.getElementById('inv-region-stat'), runBtn=document.getElementById('inv-region-run');
-  stat.textContent='⏳ Prüfe…'; runBtn.style.display='none';
-  try{
-    // 1) Filiale -> Region Landkarte aus filialen_meta (autoritativ), Fallback emps
-    var nameToRegion={};
-    var fmSnap=await fbDb.collection('filialen_meta').get();
-    fmSnap.forEach(function(doc){ var d=doc.data()||{}; if(d.name&&d.region) nameToRegion[d.name.trim()]=d.region; });
-    var empSnap=await fbDb.collection('emps').get();
-    empSnap.forEach(function(doc){ var d=doc.data()||{}; if(d.filiale&&d.region&&!nameToRegion[d.filiale.trim()]) nameToRegion[d.filiale.trim()]=d.region; });
-
-    // 2) inventur_counts ohne (oder mit falschem) region-Feld
-    invRegionCountFixes=[]; invRegionUnresolved=[];
-    var icSnap=await fbDb.collection('inventur_counts').get();
-    icSnap.forEach(function(doc){
-      var d=doc.data()||{};
-      var resolved=d.filiale?nameToRegion[(''+d.filiale).trim()]:null;
-      if(resolved){ if(d.region!==resolved) invRegionCountFixes.push({ref:doc.ref, docId:doc.id, filiale:d.filiale, region:resolved}); }
-      else if(!d.region) invRegionUnresolved.push({docId:doc.id, filiale:d.filiale||'(kein Filialname)'});
-    });
-
-    // 3) inventur_period / inventur_links: alte Dokumente ohne Region-Suffix ("2026-08")
-    //    für beide Regionen duplizieren, sofern die region-spezifische Version noch fehlt.
-    invRegionPeriodDup=[]; invRegionLinksDup=[];
-    var perSnap=await fbDb.collection('inventur_period').get();
-    var perIds={}; perSnap.forEach(function(doc){ perIds[doc.id]=true; });
-    perSnap.forEach(function(doc){
-      if(doc.id.indexOf('__')>=0) return; // schon migriert
-      var d=doc.data()||{};
-      ['ost','west'].forEach(function(r){
-        var newId=doc.id+'__'+r;
-        if(!perIds[newId]) invRegionPeriodDup.push({newId:newId, data:{start:d.start||'', end:d.end||'', region:r}});
-      });
-    });
-    var lnkSnap=await fbDb.collection('inventur_links').get();
-    var lnkIds={}; lnkSnap.forEach(function(doc){ lnkIds[doc.id]=true; });
-    lnkSnap.forEach(function(doc){
-      if(doc.id.indexOf('__')>=0) return;
-      var d=doc.data()||{};
-      ['ost','west'].forEach(function(r){
-        var newId=doc.id+'__'+r;
-        if(!lnkIds[newId]) invRegionLinksDup.push({newId:newId, data:{links:d.links||{}, region:r}});
-      });
-    });
-
-    var total=invRegionCountFixes.length+invRegionPeriodDup.length+invRegionLinksDup.length;
-    var lines=[
-      invRegionCountFixes.length+' Inventur-Zählung(en) werden der richtigen Region zugeordnet',
-      invRegionPeriodDup.length+' Zeitraum-Dokument(e) werden für beide Regionen übernommen',
-      invRegionLinksDup.length+' Welo-Link-Dokument(e) werden für beide Regionen übernommen'
-    ];
-    if(invRegionUnresolved.length) lines.push('⚠️ '+invRegionUnresolved.length+' Zählung(en) ohne erkennbare Filiale — bleiben unverändert: '+invRegionUnresolved.map(function(u){return u.filiale+' ('+u.docId+')';}).join(', '));
-    stat.innerHTML=lines.join('<br>')+(total?'':'<br>✓ Nichts zu tun.');
-    runBtn.style.display=total?'block':'none';
-  }catch(err){ stat.textContent='❌ Fehler: '+err.message; }
-}
-async function invRegionRun(){
-  if(!confirm('Bestehende Inventur-Daten nach Region trennen? Zählungen werden ihrer Filiale entsprechend markiert, der aktuelle Zeitraum/die Welo-Links werden für Ost und West übernommen. Nichts wird gelöscht.')) return;
-  var stat=document.getElementById('inv-region-stat'), runBtn=document.getElementById('inv-region-run');
-  stat.textContent='⏳ Trenne…';
-  try{
-    var chunks=[]; for(var i=0;i<invRegionCountFixes.length;i+=400){ chunks.push(invRegionCountFixes.slice(i,i+400)); }
-    var chain=Promise.resolve();
-    chunks.forEach(function(chunk){
-      chain=chain.then(function(){
-        var batch=fbDb.batch();
-        chunk.forEach(function(f){ batch.update(f.ref,{region:f.region}); });
-        return batch.commit();
-      });
-    });
-    await chain;
-    var dupJobs=[];
-    invRegionPeriodDup.forEach(function(p){ dupJobs.push(fbDb.collection('inventur_period').doc(p.newId).set(p.data,{merge:true})); });
-    invRegionLinksDup.forEach(function(l){ dupJobs.push(fbDb.collection('inventur_links').doc(l.newId).set(l.data,{merge:true})); });
-    await Promise.all(dupJobs);
-    stat.textContent='✓ '+invRegionCountFixes.length+' Zählung(en) zugeordnet, '+(invRegionPeriodDup.length+invRegionLinksDup.length)+' Dokument(e) übernommen.'
-      +(invRegionUnresolved.length?' ⚠️ '+invRegionUnresolved.length+' Zählung(en) weiterhin ohne Region — siehe oben.':'');
-    runBtn.style.display='none';
-    toast('✓ Inventur-Region-Trennung abgeschlossen');
-    if(typeof invBindMonth==='function') invBindMonth();
-  }catch(err){ stat.textContent='❌ Fehler: '+err.message; }
 }
 
 var filMigAffected=[], filMigPlans=[], filMigUrlaub=[], filMigUgFixes=[], filMigInvFixes=[], filMigUnresolved=[];
@@ -4997,7 +4803,7 @@ function filialenSyncListener(){
 // Firestore-Docs -> Liste (testbar)
 function maMapPendingSnapshot(rawDocs){
   return rawDocs.map(function(d){ var v=d.data||{};
-    return {docId:d.id, ref:d.ref||null, empId:v.empId, name:v.name, filiale:v.filiale, from:v.from, to:v.to, status:v.status, created:v.created};
+    return {docId:d.id, ref:d.ref||null, empId:v.empId, name:v.name, filiale:v.filiale, from:v.from, to:v.to, status:v.status, created:v.created, updated:v.updated||''};
   }).sort(function(a,b){ return (a.created||'')<(b.created||'')?-1:1; });
 }
 var fbPendingUnsub=null;
@@ -5026,7 +4832,9 @@ function fbRenderPending(){
   if(!fbPending.length) html='<div style="color:#6B6860;font-size:13px;padding:6px 0">Keine offenen Anträge.</div>';
   else html=fbPending.map(function(r){
     return '<div style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #E8E4E0;border-left:4px solid #E67E22;border-radius:6px;margin-bottom:8px;flex-wrap:wrap">'
-      +'<div style="flex:1;min-width:150px"><strong>'+r.name+'</strong> · '+(r.filiale||'')+'<br><span style="font-size:13px;color:#6B6860">'+fmtDate(r.from)+' – '+fmtDate(r.to)+'</span></div>'
+      +'<div style="flex:1;min-width:150px"><strong>'+r.name+'</strong> · '+(r.filiale||'')
+      +(r.updated?' <span style="background:#FFF7E6;border:1px solid #F0C070;color:#8A5A00;border-radius:4px;padding:1px 5px;font-size:11px;font-weight:600" title="Vom Mitarbeiter am '+new Date(r.updated).toLocaleString("de-DE")+' geändert">✏️ geändert</span>':'')
+      +'<br><span style="font-size:13px;color:#6B6860">'+fmtDate(r.from)+' – '+fmtDate(r.to)+'</span></div>'
       +'<button class="btn btn-sm" style="background:#1E8449;color:#fff;border-color:#1E8449" onclick="fbApprove(\''+r.docId+'\')">✓ Genehmigen</button>'
       +'<button class="btn btn-sm" style="background:#C0392B;color:#fff;border-color:#C0392B" onclick="fbReject(\''+r.docId+'\')">✗ Ablehnen</button>'
       +'</div>';
