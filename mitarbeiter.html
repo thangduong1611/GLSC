@@ -103,6 +103,18 @@ table.dp-grid tr.me td.nm{background:#FDEFCB;}
 td.c-frei{background:#F0EDE8;color:var(--mut);}
 td.c-urlaub{background:var(--grn-bg);color:var(--grn);font-weight:700;}
 td.c-krank{background:var(--red-l);color:var(--red-d);font-weight:700;}
+/* Inventur-Stand (Stellvertretung) */
+.im-row{display:flex;align-items:center;gap:12px;padding:11px 2px;border-bottom:1px solid var(--brd);}
+.im-row:last-child{border-bottom:0;}
+.im-name{font-size:14px;font-weight:600;line-height:1.35;}
+.im-sub{font-size:12px;color:var(--mut);margin-top:2px;}
+.im-bar{height:5px;border-radius:3px;background:var(--bg);margin-top:6px;overflow:hidden;}
+.im-bar i{display:block;height:100%;background:var(--grn);border-radius:3px;}
+.im-pct{font-size:15px;font-weight:700;min-width:46px;text-align:right;font-variant-numeric:tabular-nums;}
+.im-badge{display:inline-block;font-size:10.5px;font-weight:700;border-radius:10px;padding:1px 7px;margin-left:5px;vertical-align:1px;white-space:nowrap;}
+.im-badge.ok{background:#EAFAF1;border:1px solid #1E8449;color:#1E8449;}
+.im-badge.draft{background:#FEF6E6;border:1px solid #F0C070;color:#8A5A00;}
+.im-badge.none{background:var(--bg);border:1px solid var(--brd);color:var(--mut);}
 /* Shopleiter-Planung: Hinweise direkt in der Zelle */
 .sl-pend-badge{display:block;font-size:9px;font-weight:700;color:#a06600;line-height:1.15;text-align:center;margin-top:2px;}
 .sl-other-badge{display:block;font-size:9px;font-weight:600;color:var(--mut);line-height:1.2;text-align:center;margin-top:2px;}
@@ -230,6 +242,7 @@ window.onerror=function(msg,src,line){
 
     <button class="app-ico" id="ico-nw" onclick="maNav('nw')"><span class="nw-dot" id="nw-dot"></span><span class="ico-e">📢</span><span class="ico-l" data-i18n="nav_nw">Infos</span></button>
     <button class="app-ico" id="ico-sl" onclick="maNav('sl')" style="display:none"><span class="ico-e">📋</span><span class="ico-l" data-i18n="nav_sl">Planung</span></button>
+    <button class="app-ico" id="ico-im" onclick="maNav('im')" style="display:none"><span class="ico-e">📊</span><span class="ico-l" data-i18n="nav_im">Inventur-Stand</span></button>
     <button class="app-ico" id="ico-iv" onclick="maNav('iv')" style="display:none"><span class="nw-dot" id="iv-dot" style="display:none"></span><span class="ico-e">📦</span><span class="ico-l" data-i18n="nav_iv">Inventur</span></button>
   </div>
 </div>
@@ -492,6 +505,10 @@ window.onerror=function(msg,src,line){
     <div class="card">
       <div class="card-title" data-i18n="sl_title">📋 Dienstplan-Planung</div>
       <div style="font-size:13px;color:var(--mut);margin-bottom:12px" id="sl-fil-info">—</div>
+      <div id="sl-fil-wrap" style="display:none;margin-bottom:10px">
+        <label data-i18n="lbl_fil">Filiale</label>
+        <select id="sl-fil-sel" onchange="slFilChange()"></select>
+      </div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
         <div style="flex:1">
           <label data-i18n="lbl_month">Monat</label>
@@ -508,6 +525,23 @@ window.onerror=function(msg,src,line){
         <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:3px;background:#fff;box-shadow:inset 0 0 0 2px #C0392B"></span><span data-i18n="sl_leg_clash">Doppelbelegung · 🏪 arbeitet auch woanders</span></span>
       </div>
       <div id="sl-grid" style="overflow-x:auto"></div>
+    </div>
+  </div>
+
+  <!-- ── INVENTUR-STAND (nur Stellvertretung Gebietsleitung, nur lesend) ── -->
+  <div class="panel" id="p-im">
+    <div class="card">
+      <div class="card-title" data-i18n="im_title">📊 Inventur-Stand</div>
+      <p style="font-size:13px;color:var(--mut);margin:0 0 12px;line-height:1.5" data-i18n="im_info"></p>
+      <div style="display:flex;align-items:flex-end;gap:10px;margin-bottom:12px">
+        <div style="flex:1">
+          <label data-i18n="lbl_month">Monat</label>
+          <input type="month" id="im-month" onchange="imLoad()">
+        </div>
+        <button class="btn" onclick="imLoad()" style="height:42px;margin:0">🔄</button>
+      </div>
+      <div id="im-status" style="font-size:13px;color:var(--mut);margin-bottom:10px;min-height:20px"></div>
+      <div id="im-list"></div>
     </div>
   </div>
 
@@ -1201,34 +1235,79 @@ function slGetWeeks(ym){
 }
 
 /* Wird direkt nach Firebase-Login gerufen – prüft Shopleiter-Rolle */
+/* Rollen: shopleiter = plant NUR die eigene Filiale.
+   vize (Stellvertretung Gebietsleitung) = plant JEDE Filiale der eigenen Region und
+   sieht zusätzlich den Inventur-Stand. Beides sind Anzeige-Rollen — die Daten
+   (plan/*, inventur_*) sind für angemeldete Nutzer ohnehin lesbar; sensible Bereiche
+   (Krankmeldung, Belege, Verträge) liegen weiterhin hinter isManager() in den Regeln. */
+function slIsPlanner(sess){ return !!(sess && (sess.shopleiter || sess.vize)); }
 function slInit(sess){
   if(!sess||!fbReady||!fbDb) return;
   fbDb.collection('emps').doc(''+sess.id).get().then(function(doc){
     if(!doc.exists) return;
     var d=doc.data()||{};
-    // Rolle in Session persistieren (damit Tab nach Reload sofort erscheint)
+    // Rollen in Session persistieren (damit die Tabs nach Reload sofort erscheinen)
     sess.shopleiter=!!d.shopleiter;
+    sess.vize=!!d.vize;
     sess.region=d.region||sess.region||'';
     maSetSession(sess);
     var btn=document.getElementById('ico-sl');
-    if(btn) btn.style.display=sess.shopleiter?'':'none';
-    if(sess.shopleiter){
-      // Filiale-Info setzen
-      var fi=document.getElementById('sl-fil-info');
-      if(fi) fi.textContent='🏪 '+sess.filiale;
-      // Standard-Monat auf aktuellen Monat setzen
+    if(btn) btn.style.display=slIsPlanner(sess)?'':'none';
+    var ivb=document.getElementById('ico-im');
+    if(ivb) ivb.style.display=sess.vize?'':'none';
+    if(slIsPlanner(sess)){
+      slSetupFilPicker(sess);
       var mi=document.getElementById('sl-month');
       if(mi&&!mi.value){var n=new Date();mi.value=n.getFullYear()+'-'+('0'+(n.getMonth()+1)).slice(-2);}
       slLoadPlan();
     }
   }).catch(function(e){console.warn('sl init', e);});
 }
+/* Filiale-Auswahl: Shopleiter sieht nur die eigene, die Stellvertretung alle der Region. */
+var slFiliale=null;
+function slCurFiliale(){
+  var sess=maSession(); if(!sess) return '';
+  if(sess.vize && slFiliale) return slFiliale;
+  return sess.filiale||'';
+}
+function slSetupFilPicker(sess){
+  var wrap=document.getElementById('sl-fil-wrap'), sel=document.getElementById('sl-fil-sel');
+  var info=document.getElementById('sl-fil-info');
+  if(!sess.vize){
+    if(wrap) wrap.style.display='none';
+    if(info){ info.style.display=''; info.textContent='🏪 '+(sess.filiale||''); }
+    slFiliale=sess.filiale||'';
+    return;
+  }
+  if(info) info.style.display='none';
+  if(!wrap||!sel) return;
+  wrap.style.display='';
+  var q=fbDb.collection('filialen_meta');
+  if(sess.region) q=q.where('region','==',sess.region);
+  q.get().then(function(snap){
+    var names=[];
+    snap.forEach(function(d){ var x=d.data()||{}; if(x.name) names.push(x.name); });
+    if(sess.filiale && names.indexOf(sess.filiale)<0) names.push(sess.filiale);
+    names.sort();
+    sel.innerHTML=names.map(function(n){ return '<option value="'+n.replace(/"/g,'&quot;')+'">'+n+'</option>'; }).join('');
+    slFiliale=(names.indexOf(sess.filiale)>=0?sess.filiale:names[0])||'';
+    sel.value=slFiliale;
+    slLoadPlan();
+  }).catch(function(e){ console.warn('sl fil picker', e); });
+}
+function slFilChange(){
+  var sel=document.getElementById('sl-fil-sel'); if(!sel) return;
+  slFiliale=sel.value;
+  slElsewhereKey=null;          // Nachbar-Filialen für die neue Filiale neu laden
+  slLoadPlan();
+}
 
 /* Plan für aktuellen Monat aus Firestore laden */
 function slLoadPlan(){
-  var sess=maSession(); if(!sess||!sess.shopleiter||!fbReady||!fbDb) return;
+  var sess=maSession(); if(!slIsPlanner(sess)||!fbReady||!fbDb) return;
   var m=document.getElementById('sl-month'); if(!m||!m.value) return;
-  var month=m.value, filiale=sess.filiale, docId=slFbSlug(filiale)+'__'+month;
+  var filiale=slCurFiliale(); if(!filiale) return;
+  var month=m.value, docId=slFbSlug(filiale)+'__'+month;
   var st=document.getElementById('sl-status'); if(st) st.textContent=t('sl_loading');
   // 1) Mitarbeiter dieser Filiale aus der emps-Sammlung laden (unabhängig vom Plan).
   //    So sieht der Shopleiter die Wochen auch, wenn noch kein Plan existiert.
@@ -1299,7 +1378,7 @@ var slElsewhere={}, slElsewhereKey=null, slElsewhereLoading=false;
 function slLoadElsewhere(){
   var sess=maSession(); if(!sess||!fbReady||!fbDb) return;
   var mi=document.getElementById('sl-month'); if(!mi||!mi.value) return;
-  var month=mi.value, own=slFbSlug(sess.filiale||'');
+  var month=mi.value, own=slFbSlug(slCurFiliale());
   var key=month+'||'+own+'||'+(sess.region||'');
   if(slElsewhereKey===key||slElsewhereLoading) return;
   slElsewhereLoading=true;
@@ -1384,13 +1463,13 @@ function slBuildPattern(prev){
   return pat;
 }
 function slSuggest(){
-  var sess=maSession(); if(!sess||!sess.shopleiter) return;
+  var sess=maSession(); if(!slIsPlanner(sess)) return;
   var mi=document.getElementById('sl-month'); if(!mi||!mi.value) return;
   if(!fbReady||!fbDb){ toast(t('err_net'),true); return; }
   var month=mi.value, pm=slPrevMonth(month);
   var st=document.getElementById('sl-status');
   if(st) st.textContent='⏳ '+slFmtMonth(pm)+'…';
-  fbDb.collection('plan').doc(slFbSlug(sess.filiale||'')+'__'+pm).get().then(function(doc){
+  fbDb.collection('plan').doc(slFbSlug(slCurFiliale())+'__'+pm).get().then(function(doc){
     if(!doc.exists){ if(st) st.textContent='⚠️ '+t('sl_sug_noprev',{m:slFmtMonth(pm)}); return; }
     var pat=slBuildPattern(doc.data()||{});
     if(!Object.keys(pat).length){ if(st) st.textContent='⚠️ '+t('sl_sug_noprev',{m:slFmtMonth(pm)}); return; }
@@ -1417,6 +1496,65 @@ function slSuggest(){
     if(st) st.textContent=t('sl_sug_ok',{n:filled, m:slFmtMonth(pm), s:skipped});
   }).catch(function(e){ if(st) st.textContent='⚠️ '+e.message; });
 }
+/* ════════════════════════════════════════════════
+   INVENTUR-STAND (nur Stellvertretung Gebietsleitung)
+   Reine Übersicht: welche Filiale hat gezählt, wie weit, von wem, wann.
+   Nur lesend — Zeiträume, Welo-Links und das Abtippen bleiben beim Gebietsleiter.
+   ════════════════════════════════════════════════ */
+function imOnShow(){
+  var sess=maSession(); if(!sess||!sess.vize) return;
+  var mi=document.getElementById('im-month');
+  if(mi&&!mi.value){ var n=new Date(); mi.value=n.getFullYear()+'-'+('0'+(n.getMonth()+1)).slice(-2); }
+  imLoad();
+}
+function imLoad(){
+  var sess=maSession(); if(!sess||!sess.vize||!fbReady||!fbDb) return;
+  var mi=document.getElementById('im-month'); if(!mi||!mi.value) return;
+  var month=mi.value;
+  var st=document.getElementById('im-status'), box=document.getElementById('im-list');
+  st.textContent='⏳ '+t('im_loading'); box.innerHTML='';
+  var total=(typeof INVENTUR_ITEMS!=='undefined')?INVENTUR_ITEMS.length:0;
+  // Filialen der eigenen Region als Soll-Liste — so sieht man auch, wer noch NICHT gezählt hat
+  var q=fbDb.collection('filialen_meta');
+  if(sess.region) q=q.where('region','==',sess.region);
+  q.get().then(function(fsnap){
+    var branches=[]; fsnap.forEach(function(d){ var x=d.data()||{}; if(x.name) branches.push(x.name); });
+    branches.sort();
+    var cq=fbDb.collection('inventur_counts').where('month','==',month);
+    if(sess.region) cq=cq.where('region','==',sess.region);
+    return cq.get().then(function(csnap){
+      var by={};
+      csnap.forEach(function(d){
+        var x=d.data()||{};
+        var counts=(typeof ivReconstructCounts==='function')?ivReconstructCounts(x):(x.counts||{});
+        var filled=Object.keys(counts).filter(function(a){ return (+counts[a])>0; }).length;
+        by[slFbSlug(x.filiale||'')]={filiale:x.filiale||d.id, filled:filled, submitted:!!x.submitted, by:x.by||'', at:x.at||''};
+      });
+      if(!branches.length) Object.keys(by).forEach(function(k){ branches.push(by[k].filiale); });
+      var done=0, html=branches.map(function(name){
+        var r=by[slFbSlug(name)];
+        var pct=(total&&r)?Math.min(100,Math.round(r.filled/total*100)):0;
+        if(r&&r.submitted) done++;
+        var badge = !r ? '<span class="im-badge none">'+t('im_st_none')+'</span>'
+                  : (r.submitted ? '<span class="im-badge ok">'+t('im_st_sent')+'</span>'
+                                 : '<span class="im-badge draft">'+t('im_st_draft')+'</span>');
+        var sub='';
+        if(r){
+          var when=r.at?new Date(r.at).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+          sub=r.filled+' '+t('im_items')+(total?' / '+total:'')+(r.by?' · '+r.by:'')+(when?' · '+when:'');
+        } else { sub=t('im_nothing'); }
+        return '<div class="im-row">'
+          +'<div style="flex:1;min-width:0"><div class="im-name">'+name+' '+badge+'</div>'
+          +'<div class="im-sub">'+sub+'</div>'
+          +'<div class="im-bar"><i style="width:'+pct+'%"></i></div></div>'
+          +'<div class="im-pct">'+pct+'%</div></div>';
+      }).join('');
+      box.innerHTML=html;
+      st.textContent=t('im_summary',{d:done, n:branches.length});
+    });
+  }).catch(function(e){ st.textContent='⚠️ '+e.message; console.warn('im load', e); });
+}
+
 /* Wochengitter rendern */
 function slRenderGrid(){
   var box=document.getElementById('sl-grid'); if(!box) return;
@@ -1494,10 +1632,10 @@ function slCellChanged(inp){
 
 /* Nur eine Woche veröffentlichen (Read-Modify-Write – andere Wochen bleiben erhalten) */
 function slPublishWeek(wi){
-  var sess=maSession(); if(!sess||!sess.shopleiter) return;
+  var sess=maSession(); if(!slIsPlanner(sess)) return;
   if(!fbReady||!fbDb){ toast(t('err_net'),true); return; }
   var m=document.getElementById('sl-month'); if(!m||!m.value) return;
-  var month=m.value, filiale=sess.filiale;
+  var month=m.value, filiale=slCurFiliale(); if(!filiale) return;
   var weeks=slGetWeeks(month), wk=weeks[wi]; if(!wk) return;
   slSaveFromDOM();
   var st=document.getElementById('sl-status'); if(st) st.textContent='⏳ KW '+wk.kw+'…';
@@ -1616,6 +1754,7 @@ function maWaNumber(){var b=maLoadBundle();return ((b&&b.managerWa)||localStorag
    ════════════════════════════════════════════════ */
 var I18N={
 de:{_name:'Deutsch',
+ nav_im:'📊 Inventur-Stand',im_title:'📊 Inventur-Stand',im_info:'Übersicht, welche Filiale die Inventur schon gezählt und gesendet hat. Nur zur Ansicht — Zeitraum, Welo-Links und das Abtippen bleiben beim Gebietsleiter.',im_loading:'Lade Inventur-Stand…',im_items:'Artikel',im_nothing:'noch nichts gezählt',im_st_sent:'✓ Eingereicht',im_st_draft:'✎ Entwurf',im_st_none:'offen',im_summary:'{d} von {n} Filialen eingereicht',lbl_fil:'Filiale',
  nav_dp:'Dienstplan',nav_ul:'Urlaub',nav_kr:'Krankmeldung',nav_bl:'Belege',nav_av:'Vertrag',nav_nw:'Infos',
  iv_offline_note:'Noch nicht gesendet. Deine Eingaben sind auf diesem Gerät gespeichert und werden automatisch übertragen, sobald wieder Internet da ist. App darf zwischendurch geschlossen werden.',
  iv_offline_saved:'Offline gespeichert — wird automatisch gesendet, sobald Internet da ist.',
@@ -1709,6 +1848,7 @@ de:{_name:'Deutsch',
  wdS:['So','Mo','Di','Mi','Do','Fr','Sa'],
  wdL:['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag']},
 vi:{_name:'Tiếng Việt',
+ nav_im:'📊 Tiến độ kiểm kê',im_title:'📊 Tiến độ kiểm kê',im_info:'Xem tiệm nào đã đếm và gửi kiểm kê. Chỉ để theo dõi — thời gian, link Welo và việc nhập liệu vẫn do Gebietsleiter làm.',im_loading:'Đang tải tiến độ…',im_items:'món',im_nothing:'chưa đếm gì',im_st_sent:'✓ Đã gửi',im_st_draft:'✎ Bản nháp',im_st_none:'chưa làm',im_summary:'{d}/{n} tiệm đã gửi',lbl_fil:'Tiệm',
  nav_dp:'Lịch làm',nav_ul:'Nghỉ phép',nav_kr:'Báo ốm',nav_bl:'Báo cáo',nav_av:'Hợp đồng',nav_nw:'Thông báo',
  iv_offline_note:'Chưa gửi. Dữ liệu bạn nhập đã được lưu trên máy này và sẽ tự động gửi đi khi có mạng trở lại. Bạn có thể tắt ứng dụng giữa chừng.',
  iv_offline_saved:'Đã lưu ngoại tuyến — sẽ tự động gửi khi có mạng.',
@@ -1802,6 +1942,7 @@ vi:{_name:'Tiếng Việt',
  wdS:['CN','T2','T3','T4','T5','T6','T7'],
  wdL:['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy']},
 en:{_name:'English',
+ nav_im:'📊 Inventory status',im_title:'📊 Inventory status',im_info:'Overview of which store has already counted and submitted. View only — period, Welo links and data entry stay with the area manager.',im_loading:'Loading inventory status…',im_items:'items',im_nothing:'nothing counted yet',im_st_sent:'✓ Submitted',im_st_draft:'✎ Draft',im_st_none:'open',im_summary:'{d} of {n} stores submitted',lbl_fil:'Store',
  nav_dp:'Schedule',nav_ul:'Vacation',nav_kr:'Sick note',nav_bl:'Receipts',nav_av:'Contract',nav_nw:'News',
  iv_offline_note:'Not sent yet. Your entries are saved on this device and will be transmitted automatically once there is internet again. You may close the app in the meantime.',
  iv_offline_saved:'Saved offline — will be sent automatically once there is internet.',
@@ -1895,6 +2036,7 @@ en:{_name:'English',
  wdS:['Su','Mo','Tu','We','Th','Fr','Sa'],
  wdL:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']},
 th:{_name:'ไทย',
+ nav_im:'📊 สถานะการตรวจนับ',im_title:'📊 สถานะการตรวจนับ',im_info:'ภาพรวมว่าสาขาใดนับและส่งแล้ว ดูอย่างเดียว — ช่วงเวลา ลิงก์ Welo และการคีย์ข้อมูลยังเป็นของผู้จัดการเขต',im_loading:'กำลังโหลดสถานะ…',im_items:'รายการ',im_nothing:'ยังไม่ได้นับ',im_st_sent:'✓ ส่งแล้ว',im_st_draft:'✎ ฉบับร่าง',im_st_none:'ยังไม่ทำ',im_summary:'ส่งแล้ว {d} จาก {n} สาขา',lbl_fil:'สาขา',
  nav_dp:'ตารางงาน',nav_ul:'วันลา',nav_kr:'แจ้งป่วย',nav_bl:'ใบเสร็จ',nav_av:'สัญญา',nav_nw:'ข่าวสาร',
  iv_offline_note:'ยังไม่ได้ส่ง ข้อมูลที่คุณกรอกถูกบันทึกไว้ในเครื่องนี้แล้ว และจะถูกส่งอัตโนมัติเมื่อมีอินเทอร์เน็ตอีกครั้ง คุณสามารถปิดแอปได้ระหว่างนี้',
  iv_offline_saved:'บันทึกแบบออฟไลน์แล้ว — จะส่งอัตโนมัติเมื่อมีอินเทอร์เน็ต',
@@ -1988,6 +2130,7 @@ th:{_name:'ไทย',
  wdS:['อา','จ','อ','พ','พฤ','ศ','ส'],
  wdL:['วันอาทิตย์','วันจันทร์','วันอังคาร','วันพุธ','วันพฤหัสบดี','วันศุกร์','วันเสาร์']},
 zh:{_name:'中文',
+ nav_im:'📊 盘点进度',im_title:'📊 盘点进度',im_info:'查看哪些门店已完成盘点并提交。仅供查看——盘点时间、Welo链接和录入仍由区域经理负责。',im_loading:'正在加载盘点进度…',im_items:'件商品',im_nothing:'尚未盘点',im_st_sent:'✓ 已提交',im_st_draft:'✎ 草稿',im_st_none:'未开始',im_summary:'{n}家门店中已提交{d}家',lbl_fil:'门店',
  nav_dp:'排班表',nav_ul:'休假',nav_kr:'病假',nav_bl:'报销',nav_av:'合同',nav_nw:'通知',
  iv_offline_note:'尚未发送。您输入的数据已保存在本设备上，一旦恢复网络会自动上传。中途可以关闭本应用。',
  iv_offline_saved:'已离线保存 — 网络恢复后会自动发送。',
@@ -2290,7 +2433,7 @@ function maShowApp(sess){
   }
 }
 function maNav(t){
-  ['dp','ul','kr','bl','av','nw','sl','iv','we','ug'].forEach(function(x){
+  ['dp','ul','kr','bl','av','nw','sl','im','iv','we','ug'].forEach(function(x){
     var p=document.getElementById('p-'+x);
     var ic=document.getElementById('ico-'+x);
     if(p) p.classList.toggle('active',x===t);
@@ -2302,6 +2445,7 @@ function maNav(t){
   if(t==='av'){avERender();}
   if(t==='nw'){maNewsMarkRead();}
   if(t==='sl'){slLoadPlan();}
+  if(t==='im'){imOnShow();}
   if(t==='iv'){ivRender();}
   if(t==='we'){weRenderItems();weUpdateBudget();}
   if(t==='ug'){ugOnShow();}
