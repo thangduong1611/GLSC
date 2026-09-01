@@ -4979,6 +4979,82 @@ function fbStartPending(){
       dpRefreshIfOpen();
     }, function(err){ console.warn('FB pending', err); fbPendingCardShow('⚠️ Kein Datenbank-Zugriff. ('+err.code+') '+(err.message||''), '#C0392B'); });
 }
+
+/* ── Besetzungs-Check: reicht die Filiale noch, wenn dieser Antrag genehmigt wird? ──
+   Vergleicht den aktuellen Dienstplan (plan/{slug}__{yyyy-mm}.shifts, pro Tag) mit
+   allen wartenden/genehmigten Urlaub-Anträgen derselben Filiale. Reine Anzeige beim
+   Prüfen der Anträge — schreibt nichts, ersetzt nicht die Entscheidung des GL. */
+var bzPlanCache={};
+function bzMonthList(fromISO,toISO){
+  var months=[],d=new Date(fromISO+'T00:00:00'),end=new Date(toISO+'T00:00:00'),seen={},guard=0;
+  while(d<=end&&guard<36){ var m=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2); if(!seen[m]){seen[m]=1;months.push(m);} d.setMonth(d.getMonth()+1,1); guard++; }
+  return months;
+}
+function bzDateRange(fromISO,toISO){
+  var out=[],d=new Date(fromISO+'T00:00:00'),end=new Date((toISO||fromISO)+'T00:00:00'),guard=0;
+  while(d<=end&&guard<400){ out.push(d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2)); d.setDate(d.getDate()+1); guard++; }
+  return out;
+}
+function bzGetPlanDoc(filiale,month){
+  var docId=fbSlug(filiale)+'__'+month;
+  if(!bzPlanCache[docId]) bzPlanCache[docId]=fbDb.collection('plan').doc(docId).get()
+    .then(function(doc){ return doc.exists?(doc.data()||{}):null; }).catch(function(){ return null; });
+  return bzPlanCache[docId];
+}
+function bzCoveringOnDate(planDoc,dateISO,excludeEmpIds){
+  if(!planDoc) return null;
+  var shifts=planDoc.shifts||{},n=0;
+  Object.keys(shifts).forEach(function(ek){
+    var dash=ek.indexOf('-'),empId=dash>=0?ek.slice(0,dash):ek;
+    if(excludeEmpIds&&excludeEmpIds[empId]) return;
+    if(dpIsWorkValue(shifts[ek][dateISO])) n++;
+  });
+  return n;
+}
+/* entries: bereits geladene Urlaub-Docs derselben Filiale [{empId,from,to,status,docId}] */
+function bzCheck(filiale,fromISO,toISO,entries,selfEmpId,excludeDocId){
+  var months=bzMonthList(fromISO,toISO);
+  return Promise.all(months.map(function(m){ return bzGetPlanDoc(filiale,m).then(function(d){ return [m,d]; }); }))
+    .then(function(pairs){
+      var byMonth={}; pairs.forEach(function(p){ byMonth[p[0]]=p[1]; });
+      var offByDate={};
+      (entries||[]).forEach(function(u){
+        if(u.docId===excludeDocId||u.status==='rejected'||!u.from) return;
+        var uid=u.empId||u.id;
+        bzDateRange(u.from,u.to).forEach(function(iso){ if(!offByDate[iso])offByDate[iso]={}; offByDate[iso][uid]=1; });
+      });
+      var days=bzDateRange(fromISO,toISO).map(function(iso){
+        var planDoc=byMonth[iso.slice(0,7)];
+        var exclude=Object.assign({},offByDate[iso]||{}); exclude[selfEmpId]=1;
+        var covering=bzCoveringOnDate(planDoc,iso,exclude);
+        return {date:iso,covering:covering,ok:covering===null?null:(covering>=1)};
+      });
+      var known=days.filter(function(d){return d.covering!==null;});
+      return {days:days, allOk:known.length?known.every(function(d){return d.ok;}):null, anyUnknown:days.some(function(d){return d.covering===null;})};
+    });
+}
+function bzBadgeHtml(res){
+  if(!res) return '<span style="font-size:11px;color:#B0AAA0">❔ kein Plan zur Prüfung</span>';
+  var bad=res.days.filter(function(d){return d.ok===false;});
+  if(bad.length){
+    var lbl=bad.length===1?('am '+fmtDate(bad[0].date)):('an '+bad.length+' Tagen');
+    return '<span style="font-size:11px;font-weight:700;color:#C0392B;background:#FBEAE7;border-radius:10px;padding:2px 8px" title="'+bad.map(function(d){return fmtDate(d.date)+': 0 Personen übrig';}).join(', ')+'">🔴 0 übrig '+lbl+'</span>';
+  }
+  if(res.allOk===null) return '<span style="font-size:11px;color:#B0AAA0">❔ kein Dienstplan für diesen Zeitraum</span>';
+  if(res.anyUnknown) return '<span style="font-size:11px;font-weight:700;color:#8A5A00;background:#FFF7E6;border-radius:10px;padding:2px 8px">🟡 ok, einzelne Tage ungeprüft</span>';
+  return '<span style="font-size:11px;font-weight:700;color:#1E8449;background:#EAF6EE;border-radius:10px;padding:2px 8px">🟢 Besetzung ok</span>';
+}
+function fbRunBesetzungChecks(){
+  var pool=fbPending.concat(fbDecided);
+  fbPending.forEach(function(r){
+    var el=document.getElementById('bz-'+r.docId); if(!el||!r.from||!r.filiale) return;
+    var entries=pool.filter(function(u){ return u.filiale===r.filiale; });
+    bzCheck(r.filiale, r.from, r.to||r.from, entries, r.empId, null).then(function(res){
+      var live=document.getElementById('bz-'+r.docId); if(live) live.innerHTML=bzBadgeHtml(res);
+    }).catch(function(){ var live=document.getElementById('bz-'+r.docId); if(live) live.innerHTML=''; });
+  });
+}
+
 function fbRenderPending(){
   var card=document.getElementById('fb-pending-card');
   var list=document.getElementById('fb-pending-list');
@@ -4993,7 +5069,8 @@ function fbRenderPending(){
     return '<div style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #E8E4E0;border-left:4px solid #E67E22;border-radius:6px;margin-bottom:8px;flex-wrap:wrap">'
       +'<div style="flex:1;min-width:150px"><strong>'+r.name+'</strong> · '+(r.filiale||'')
       +(r.updated?' <span style="background:#FFF7E6;border:1px solid #F0C070;color:#8A5A00;border-radius:4px;padding:1px 5px;font-size:11px;font-weight:600" title="Vom Mitarbeiter am '+new Date(r.updated).toLocaleString("de-DE")+' geändert">✏️ geändert</span>':'')
-      +'<br><span style="font-size:13px;color:#6B6860">'+fmtDate(r.from)+' – '+fmtDate(r.to)+'</span></div>'
+      +'<br><span style="font-size:13px;color:#6B6860">'+fmtDate(r.from)+' – '+fmtDate(r.to)+'</span>'
+      +' · <span id="bz-'+r.docId+'"><span style="font-size:11px;color:#B0AAA0">⏳ prüfe Besetzung…</span></span></div>'
       +'<button class="btn btn-sm" style="background:#1E8449;color:#fff;border-color:#1E8449" onclick="fbApprove(\''+r.docId+'\')">✓ Genehmigen</button>'
       +'<button class="btn btn-sm" style="background:#C0392B;color:#fff;border-color:#C0392B" onclick="fbReject(\''+r.docId+'\')">✗ Ablehnen</button>'
       +'</div>';
@@ -5014,6 +5091,7 @@ function fbRenderPending(){
     }).join('');
   }
   list.innerHTML=html;
+  fbRunBesetzungChecks();
 }
 function fbFind(docId){ return fbPending.concat(fbDecided).find(function(r){return r.docId===docId;}); }
 function fbApprove(docId){
