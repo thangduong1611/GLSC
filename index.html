@@ -1964,12 +1964,16 @@ function saveEmp() {
   if(!name||!id){alert('Name und Personalnummer sind Pflichtfelder.');return;}
   if(!activeRegion){alert('Keine Region aktiv — bitte neu anmelden.');return;}
   const emps=loadEmps();
-  if(editIdx!==null) emps[editIdx]={...emps[editIdx],name,id,filiale:fil,filialeNr:filnr,zweit,shopleiter,vize};
-  else emps.push({name,id,filiale:fil,filialeNr:filnr,zweit,shopleiter,vize});
+  // Region eines bestehenden Mitarbeiters beibehalten — ein Namens- oder Rollen-Edit
+  // soll niemanden ins gerade offene Gebiet verschieben. Nur Neuanlagen bekommen activeRegion.
+  const bisher=(editIdx!==null?emps[editIdx]:emps.find(function(x){return ''+x.id===''+id;}))||{};
+  const region=bisher.region||activeRegion;
+  if(editIdx!==null) emps[editIdx]={...emps[editIdx],name,id,filiale:fil,filialeNr:filnr,zweit,shopleiter,vize,region};
+  else emps.push({name,id,filiale:fil,filialeNr:filnr,zweit,shopleiter,vize,region});
   saveEmps(emps);
   // Sofort in Firestore synchronisieren (Rollen müssen live verfügbar sein)
   if(fbReady&&fbDb&&id){
-    fbDb.collection('emps').doc(''+id).set({name,filiale:fil,filialeNr:filnr,zweit,shopleiter:shopleiter,vize:vize,active:true,region:activeRegion},{merge:true})
+    fbDb.collection('emps').doc(''+id).set({name,filiale:fil,filialeNr:filnr,zweit,shopleiter:shopleiter,vize:vize,active:true,region:region},{merge:true})
       .catch(function(e){ console.warn('Rollen-Sync', e); });
   }
   closeModal();
@@ -4540,11 +4544,21 @@ function fbManagerLogout(){
   if(typeof firebase==='undefined'||!firebase.apps.length) return;
   firebase.auth().signOut().then(function(){ toast('Abgemeldet'); });
 }
-function fbPublish(){
+async function fbPublish(){
   if(!fbReady||!fbDb||!fbManager){ alert('Bitte zuerst als Manager anmelden (Einstellungen).'); return; }
   if(!activeRegion){ alert('Keine Region aktiv — bitte neu anmelden.'); return; }
   var b=buildMaBundle();
   if(!b.employees.length){ alert('Keine aktiven Mitarbeiter gefunden. Bitte zuerst die Mitarbeiter-CSV importieren.'); return; }
+  // Bestehende Region JE MITARBEITER lesen und beibehalten. Früher wurde hier stur
+  // region:activeRegion geschrieben — eine CSV, die beide Gebiete enthält, hat damit
+  // beim Veröffentlichen die halbe Belegschaft ins falsche Gebiet verschoben (ihre
+  // Krankmeldungen/Urlaube landeten danach im Postfach der anderen Gebietsleitung).
+  // Die Region ändert man bewusst im Mitarbeiter-Dialog, nicht als Nebenwirkung.
+  var bestehendeRegion={};
+  try{
+    var snapReg=await fbDb.collection('emps').get();
+    snapReg.forEach(function(doc){ var r=(doc.data()||{}).region; if(r) bestehendeRegion[doc.id]=r; });
+  }catch(e){ console.warn('Region-Vorabprüfung', e); }
   var jobs=[];
   // Alle Mitarbeiter (auch inaktive) veröffentlichen — sonst bleibt der Firestore-Status eines
   // ausgeschiedenen Mitarbeiters auf active:true stehen (er wurde einfach nie überschrieben)
@@ -4552,7 +4566,8 @@ function fbPublish(){
   loadEmps().forEach(function(e){
     jobs.push(fbDb.collection('emps').doc(''+e.id).set({
       name:e.name, filiale:e.filiale||'', filialeNr:e.filialeNr||'', eintritt:e.eintritt||'', austritt:e.austritt||'',
-      zweit:(e.zweit||[]), active:e.active!==false, shopleiter:!!e.shopleiter, vize:!!e.vize, region:activeRegion
+      zweit:(e.zweit||[]), active:e.active!==false, shopleiter:!!e.shopleiter, vize:!!e.vize,
+      region:(bestehendeRegion[''+e.id]||activeRegion)
     },{merge:true}));
   });
   var nPlan=0;
@@ -4572,14 +4587,22 @@ function fbPublish(){
 }
 
 // ════════ FILIALEN_META (Region-fähige Filial-Stammdaten, ersetzt lokale-only Listen) ════════
+// Die Region einer BESTEHENDEN Filiale wird hier nie überschrieben — sonst kippt eine
+// Marktsuche-CSV, die beide Gebiete enthält, alle Filialen ins gerade offene Gebiet
+// (und damit auch Dienstplan-, Urlaubs- und Inventur-Zuordnung). Nur neu angelegte
+// Filialen bekommen die aktuell gewählte Region.
 function filialenMetaWriteThrough(entries, region){
   if(!fbReady||!fbDb||!fbManager||!region) return;
   entries.forEach(function(e){
     var nr=e.marktNr||fbSlug(e.name||''); if(!nr) return;
-    fbDb.collection('filialen_meta').doc(nr).set({
-      name:e.name||'', marktNr:e.marktNr||'', plz:e.plz||'', ort:e.ort||'', strasse:e.strasse||'',
-      region:region, active:true, updatedAt:new Date().toISOString()
-    },{merge:true}).catch(function(err){ console.warn('filialen_meta write', err); });
+    var ref=fbDb.collection('filialen_meta').doc(nr);
+    ref.get().then(function(doc){
+      var payload={ name:e.name||'', marktNr:e.marktNr||'', plz:e.plz||'', ort:e.ort||'',
+                    strasse:e.strasse||'', active:true, updatedAt:new Date().toISOString() };
+      var vorhanden=doc.exists?(doc.data()||{}).region:null;
+      payload.region = vorhanden || region;
+      return ref.set(payload,{merge:true});
+    }).catch(function(err){ console.warn('filialen_meta write', err); });
   });
 }
 function filialenMetaWriteThroughFromFilMeta(meta, region){
@@ -4820,7 +4843,7 @@ async function filMigScan(){
           var counts=invReconstructCounts(entry.data);
           var n=Object.keys(counts).length;
           filMigInvFixes.push({oldDocId:entry.docId, newDocId:newDocId, filiale:resolved.newName,
-            counts:counts, submitted:!!entry.data.submitted, by:entry.data.by||'',
+            counts:counts, submitted:!!entry.data.submitted, by:entry.data.by||'', at:entry.data.at||'',
             label:resolved.newName+' · '+entry.month+' ('+n+' Artikel aus „'+entry.docId+'" wiederhergestellt)'});
         });
       } else {
@@ -4875,7 +4898,12 @@ async function filMigRun(){
       // parallel eintippen. set(...,{merge:true}) wertet Punkt-Schlüssel NICHT als Pfad aus (real
       // gegen Firestore geprüft) — deshalb zuerst set() nur mit Metadaten (legt Dokument bei Bedarf
       // an), danach update() mit den counts.*-Pfaden (Dokument existiert dann garantiert).
-      var meta={filiale:f.filiale, region:activeRegion};
+      // month MUSS mitgeschrieben werden: die Zählungs-Liste und der Inventur-Stand
+      // filtern per .where('month','==',…). Ohne dieses Feld ist das zusammengeführte
+      // Dokument in der Oberfläche unsichtbar, obwohl die Mengen korrekt drinstehen.
+      var meta={filiale:f.filiale, region:activeRegion, month:(f.newDocId.split('__')[0]||'')};
+      if(f.by) meta.by=f.by;
+      if(f.at) meta.at=f.at;
       if(f.submitted) meta.submitted=true;
       var fieldUpdates={};
       Object.keys(f.counts).forEach(function(art){ fieldUpdates['counts.'+art]=f.counts[art]; });
@@ -4905,7 +4933,7 @@ function empsSyncListener(){
       var d=doc.data()||{};
       arr.push({id:doc.id, name:d.name||'', filiale:d.filiale||'', filialeNr:d.filialeNr||'',
         active:d.active!==false, eintritt:d.eintritt||'', austritt:d.austritt||'',
-        zweit:d.zweit||[], shopleiter:!!d.shopleiter, vize:!!d.vize});
+        zweit:d.zweit||[], shopleiter:!!d.shopleiter, vize:!!d.vize, region:d.region||''});
     });
     saveEmps(arr);
     if(typeof renderEmpTable==='function') renderEmpTable();

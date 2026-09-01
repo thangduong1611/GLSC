@@ -22,7 +22,7 @@ window.INVENTUR_ITEMS=[
 ["99309", "sauce", "Stueck", "Sushi Ingwer im Glas (SC)", "Gừng sushi lọ thủy tinh", "Sushi ginger in jar", "ขิงซูชิในขวด", "寿司姜片 玻璃罐装"],
 ["80020", "sauce", "Stueck", "Sesamöl 100% (1,8l)", "Dầu mè 100% (1,8l)", "Sesame oil 100% (1.8l)", "น้ำมันงา 100% (1.8ล.)", "纯芝麻油（1.8升）"],
 ["80316", "sauce", "Stueck", "Sushi-Su Marinade (10l)", "Giấm trộn cơm Sushi-Su (10l)", "Sushi-Su marinade (10l)", "น้ำส้มผสมข้าวซูชิ (10ล.)", "寿司醋调味汁（10升）"],
-["80003", "reis", "KG", "Sushireis (Sack 10kg)", "Gạo sushi (bao 10kg)", "Sushi rice (10kg sack)", "ข้าวซูชิ (กระสอบ 10กก.)", "寿司米（10公斤袋装）"],
+["80003", "reis", "Packung", "Sushireis (Sack 10kg)", "Gạo sushi (bao 10kg)", "Sushi rice (10kg sack)", "ข้าวซูชิ (กระสอบ 10กก.)", "寿司米（10公斤袋装）"],
 ["4857", "tk", "Stueck", "Mochi Cheesecake 192g (TK)", "Mochi phô mai 192g (đông lạnh)", "Mochi cheesecake 192g (frozen)", "โมจิชีสเค้ก 192ก. (แช่แข็ง)", "芝士蛋糕大福 192克（冷冻）"],
 ["4854", "tk", "Stueck", "Mochi Kakao 192g (TK)", "Mochi ca cao 192g (đông lạnh)", "Mochi cocoa 192g (frozen)", "โมจิโกโก้ 192ก. (แช่แข็ง)", "可可大福 192克（冷冻）"],
 ["4852", "tk", "Stueck", "Mochi Kokosnuss 192g (TK)", "Mochi dừa 192g (đông lạnh)", "Mochi coconut 192g (frozen)", "โมจิมะพร้าว 192ก. (แช่แข็ง)", "椰子大福 192克（冷冻）"],
@@ -162,7 +162,7 @@ window.INVENTUR_ITEMS=[
 ["AF10054", "gemuese", "Stück", "Limetten (Stück)", "Chanh xanh (quả)", "Limes (piece)", "มะนาว (ลูก)", "青柠（个）"],
 ["AF12027", "sauce", "Flasche", "Shoda Sojasauce 1L", "Nước tương Shoda 1L", "Shoda soy sauce 1L", "ซีอิ๊วโชดะ 1ล.", "Shoda 酱油 1升"],
 ["AF12386", "verpackung", "Stück", "Sushi Push-Up mit Logo", "Hộp Push-Up có logo", "Sushi push-up with logo", "ซูชิพุชอัพมีโลโก้", "印logo推推寿司杯"],
-["AF12396", "reis", "KG", "Japonica Reis (Zensho) 10kg", "Gạo Japonica (Zensho) 10kg", "Japonica rice (Zensho) 10kg", "ข้าวจาโปนิก้า 10กก.", "粳米（Zensho）10公斤"],
+["AF12396", "reis", "Packung", "Japonica Reis (Zensho) 10kg", "Gạo Japonica (Zensho) 10kg", "Japonica rice (Zensho) 10kg", "ข้าวจาโปนิก้า 10กก.", "粳米（Zensho）10公斤"],
 ["AF12447", "sauce", "Packung", "Kimchi Original + Verpackung 1kg", "Kimchi nguyên bản + bao bì 1kg", "Kimchi original + packaging 1kg", "กิมจิ + บรรจุภัณฑ์ 1กก.", "原味泡菜+包装 1公斤"]
 ];
 window.INVENTUR_CATS=[["fisch", "🐟 Fisch & Meeresfrüchte", "🐟 Cá & Hải sản", "🐟 Fish & Seafood", "🐟 ปลาและอาหารทะเล", "🐟 鱼类与海鲜"], ["fleisch", "🍗 Fleisch & Geflügel", "🍗 Thịt & Gia cầm", "🍗 Meat & Poultry", "🍗 เนื้อสัตว์", "🍗 肉类与禽类"], ["tk", "❄️ Tiefkühl", "❄️ Đông lạnh", "❄️ Frozen", "❄️ แช่แข็ง", "❄️ 冷冻食品"], ["gemuese", "🥬 Gemüse & Obst", "🥬 Rau & Trái cây", "🥬 Vegetables & Fruit", "🥬 ผักและผลไม้", "🥬 蔬菜水果"], ["sauce", "🍶 Saucen & Würze", "🍶 Nước sốt & Gia vị", "🍶 Sauces & Seasoning", "🍶 ซอสและเครื่องปรุง", "🍶 酱料调味"], ["reis", "🍚 Reis & Trocken", "🍚 Gạo & Đồ khô", "🍚 Rice & Dry goods", "🍚 ข้าวและของแห้ง", "🍚 米类与干货"], ["dessert", "🍡 Dessert & Snack", "🍡 Tráng miệng & Snack", "🍡 Dessert & Snacks", "🍡 ของหวานและขนม", "🍡 甜点零食"], ["verpackung", "📦 Verpackung & Etiketten", "📦 Bao bì & Nhãn", "📦 Packaging & Labels", "📦 บรรจุภัณฑ์", "📦 包装与标签"], ["hygiene", "🧤 Hygiene", "🧤 Vệ sinh tiêu hao", "🧤 Hygiene", "🧤 สุขอนามัย", "🧤 卫生用品"], ["reinigung", "🧴 Reinigung", "🧴 Hóa chất tẩy rửa", "🧴 Cleaning", "🧴 น้ำยาทำความสะอาด", "🧴 清洁用品"], ["sonstige", "❓ Sonstige", "❓ Khác", "❓ Other", "❓ อื่นๆ", "❓ 其他"]];
