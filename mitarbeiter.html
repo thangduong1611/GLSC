@@ -262,6 +262,12 @@ window.onerror=function(msg,src,line){
 
   <!-- ── URLAUB ── -->
   <div class="panel" id="p-ul">
+    <div class="card" id="welo-self-card" style="display:none">
+      <div class="card-title" data-i18n="welo_title">📋 Meine Daten (Welo)</div>
+      <div id="welo-self" style="display:flex;gap:22px;flex-wrap:wrap;margin-bottom:8px"></div>
+      <div id="welo-ziel" style="font-size:13px;color:var(--mut);line-height:1.5"></div>
+      <div id="welo-stand" style="font-size:11px;color:var(--mut);margin-top:6px"></div>
+    </div>
     <div class="card">
       <div class="card-title" data-i18n="ul_title">🌴 Urlaub – Filiale</div>
       <div class="legend">
@@ -1430,6 +1436,44 @@ function maCheckBesetzungPreview(){
 }
 var bzReqToken=0;
 
+/* ── Meine Daten (Welo): Soll-Std./Urlaub/Krank + Tagesziel meiner Filiale ──
+   Reine Anzeige aus emp_welo/{id} + tagesziel/{marktNr}_{heute}, beide vom
+   automation/sync-welo-personal.js-Skript befüllt (täglich 05:00 Uhr). */
+function weloFmtNum(n, nachkomma){
+  if(n===null||n===undefined) return '–';
+  return n.toLocaleString('de-DE', {minimumFractionDigits:nachkomma||0, maximumFractionDigits:nachkomma||1});
+}
+function weloStatHtml(num, label){
+  return '<div style="min-width:84px"><div style="font-size:20px;font-weight:700">'+num+'</div>'
+    +'<div style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em">'+label+'</div></div>';
+}
+function weloLoadSelf(){
+  var sess=maSession(); if(!sess||!sess.id||!fbReady||!fbDb) return;
+  var card=document.getElementById('welo-self-card');
+  fbDb.collection('emp_welo').doc(sess.id).get().then(function(doc){
+    if(!doc.exists||!card) return;
+    var d=doc.data();
+    card.style.display='block';
+    var self=document.getElementById('welo-self');
+    self.innerHTML =
+      weloStatHtml(weloFmtNum(d.sollStd,1), t('welo_soll'))
+      + weloStatHtml(weloFmtNum(d.urlaubOffen,0)+' / '+weloFmtNum(d.urlaubAnspruch,0), t('welo_urlaub'))
+      + weloStatHtml(weloFmtNum(d.krankTage,0), t('welo_krank'));
+    var standEl=document.getElementById('welo-stand');
+    if(standEl && d.updatedAt && d.updatedAt.toDate) standEl.textContent=t('welo_stand',{datum:d.updatedAt.toDate().toLocaleDateString('de-DE')});
+    var zielEl=document.getElementById('welo-ziel');
+    if(!zielEl||!d.marktNr) return;
+    var heute=new Date();
+    var compact=heute.getFullYear()+(''+(heute.getMonth()+1)).padStart(2,'0')+(''+heute.getDate()).padStart(2,'0');
+    fbDb.collection('tagesziel').doc(d.marktNr+'_'+compact).get().then(function(zdoc){
+      if(!zdoc.exists){ zielEl.textContent=''; return; }
+      var z=zdoc.data();
+      if(z.ziel==null){ zielEl.textContent=t('welo_ziel_unknown'); return; }
+      zielEl.textContent=t('welo_ziel',{filiale:z.marktname||d.marktname||'', ziel:weloFmtNum(z.ziel,2)+' €', vorjahr:weloFmtNum(z.umsatzVorjahr,2)+' €'});
+    }).catch(function(){ zielEl.textContent=''; });
+  }).catch(function(e){ console.warn('weloLoadSelf', e); });
+}
+
 function slParseRange(v){
   var m=(''+v).match(/(\d{1,2})[:.](\d{2})\s*[-–—]\s*(\d{1,2})[:.](\d{2})/);
   if(!m) return null;
@@ -1871,6 +1915,10 @@ de:{_name:'Deutsch',
  bz_bad_1:'🔴 Am {date} wärst du laut aktuellem Plan die einzige Person — bitte kurz mit dem Gebietsleiter klären.',
  bz_bad_n:'🔴 An {n} Tagen wärst du laut aktuellem Plan die einzige Person — bitte kurz mit dem Gebietsleiter klären.',
  bz_unknown:'❔ Für diesen Zeitraum liegt noch kein Dienstplan vor — Besetzung kann nicht geprüft werden.',
+ welo_title:'📋 Meine Daten (Welo)', welo_soll:'Std./Woche (Soll)', welo_urlaub:'Urlaub offen / Anspruch', welo_krank:'Krank-Tage (Jahr)',
+ welo_ziel:'🎯 Tagesziel {filiale}: {ziel} (Vorjahr: {vorjahr})',
+ welo_ziel_unknown:'🎯 Für heute liegt noch kein Umsatz-Ziel vor (kein Vorjahreswert gefunden).',
+ welo_stand:'Stand: {datum} (aus Welo)',
  v_ov_own:'Überschneidung mit deinem eigenen offenen Antrag ({range}), der noch auf Freigabe wartet.',
  v_ov_appr:'Für diesen Zeitraum hast du bereits genehmigten Urlaub ({range}).',
  btn_edit_req:'✏️ Diesen Antrag ändern',btn_save_req:'💾 Änderung senden',btn_cancel_edit:'✕ Abbrechen',
@@ -1969,6 +2017,10 @@ vi:{_name:'Tiếng Việt',
  bz_bad_1:'🔴 Ngày {date} theo lịch hiện tại chỉ có mình bạn — nên trao đổi trước với Gebietsleiter.',
  bz_bad_n:'🔴 {n} ngày theo lịch hiện tại chỉ có mình bạn — nên trao đổi trước với Gebietsleiter.',
  bz_unknown:'❔ Chi nhánh chưa có lịch làm cho thời gian này — chưa kiểm tra được besetzung.',
+ welo_title:'📋 Dữ liệu của tôi (Welo)', welo_soll:'Giờ/Tuần (Soll)', welo_urlaub:'Urlaub còn lại / Tổng', welo_krank:'Ngày ốm (năm nay)',
+ welo_ziel:'🎯 Mục tiêu hôm nay {filiale}: {ziel} (Năm trước: {vorjahr})',
+ welo_ziel_unknown:'🎯 Chưa có mục tiêu doanh số hôm nay (không tìm thấy số liệu năm trước).',
+ welo_stand:'Cập nhật: {datum} (từ Welo)',
  v_ov_own:'Trùng với đơn của chính bạn ({range}) đang chờ duyệt.',
  v_ov_appr:'Bạn đã có lịch nghỉ được duyệt trong thời gian này ({range}).',
  btn_edit_req:'✏️ Sửa đơn này',btn_save_req:'💾 Gửi thay đổi',btn_cancel_edit:'✕ Hủy',
@@ -2067,6 +2119,10 @@ en:{_name:'English',
  bz_bad_1:'🔴 On {date} you would be the only person on the current schedule — please check with the area manager first.',
  bz_bad_n:'🔴 On {n} day(s) you would be the only person on the current schedule — please check with the area manager first.',
  bz_unknown:"❔ No schedule exists yet for this period — staffing can't be checked.",
+ welo_title:'📋 My Data (Welo)', welo_soll:'Hrs/Week (Contract)', welo_urlaub:'Vacation left / Total', welo_krank:'Sick days (year)',
+ welo_ziel:"🎯 Today's target {filiale}: {ziel} (Last year: {vorjahr})",
+ welo_ziel_unknown:'🎯 No revenue target available for today yet (no figure found for last year).',
+ welo_stand:'As of: {datum} (from Welo)',
  v_ov_own:'Overlaps with your own open request ({range}), still waiting for approval.',
  v_ov_appr:'You already have approved vacation for this period ({range}).',
  btn_edit_req:'✏️ Change this request',btn_save_req:'💾 Send change',btn_cancel_edit:'✕ Cancel',
@@ -2165,6 +2221,10 @@ th:{_name:'ไทย',
  bz_bad_1:'🔴 วันที่ {date} ตามตารางปัจจุบันจะเหลือคุณคนเดียว — กรุณาคุยกับ Gebietsleiter ก่อน',
  bz_bad_n:'🔴 มี {n} วันที่ตามตารางปัจจุบันจะเหลือคุณคนเดียว — กรุณาคุยกับ Gebietsleiter ก่อน',
  bz_unknown:'❔ ยังไม่มีตารางงานสำหรับช่วงนี้ — ยังตรวจสอบอัตรากำลังไม่ได้',
+ welo_title:'📋 ข้อมูลของฉัน (Welo)', welo_soll:'ชม./สัปดาห์ (ตามสัญญา)', welo_urlaub:'วันลาคงเหลือ / ทั้งหมด', welo_krank:'วันลาป่วย (ปีนี้)',
+ welo_ziel:'🎯 เป้าหมายวันนี้ {filiale}: {ziel} (ปีที่แล้ว: {vorjahr})',
+ welo_ziel_unknown:'🎯 ยังไม่มีเป้าหมายยอดขายวันนี้ (ไม่พบข้อมูลปีที่แล้ว)',
+ welo_stand:'ข้อมูล ณ: {datum} (จาก Welo)',
  v_ov_own:'ซ้ำกับคำขอของคุณเองที่ยังรออนุมัติ ({range})',
  v_ov_appr:'คุณมีวันลาที่อนุมัติแล้วในช่วงนี้ ({range})',
  btn_edit_req:'✏️ แก้ไขคำขอนี้',btn_save_req:'💾 ส่งการแก้ไข',btn_cancel_edit:'✕ ยกเลิก',
@@ -2263,6 +2323,10 @@ zh:{_name:'中文',
  bz_bad_1:'🔴 {date} 按当前排班您将是唯一一人 — 请先与区域经理沟通。',
  bz_bad_n:'🔴 有{n}天按当前排班您将是唯一一人 — 请先与区域经理沟通。',
  bz_unknown:'❔ 该时间段暂无排班表 — 无法检查人力配置。',
+ welo_title:'📋 我的数据 (Welo)', welo_soll:'合同工时/周', welo_urlaub:'剩余/总休假天数', welo_krank:'病假天数（今年）',
+ welo_ziel:'🎯 今日目标 {filiale}：{ziel}（去年：{vorjahr}）',
+ welo_ziel_unknown:'🎯 今天还没有营业额目标（未找到去年同期数据）。',
+ welo_stand:'更新时间：{datum}（来自 Welo）',
  v_ov_own:'与您自己尚未审批的申请（{range}）时间重叠。',
  v_ov_appr:'您在这个时间段已有获批的休假（{range}）。',
  btn_edit_req:'✏️ 修改此申请',btn_save_req:'💾 提交修改',btn_cancel_edit:'✕ 取消',
@@ -2511,7 +2575,7 @@ function maShowApp(sess){
   // Firebase realtime (falls konfiguriert)
   if(fbEnabled()){
     var afterFbReady=function(){
-      maStartFbUrlaub(sess); maStartFbNews(); maRefreshProfile();
+      maStartFbUrlaub(sess); maStartFbNews(); maRefreshProfile(); weloLoadSelf();
       // WICHTIG: Nach erfolgreichem Firebase-Login die Ansichten EINMAL neu rendern.
       // Beim ersten maShowApp() war fbReady noch false → Dienstplan blieb auf
       // "noch nicht veröffentlicht" stehen, bis der Nutzer den Monat manuell wechselte.
@@ -2535,7 +2599,7 @@ function maNav(t){
     if(ic) ic.classList.toggle('active',x===t);
   });
   if(t==='dp'){maRefreshProfile();}
-  if(t==='ul'){maRenderCal();maRenderUlList();}
+  if(t==='ul'){maRenderCal();maRenderUlList();weloLoadSelf();}
   if(t==='bl'){blRender();blPayLoad();}
   if(t==='av'){avERender();}
   if(t==='nw'){maNewsMarkRead();}

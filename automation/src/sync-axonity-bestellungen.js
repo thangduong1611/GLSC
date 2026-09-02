@@ -23,12 +23,14 @@ require('dotenv').config();
 const { chromium } = require('playwright');
 const { getDb, admin } = require('./firestore-client');
 const { BEKANNTE_KOSTENSTELLEN } = require('./branches');
+const { writeSyncStatus } = require('./sync-status');
 
 const BASE_URL = process.env.AXONITY_BASE_URL || 'https://erp.axonity.de';
 const USER = process.env.AXONITY_USER;
 const PASSWORD = process.env.AXONITY_PASSWORD;
 const COLLECTION = 'filiale_bestellungen';
 const RETRIES_STARTUP = 2;
+const SYNC_KEY = 'bestellungen';
 
 async function withRetry(fn, retries, label) {
   let lastErr;
@@ -77,6 +79,7 @@ async function readBestellungen(page) {
 
   const rows = await page.locator('table tbody tr').all();
   const bestellungen = [];
+  let rawCount = 0;
   for (let domIndex = 0; domIndex < rows.length; domIndex++) {
     const cells = rows[domIndex].locator('td');
     const data = {};
@@ -84,13 +87,14 @@ async function readBestellungen(page) {
       data[PICKUPS_SPALTEN[i]] = (await cells.nth(i).innerText()).trim();
     }
     if (!data['Bestellnummer']) continue;
+    rawCount++;
     // /pickups/ zeigt seit dem Update firmenweite Bestellungen — nur die
-    // eigenen 11 Filialen behalten.
+    // eigenen Filialen behalten.
     if (!BEKANNTE_KOSTENSTELLEN.has(data['Kostenstelle'])) continue;
     data._domIndex = domIndex;
     bestellungen.push(data);
   }
-  return bestellungen;
+  return { bestellungen, rawCount };
 }
 
 async function closeStrayDialog(page) {
@@ -149,23 +153,31 @@ async function main() {
 
   const browser = await chromium.launch();
   const page = await browser.newPage();
+  const db = getDb();
 
   try {
     console.log('Login bei Axonity…');
     await withRetry(() => login(page), RETRIES_STARTUP, 'Login');
 
     console.log('Lade neueste Webshop-Bestellungen…');
-    let bestellungen = await withRetry(() => readBestellungen(page), RETRIES_STARTUP, 'Bestellliste');
+    let { bestellungen, rawCount } = await withRetry(() => readBestellungen(page), RETRIES_STARTUP, 'Bestellliste');
     if (bestellungen.length === 0) {
       // 0 Zeilen ist plausibel (gerade keine offenen Bestellungen), aber
       // auch das Symptom eines mitten im Re-Render erwischten Ladevorgangs
       // — sicherheitshalber einmal neu laden und prüfen, bevor "0" akzeptiert wird.
       console.log('  0 Bestellungen gelesen — lade sicherheitshalber erneut…');
-      bestellungen = await readBestellungen(page);
+      ({ bestellungen, rawCount } = await readBestellungen(page));
     }
-    console.log(`${bestellungen.length} Bestellungen auf Seite 1 gelesen.`);
+    console.log(`${bestellungen.length} Bestellungen auf Seite 1 gelesen (${rawCount} Zeilen insgesamt vor Filialfilter).`);
 
-    const db = getDb();
+    // Wenn Axonity Zeilen zeigt, aber KEINE einzige zu einer bekannten
+    // Kostenstelle passt, ist das verdächtiger als "0 Bestellungen" — deutet
+    // eher auf eine verschobene Spaltenreihenfolge hin (Kostenstelle-Spalte
+    // liest dann z.B. plötzlich die Standort-Spalte).
+    if (rawCount > 0 && bestellungen.length === 0) {
+      throw new Error(`${rawCount} Zeilen auf /pickups/ gefunden, aber keine einzige passte zu einer bekannten Kostenstelle — vermutlich hat sich die Spaltenreihenfolge geändert.`);
+    }
+
     const now = admin.firestore.FieldValue.serverTimestamp();
 
     // Erst prüfen, welche Bestellnummern neu sind, bevor irgendein
@@ -207,6 +219,14 @@ async function main() {
     }
 
     console.log(`✓ ${bestellungen.length} Bestellungen geprüft, ${neu} davon neu in "${COLLECTION}" angelegt.`);
+    await writeSyncStatus(db, SYNC_KEY, {
+      status: 'ok',
+      message: `${bestellungen.length} Bestellungen geprüft (${rawCount} Zeilen vor Filialfilter), ${neu} neu.`,
+      total: rawCount, succeeded: bestellungen.length, failed: 0,
+    });
+  } catch (err) {
+    await writeSyncStatus(db, SYNC_KEY, { status: 'error', message: 'Sync komplett fehlgeschlagen: ' + err.message }).catch(() => {});
+    throw err;
   } finally {
     await browser.close();
   }

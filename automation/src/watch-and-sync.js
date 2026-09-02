@@ -4,35 +4,12 @@
 // Sync-Skripte nacheinander, statt auf die nächste feste Uhrzeit zu warten.
 // Schreibt den Fortschritt zurück nach sync_triggers/manual, damit das
 // Dashboard "läuft gerade…" / "fertig um HH:MM" anzeigen kann.
+// HINWEIS (2026-08-25): seit dem Umzug auf Cloud Run übernimmt server.js
+// diese Rolle in der Produktion — dieser lokale Watcher ist nur noch als
+// Fallback fürs Testen auf dem eigenen Rechner behalten.
 require('dotenv').config();
-const { execFile } = require('child_process');
-const path = require('path');
 const { getDb, admin } = require('./firestore-client');
-
-const SCRIPTS = [
-  { key: 'umsatz', file: 'sync-welo-umsatz.js', label: 'Umsatz (Welo)' },
-  { key: 'produktion', file: 'sync-axonity-produktion.js', label: 'Produktion (Axonity)' },
-  { key: 'bestellungen', file: 'sync-axonity-bestellungen.js', label: 'Bestellungen (Axonity)' },
-];
-
-const NODE_EXE = process.execPath; // dasselbe Node-Binary, mit dem dieses Skript läuft
-const AUTOMATION_DIR = path.resolve(__dirname, '..');
-
-function runScript(script) {
-  return new Promise((resolve) => {
-    const env = { ...process.env };
-    if (script.key === 'umsatz') {
-      env.NODE_EXTRA_CA_CERTS = path.join(AUTOMATION_DIR, 'certs', 'globalsign-gcc-r6-alphassl-ca-2025.pem');
-    }
-    const scriptPath = path.join(AUTOMATION_DIR, 'src', script.file);
-    console.log(`  → ${script.label} …`);
-    execFile(NODE_EXE, [scriptPath], { cwd: AUTOMATION_DIR, env, timeout: 5 * 60 * 1000 }, (err, stdout, stderr) => {
-      if (stdout) process.stdout.write(stdout);
-      if (stderr) process.stderr.write(stderr);
-      resolve({ key: script.key, ok: !err, error: err ? err.message : null });
-    });
-  });
-}
+const { runAll: runAllScripts } = require('./sync-runner');
 
 async function runAll(db, requestedBy) {
   const now = admin.firestore.FieldValue.serverTimestamp();
@@ -42,10 +19,7 @@ async function runAll(db, requestedBy) {
   );
 
   console.log(`\n[${new Date().toLocaleString('de-DE')}] Update angefordert${requestedBy ? ' von ' + requestedBy : ''} — starte alle drei Sync-Skripte…`);
-  const results = [];
-  for (const script of SCRIPTS) {
-    results.push(await runScript(script));
-  }
+  const results = await runAllScripts();
 
   const allOk = results.every((r) => r.ok);
   await db.collection('sync_triggers').doc('manual').set(

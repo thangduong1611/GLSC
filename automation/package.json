@@ -8,13 +8,16 @@
     "sync:umsatz": "cross-env NODE_EXTRA_CA_CERTS=./certs/globalsign-gcc-r6-alphassl-ca-2025.pem node src/sync-welo-umsatz.js",
     "sync:produktion": "node src/sync-axonity-produktion.js",
     "sync:bestellungen": "node src/sync-axonity-bestellungen.js",
-    "watch": "node src/watch-and-sync.js"
+    "sync:welo-personal": "cross-env NODE_EXTRA_CA_CERTS=./certs/globalsign-gcc-r6-alphassl-ca-2025.pem node src/sync-welo-personal.js",
+    "watch": "node src/watch-and-sync.js",
+    "start": "node src/server.js"
   },
   "dependencies": {
     "cross-env": "^7.0.3",
     "csv-parse": "^5.5.6",
     "dotenv": "^16.4.5",
+    "express": "^4.19.2",
     "firebase-admin": "^12.3.1",
-    "playwright": "^1.46.0"
+    "playwright": "1.62.1"
   }
 }

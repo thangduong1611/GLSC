@@ -96,6 +96,13 @@ td.name .nr{display:block;font-size:11px;color:var(--mut);font-family:'Consolas'
 .summary-row:last-child{border-bottom:none;}
 .summary-row .s-standort{flex:1;min-width:0;font-weight:500;}
 .summary-row .s-nums{color:var(--mut);font-variant-numeric:tabular-nums;font-size:12.5px;white-space:nowrap;}
+
+.health-banner{border-radius:var(--r);padding:12px 16px;margin-bottom:16px;font-size:13px;line-height:1.5;}
+.health-banner.is-error{background:var(--red-l);color:var(--red-d);border:1px solid var(--red);}
+.health-banner.is-warn{background:var(--amb-bg);color:var(--amb);border:1px solid var(--amb);}
+.health-banner .hb-row{display:flex;gap:8px;align-items:baseline;}
+.health-banner .hb-row + .hb-row{margin-top:4px;}
+.health-banner b{font-weight:700;}
 </style>
 </head>
 <body>
@@ -126,6 +133,8 @@ td.name .nr{display:block;font-size:11px;color:var(--mut);font-family:'Consolas'
       <a href="#" onclick="drLogout();return false;" style="color:var(--mut);">Abmelden</a>
     </div>
 
+    <div id="dr-health-banner" style="display:none;"></div>
+
     <div class="update-bar">
       <button class="btn" id="dr-update-btn" onclick="drRequestUpdate()">🔄 Jetzt aktualisieren</button>
       <span id="dr-update-status" class="update-status">—</span>
@@ -149,12 +158,28 @@ td.name .nr{display:block;font-size:11px;color:var(--mut);font-family:'Consolas'
 
     <div id="dr-content"></div>
 
+    <div class="card" id="dr-ziel-card" style="display:none;">
+      <div style="font-weight:600;font-size:14px;margin-bottom:12px;">🎯 Tagesziel je Filiale</div>
+      <div id="dr-ziel-content"></div>
+    </div>
+
+    <div class="card" id="dr-personal-card" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:10px;flex-wrap:wrap;">
+        <div style="font-weight:600;font-size:14px;">👥 Personal (Welo) — alle Mitarbeiter</div>
+        <input id="dr-personal-filter" type="text" placeholder="Name oder Filiale filtern…" oninput="drRenderPersonal()"
+          style="padding:7px 10px;border:1.5px solid var(--brd);border-radius:var(--rs);font-size:13px;font-family:inherit;background:var(--bg);color:var(--txt);outline:none;min-width:200px;">
+      </div>
+      <div id="dr-personal-content"></div>
+    </div>
+
     <p class="foot-note">
       Umsatz = rollierende letzte 30 Tage direkt aus Axonity (täglich aktuell) — nur falls für eine Filiale noch keine
       Axonity-Daten vorliegen, zeigt die Zeile ersatzweise den Monatswert aus dem Welo-Export (steht dann als Quelle
       unter der Zahl). SX-Start/-Ende = aus Axonity, Stand heute. Fehlt eine Spalte, hat der jeweilige Sync-Job für
       diese Filiale noch keine Daten geschrieben. Bestellungen = neueste Seite der Webshop-Bestellungen aus Axonity,
-      Erkennung neuer Bestellungen läuft alle paar Minuten über den Sync-Job.
+      Erkennung neuer Bestellungen läuft alle paar Minuten über den Sync-Job. Tagesziel = Vorjahresumsatz vom
+      selben Kalendertag × 1,25, Personal-Tabelle (Soll-Std./Urlaub/Krank) = beides aus Welo/SuCi-Net, täglich
+      05:00 Uhr aktualisiert.
     </p>
   </div>
 
@@ -162,8 +187,8 @@ td.name .nr{display:block;font-size:11px;color:var(--mut);font-family:'Consolas'
 
 <script>
 var drDb = null, drManager = false;
-var drUnsubUmsatz = null, drUnsubProd = null, drUnsubOrders = null, drUnsubTrigger = null;
-var drUmsatz = {}, drProd = {}, drFilialen = {}, drOrders = [], drTrigger = null;
+var drUnsubUmsatz = null, drUnsubProd = null, drUnsubOrders = null, drUnsubTrigger = null, drUnsubZiel = null, drUnsubPersonal = null, drUnsubStatus = null;
+var drUmsatz = {}, drProd = {}, drFilialen = {}, drOrders = [], drTrigger = null, drZiel = {}, drPersonal = [], drSyncStatus = {};
 
 function drPad(n){ return String(n).padStart(2,'0'); }
 function drTodayISO(){
@@ -206,6 +231,9 @@ function drInit(){
       if(drUnsubProd){ drUnsubProd(); drUnsubProd=null; }
       if(drUnsubOrders){ drUnsubOrders(); drUnsubOrders=null; }
       if(drUnsubTrigger){ drUnsubTrigger(); drUnsubTrigger=null; }
+      if(drUnsubZiel){ drUnsubZiel(); drUnsubZiel=null; }
+      if(drUnsubPersonal){ drUnsubPersonal(); drUnsubPersonal=null; }
+      if(drUnsubStatus){ drUnsubStatus(); drUnsubStatus=null; }
       drShowLogin('');
     }
   });
@@ -287,6 +315,37 @@ function drStartListeners(){
       drRenderOrders();
       drRenderUpdateStatus();
     }, function(e){ console.warn('filiale_bestellungen:', e.message); });
+
+  // Tagesziel (aus automation/sync-welo-personal.js, 05:00 Uhr) — nur heute,
+  // die Doc-ID ist {marktNr}_{YYYYMMDD}, aber wir filtern über das eigene
+  // "datum"-Feld statt die ID zu parsen.
+  if(drUnsubZiel) drUnsubZiel();
+  drUnsubZiel = drDb.collection('tagesziel').where('datum','==',heute)
+    .onSnapshot(function(snap){
+      drZiel = {};
+      snap.forEach(function(doc){ drZiel[doc.data().marktNr] = doc.data(); });
+      drRenderZiel();
+    }, function(e){ console.warn('tagesziel:', e.message); });
+
+  // Personal-Selbstauskunft (Soll-Std./Urlaub/Krank), gleiche Quelle.
+  if(drUnsubPersonal) drUnsubPersonal();
+  drUnsubPersonal = drDb.collection('emp_welo')
+    .onSnapshot(function(snap){
+      drPersonal = [];
+      snap.forEach(function(doc){ drPersonal.push(Object.assign({id:doc.id}, doc.data())); });
+      drRenderPersonal();
+    }, function(e){ console.warn('emp_welo:', e.message); });
+
+  // Gesundheitsstatus der Sync-Skripte — zeigt an, wenn ein Skript
+  // fehlgeschlagen ist (z.B. Axonity hat wieder die Seitenstruktur
+  // geändert), statt dass veraltete Zahlen unkommentiert stehen bleiben.
+  if(drUnsubStatus) drUnsubStatus();
+  drUnsubStatus = drDb.collection('sync_status')
+    .onSnapshot(function(snap){
+      drSyncStatus = {};
+      snap.forEach(function(doc){ drSyncStatus[doc.id] = doc.data(); });
+      drRenderHealthBanner();
+    }, function(e){ console.warn('sync_status:', e.message); });
 }
 
 function drMaxUpdatedAt(){
@@ -447,6 +506,112 @@ function drRenderSummary(){
       '<button class="copy-btn" onclick="drCopySummaryMsg(\''+nr+'\',this)">📋 Kopieren</button>'+
       '</div>';
   }).join('');
+}
+
+var DR_SYNC_LABELS = { produktion: 'Produktion (Axonity)', bestellungen: 'Bestellungen (Axonity)', umsatz: 'Umsatz (Welo)', 'welo-personal': 'Personal & Tagesziel (Welo)' };
+function drRenderHealthBanner(){
+  var el = document.getElementById('dr-health-banner');
+  var problems = Object.keys(drSyncStatus).filter(function(k){ return drSyncStatus[k].status !== 'ok'; });
+  if(!problems.length){ el.style.display = 'none'; return; }
+
+  problems.sort(function(a,b){ return drSyncStatus[a].status === drSyncStatus[b].status ? 0 : (drSyncStatus[a].status === 'error' ? -1 : 1); });
+  var worst = drSyncStatus[problems[0]].status; // Banner-Farbe nach dem schlimmsten Fall
+  el.className = 'health-banner ' + (worst === 'error' ? 'is-error' : 'is-warn');
+
+  el.innerHTML = problems.map(function(k){
+    var s = drSyncStatus[k];
+    var label = DR_SYNC_LABELS[k] || k;
+    var icon = s.status === 'error' ? '⚠️' : '🟡';
+    var last = s.lastOkAt && s.lastOkAt.toDate ? drFmtTime(s.lastOkAt.toDate()) : 'nie';
+    return '<div class="hb-row">'+icon+' <b>'+drEsc(label)+':</b> '+drEsc(s.message||'')+' <span style="opacity:.75">(letzter Erfolg: '+last+')</span></div>';
+  }).join('');
+  el.style.display = 'block';
+}
+
+function drFmtNum(n, nachkomma){
+  if(n===null||n===undefined) return '—';
+  return n.toLocaleString('de-DE',{minimumFractionDigits:nachkomma||0,maximumFractionDigits:nachkomma||1});
+}
+
+function drRenderZiel(){
+  var card = document.getElementById('dr-ziel-card');
+  var content = document.getElementById('dr-ziel-content');
+  var nrs = Object.keys(drZiel);
+  if(!nrs.length){ card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  nrs.sort(function(a,b){ return drStandortName(a).localeCompare(drStandortName(b)); });
+
+  var rows = nrs.map(function(nr){
+    var z = drZiel[nr];
+    var name = drStandortName(nr) !== nr ? drStandortName(nr) : (z.marktname || nr);
+    var pct = (typeof z.umsatzHeute === 'number' && z.ziel) ? Math.round(z.umsatzHeute / z.ziel * 100) : null;
+    var pill;
+    if(z.ziel == null){ pill = '<span class="pill pill-mut">kein Vorjahreswert</span>'; }
+    else if(pct == null){ pill = '<span class="pill pill-mut">heute noch offen</span>'; }
+    else if(pct >= 100){ pill = '<span class="pill pill-ok">'+pct+'%</span>'; }
+    else { pill = '<span class="pill pill-warn">'+pct+'%</span>'; }
+    return '<tr>'+
+      '<td class="name">'+drEsc(name)+'<span class="nr">'+nr+'</span></td>'+
+      '<td class="num">'+(z.ziel!=null?drFmtEUR(z.ziel):'—')+'</td>'+
+      '<td class="num">'+(z.umsatzVorjahr!=null?drFmtEUR(z.umsatzVorjahr):'—')+'</td>'+
+      '<td class="num">'+(typeof z.umsatzHeute==='number'?drFmtEUR(z.umsatzHeute):'—')+'</td>'+
+      '<td>'+pill+'</td>'+
+      '</tr>';
+  }).join('');
+
+  content.innerHTML = '<div class="table-scroll"><table>'+
+    '<thead><tr><th>Filiale</th><th>Ziel (Vorjahr ×1,25)</th><th>Vorjahr (selber Tag)</th><th>Heute</th><th>Stand</th></tr></thead>'+
+    '<tbody>'+rows+'</tbody></table></div>';
+}
+
+function drStandortNameForEmp(marktNr, marktname){
+  var meta = drFilialen[marktNr];
+  if(meta && meta.name) return meta.name;
+  return marktname || marktNr;
+}
+function drRenderPersonal(){
+  var card = document.getElementById('dr-personal-card');
+  var content = document.getElementById('dr-personal-content');
+  if(!drPersonal.length){ card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  var filterEl = document.getElementById('dr-personal-filter');
+  var filter = filterEl ? filterEl.value.trim().toLowerCase() : '';
+
+  var list = drPersonal.slice().sort(function(a,b){
+    var an = drStandortNameForEmp(a.marktNr, a.marktname), bn = drStandortNameForEmp(b.marktNr, b.marktname);
+    return an === bn ? (a.name||'').localeCompare(b.name||'') : an.localeCompare(bn);
+  });
+  if(filter){
+    list = list.filter(function(p){
+      var hay = ((p.name||'')+' '+drStandortNameForEmp(p.marktNr,p.marktname)).toLowerCase();
+      return hay.indexOf(filter) >= 0;
+    });
+  }
+
+  if(!list.length){
+    content.innerHTML = '<div class="empty-state">Keine Treffer.</div>';
+    return;
+  }
+
+  var rows = list.map(function(p){
+    var urlaub = (p.urlaubOffen!=null || p.urlaubAnspruch!=null)
+      ? drFmtNum(p.urlaubOffen,0)+' / '+drFmtNum(p.urlaubAnspruch,0)
+      : '<span class="pill pill-mut">keine Daten</span>';
+    return '<tr>'+
+      '<td class="name">'+drEsc(p.name||p.id)+'<span class="nr">#'+drEsc(p.id)+' · '+drEsc(p.taetigkeit||'')+'</span></td>'+
+      '<td>'+drEsc(drStandortNameForEmp(p.marktNr,p.marktname))+'</td>'+
+      '<td class="num">'+drFmtNum(p.sollStd,1)+'</td>'+
+      '<td class="num">'+urlaub+'</td>'+
+      '<td class="num">'+drFmtNum(p.krankTage,0)+'</td>'+
+      '</tr>';
+  }).join('');
+
+  content.innerHTML = '<div class="table-scroll"><table>'+
+    '<thead><tr><th>Name</th><th>Filiale</th><th>Soll-Std./Wo.</th><th>Urlaub offen/Anspruch</th><th>Krank-Tage</th></tr></thead>'+
+    '<tbody>'+rows+'</tbody></table></div>'+
+    '<p class="foot-note">'+list.length+' von '+drPersonal.length+' Mitarbeitern angezeigt.</p>';
 }
 
 function drRender(){

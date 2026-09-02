@@ -240,6 +240,27 @@ service cloud.firestore {
       allow get, list: if isManager();
       allow write: if false;
     }
+    // Gesundheitsstatus der Axonity/Welo-Sync-Skripte selbst (ok/warn/error
+    // je Skript) — getrennt von den Datencollections oben, damit das
+    // Dashboard "Sync kaputt" anzeigen kann statt nur veraltete Zahlen.
+    match /sync_status/{docId} {
+      allow get, list: if isManager();
+      allow write: if false;
+    }
+
+    // Mitarbeiter-Selbstauskunft (Soll-Std./Urlaub/Krank aus Welo) + tägliches
+    // Umsatz-Ziel je Filiale — anders als die drei Collections oben müssen
+    // Mitarbeiter (nicht nur Manager) das lesen können, um ihre eigenen
+    // Werte bzw. das Tagesziel ihrer Filiale zu sehen. Nur vom
+    // sync-welo-personal.js-Skript per Admin-SDK beschrieben.
+    match /emp_welo/{docId} {
+      allow get, list: if isAuthed();
+      allow write: if false;
+    }
+    match /tagesziel/{docId} {
+      allow get, list: if isAuthed();
+      allow write: if false;
+    }
 
     // Manueller "Jetzt aktualisieren"-Knopf im Dashboard: Manager darf ein
     // Trigger-Dokument schreiben, ein dauerhaft laufendes Watcher-Skript auf

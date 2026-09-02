@@ -20,6 +20,14 @@ require('dotenv').config();
 const { chromium } = require('playwright');
 const { getDb, admin } = require('./firestore-client');
 const { GEBIETSLEITER_NAME } = require('./branches');
+const { writeSyncStatus } = require('./sync-status');
+
+// Anteil fehlgeschlagener Filialen, ab dem ein Lauf als "mutmaßlich
+// strukturell kaputt" statt "vereinzelte Ausfälle" gilt (siehe SYNC_KEY-
+// Status unten). 0.3 = mehr als ein Drittel — bei >20 verteilten Filialen
+// unwahrscheinlich, dass das zufällig gleichzeitig einzeln passiert.
+const FAIL_RATE_ERROR_THRESHOLD = 0.3;
+const SYNC_KEY = 'produktion';
 
 const BASE_URL = process.env.AXONITY_BASE_URL || 'https://erp.axonity.de';
 const USER = process.env.AXONITY_USER;
@@ -231,6 +239,7 @@ async function main() {
 
   const browser = await chromium.launch();
   const page = await browser.newPage();
+  const db = getDb();
 
   try {
     console.log('Login bei Axonity…');
@@ -240,9 +249,9 @@ async function main() {
     const markets = await withRetry(() => listMarkets(page), RETRIES_STARTUP, 'Filialliste');
     console.log(`${markets.length} Filialen gefunden.`);
 
-    const db = getDb();
     const datum = heuteISO();
     const results = [];
+    const failedBranches = [];
 
     for (const markt of markets) {
       let lastErr = null;
@@ -262,6 +271,7 @@ async function main() {
       }
       if (!ok) {
         console.error(`  ✗ ${markt.marktNr} (${markt.standort}) übersprungen:`, lastErr.message);
+        failedBranches.push({ marktNr: markt.marktNr, standort: markt.standort, error: lastErr.message });
       }
     }
 
@@ -289,6 +299,19 @@ async function main() {
     });
     await batch.commit();
     console.log(`✓ ${results.length}/${markets.length} Filialen in "${COLLECTION}" geschrieben.`);
+
+    const failRate = markets.length ? failedBranches.length / markets.length : 0;
+    const status = failedBranches.length === 0 ? 'ok' : (failRate > FAIL_RATE_ERROR_THRESHOLD ? 'error' : 'warn');
+    const message = status === 'ok'
+      ? `${results.length}/${markets.length} Filialen erfolgreich.`
+      : `${failedBranches.length}/${markets.length} Filialen fehlgeschlagen` + (status === 'error' ? ' — evtl. hat sich die Axonity-Seitenstruktur geändert.' : ' (vereinzelte Ausfälle).');
+    await writeSyncStatus(db, SYNC_KEY, {
+      status, message, total: markets.length, succeeded: results.length, failed: failedBranches.length, failedDetails: failedBranches,
+    });
+    if (status !== 'ok') console.warn(`⚠️ ${message}`);
+  } catch (err) {
+    await writeSyncStatus(db, SYNC_KEY, { status: 'error', message: 'Sync komplett fehlgeschlagen: ' + err.message }).catch(() => {});
+    throw err;
   } finally {
     await browser.close();
   }

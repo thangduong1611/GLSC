@@ -6,17 +6,10 @@
 require('dotenv').config();
 const { parse } = require('csv-parse/sync');
 const { getDb, admin } = require('./firestore-client');
+const { MARKTNR_ALIASES } = require('./branches');
 
 const CSV_URL = process.env.WELO_STATISTIK_URL;
 const COLLECTION = 'filiale_umsatz';
-
-// Welo führt diese eine Filiale unter ihrer SushiTime-Nummer statt der
-// Axonity-Kostenstelle (vermutlich wegen der EDEKA-Hessenring-Regie-Struktur
-// dieses Standorts) — manuell bestätigt von t.duong am 2026-08-22: 401125
-// (Ratio Baunatal, Axonity-Kostenstelle) ist die richtige, kanonische Nummer.
-const MARKTNR_ALIASES = {
-  '611125': '401125', // Ratio Baunatal
-};
 
 function parseGermanNumber(raw) {
   if (raw == null || raw === '') return 0;
