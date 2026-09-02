@@ -82,7 +82,11 @@ input[type=search]{-webkit-appearance:none;appearance:none;}
 .dp-day{display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid var(--brd);border-radius:var(--rs);margin-bottom:7px;background:var(--surf);}
 .dp-day .d-date{min-width:92px;font-weight:700;font-size:14px;}
 .dp-day .d-wd{font-size:12px;color:var(--mut);font-weight:500;}
-.dp-day .d-val{flex:1;font-size:15px;font-weight:600;text-align:right;}
+/* min-width:0 ist der eigentliche Fix: flex-Kinder haben sonst min-width:auto
+   und weigern sich, unter die Breite ihres Inhalts zu schrumpfen — ein langer
+   Filialname (dp-store-badge) hätte sonst die ganze Zeile (und die Seite)
+   nach rechts rausgedrückt, statt in der Zeile umzubrechen. */
+.dp-day .d-val{flex:1;min-width:0;font-size:15px;font-weight:600;text-align:right;overflow-wrap:break-word;}
 .dp-day.frei{background:#F5F3F0;}.dp-day.frei .d-val{color:var(--mut);}
 .dp-day.urlaub{background:var(--grn-bg);}.dp-day.urlaub .d-val{color:var(--grn);}
 .dp-day.krank{background:var(--red-l);}.dp-day.krank .d-val{color:var(--red-d);}
@@ -93,10 +97,12 @@ table.dp-grid td:not(.nm){min-width:78px;font-weight:600;}
 table.dp-grid thead th{position:sticky;top:0;z-index:3;background:#F2EEE9;font-size:12px;}
 table.dp-grid th.nm,table.dp-grid td.nm{text-align:left;position:sticky;left:0;z-index:2;background:var(--surf);font-weight:600;width:108px;min-width:108px;max-width:108px;padding:0;box-shadow:3px 0 5px -3px rgba(0,0,0,.25);}
 table.dp-grid thead th.nm{z-index:4;background:#F2EEE9;}
-.nm-scroll{overflow-x:auto;white-space:nowrap;padding:7px 8px;-webkit-overflow-scrolling:touch;scrollbar-width:thin;}
-.nm-scroll::-webkit-scrollbar{height:4px;}
-.nm-scroll::-webkit-scrollbar-thumb{background:#CFC8BF;border-radius:2px;}
-.dp-store-badge{display:inline-block;font-size:11px;font-weight:600;color:var(--grn);background:var(--grn-bg);border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:middle;white-space:nowrap;}
+/* War overflow-x:auto (Name in der Zelle nach links/rechts wegscrollbar) —
+   ohne sichtbaren Scroll-Hinweis wirkte das nur wie abgeschnitten/kaputt.
+   Jetzt sauber mit "…" gekürzt, voller Name über title-Attribut (Hover/
+   Screenreader) weiter erreichbar. */
+.nm-scroll{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:7px 8px;}
+.dp-store-badge{display:inline-block;font-size:11px;font-weight:600;color:var(--grn);background:var(--grn-bg);border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:middle;white-space:normal;overflow-wrap:break-word;}
 table.dp-grid tbody tr:nth-child(even) td:not(.nm){background:#FBFAF8;}
 table.dp-grid tr.me td{background:#FEF6E7;}
 table.dp-grid tr.me td.nm{background:#FDEFCB;}
@@ -1700,7 +1706,7 @@ function slRenderGrid(){
     h+='</tr></thead><tbody>';
     slEmps.forEach(function(emp){
       var ek=slEmpKey(emp);
-      h+='<tr><td style="padding:5px 8px;font-weight:600;white-space:nowrap;position:sticky;left:0;background:var(--surf);z-index:1;border-top:1px solid var(--brd)">'+emp.name.substring(0,14)+(emp.name.length>14?'…':'')+'</td>';
+      h+='<tr><td title="'+emp.name.replace(/"/g,'&quot;')+'" style="padding:5px 8px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;position:sticky;left:0;background:var(--surf);z-index:1;border-top:1px solid var(--brd)">'+emp.name+'</td>';
       wk.dates.forEach(function(dt){
         var empId=''+(emp.id||'');
         var ovVal=slOv[empId]&&slOv[empId][dt];
@@ -3224,7 +3230,7 @@ function maRenderDP(){
     emps.forEach(function(emp){
       var ek=emp.id+'-'+emp.name;
       var isMe=(''+emp.id===''+sess.id);
-      gridH+='<tr class="'+(isMe?'me':'')+'"><td class="nm"><div class="nm-scroll">'+emp.name+(isMe?' 👤':'')+'</div></td>';
+      gridH+='<tr class="'+(isMe?'me':'')+'"><td class="nm"><div class="nm-scroll" title="'+emp.name.replace(/"/g,'&quot;')+'">'+emp.name+(isMe?' 👤':'')+'</div></td>';
       for(var d3=1;d3<=dim;d3++){
         var iso3=yr+'-'+('0'+mo).slice(-2)+'-'+('0'+d3).slice(-2);
         var v=(shifts[ek]&&shifts[ek][iso3])||'';

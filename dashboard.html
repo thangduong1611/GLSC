@@ -16,18 +16,35 @@
   --grn:#1E8449;--grn-bg:#EAFAF1;
   --blu:#1A5276;--blu-bg:#EBF5FB;
   --amb:#7D6608;--amb-bg:#FEF9E7;
-  --r:10px;--rs:6px;
+  --r:12px;--rs:8px;
+  --header-h:54px;--tabbar-h:44px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;padding-bottom:env(safe-area-inset-bottom);}
-header{background:var(--red);color:#fff;padding:14px 24px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,.15);}
-header .logo{font-size:20px;font-weight:700;letter-spacing:-.5px;}
-header .sub{font-size:12px;opacity:.85;}
-.wrap{max-width:1120px;margin:0 auto;padding:20px 14px 60px;}
+html{-webkit-text-size-adjust:100%;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;padding-bottom:env(safe-area-inset-bottom);overflow-x:hidden;}
+header{background:var(--red);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,.15);position:sticky;top:0;z-index:20;}
+header .logo{font-size:19px;font-weight:700;letter-spacing:-.5px;white-space:nowrap;}
+header .sub{font-size:12px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.wrap{max-width:1120px;margin:0 auto;padding:14px 12px 60px;width:100%;}
 
-.card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);padding:18px 20px;margin-bottom:16px;}
+/* ── Tab bar: turns the old "one giant scrolling page" into switchable
+   sections — the single biggest lever for the mobile complaint, since it
+   means the Personal table's 61 rows are never in the same scroll as
+   Umsatz's 23. Segmented-control pattern (iOS/Material), horizontally
+   scrollable so it never wraps or overflows on narrow phones. ── */
+.tab-bar{display:flex;gap:4px;background:var(--surf);border-bottom:1px solid var(--brd);padding:0 8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:sticky;top:var(--header-h);z-index:19;}
+.tab-bar::-webkit-scrollbar{display:none;}
+.tab-btn{flex:0 0 auto;display:flex;align-items:center;gap:6px;padding:13px 14px 11px;font-size:13px;font-weight:600;color:var(--mut);background:none;border:none;border-bottom:2.5px solid transparent;cursor:pointer;font-family:inherit;white-space:nowrap;}
+.tab-btn.is-active{color:var(--red);border-bottom-color:var(--red);}
+.tab-btn .tab-count{font-size:10.5px;font-weight:700;color:var(--mut);background:var(--bg);border-radius:100px;padding:1px 6px;}
+.tab-btn.is-active .tab-count{color:var(--red);background:var(--red-l);}
+.tab-btn .tab-count.is-alert{color:#fff;background:var(--red);}
+.tab-panel{display:none;}
+.tab-panel.is-active{display:block;}
 
-.update-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:16px;}
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);padding:16px;margin-bottom:14px;}
+
+.update-bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:14px 0;}
 .update-status{font-size:12.5px;color:var(--mut);}
 .update-status.is-pending{color:var(--amb);font-weight:600;}
 .update-status.is-error{color:var(--red);font-weight:600;}
@@ -37,32 +54,41 @@ header .sub{font-size:12px;opacity:.85;}
 .login-card{max-width:360px;margin:60px auto;}
 .login-card h2{font-size:16px;margin-bottom:14px;}
 .login-card label{display:block;font-size:12.5px;color:var(--mut);margin:10px 0 4px;}
-.login-card input{width:100%;padding:9px 11px;border:1.5px solid var(--brd);border-radius:var(--rs);font-size:14px;font-family:inherit;background:var(--bg);color:var(--txt);outline:none;}
+.login-card input{width:100%;padding:9px 11px;border:1.5px solid var(--brd);border-radius:var(--rs);font-size:16px;font-family:inherit;background:var(--bg);color:var(--txt);outline:none;}
 .login-card input:focus{border-color:var(--red);}
-.btn{padding:9px 18px;border-radius:var(--rs);border:1.5px solid var(--brd);background:var(--surf);font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;color:var(--txt);}
+.btn{padding:11px 18px;border-radius:var(--rs);border:1.5px solid var(--brd);background:var(--surf);font-size:13.5px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:inherit;color:var(--txt);min-height:40px;}
 .btn-red{background:var(--red);border-color:var(--red);color:#fff;}
 .btn-red:hover{background:var(--red-d);}
-.login-card .btn{width:100%;justify-content:center;margin-top:16px;padding:11px;}
+.login-card .btn{width:100%;justify-content:center;margin-top:16px;padding:12px;}
 .login-err{color:var(--red);font-size:12.5px;margin-top:10px;min-height:1em;}
 
-.status-line{font-size:12.5px;color:var(--mut);display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.status-line{font-size:12.5px;color:var(--mut);display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:10px 0 0;}
 .status-line b{color:var(--txt);}
 
 .empty-state{text-align:center;padding:40px 20px;color:var(--mut);font-size:13.5px;line-height:1.7;}
 .empty-state .big{font-size:32px;margin-bottom:8px;}
 
-.table-scroll{overflow-x:auto;border:1px solid var(--brd);border-radius:var(--r);background:var(--surf);}
-table{width:100%;border-collapse:collapse;font-size:13px;min-width:760px;}
-th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--brd);white-space:nowrap;}
-th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut);font-weight:600;background:var(--bg);}
-tbody tr:last-child td{border-bottom:none;}
-tbody tr:hover{background:var(--bg);}
-td.num{text-align:right;font-variant-numeric:tabular-nums;font-family:'Consolas',monospace;font-size:12.5px;}
-td.name{white-space:normal;min-width:180px;}
-td.name .nr{display:block;font-size:11px;color:var(--mut);font-family:'Consolas',monospace;}
+/* ── Card grid: replaces every <table> for the three data-heavy sections.
+   auto-fill + minmax reflows on its own — 1 col on a phone, 2-3 on tablet,
+   4+ on desktop — no JS breakpoint branching, and critically, no
+   overflow-x table ever, which was the actual bug report. ── */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;}
+.data-card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--rs);padding:13px 14px;min-width:0;}
+.dc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px;}
+.dc-title{font-weight:600;font-size:13.5px;line-height:1.35;min-width:0;overflow-wrap:break-word;}
+.dc-title .nr{display:block;font-size:11px;color:var(--mut);font-family:'Consolas',monospace;font-weight:400;margin-top:1px;}
+.dc-hero{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2;margin-bottom:2px;}
+.dc-hero-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut);font-weight:600;margin-bottom:2px;}
+.dc-stats{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.dc-stat{flex:1 1 auto;min-width:64px;}
+.dc-stat .k{font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:var(--mut);font-weight:600;}
+.dc-stat .v{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:1px;}
+.dc-bar{height:6px;border-radius:100px;background:var(--bg);overflow:hidden;margin-top:8px;}
+.dc-bar-fill{height:100%;border-radius:100px;background:var(--grn);}
+.dc-bar-fill.is-warn{background:var(--amb);}
 
-.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:600;}
-.pill::before{content:"";width:6px;height:6px;border-radius:50%;}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:600;white-space:nowrap;flex-shrink:0;}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;flex-shrink:0;}
 .pill-ok{background:var(--grn-bg);color:var(--grn);}
 .pill-ok::before{background:var(--grn);}
 .pill-warn{background:var(--amb-bg);color:var(--amb);}
@@ -70,7 +96,7 @@ td.name .nr{display:block;font-size:11px;color:var(--mut);font-family:'Consolas'
 .pill-mut{background:var(--bg);color:var(--mut);}
 .pill-mut::before{background:var(--mut);}
 
-.foot-note{font-size:11.5px;color:var(--mut);margin-top:14px;}
+.foot-note{font-size:11.5px;color:var(--mut);margin-top:14px;line-height:1.6;}
 
 .badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:100px;font-size:11px;font-weight:700;}
 .badge-red{background:var(--red);color:#fff;}
@@ -78,8 +104,8 @@ td.name .nr{display:block;font-size:11px;color:var(--mut);font-family:'Consolas'
 .order-row{padding:10px 0;border-bottom:1px solid var(--brd);font-size:13px;}
 .order-row:last-child{border-bottom:none;}
 .order-row.is-new{background:var(--red-l);margin:0 -8px;padding:10px 8px;border-radius:var(--rs);border-bottom:none;}
-.order-row .o-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;}
-.order-row .o-standort{min-width:0;}
+.order-row .o-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px;}
+.order-row .o-standort{min-width:0;overflow-wrap:break-word;}
 .order-row .o-standort .o-nr{display:block;font-size:11px;color:var(--mut);font-family:'Consolas',monospace;}
 .order-row .o-zeit{font-variant-numeric:tabular-nums;color:var(--mut);white-space:nowrap;font-size:12.5px;flex-shrink:0;}
 .order-row .o-storno{color:var(--red);font-weight:600;font-size:11px;text-transform:uppercase;}
@@ -88,21 +114,30 @@ td.name .nr{display:block;font-size:11px;color:var(--mut);font-family:'Consolas'
 .order-row .o-items .o-notiz{display:block;color:var(--txt);font-style:italic;margin-top:2px;}
 .order-row .o-foot{margin-top:8px;display:flex;justify-content:flex-end;}
 
-.copy-btn{border:1.5px solid var(--brd);background:var(--surf);border-radius:var(--rs);padding:5px 10px;font-size:11.5px;font-weight:600;cursor:pointer;color:var(--txt);white-space:nowrap;font-family:inherit;}
+.copy-btn{border:1.5px solid var(--brd);background:var(--surf);border-radius:var(--rs);padding:7px 11px;font-size:11.5px;font-weight:600;cursor:pointer;color:var(--txt);white-space:nowrap;font-family:inherit;min-height:34px;}
 .copy-btn:hover{border-color:var(--red);}
 .copy-btn.copied{background:var(--grn-bg);border-color:var(--grn);color:var(--grn);}
 
 .summary-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;padding:9px 0;border-bottom:1px solid var(--brd);font-size:13px;}
 .summary-row:last-child{border-bottom:none;}
-.summary-row .s-standort{flex:1;min-width:0;font-weight:500;}
+.summary-row .s-standort{flex:1 1 100%;min-width:0;font-weight:500;}
 .summary-row .s-nums{color:var(--mut);font-variant-numeric:tabular-nums;font-size:12.5px;white-space:nowrap;}
 
-.health-banner{border-radius:var(--r);padding:12px 16px;margin-bottom:16px;font-size:13px;line-height:1.5;}
+.health-banner{border-radius:var(--r);padding:12px 16px;margin:14px 0 0;font-size:13px;line-height:1.5;}
 .health-banner.is-error{background:var(--red-l);color:var(--red-d);border:1px solid var(--red);}
 .health-banner.is-warn{background:var(--amb-bg);color:var(--amb);border:1px solid var(--amb);}
 .health-banner .hb-row{display:flex;gap:8px;align-items:baseline;}
 .health-banner .hb-row + .hb-row{margin-top:4px;}
 .health-banner b{font-weight:700;}
+
+.filter-bar{position:sticky;top:calc(var(--header-h) + var(--tabbar-h));z-index:18;background:var(--bg);padding:10px 0 12px;}
+.filter-bar input{width:100%;padding:11px 12px;border:1.5px solid var(--brd);border-radius:var(--rs);font-size:16px;font-family:inherit;background:var(--surf);color:var(--txt);outline:none;}
+.filter-bar input:focus{border-color:var(--red);}
+
+@media (max-width:480px){
+  .card-grid{grid-template-columns:1fr;}
+  header .sub{display:none;}
+}
 </style>
 </head>
 <body>
@@ -112,8 +147,7 @@ td.name .nr{display:block;font-size:11px;color:var(--mut);font-family:'Consolas'
   <div class="sub">Umsatz &amp; Produktion — dein Gebiet</div>
 </header>
 
-<div class="wrap">
-
+<div class="wrap" id="login-wrap">
   <div id="login-view" class="card login-card" style="display:none;">
     <h2>Als Manager anmelden</h2>
     <label for="dr-mail">E-Mail</label>
@@ -123,8 +157,18 @@ td.name .nr{display:block;font-size:11px;color:var(--mut);font-family:'Consolas'
     <button class="btn btn-red" onclick="drLogin()">Anmelden</button>
     <div id="dr-login-err" class="login-err"></div>
   </div>
+</div>
 
-  <div id="dash-view" style="display:none;">
+<div id="dash-view" style="display:none;">
+
+  <div class="tab-bar" id="dr-tabbar">
+    <button class="tab-btn is-active" data-tab="heute" onclick="drSwitchTab('heute')">📋 Heute <span class="tab-count" id="dr-tab-count-heute" style="display:none;">0</span></button>
+    <button class="tab-btn" data-tab="umsatz" onclick="drSwitchTab('umsatz')">💰 Umsatz <span class="tab-count" id="dr-tab-count-umsatz">–</span></button>
+    <button class="tab-btn" data-tab="ziel" onclick="drSwitchTab('ziel')">🎯 Ziel <span class="tab-count" id="dr-tab-count-ziel">–</span></button>
+    <button class="tab-btn" data-tab="personal" onclick="drSwitchTab('personal')">👥 Personal <span class="tab-count" id="dr-tab-count-personal">–</span></button>
+  </div>
+
+  <div class="wrap">
     <div class="status-line">
       <span id="dr-user-stat">—</span>
       <span>·</span>
@@ -135,54 +179,58 @@ td.name .nr{display:block;font-size:11px;color:var(--mut);font-family:'Consolas'
 
     <div id="dr-health-banner" style="display:none;"></div>
 
-    <div class="update-bar">
-      <button class="btn" id="dr-update-btn" onclick="drRequestUpdate()">🔄 Jetzt aktualisieren</button>
-      <span id="dr-update-status" class="update-status">—</span>
-    </div>
-
-    <div class="card" id="dr-orders-card" style="display:none;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <div style="font-weight:600;font-size:14px;">
-          🔔 Neue Bestellungen
-          <span class="badge badge-red" id="dr-orders-badge" style="display:none;">0</span>
-        </div>
-        <a href="#" onclick="drMarkOrdersSeen();return false;" style="font-size:12.5px;color:var(--mut);">Als gelesen markieren</a>
+    <!-- ── Tab: Heute — alles, was sofortige Aufmerksamkeit braucht ── -->
+    <div class="tab-panel is-active" id="tab-heute">
+      <div class="update-bar">
+        <button class="btn" id="dr-update-btn" onclick="drRequestUpdate()">🔄 Jetzt aktualisieren</button>
+        <span id="dr-update-status" class="update-status">—</span>
       </div>
-      <div id="dr-orders-list"></div>
+
+      <div class="card" id="dr-orders-card" style="display:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="font-weight:600;font-size:14px;">
+            🔔 Neue Bestellungen
+            <span class="badge badge-red" id="dr-orders-badge" style="display:none;">0</span>
+          </div>
+          <a href="#" onclick="drMarkOrdersSeen();return false;" style="font-size:12.5px;color:var(--mut);">Als gelesen markieren</a>
+        </div>
+        <div id="dr-orders-list"></div>
+      </div>
+
+      <div class="card" id="dr-summary-card" style="display:none;">
+        <div style="font-weight:600;font-size:14px;margin-bottom:12px;">📊 Tagesüberblick — kurze Version zum Weitergeben</div>
+        <div id="dr-summary-list"></div>
+      </div>
     </div>
 
-    <div class="card" id="dr-summary-card" style="display:none;">
-      <div style="font-weight:600;font-size:14px;margin-bottom:12px;">📊 Tagesüberblick — kurze Version zum Weitergeben</div>
-      <div id="dr-summary-list"></div>
+    <!-- ── Tab: Umsatz ── -->
+    <div class="tab-panel" id="tab-umsatz">
+      <div id="dr-content"></div>
     </div>
 
-    <div id="dr-content"></div>
-
-    <div class="card" id="dr-ziel-card" style="display:none;">
-      <div style="font-weight:600;font-size:14px;margin-bottom:12px;">🎯 Tagesziel je Filiale</div>
+    <!-- ── Tab: Ziel ── -->
+    <div class="tab-panel" id="tab-ziel">
       <div id="dr-ziel-content"></div>
     </div>
 
-    <div class="card" id="dr-personal-card" style="display:none;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:10px;flex-wrap:wrap;">
-        <div style="font-weight:600;font-size:14px;">👥 Personal (Welo) — alle Mitarbeiter</div>
-        <input id="dr-personal-filter" type="text" placeholder="Name oder Filiale filtern…" oninput="drRenderPersonal()"
-          style="padding:7px 10px;border:1.5px solid var(--brd);border-radius:var(--rs);font-size:13px;font-family:inherit;background:var(--bg);color:var(--txt);outline:none;min-width:200px;">
+    <!-- ── Tab: Personal ── -->
+    <div class="tab-panel" id="tab-personal">
+      <div class="filter-bar">
+        <input id="dr-personal-filter" type="text" placeholder="🔍 Name oder Filiale filtern…" oninput="drRenderPersonal()">
       </div>
       <div id="dr-personal-content"></div>
     </div>
 
     <p class="foot-note">
       Umsatz = rollierende letzte 30 Tage direkt aus Axonity (täglich aktuell) — nur falls für eine Filiale noch keine
-      Axonity-Daten vorliegen, zeigt die Zeile ersatzweise den Monatswert aus dem Welo-Export (steht dann als Quelle
-      unter der Zahl). SX-Start/-Ende = aus Axonity, Stand heute. Fehlt eine Spalte, hat der jeweilige Sync-Job für
+      Axonity-Daten vorliegen, zeigt die Karte ersatzweise den Monatswert aus dem Welo-Export (steht dann als Quelle
+      unter der Zahl). SX-Start/-Ende = aus Axonity, Stand heute. Fehlt ein Wert, hat der jeweilige Sync-Job für
       diese Filiale noch keine Daten geschrieben. Bestellungen = neueste Seite der Webshop-Bestellungen aus Axonity,
       Erkennung neuer Bestellungen läuft alle paar Minuten über den Sync-Job. Tagesziel = Vorjahresumsatz vom
-      selben Kalendertag × 1,25, Personal-Tabelle (Soll-Std./Urlaub/Krank) = beides aus Welo/SuCi-Net, täglich
+      selben Kalendertag × 1,25, Personal-Karten (Soll-Std./Urlaub/Krank) = beides aus Welo/SuCi-Net, täglich
       05:00 Uhr aktualisiert.
     </p>
   </div>
-
 </div>
 
 <script>
@@ -247,6 +295,22 @@ function drShowLogin(err){
 function drShowDash(){
   document.getElementById('login-view').style.display = 'none';
   document.getElementById('dash-view').style.display = 'block';
+}
+
+var drActiveTab = 'heute';
+function drSwitchTab(tab){
+  drActiveTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.toggle('is-active', b.dataset.tab === tab); });
+  document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.toggle('is-active', p.id === 'tab-'+tab); });
+  window.scrollTo({top:0, behavior:'instant'});
+}
+function drSetTabCount(tab, n, isAlert){
+  var el = document.getElementById('dr-tab-count-'+tab);
+  if(!el) return;
+  if(n == null){ el.style.display = 'none'; return; }
+  el.style.display = 'inline-flex';
+  el.textContent = n;
+  el.classList.toggle('is-alert', !!isAlert);
 }
 
 function drLogin(){
@@ -467,6 +531,7 @@ function drRenderOrders(){
   list.innerHTML = rows || '<div class="order-empty">Keine Bestellungen.</div>';
   if(neuCount > 0){ badge.style.display='inline-flex'; badge.textContent = neuCount; }
   else { badge.style.display = 'none'; }
+  drSetTabCount('heute', neuCount > 0 ? neuCount : null, true);
 }
 
 function drRenderError(msg){
@@ -534,35 +599,37 @@ function drFmtNum(n, nachkomma){
 }
 
 function drRenderZiel(){
-  var card = document.getElementById('dr-ziel-card');
   var content = document.getElementById('dr-ziel-content');
   var nrs = Object.keys(drZiel);
-  if(!nrs.length){ card.style.display = 'none'; return; }
-  card.style.display = 'block';
+  drSetTabCount('ziel', nrs.length || null);
+  if(!nrs.length){ content.innerHTML = '<div class="empty-state">Noch keine Tagesziel-Daten.</div>'; return; }
 
   nrs.sort(function(a,b){ return drStandortName(a).localeCompare(drStandortName(b)); });
 
-  var rows = nrs.map(function(nr){
+  var cards = nrs.map(function(nr){
     var z = drZiel[nr];
     var name = drStandortName(nr) !== nr ? drStandortName(nr) : (z.marktname || nr);
     var pct = (typeof z.umsatzHeute === 'number' && z.ziel) ? Math.round(z.umsatzHeute / z.ziel * 100) : null;
-    var pill;
-    if(z.ziel == null){ pill = '<span class="pill pill-mut">kein Vorjahreswert</span>'; }
-    else if(pct == null){ pill = '<span class="pill pill-mut">heute noch offen</span>'; }
-    else if(pct >= 100){ pill = '<span class="pill pill-ok">'+pct+'%</span>'; }
-    else { pill = '<span class="pill pill-warn">'+pct+'%</span>'; }
-    return '<tr>'+
-      '<td class="name">'+drEsc(name)+'<span class="nr">'+nr+'</span></td>'+
-      '<td class="num">'+(z.ziel!=null?drFmtEUR(z.ziel):'—')+'</td>'+
-      '<td class="num">'+(z.umsatzVorjahr!=null?drFmtEUR(z.umsatzVorjahr):'—')+'</td>'+
-      '<td class="num">'+(typeof z.umsatzHeute==='number'?drFmtEUR(z.umsatzHeute):'—')+'</td>'+
-      '<td>'+pill+'</td>'+
-      '</tr>';
+    var pill, bar = '';
+    if(z.ziel == null){ pill = '<span class="pill pill-mut">kein Vorjahr</span>'; }
+    else if(pct == null){ pill = '<span class="pill pill-mut">heute offen</span>'; }
+    else {
+      pill = pct >= 100 ? '<span class="pill pill-ok">'+pct+'%</span>' : '<span class="pill pill-warn">'+pct+'%</span>';
+      bar = '<div class="dc-bar"><div class="dc-bar-fill'+(pct<100?' is-warn':'')+'" style="width:'+Math.min(pct,100)+'%"></div></div>';
+    }
+    return '<div class="data-card">'+
+      '<div class="dc-head"><div class="dc-title">'+drEsc(name)+'<span class="nr">'+nr+'</span></div>'+pill+'</div>'+
+      '<div class="dc-hero-label">Ziel (Vorjahr ×1,25)</div>'+
+      '<div class="dc-hero">'+(z.ziel!=null?drFmtEUR(z.ziel):'—')+'</div>'+
+      bar+
+      '<div class="dc-stats">'+
+        '<div class="dc-stat"><div class="k">Vorjahr</div><div class="v">'+(z.umsatzVorjahr!=null?drFmtEUR(z.umsatzVorjahr):'—')+'</div></div>'+
+        '<div class="dc-stat"><div class="k">Heute</div><div class="v">'+(typeof z.umsatzHeute==='number'?drFmtEUR(z.umsatzHeute):'—')+'</div></div>'+
+      '</div>'+
+      '</div>';
   }).join('');
 
-  content.innerHTML = '<div class="table-scroll"><table>'+
-    '<thead><tr><th>Filiale</th><th>Ziel (Vorjahr ×1,25)</th><th>Vorjahr (selber Tag)</th><th>Heute</th><th>Stand</th></tr></thead>'+
-    '<tbody>'+rows+'</tbody></table></div>';
+  content.innerHTML = '<div class="card-grid">'+cards+'</div>';
 }
 
 function drStandortNameForEmp(marktNr, marktname){
@@ -571,10 +638,9 @@ function drStandortNameForEmp(marktNr, marktname){
   return marktname || marktNr;
 }
 function drRenderPersonal(){
-  var card = document.getElementById('dr-personal-card');
   var content = document.getElementById('dr-personal-content');
-  if(!drPersonal.length){ card.style.display = 'none'; return; }
-  card.style.display = 'block';
+  drSetTabCount('personal', drPersonal.length || null);
+  if(!drPersonal.length){ content.innerHTML = '<div class="empty-state">Noch keine Personal-Daten.</div>'; return; }
 
   var filterEl = document.getElementById('dr-personal-filter');
   var filter = filterEl ? filterEl.value.trim().toLowerCase() : '';
@@ -595,22 +661,23 @@ function drRenderPersonal(){
     return;
   }
 
-  var rows = list.map(function(p){
+  var cards = list.map(function(p){
     var urlaub = (p.urlaubOffen!=null || p.urlaubAnspruch!=null)
       ? drFmtNum(p.urlaubOffen,0)+' / '+drFmtNum(p.urlaubAnspruch,0)
       : '<span class="pill pill-mut">keine Daten</span>';
-    return '<tr>'+
-      '<td class="name">'+drEsc(p.name||p.id)+'<span class="nr">#'+drEsc(p.id)+' · '+drEsc(p.taetigkeit||'')+'</span></td>'+
-      '<td>'+drEsc(drStandortNameForEmp(p.marktNr,p.marktname))+'</td>'+
-      '<td class="num">'+drFmtNum(p.sollStd,1)+'</td>'+
-      '<td class="num">'+urlaub+'</td>'+
-      '<td class="num">'+drFmtNum(p.krankTage,0)+'</td>'+
-      '</tr>';
+    return '<div class="data-card">'+
+      '<div class="dc-head"><div class="dc-title">'+drEsc(p.name||p.id)+'<span class="nr">#'+drEsc(p.id)+(p.taetigkeit?' · '+drEsc(p.taetigkeit):'')+'</span></div></div>'+
+      '<div class="dc-hero-label">Filiale</div>'+
+      '<div style="font-size:13px;font-weight:600;margin-bottom:2px;">'+drEsc(drStandortNameForEmp(p.marktNr,p.marktname))+'</div>'+
+      '<div class="dc-stats">'+
+        '<div class="dc-stat"><div class="k">Soll-Std./Wo.</div><div class="v">'+drFmtNum(p.sollStd,1)+'</div></div>'+
+        '<div class="dc-stat"><div class="k">Urlaub offen/Anspr.</div><div class="v">'+urlaub+'</div></div>'+
+        '<div class="dc-stat"><div class="k">Krank-Tage</div><div class="v">'+drFmtNum(p.krankTage,0)+'</div></div>'+
+      '</div>'+
+      '</div>';
   }).join('');
 
-  content.innerHTML = '<div class="table-scroll"><table>'+
-    '<thead><tr><th>Name</th><th>Filiale</th><th>Soll-Std./Wo.</th><th>Urlaub offen/Anspruch</th><th>Krank-Tage</th></tr></thead>'+
-    '<tbody>'+rows+'</tbody></table></div>'+
+  content.innerHTML = '<div class="card-grid">'+cards+'</div>'+
     '<p class="foot-note">'+list.length+' von '+drPersonal.length+' Mitarbeitern angezeigt.</p>';
 }
 
@@ -620,6 +687,7 @@ function drRender(){
   Object.keys(drUmsatz).forEach(function(nr){ marktNrs[nr]=true; });
   Object.keys(drProd).forEach(function(nr){ marktNrs[nr]=true; });
   var list = Object.keys(marktNrs).sort();
+  drSetTabCount('umsatz', list.length || null);
 
   if(!list.length){
     document.getElementById('dr-content').innerHTML =
@@ -629,7 +697,7 @@ function drRender(){
     return;
   }
 
-  var rows = list.map(function(nr){
+  var cards = list.map(function(nr){
     var u = drUmsatz[nr];
     var p = drProd[nr];
     var name = drStandortName(nr, u);
@@ -654,21 +722,19 @@ function drRender(){
     else if(p.sxEnde){ pill = '<span class="pill pill-ok">fertig</span>'; }
     else { pill = '<span class="pill pill-warn">läuft</span>'; }
 
-    return '<tr>'+
-      '<td class="name">'+name+'<span class="nr">'+nr+'</span></td>'+
-      '<td class="num">'+umsatzCell+(umsatzSrc ? '<span class="nr" style="display:block;text-align:right;">'+umsatzSrc+'</span>' : '')+'</td>'+
-      '<td class="num">'+sxStart+'</td>'+
-      '<td class="num">'+sxEnde+'</td>'+
-      '<td>'+top+'</td>'+
-      '<td>'+pill+'</td>'+
-      '</tr>';
+    return '<div class="data-card">'+
+      '<div class="dc-head"><div class="dc-title">'+drEsc(name)+'<span class="nr">'+nr+'</span></div>'+pill+'</div>'+
+      (umsatzSrc ? '<div class="dc-hero-label">Umsatz · '+umsatzSrc+'</div>' : '<div class="dc-hero-label">Umsatz</div>')+
+      '<div class="dc-hero">'+umsatzCell+'</div>'+
+      '<div class="dc-stats">'+
+        '<div class="dc-stat"><div class="k">SX Start</div><div class="v">'+sxStart+'</div></div>'+
+        '<div class="dc-stat"><div class="k">SX Ende</div><div class="v">'+sxEnde+'</div></div>'+
+        '<div class="dc-stat" style="flex-basis:100%"><div class="k">Top-Produkt</div><div class="v">'+drEsc(top)+'</div></div>'+
+      '</div>'+
+      '</div>';
   }).join('');
 
-  document.getElementById('dr-content').innerHTML =
-    '<div class="table-scroll"><table>'+
-    '<thead><tr><th>Standort</th><th>Umsatz</th><th>SX Start</th><th>SX Ende</th><th>Top-Produkt</th><th>Status</th></tr></thead>'+
-    '<tbody>'+rows+'</tbody>'+
-    '</table></div>';
+  document.getElementById('dr-content').innerHTML = '<div class="card-grid">'+cards+'</div>';
 }
 
 drInit();
