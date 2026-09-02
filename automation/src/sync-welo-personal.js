@@ -2,9 +2,10 @@
 // und synchronisiert zwei Dinge für alle Mitarbeiter/Filialen:
 //
 //  1. Personal-Stammdaten: Soll-Stunden/Woche (aus "Aktives Personal") +
-//     Resturlaub/Genommen/Anspruch/Krank-Tage (aus "U/K Liste", alle drei
-//     Kategorien FS/MJ/TM vereinigt — der Default-Filter "FS" allein lässt
-//     Minijob- und Teammanager-Personal aus, siehe Projekt-Notiz).
+//     Resturlaub/Genommen/Anspruch/Krank-Tage (aus der Jahresansicht jeder
+//     einzelnen Person, /pf/jahresansicht/{PersonalNr}-{Jahr}.html — nicht
+//     aus der "U/K Liste": deren drei Kategorien FS/MJ/TM ließen 11 von 61
+//     Mitarbeitern komplett aus, siehe Projekt-Notiz vom 02.09.2026).
 //  2. Tagesziel je Filiale: liest den Tagesumsatz von heute UND von genau
 //     einem Jahr zuvor (Statistiken > Tagesumsätze — Seite ist datumsbasiert
 //     aufrufbar und funktioniert auch rückwirkend, geprüft bis genau 1 Jahr
@@ -103,28 +104,33 @@ async function getPersonalRows(page, sessionBase) {
   return byId;
 }
 
-async function getUrlaubKrankRows(page, sessionBase, year) {
-  // Kein Filter deckt alle Personalarten ab — FS (Vollzeit/Teilzeit), MJ
-  // (Minijob), TM (Teammanager) sind drei getrennte, nicht überlappende
-  // Listen. Erste Kategorie, in der eine PersonalNr. auftaucht, gewinnt.
+// Frühere Version fragte die drei Sammel-CSVs unter /urlaubsliste/ ab (FS/MJ/
+// TM getrennt, nicht überlappend) — 11 von 61 Mitarbeitern (u.a. GL, Springer,
+// Shopleiterin, aber auch normales Personal) tauchten in KEINER der drei
+// Listen auf, wurden also fälschlich als "keine Urlaubsdaten" markiert (siehe
+// GLSC-App-Projektnotiz, entdeckt von t.duong am 02.09.2026). Die
+// Jahresansicht jeder Person (/pf/jahresansicht/{PersonalNr}-{Jahr}.html,
+// verlinkt von der Personalinfo-Seite als "Jahresansicht: 2026, 2025, …")
+// deckt dagegen JEDE aktive Person einzeln ab, unabhängig von der
+// Personalart — pro Mitarbeiter ein Seitenaufruf statt drei Sammel-Downloads,
+// aber vollständig statt lückenhaft.
+function extractLabelValue(html, label) {
+  const re = new RegExp('>' + label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '<\\/td>\\s*<td[^>]*>([^<]*)<\\/td>', 'i');
+  const m = html.match(re);
+  return m ? m[1].trim() : null;
+}
+async function getUrlaubKrankRows(page, sessionBase, ids, year) {
   const merged = {};
-  for (const typ of ['fs', 'mj', 'tmdm']) {
-    await page.goto(`${sessionBase}/urlaubsliste/${year}-${typ}-alle-v-01.html`);
-    const csvUrl = findCsvHref(await page.content(), sessionBase);
-    if (!csvUrl) continue;
-    const records = parse(await fetchCsv(page, csvUrl), {
-      delimiter: ';', quote: '"', columns: true, skip_empty_lines: true, trim: true,
-    });
-    for (const r of records) {
-      const id = String(r['PersonalNr.'] || '').trim();
-      if (!id || merged[id]) continue;
-      merged[id] = {
-        urlaubOffen: parseGermanNumber(r['Offen']),
-        urlaubGenommen: parseGermanNumber(r['Genommen']),
-        urlaubAnspruch: parseGermanNumber(r['vorraus. Anspruch']),
-        krankTage: parseGermanNumber(r['Krank']),
-      };
-    }
+  for (const id of ids) {
+    await page.goto(`${sessionBase}/pf/jahresansicht/${id}-${year}.html`);
+    const html = await page.content();
+    const krankRaw = extractLabelValue(html, 'Krank:'); // "0,00 Tage"
+    merged[id] = {
+      urlaubOffen: parseGermanNumber(extractLabelValue(html, 'Offen:')),
+      urlaubGenommen: parseGermanNumber(extractLabelValue(html, 'Genommen:')),
+      urlaubAnspruch: parseGermanNumber(extractLabelValue(html, 'Jahr:')),
+      krankTage: krankRaw ? parseGermanNumber(krankRaw.replace(/Tage/i, '')) : null,
+    };
   }
   return merged;
 }
@@ -178,8 +184,9 @@ async function main() {
     console.log(`  ${Object.keys(personal).length} aktive Mitarbeiter.`);
 
     const heute = new Date();
-    console.log(`Lade Urlaub/Krank für ${heute.getFullYear()}…`);
-    const urlaubKrank = await getUrlaubKrankRows(page, sessionBase, heute.getFullYear());
+    const ids = Object.keys(personal);
+    console.log(`Lade Urlaub/Krank für ${heute.getFullYear()} (${ids.length} Personen einzeln)…`);
+    const urlaubKrank = await getUrlaubKrankRows(page, sessionBase, ids, heute.getFullYear());
     console.log(`  ${Object.keys(urlaubKrank).length} Urlaub/Krank-Datensätze.`);
 
     // Personal-Batch

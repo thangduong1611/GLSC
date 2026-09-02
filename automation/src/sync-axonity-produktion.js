@@ -1,6 +1,9 @@
 // Loggt sich in Axonity ein, geht jede Filiale aus /markets/ durch und liest:
 //  - Übersicht: "Umsätze der letzten 30 Tage" (Produktion) — rollierendes
-//    30-Tage-Fenster, täglich aktuell. Ersetzt den Welo-CSV-Export als
+//    30-Tage-Fenster, täglich aktuell. Seit dem Domain-Umzug (02.09.2026,
+//    erp.axonity.de -> sck.sushi-circle.de) steht dort ZUSÄTZLICH eine
+//    zweite Karte "letzten 12 Monate" — wird bewusst ignoriert, wir wollen
+//    weiterhin die 30-Tage-Zahl. Ersetzt den Welo-CSV-Export als
 //    Umsatz-Quelle im Dashboard, weil dessen Export dem laufenden Monat
 //    hinterherhinkt (siehe Projekt-Notiz), während dieser Wert hier direkt
 //    aus Axonity kommt und nicht künstlich verzögert ist.
@@ -29,7 +32,11 @@ const { writeSyncStatus } = require('./sync-status');
 const FAIL_RATE_ERROR_THRESHOLD = 0.3;
 const SYNC_KEY = 'produktion';
 
-const BASE_URL = process.env.AXONITY_BASE_URL || 'https://erp.axonity.de';
+// Domain seit 02.09.2026 auf sck.sushi-circle.de umgezogen — erp.axonity.de
+// leitet zwar noch weiter, aber über einen zusätzlichen, langsamen/unzuver-
+// lässigen Redirect-Hop (hat am 02.09.2026 zu Timeouts geführt, obwohl die
+// Seitenstruktur selbst fast unverändert war). Direkt die neue Domain nutzen.
+const BASE_URL = process.env.AXONITY_BASE_URL || 'https://sck.sushi-circle.de';
 const USER = process.env.AXONITY_USER;
 const PASSWORD = process.env.AXONITY_PASSWORD;
 const COLLECTION = 'filiale_produktion';
@@ -106,9 +113,12 @@ async function listMarkets(page) {
 
   // Sicherheitsnetz: nach dem Update zeigt die Seite ohne wirksamen Filter
   // hunderte Standorte firmenweit — lieber laut scheitern als versehentlich
-  // fremde Filialen verarbeiten.
-  if (markets.length === 0 || markets.length > 20) {
-    throw new Error(`Unerwartete Anzahl Filialen nach Gebietsleiter-Filter: ${markets.length} (erwartet ~11) — Filter vermutlich nicht angewendet.`);
+  // fremde Filialen verarbeiten. Obergrenze bewusst mit Puffer über den
+  // aktuellen 23 Axonity-Filialen (Stand 02.09.2026, seit dem Zuwachs um die
+  // West-Filialen) statt exakt auf die aktuelle Zahl fixiert — sonst reißt
+  // dieser Check bei jeder neuen Filiale wieder ab.
+  if (markets.length === 0 || markets.length > 40) {
+    throw new Error(`Unerwartete Anzahl Filialen nach Gebietsleiter-Filter: ${markets.length} (erwartet ~20-30) — Filter vermutlich nicht angewendet.`);
   }
   return markets;
 }
@@ -144,6 +154,11 @@ async function openUmsaetzeTab(page, href) {
 // direkt lesen, ohne extra hinzuklicken. Struktur laut DOM-Inspektion:
 // <h4>Umsätze der letzten 30 Tage</h4> gefolgt von
 // <div class="card-body"><span><strong>Produktion:</strong><span>43.143,41 €</span></span>...</div>
+// Seit dem Domain-Umzug (02.09.2026, erp.axonity.de -> sck.sushi-circle.de)
+// zeigt die Übersicht ZWEI Karten nebeneinander: "letzten 30 Tage" UND
+// "letzten 12 Monate" — darum weiterhin exakt auf "30 Tage" matchen (nicht
+// nur auf den Anfang der Überschrift, sonst "strict mode violation" wegen 2
+// Treffern), damit wir die richtige der beiden Karten erwischen.
 async function readUmsatz30Tage(page) {
   const heading = page.locator('h4', { hasText: 'Umsätze der letzten 30 Tage' });
   await heading.waitFor({ timeout: 15000 });

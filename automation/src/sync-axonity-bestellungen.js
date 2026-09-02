@@ -25,7 +25,9 @@ const { getDb, admin } = require('./firestore-client');
 const { BEKANNTE_KOSTENSTELLEN } = require('./branches');
 const { writeSyncStatus } = require('./sync-status');
 
-const BASE_URL = process.env.AXONITY_BASE_URL || 'https://erp.axonity.de';
+// Domain seit 02.09.2026 auf sck.sushi-circle.de umgezogen — siehe Notiz in
+// sync-axonity-produktion.js.
+const BASE_URL = process.env.AXONITY_BASE_URL || 'https://sck.sushi-circle.de';
 const USER = process.env.AXONITY_USER;
 const PASSWORD = process.env.AXONITY_PASSWORD;
 const COLLECTION = 'filiale_bestellungen';
@@ -61,20 +63,24 @@ const PICKUPS_SPALTEN = ['Bestellnummer', 'Kostenstelle', 'Standort', 'Adresse',
 
 async function readBestellungen(page) {
   await page.goto(`${BASE_URL}/pickups/`);
-  await page.locator('table tbody tr').first().waitFor({ timeout: 15000 });
+  // Auf die Tabelle warten, NICHT auf eine Zeile — die Standardgruppe
+  // "Nicht übertragen" ist oft leer (0 Zeilen ist normal, kein Ladefehler),
+  // ein waitFor auf eine Zeile würde dann nie auflösen (siehe Vorfall
+  // 02.09.2026 nach dem Domain-Umzug auf sck.sushi-circle.de).
+  await page.locator('table').first().waitFor({ timeout: 15000 });
 
-  // Seit dem Update ist "Nicht übertragen" die Standardgruppe (meist nur
-  // 1-2 Zeilen firmenweit) — auf "Alle Bestellungen" wechseln für die
-  // bisherige Sicht (neueste Bestellungen aller Filialen, absteigend nach
-  // Bestellzeit). Zwei gleiche Links im DOM (Desktop/Mobile-Variante) — nur
-  // den sichtbaren anklicken. Wie an mehreren Stellen in dieser App
-  // registriert der erste Klick oft nicht wirklich — zweimal klicken.
+  // "Nicht übertragen" ist die Standardgruppe — auf "Alle Bestellungen"
+  // wechseln für die bisherige Sicht (neueste Bestellungen aller Filialen,
+  // absteigend nach Bestellzeit). Zwei gleiche Links im DOM (Desktop/Mobile-
+  // Variante) — nur den sichtbaren anklicken. Wie an mehreren Stellen in
+  // dieser App registriert der erste Klick oft nicht wirklich — zweimal
+  // klicken.
   const alleBestellungen = page.locator('a:has-text("Alle Bestellungen"):visible');
   await alleBestellungen.click();
   await page.waitForTimeout(600);
   await alleBestellungen.click();
   await page.waitForTimeout(600);
-  await page.locator('table tbody tr').first().waitFor({ timeout: 15000 });
+  await page.locator('table').first().waitFor({ timeout: 15000 });
   await page.waitForTimeout(500); // Blazor rendert kurz nach — sonst evtl. 0 Zeilen mitten im Re-Render erwischt
 
   const rows = await page.locator('table tbody tr').all();

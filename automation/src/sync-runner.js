@@ -4,11 +4,14 @@
 const { execFile } = require('child_process');
 const path = require('path');
 
+// Reihenfolge bewusst: welo-personal + umsatz zuerst (schnell, stabil), die
+// zwei Axonity-Skripte zuletzt (aktuell instabil, lange Retries bei
+// Fehlern) — dieselbe Überlegung wie in run-catchup-all.bat.
 const SCRIPTS = [
+  { key: 'welo-personal', file: 'sync-welo-personal.js', label: 'Personal & Tagesziel (Welo)' },
   { key: 'umsatz', file: 'sync-welo-umsatz.js', label: 'Umsatz (Welo)' },
   { key: 'produktion', file: 'sync-axonity-produktion.js', label: 'Produktion (Axonity)' },
   { key: 'bestellungen', file: 'sync-axonity-bestellungen.js', label: 'Bestellungen (Axonity)' },
-  { key: 'welo-personal', file: 'sync-welo-personal.js', label: 'Personal & Tagesziel (Welo)' },
 ];
 
 const NODE_EXE = process.execPath;

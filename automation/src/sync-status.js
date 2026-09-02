@@ -15,7 +15,10 @@ const { admin } = require('./firestore-client');
 async function writeSyncStatus(db, key, { status, message, total = null, succeeded = null, failed = null, failedDetails = null }) {
   const now = admin.firestore.FieldValue.serverTimestamp();
   const payload = { key, status, message, total, succeeded, failed, ranAt: now };
-  if (failedDetails && failedDetails.length) payload.failedDetails = failedDetails.slice(0, 20);
+  // Explizit löschen statt weglassen: mit {merge:true} bliebe sonst die
+  // failedDetails-Liste eines früheren fehlgeschlagenen Laufs für immer
+  // stehen, auch nachdem der aktuelle Lauf wieder sauber durchlief.
+  payload.failedDetails = (failedDetails && failedDetails.length) ? failedDetails.slice(0, 20) : admin.firestore.FieldValue.delete();
   if (status === 'ok') payload.lastOkAt = now;
   await db.collection('sync_status').doc(key).set(payload, { merge: true });
 }
