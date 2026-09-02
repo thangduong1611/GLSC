@@ -260,6 +260,7 @@ window.onerror=function(msg,src,line){
     <div class="card">
       <div class="card-title" data-i18n="dp_title">📅 Mein Dienstplan</div>
       <div class="info" id="dp-filiale-info">—</div>
+      <div class="info" id="dp-stunden-info" style="margin-top:8px"></div>
       <label data-i18n="lbl_month">Monat</label>
       <input type="month" id="dp-month" onchange="maRenderDP()">
       <div id="dp-out" style="margin-top:14px"></div>
@@ -1902,6 +1903,10 @@ de:{_name:'Deutsch',
  err_pid:'Bitte Personalnummer eingeben.',err_notfound:'Personalnummer nicht gefunden. Bitte prüfen.',err_nodata:'Keine Daten geladen. Bitte zuerst Daten laden.',err_conn:'Verbindungsfehler: ',err_inactive:'Dieser Zugang ist nicht mehr aktiv. Bitte an den Vorgesetzten wenden.',
  btn_logout:'Abmelden',q_logout:'Abmelden?',no_fil:'keine Filiale',
  dp_title:'📅 Mein Dienstplan',lbl_month:'Monat',fil:'Filiale',alloc_main:'Stammfiliale',alloc_backup:'Bei Bedarf Einsatz in',
+ st_gestern_ok:'✅ Gestern ({d}): genau wie geplant gearbeitet.', st_gestern_mehr:'🟡 Gestern ({d}): {n} Std. mehr als geplant.',
+ st_gestern_weniger:'🔴 Gestern ({d}): {n} Std. weniger als geplant.', st_monat:'⏱ Diesen Monat gearbeitet: {n} Std.',
+ st_monat_minus:'⚠️ Aktuell {n} Std. unter Plan diesen Monat.',
+ st_azkonto_minus:'📉 AZ-Konto (Vormonat): {n} Std. im Minus.', st_azkonto_plus:'📈 AZ-Konto (Vormonat): {n} Std. im Plus.',
  dp_not_pub:'Der Dienstplan für {m} wurde noch nicht veröffentlicht.',dp_loading:'⏳ Lade Dienstplan…',dp_load_err:'Fehler beim Laden: ',
  my_shifts:'👤 Meine Schichten',dp_pdf:'PDF laden',dp_pdf_none:'Kein PDF vorhanden.',whole_store:'🏪 Ganze Filiale',th_emp:'Mitarbeiter',no_entries:'Keine Einträge für dich in diesem Monat.',
  v_frei:'Frei',v_url:'Urlaub',v_krank:'Krank',
@@ -2004,6 +2009,10 @@ vi:{_name:'Tiếng Việt',
  err_pid:'Vui lòng nhập mã số nhân viên.',err_notfound:'Không tìm thấy mã số. Vui lòng kiểm tra lại.',err_nodata:'Chưa có dữ liệu. Vui lòng tải dữ liệu trước.',err_conn:'Lỗi kết nối: ',err_inactive:'Tài khoản này không còn hoạt động. Vui lòng liên hệ quản lý.',
  btn_logout:'Đăng xuất',q_logout:'Đăng xuất?',no_fil:'chưa có cửa hàng',
  dp_title:'📅 Lịch làm của tôi',lbl_month:'Tháng',fil:'Cửa hàng',alloc_main:'Cửa hàng chính',alloc_backup:'Hỗ trợ khi cần tại',
+ st_gestern_ok:'✅ Hôm qua ({d}): làm đúng số giờ theo kế hoạch.', st_gestern_mehr:'🟡 Hôm qua ({d}): làm dư {n} giờ so với kế hoạch.',
+ st_gestern_weniger:'🔴 Hôm qua ({d}): làm ít hơn {n} giờ so với kế hoạch.', st_monat:'⏱ Đã làm trong tháng này: {n} giờ.',
+ st_monat_minus:'⚠️ Hiện đang thiếu {n} giờ so với kế hoạch tháng này.',
+ st_azkonto_minus:'📉 AZ-Konto (tháng trước): đang âm {n} giờ.', st_azkonto_plus:'📈 AZ-Konto (tháng trước): đang dư {n} giờ.',
  dp_not_pub:'Lịch làm tháng {m} chưa được công bố.',dp_loading:'⏳ Đang tải lịch…',dp_load_err:'Lỗi khi tải: ',
  my_shifts:'👤 Ca của tôi',dp_pdf:'Tải PDF',dp_pdf_none:'Chưa có file PDF.',whole_store:'🏪 Cả cửa hàng',th_emp:'Nhân viên',no_entries:'Tháng này bạn chưa có ca nào.',
  v_frei:'Nghỉ',v_url:'Nghỉ phép',v_krank:'Ốm',
@@ -2106,6 +2115,10 @@ en:{_name:'English',
  err_pid:'Please enter your employee number.',err_notfound:'Employee number not found. Please check.',err_nodata:'No data loaded. Please load data first.',err_conn:'Connection error: ',err_inactive:'This account is no longer active. Please contact your manager.',
  btn_logout:'Log out',q_logout:'Log out?',no_fil:'no store',
  dp_title:'📅 My schedule',lbl_month:'Month',fil:'Store',alloc_main:'Main store',alloc_backup:'Backup duty at',
+ st_gestern_ok:'✅ Yesterday ({d}): worked exactly as planned.', st_gestern_mehr:'🟡 Yesterday ({d}): {n} hrs more than planned.',
+ st_gestern_weniger:'🔴 Yesterday ({d}): {n} hrs less than planned.', st_monat:'⏱ Worked this month: {n} hrs.',
+ st_monat_minus:'⚠️ Currently {n} hrs behind plan this month.',
+ st_azkonto_minus:'📉 Time account (last month): {n} hrs in deficit.', st_azkonto_plus:'📈 Time account (last month): {n} hrs in credit.',
  dp_not_pub:'The schedule for {m} has not been published yet.',dp_loading:'⏳ Loading schedule…',dp_load_err:'Error loading: ',
  my_shifts:'👤 My shifts',dp_pdf:'Get PDF',dp_pdf_none:'No PDF available.',whole_store:'🏪 Whole store',th_emp:'Employee',no_entries:'No entries for you this month.',
  v_frei:'Off',v_url:'Vacation',v_krank:'Sick',
@@ -2208,6 +2221,10 @@ th:{_name:'ไทย',
  err_pid:'กรุณากรอกรหัสพนักงาน',err_notfound:'ไม่พบรหัสพนักงาน กรุณาตรวจสอบ',err_nodata:'ยังไม่มีข้อมูล กรุณาโหลดข้อมูลก่อน',err_conn:'การเชื่อมต่อล้มเหลว: ',err_inactive:'บัญชีนี้ไม่ได้ใช้งานแล้ว กรุณาติดต่อผู้จัดการ',
  btn_logout:'ออกจากระบบ',q_logout:'ออกจากระบบ?',no_fil:'ไม่มีสาขา',
  dp_title:'📅 ตารางงานของฉัน',lbl_month:'เดือน',fil:'สาขา',alloc_main:'สาขาหลัก',alloc_backup:'ช่วยงานเมื่อจำเป็นที่',
+ st_gestern_ok:'✅ เมื่อวาน ({d}): ทำงานตรงตามแผนพอดี', st_gestern_mehr:'🟡 เมื่อวาน ({d}): ทำงานเกินแผน {n} ชม.',
+ st_gestern_weniger:'🔴 เมื่อวาน ({d}): ทำงานน้อยกว่าแผน {n} ชม.', st_monat:'⏱ ทำงานเดือนนี้แล้ว: {n} ชม.',
+ st_monat_minus:'⚠️ ขณะนี้ขาดอยู่ {n} ชม. เทียบกับแผนเดือนนี้',
+ st_azkonto_minus:'📉 AZ-Konto (เดือนที่แล้ว): ติดลบ {n} ชม.', st_azkonto_plus:'📈 AZ-Konto (เดือนที่แล้ว): เกิน {n} ชม.',
  dp_not_pub:'ตารางงานเดือน {m} ยังไม่ประกาศ',dp_loading:'⏳ กำลังโหลด…',dp_load_err:'โหลดไม่สำเร็จ: ',
  my_shifts:'👤 กะของฉัน',dp_pdf:'ดาวน์โหลด PDF',dp_pdf_none:'ไม่มีไฟล์ PDF',whole_store:'🏪 ทั้งสาขา',th_emp:'พนักงาน',no_entries:'เดือนนี้คุณยังไม่มีกะงาน',
  v_frei:'หยุด',v_url:'ลาพักร้อน',v_krank:'ป่วย',
@@ -2310,6 +2327,10 @@ zh:{_name:'中文',
  err_pid:'请输入员工编号。',err_notfound:'未找到该员工编号，请检查。',err_nodata:'尚未加载数据，请先加载数据。',err_conn:'连接错误：',err_inactive:'此账号已不再激活，请联系您的主管。',
  btn_logout:'退出登录',q_logout:'确定要退出登录吗？',no_fil:'暂无门店',
  dp_title:'📅 我的排班表',lbl_month:'月份',fil:'门店',alloc_main:'主要门店',alloc_backup:'需要时支援',
+ st_gestern_ok:'✅ 昨天（{d}）：工时与排班一致。', st_gestern_mehr:'🟡 昨天（{d}）：比排班多做了{n}小时。',
+ st_gestern_weniger:'🔴 昨天（{d}）：比排班少做了{n}小时。', st_monat:'⏱ 本月已工作：{n}小时。',
+ st_monat_minus:'⚠️ 本月目前比计划少{n}小时。',
+ st_azkonto_minus:'📉 AZ-Konto（上月）：欠 {n} 小时。', st_azkonto_plus:'📈 AZ-Konto（上月）：多 {n} 小时。',
  dp_not_pub:'{m}的排班表尚未发布。',dp_loading:'⏳ 正在加载排班表…',dp_load_err:'加载失败：',
  my_shifts:'👤 我的班次',dp_pdf:'下载PDF',dp_pdf_none:'暂无PDF文件。',whole_store:'🏪 整个门店',th_emp:'员工',no_entries:'本月您还没有排班。',
  v_frei:'休息',v_url:'休假',v_krank:'病假',
@@ -2447,6 +2468,41 @@ function maAllocInfo(sess){
   var html='🏪 <strong>'+t('alloc_main')+':</strong> '+(sess.filiale||'—');
   if(sess.zweit&&sess.zweit.length) html+='<br>🔄 <strong>'+t('alloc_backup')+':</strong> '+sess.zweit.join(', ');
   el.innerHTML=html;
+  maRenderStunden(sess);
+}
+
+/* Stunden-Übersicht: tatsächlich gearbeitete Std. (Welo, mit 1 Tag Verzug)
+   gegen den eigenen Dienstplan — aus automation/sync-welo-personal.js,
+   emp_welo/{PersonalNr}.stunden, taeglich 05:00 Uhr aktualisiert. */
+function maFmtStd(n){
+  if(n==null) return '';
+  return (Math.round(n*100)/100).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:2}).replace('.',',');
+}
+function maStundenHtml(st, azKonto){
+  var lines=[];
+  if(st && st.monatIst!=null){
+    if(st.gesternDiff!=null && st.gesternIst!=null){
+      if(Math.abs(st.gesternDiff)<=0.1) lines.push('<div>'+t('st_gestern_ok',{d:maFmtDE(st.gesternDatum)})+'</div>');
+      else if(st.gesternDiff>0) lines.push('<div>'+t('st_gestern_mehr',{d:maFmtDE(st.gesternDatum),n:maFmtStd(st.gesternDiff)})+'</div>');
+      else lines.push('<div>'+t('st_gestern_weniger',{d:maFmtDE(st.gesternDatum),n:maFmtStd(-st.gesternDiff)})+'</div>');
+    }
+    lines.push('<div>'+t('st_monat',{n:maFmtStd(st.monatIst)})+'</div>');
+    if(st.monatMinus!=null) lines.push('<div style="color:#C0392B;font-weight:600">'+t('st_monat_minus',{n:maFmtStd(st.monatMinus)})+'</div>');
+  }
+  if(azKonto!=null){
+    if(azKonto<0) lines.push('<div style="color:#C0392B;font-weight:600">'+t('st_azkonto_minus',{n:maFmtStd(-azKonto)})+'</div>');
+    else lines.push('<div style="color:#2E7D32;font-weight:600">'+t('st_azkonto_plus',{n:maFmtStd(azKonto)})+'</div>');
+  }
+  return lines.join('');
+}
+function maRenderStunden(sess){
+  var el=document.getElementById('dp-stunden-info'); if(!el) return;
+  if(!fbReady||!fbDb||!sess||!sess.id){ el.innerHTML=''; return; }
+  fbDb.collection('emp_welo').doc(''+sess.id).get().then(function(doc){
+    var data=doc.exists?doc.data():null;
+    var html=maStundenHtml(data&&data.stunden, data?data.azKonto:null);
+    if(html) el.innerHTML=html; else el.innerHTML='';
+  }).catch(function(e){ console.warn('emp_welo stunden', e); el.innerHTML=''; });
 }
 
 /* ════════════════════════════════════════════════

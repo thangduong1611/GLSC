@@ -3328,6 +3328,26 @@ function dpInit(){
   dpRenderEmpTags();dpRenderWeeks();dpPopulateAddSel();
   dpBindCloud(f,m);
   dpLoadElsewhere();
+  dpLoadAzKonto();
+}
+// AZ-Konto (Über-/Unterstunden-Saldo Vormonat, nur Monatslohn-Verträge) je
+// Mitarbeiter-ID — einmalig geladen (ändert sich nur 1x täglich per Cron,
+// automation/sync-welo-personal.js), dann als Klammerwert neben dem Namen im
+// Dienstplan-Raster angezeigt, damit der Gebietsleiter beim Planen sieht, wer
+// noch Minusstunden ausgleichen muss (Auftrag t.duong 03.09.2026).
+var dpAzKontoCache=null;
+function dpLoadAzKonto(){
+  if(dpAzKontoCache || typeof fbReady==='undefined' || !fbReady || !fbDb) return;
+  dpAzKontoCache={};
+  fbDb.collection('emp_welo').get().then(function(snap){
+    var map={};
+    snap.forEach(function(doc){var v=doc.data(); if(v && v.azKonto!=null) map[doc.id]=v.azKonto;});
+    dpAzKontoCache=map;
+    dpRenderWeeks();
+  }).catch(function(e){ console.warn('emp_welo azKonto', e); });
+}
+function dpFmtStd(n){
+  return Math.abs(n).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:2}).replace('.',',');
 }
 // Liest den Plan live aus Firestore – damit von Shopleitern veröffentlichte
 // Pläne im HR-Portal automatisch erscheinen.
@@ -3570,7 +3590,9 @@ function dpRenderWeeks(){
       dpEmployees.forEach(function(emp){
         var ek=dpEmpKey(emp),eid=''+(emp.id||'');
         var zw=dpIsZweit(emp.id,dpGetFiliale());
-        h+='<tr><td title="'+emp.name+(zw?' · Zweitfiliale':'')+'">'+(zw?'🔄 ':'')+emp.name.substring(0,15)+(emp.name.length>15?'…':'')+'</td>';
+        var az=dpAzKontoCache&&dpAzKontoCache[eid];
+        var azHtml=(az!=null&&az<0)?' <span style="color:#C0392B;font-weight:600;white-space:nowrap">(-'+dpFmtStd(az)+')</span>':'';
+        h+='<tr><td title="'+emp.name+(zw?' · Zweitfiliale':'')+(az!=null&&az<0?' · AZ-Konto Vormonat: -'+dpFmtStd(az)+' Std':'')+'">'+(zw?'🔄 ':'')+emp.name.substring(0,15)+(emp.name.length>15?'…':'')+azHtml+'</td>';
         wk.dates.forEach(function(dt){
           var abs=dpAbs[eid]&&dpAbs[eid][dt];
           var stored=(dpShifts[ek]&&dpShifts[ek][dt])||'';
