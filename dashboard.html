@@ -227,7 +227,9 @@ header .sub{font-size:12px;opacity:.85;white-space:nowrap;overflow:hidden;text-o
       unter der Zahl). SX-Start/-Ende = aus Axonity, Stand heute. Fehlt ein Wert, hat der jeweilige Sync-Job für
       diese Filiale noch keine Daten geschrieben. Bestellungen = neueste Seite der Webshop-Bestellungen aus Axonity,
       Erkennung neuer Bestellungen läuft alle paar Minuten über den Sync-Job. Tagesziel = Vorjahresumsatz vom
-      selben Kalendertag × 1,25, Personal-Karten (Soll-Std./Urlaub/Krank) = beides aus Welo/SuCi-Net, täglich
+      selben Kalendertag × 1,25. Produktion (+Waste) = Tagesziel ÷ 0,75 — bei frisch zubereitetem Sushi werden
+      ca. 25 % der Produktion nicht verkauft, um das Tagesziel tatsächlich zu erreichen muss also entsprechend
+      mehr produziert werden. Personal-Karten (Soll-Std./Urlaub/Krank) = beides aus Welo/SuCi-Net, täglich
       05:00 Uhr aktualisiert.
     </p>
   </div>
@@ -625,6 +627,7 @@ function drRenderZiel(){
       '<div class="dc-stats">'+
         '<div class="dc-stat"><div class="k">Vorjahr</div><div class="v">'+(z.umsatzVorjahr!=null?drFmtEUR(z.umsatzVorjahr):'—')+'</div></div>'+
         '<div class="dc-stat"><div class="k">Heute</div><div class="v">'+(typeof z.umsatzHeute==='number'?drFmtEUR(z.umsatzHeute):'—')+'</div></div>'+
+        '<div class="dc-stat"><div class="k">Produktion (+Waste)</div><div class="v">'+(z.produktionsziel!=null?drFmtEUR(z.produktionsziel):'—')+'</div></div>'+
       '</div>'+
       '</div>';
   }).join('');

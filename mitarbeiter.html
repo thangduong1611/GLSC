@@ -264,6 +264,7 @@ window.onerror=function(msg,src,line){
       <label data-i18n="lbl_month">Monat</label>
       <input type="month" id="dp-month" onchange="maRenderDP()">
       <div id="dp-out" style="margin-top:14px"></div>
+      <div class="info" id="dp-ziel-info" style="margin-top:10px"></div>
     </div>
   </div>
 
@@ -272,7 +273,6 @@ window.onerror=function(msg,src,line){
     <div class="card" id="welo-self-card" style="display:none">
       <div class="card-title" data-i18n="welo_title">📋 Meine Daten (Welo)</div>
       <div id="welo-self" style="display:flex;gap:22px;flex-wrap:wrap;margin-bottom:8px"></div>
-      <div id="welo-ziel" style="font-size:13px;color:var(--mut);line-height:1.5"></div>
       <div id="welo-stand" style="font-size:11px;color:var(--mut);margin-top:6px"></div>
     </div>
     <div class="card">
@@ -1443,9 +1443,12 @@ function maCheckBesetzungPreview(){
 }
 var bzReqToken=0;
 
-/* ── Meine Daten (Welo): Soll-Std./Urlaub/Krank + Tagesziel meiner Filiale ──
-   Reine Anzeige aus emp_welo/{id} + tagesziel/{marktNr}_{heute}, beide vom
-   automation/sync-welo-personal.js-Skript befüllt (täglich 05:00 Uhr). */
+/* ── Meine Daten (Welo): Soll-Std./Urlaub/Krank ── Reine Anzeige aus
+   emp_welo/{id}, vom automation/sync-welo-personal.js-Skript befüllt
+   (täglich 05:00 Uhr). Das Tagesziel steht separat unten in der
+   Dienstplan-Seite (maRenderZielInfo), nicht hier — Auftrag t.duong
+   03.09.2026: Umsatzziel gehört zur Filiale, nicht zu den persönlichen
+   Urlaub/Krank-Daten. */
 function weloFmtNum(n, nachkomma){
   if(n===null||n===undefined) return '–';
   return n.toLocaleString('de-DE', {minimumFractionDigits:nachkomma||0, maximumFractionDigits:nachkomma||1});
@@ -1468,17 +1471,30 @@ function weloLoadSelf(){
       + weloStatHtml(weloFmtNum(d.krankTage,0), t('welo_krank'));
     var standEl=document.getElementById('welo-stand');
     if(standEl && d.updatedAt && d.updatedAt.toDate) standEl.textContent=t('welo_stand',{datum:d.updatedAt.toDate().toLocaleDateString('de-DE')});
-    var zielEl=document.getElementById('welo-ziel');
-    if(!zielEl||!d.marktNr) return;
+  }).catch(function(e){ console.warn('weloLoadSelf', e); });
+}
+// Tagesziel der (Haupt-)Filiale — unten auf der Dienstplan-Seite, unter der
+// "Ganze Filiale"-Übersicht, NICHT mehr im Urlaub-Tab (Auftrag t.duong
+// 03.09.2026: gehört inhaltlich zur Filiale/zum Dienstplan, nicht zu den
+// persönlichen Urlaub/Krank-Daten).
+function maRenderZielInfo(sess){
+  var el=document.getElementById('dp-ziel-info'); if(!el) return;
+  if(!sess||!sess.id||!fbReady||!fbDb){ el.innerHTML=''; return; }
+  fbDb.collection('emp_welo').doc(sess.id).get().then(function(doc){
+    if(!doc.exists){ el.innerHTML=''; return; }
+    var d=doc.data();
+    if(!d.marktNr){ el.innerHTML=''; return; }
     var heute=new Date();
     var compact=heute.getFullYear()+(''+(heute.getMonth()+1)).padStart(2,'0')+(''+heute.getDate()).padStart(2,'0');
-    fbDb.collection('tagesziel').doc(d.marktNr+'_'+compact).get().then(function(zdoc){
-      if(!zdoc.exists){ zielEl.textContent=''; return; }
+    return fbDb.collection('tagesziel').doc(d.marktNr+'_'+compact).get().then(function(zdoc){
+      if(!zdoc.exists){ el.innerHTML=''; return; }
       var z=zdoc.data();
-      if(z.ziel==null){ zielEl.textContent=t('welo_ziel_unknown'); return; }
-      zielEl.textContent=t('welo_ziel',{filiale:z.marktname||d.marktname||'', ziel:weloFmtNum(z.ziel,2)+' €', vorjahr:weloFmtNum(z.umsatzVorjahr,2)+' €'});
-    }).catch(function(){ zielEl.textContent=''; });
-  }).catch(function(e){ console.warn('weloLoadSelf', e); });
+      if(z.ziel==null){ el.textContent=t('welo_ziel_unknown'); return; }
+      var html='<div>'+t('welo_ziel',{filiale:z.marktname||d.marktname||'', ziel:weloFmtNum(z.ziel,2)+' €', vorjahr:weloFmtNum(z.umsatzVorjahr,2)+' €'})+'</div>';
+      if(z.produktionsziel!=null) html+='<div style="margin-top:2px">'+t('welo_produktion',{n:weloFmtNum(z.produktionsziel,2)+' €'})+'</div>';
+      el.innerHTML=html;
+    });
+  }).catch(function(e){ console.warn('maRenderZielInfo', e); el.innerHTML=''; });
 }
 
 function slParseRange(v){
@@ -1929,6 +1945,7 @@ de:{_name:'Deutsch',
  welo_title:'📋 Meine Daten (Welo)', welo_soll:'Std./Woche (Soll)', welo_urlaub:'Urlaub offen / Anspruch', welo_krank:'Krank-Tage (Jahr)',
  welo_ziel:'🎯 Tagesziel {filiale}: {ziel} (Vorjahr: {vorjahr})',
  welo_ziel_unknown:'🎯 Für heute liegt noch kein Umsatz-Ziel vor (kein Vorjahreswert gefunden).',
+ welo_produktion:'📦 Produktion (inkl. ca. 25% Waste): {n}',
  welo_stand:'Stand: {datum} (aus Welo)',
  v_ov_own:'Überschneidung mit deinem eigenen offenen Antrag ({range}), der noch auf Freigabe wartet.',
  v_ov_appr:'Für diesen Zeitraum hast du bereits genehmigten Urlaub ({range}).',
@@ -2035,6 +2052,7 @@ vi:{_name:'Tiếng Việt',
  welo_title:'📋 Dữ liệu của tôi (Welo)', welo_soll:'Giờ/Tuần (Soll)', welo_urlaub:'Urlaub còn lại / Tổng', welo_krank:'Ngày ốm (năm nay)',
  welo_ziel:'🎯 Mục tiêu hôm nay {filiale}: {ziel} (Năm trước: {vorjahr})',
  welo_ziel_unknown:'🎯 Chưa có mục tiêu doanh số hôm nay (không tìm thấy số liệu năm trước).',
+ welo_produktion:'📦 Cần sản xuất (đã gồm ~25% hao hụt): {n}',
  welo_stand:'Cập nhật: {datum} (từ Welo)',
  v_ov_own:'Trùng với đơn của chính bạn ({range}) đang chờ duyệt.',
  v_ov_appr:'Bạn đã có lịch nghỉ được duyệt trong thời gian này ({range}).',
@@ -2141,6 +2159,7 @@ en:{_name:'English',
  welo_title:'📋 My Data (Welo)', welo_soll:'Hrs/Week (Contract)', welo_urlaub:'Vacation left / Total', welo_krank:'Sick days (year)',
  welo_ziel:"🎯 Today's target {filiale}: {ziel} (Last year: {vorjahr})",
  welo_ziel_unknown:'🎯 No revenue target available for today yet (no figure found for last year).',
+ welo_produktion:'📦 Production needed (incl. ~25% waste): {n}',
  welo_stand:'As of: {datum} (from Welo)',
  v_ov_own:'Overlaps with your own open request ({range}), still waiting for approval.',
  v_ov_appr:'You already have approved vacation for this period ({range}).',
@@ -2247,6 +2266,7 @@ th:{_name:'ไทย',
  welo_title:'📋 ข้อมูลของฉัน (Welo)', welo_soll:'ชม./สัปดาห์ (ตามสัญญา)', welo_urlaub:'วันลาคงเหลือ / ทั้งหมด', welo_krank:'วันลาป่วย (ปีนี้)',
  welo_ziel:'🎯 เป้าหมายวันนี้ {filiale}: {ziel} (ปีที่แล้ว: {vorjahr})',
  welo_ziel_unknown:'🎯 ยังไม่มีเป้าหมายยอดขายวันนี้ (ไม่พบข้อมูลปีที่แล้ว)',
+ welo_produktion:'📦 ต้องผลิต (รวมของเสีย ~25%): {n}',
  welo_stand:'ข้อมูล ณ: {datum} (จาก Welo)',
  v_ov_own:'ซ้ำกับคำขอของคุณเองที่ยังรออนุมัติ ({range})',
  v_ov_appr:'คุณมีวันลาที่อนุมัติแล้วในช่วงนี้ ({range})',
@@ -2353,6 +2373,7 @@ zh:{_name:'中文',
  welo_title:'📋 我的数据 (Welo)', welo_soll:'合同工时/周', welo_urlaub:'剩余/总休假天数', welo_krank:'病假天数（今年）',
  welo_ziel:'🎯 今日目标 {filiale}：{ziel}（去年：{vorjahr}）',
  welo_ziel_unknown:'🎯 今天还没有营业额目标（未找到去年同期数据）。',
+ welo_produktion:'📦 需生产量（含约25%损耗）：{n}',
  welo_stand:'更新时间：{datum}（来自 Welo）',
  v_ov_own:'与您自己尚未审批的申请（{range}）时间重叠。',
  v_ov_appr:'您在这个时间段已有获批的休假（{range}）。',
@@ -3199,7 +3220,7 @@ function maRenderDP(){
   var month=document.getElementById('dp-month').value;
   var out=document.getElementById('dp-out');
   if(!out)return;
-  if(!month){ out.innerHTML=''; return; }
+  if(!month){ out.innerHTML=''; maRenderZielInfo(sess); return; }
   var stores=maMyStores(sess);
   var p=month.split('-'),yr=+p[0],mo=+p[1];
   var dim=new Date(yr,mo,0).getDate();
@@ -3209,7 +3230,7 @@ function maRenderDP(){
   if(fbReady&&fbDb){
     stores.forEach(function(store){ var key=fbSlug(store)+'__'+month; maEnsurePlan(key); plans[store]=maFbPlans[key]; });
     var mainKey=fbSlug(sess.filiale)+'__'+month;
-    if(maFbPlans[mainKey]===undefined){ out.innerHTML='<div style="color:var(--mut);font-size:13px;padding:8px 0">'+t('dp_loading')+'</div>'; return; }
+    if(maFbPlans[mainKey]===undefined){ out.innerHTML='<div style="color:var(--mut);font-size:13px;padding:8px 0">'+t('dp_loading')+'</div>'; maRenderZielInfo(sess); return; }
   } else {
     var b=maLoadBundle();
     stores.forEach(function(store){ plans[store]=(b&&b.dienstplan&&b.dienstplan[store]&&b.dienstplan[store][month])||null; });
@@ -3218,7 +3239,7 @@ function maRenderDP(){
   stores.forEach(function(store){ if(plans[store]===undefined) plans[store]=null; });
 
   var anyPlan=stores.some(function(store){ return !!plans[store]; });
-  if(!anyPlan){ out.innerHTML='<div class="warnbox">'+t('dp_not_pub',{m:(month?maMonthLabel(month):'—')})+'</div>'; return; }
+  if(!anyPlan){ out.innerHTML='<div class="warnbox">'+t('dp_not_pub',{m:(month?maMonthLabel(month):'—')})+'</div>'; maRenderZielInfo(sess); return; }
 
   var maOv=maUrlaubOverlay();
   var myOv=maOv[''+sess.id]||{};
@@ -3300,6 +3321,7 @@ function maRenderDP(){
     gridH+='</tbody></table></div>';
   }
   out.innerHTML=myH+gridH;
+  maRenderZielInfo(sess);
 }
 // PDF-Listener pro Filiale/Monat (von HR veröffentlicht)
 function maEnsurePlanPdf(key){

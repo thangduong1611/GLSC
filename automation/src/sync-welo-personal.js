@@ -23,7 +23,10 @@
 //     da noch nicht im System waren). Ziel = Vorjahreswert × ZIEL_FAKTOR
 //     (Standard 1,25 — "Vorjahresumsatz + 25 %", per t.duong am 02.09.2026
 //     bewusst als feste Formel statt Live-KI-Aufruf gewählt: kostenlos,
-//     schnell, nachvollziehbar).
+//     schnell, nachvollziehbar). Zusätzlich Produktionsziel = ziel ÷
+//     (1 − WASTE_FAKTOR) (Standard 25 % Waste — bei frisch zubereitetem
+//     Sushi wird ein Teil nicht verkauft; Waste ist 25 % der PRODUKTION,
+//     nicht 25 % oben auf das Ziel draufgerechnet — per t.duong 03.09.2026).
 //
 // Schreibt:
 //   emp_welo/{PersonalNr} = {name, taetigkeit, marktNr, marktname, sollStd,
@@ -33,7 +36,8 @@
 //   azKonto: null = kein AZ-Konto (Stundenlohn-Vertrag), sonst aktueller
 //     Saldo in Stunden (negativ = Minusstunden, positiv = Plusstunden).
 //   tagesziel/{marktNr}_{YYYYMMDD} = {marktNr, marktname, datum,
-//     umsatzHeute, umsatzVorjahr, ziel, updatedAt}
+//     umsatzHeute, umsatzVorjahr, zielFaktor, ziel, wasteFaktor,
+//     produktionsziel, updatedAt}
 //
 // Für den 05:00-Uhr-Cron-Lauf gedacht. Braucht Playwright + Chromium
 // (bereits installiert für die Axonity-Skripte). page.goto() (echter
@@ -53,6 +57,13 @@ const BASE_URL = process.env.WELO_BASE_URL || 'https://welo.sushi-circle.de';
 const USER = process.env.WELO_USER;
 const PASSWORD = process.env.WELO_PASSWORD;
 const ZIEL_FAKTOR = parseFloat(process.env.WELO_ZIEL_FAKTOR || '1.25');
+// Waste-Anteil: bei frisch zubereiteter Ware (Sushi) wird ein Teil der
+// Produktion nicht verkauft und muss entsorgt werden. Per t.duong 03.09.2026:
+// Waste liegt bei ca. 25% DER GESAMTEN PRODUKTION (nicht 25% des Ziels
+// obendrauf) — um das Umsatzziel (ziel) tatsächlich zu erreichen, muss also
+// für ziel = 0,75 × Produktion produziert werden, d.h.
+// Produktionsziel = ziel ÷ (1 − WASTE_FAKTOR).
+const WASTE_FAKTOR = parseFloat(process.env.WELO_WASTE_FAKTOR || '0.25');
 const EMP_COLLECTION = 'emp_welo';
 const ZIEL_COLLECTION = 'tagesziel';
 
@@ -462,12 +473,14 @@ async function main() {
       const uHeute = heuteUmsatz[marktNr] ?? null;
       const uVorjahr = vorjahrUmsatz[marktNr] ?? null;
       const ziel = uVorjahr != null ? Math.round(uVorjahr * ZIEL_FAKTOR * 100) / 100 : null;
+      const produktionsziel = ziel != null ? Math.round((ziel / (1 - WASTE_FAKTOR)) * 100) / 100 : null;
       const marktname = Object.values(personal).find((p) => p.marktNr === marktNr)?.marktname || '';
       zielBatch.set(
         db.collection(ZIEL_COLLECTION).doc(`${marktNr}_${compactDate(heute)}`),
         {
           marktNr, marktname, datum: isoDate(heute),
           umsatzHeute: uHeute, umsatzVorjahr: uVorjahr, zielFaktor: ZIEL_FAKTOR, ziel,
+          wasteFaktor: WASTE_FAKTOR, produktionsziel,
           updatedAt: now,
         },
         { merge: true }
