@@ -5,6 +5,7 @@ set "PATH=%NODE_DIR%;%PATH%"
 cd /d "%~dp0"
 if not exist logs mkdir logs
 echo [%date% %time%] Starte sync-axonity-produktion >> logs\sync-produktion.log
-node src\sync-axonity-produktion.js >> logs\sync-produktion.log 2>&1
+echo ---- sync-axonity-produktion startet - Fortschritt erscheint hier UND in logs\sync-produktion.log ----
+powershell -NoProfile -Command "node src\sync-axonity-produktion.js | ForEach-Object { $_; Add-Content -Path 'logs\sync-produktion.log' -Value $_ -Encoding UTF8 }; exit $LASTEXITCODE"
 echo [%date% %time%] Ende, Exit-Code %errorlevel% >> logs\sync-produktion.log
 echo. >> logs\sync-produktion.log

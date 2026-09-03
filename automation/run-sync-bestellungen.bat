@@ -5,6 +5,7 @@ set "PATH=%NODE_DIR%;%PATH%"
 cd /d "%~dp0"
 if not exist logs mkdir logs
 echo [%date% %time%] Starte sync-axonity-bestellungen >> logs\sync-bestellungen.log
-node src\sync-axonity-bestellungen.js >> logs\sync-bestellungen.log 2>&1
+echo ---- sync-axonity-bestellungen startet - Fortschritt erscheint hier UND in logs\sync-bestellungen.log ----
+powershell -NoProfile -Command "node src\sync-axonity-bestellungen.js | ForEach-Object { $_; Add-Content -Path 'logs\sync-bestellungen.log' -Value $_ -Encoding UTF8 }; exit $LASTEXITCODE"
 echo [%date% %time%] Ende, Exit-Code %errorlevel% >> logs\sync-bestellungen.log
 echo. >> logs\sync-bestellungen.log

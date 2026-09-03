@@ -6,6 +6,7 @@ cd /d "%~dp0"
 if not exist logs mkdir logs
 set "NODE_EXTRA_CA_CERTS=%~dp0certs\globalsign-gcc-r6-alphassl-ca-2025.pem"
 echo [%date% %time%] Starte sync-welo-personal >> logs\sync-welo-personal.log
-node src\sync-welo-personal.js >> logs\sync-welo-personal.log 2>&1
+echo ---- sync-welo-personal startet - Fortschritt erscheint hier UND in logs\sync-welo-personal.log ----
+powershell -NoProfile -Command "node src\sync-welo-personal.js | ForEach-Object { $_; Add-Content -Path 'logs\sync-welo-personal.log' -Value $_ -Encoding UTF8 }; exit $LASTEXITCODE"
 echo [%date% %time%] Ende, Exit-Code %errorlevel% >> logs\sync-welo-personal.log
 echo. >> logs\sync-welo-personal.log

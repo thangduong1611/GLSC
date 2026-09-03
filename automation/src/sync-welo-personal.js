@@ -92,6 +92,7 @@ const { chromium } = require('playwright');
 const { parse } = require('csv-parse/sync');
 const { getDb, admin } = require('./firestore-client');
 const { MARKTNR_ALIASES, MARKTNR_REGION } = require('./branches');
+const { withWeloLock } = require('./sync-lock');
 
 const BASE_URL = process.env.WELO_BASE_URL || 'https://welo.sushi-circle.de';
 const USER = process.env.WELO_USER;
@@ -511,7 +512,15 @@ async function getTagesumsatzAlle(page, sessionBase, date) {
   return out;
 }
 
+// Läuft von mehreren Stellen aus (Startup-Catchup, manueller Doppelklick,
+// automatische Umsatz-Auffrischung im Watcher) — withWeloLock verhindert,
+// dass zwei dieser Läufe sich eine Welo-Sitzung teilen und sich gegenseitig
+// rauswerfen (siehe sync-lock.js).
 async function main() {
+  return withWeloLock('welo', syncAll);
+}
+
+async function syncAll() {
   if (!USER || !PASSWORD) {
     throw new Error('WELO_USER / WELO_PASSWORD fehlen in der .env-Datei.');
   }

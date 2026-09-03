@@ -18,6 +18,7 @@ const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
 const { getDb } = require('./firestore-client');
+const { withWeloLock } = require('./sync-lock');
 
 const BASE_URL = process.env.WELO_BASE_URL || 'https://welo.sushi-circle.de';
 const USER = process.env.WELO_USER;
@@ -105,7 +106,14 @@ async function getDayRow(page, sessionBase, date, marktNr, personalNr) {
   }, personalNr);
 }
 
+// Teilt sich denselben Lock wie sync-welo-personal.js — dieses Skript hier
+// löste den Bug am 03.09.2026 überhaupt erst aus (parallel zum Startup-
+// Catchup gelaufen, 44/71 Mitarbeiter fälschlich auf "0 Stichproben").
 async function main() {
+  return withWeloLock('welo', syncAll);
+}
+
+async function syncAll() {
   if (!USER || !PASSWORD) throw new Error('WELO_USER / WELO_PASSWORD fehlen in der .env-Datei.');
 
   const db = getDb();
@@ -117,8 +125,22 @@ async function main() {
     if (d.marktNr) employees.push({ id: doc.id, name: d.name || '', marktNr: d.marktNr, marktname: d.marktname || '' });
   });
   console.log(`  ${employees.length} Mitarbeiter mit Filiale gefunden.`);
-  const LIMIT = parseInt(process.argv[2] || '0', 10); // nur zum Testen, 0 = alle
-  if (LIMIT > 0) employees = employees.slice(0, LIMIT);
+  // Zweiter Zweck neben dem Testen mit wenigen Leuten: ein Nachtrag NUR für
+  // neu hinzugekommene Mitarbeiter (z.B. nach einem emps-Sync mit neuen
+  // Filialen, während der Voll-Lauf für alle anderen schon läuft/gelaufen
+  // ist), ohne alle anderen erneut zu scrapen. Zwei Formen:
+  //   Zahl (z.B. "5")        -> nur die ersten N (zum schnellen Testen)
+  //   Kommaliste (z.B. "330485,340301") -> nur genau diese PersonalNr.
+  const arg = process.argv[2] || '';
+  if (arg) {
+    if (/^\d+$/.test(arg)) {
+      employees = employees.slice(0, parseInt(arg, 10));
+    } else {
+      const ids = new Set(arg.split(',').map((s) => s.trim()).filter(Boolean));
+      employees = employees.filter((e) => ids.has(e.id));
+      console.log(`  Eingeschränkt auf ${employees.length} explizit angegebene Mitarbeiter.`);
+    }
+  }
 
   const browser = await chromium.launch();
   const page = await browser.newPage();
@@ -140,16 +162,26 @@ async function main() {
           const spalte = WOCHENTAGE[dow];
           const datum = pickRandomDateForWeekday(y, m, dow, gestern);
           if (!datum) continue;
+          // Bis zu 4 Versuche statt 1 Retry: bei mehreren PARALLEL laufenden
+          // Welo-Sitzungen (z.B. gleichzeitig laufendes sync-welo-personal.js)
+          // kann eine Session mehrfach hintereinander sofort wieder abgelaufen
+          // sein — ein einzelner Retry reichte dann nicht (siehe Notiz oben:
+          // ab einem bestimmten Mitarbeiter kamen reihenweise 0 Treffer, weil
+          // die Session nach jedem Neu-Login sofort wieder invalidiert wurde).
           let row = null;
-          for (let attempt = 1; attempt <= 2; attempt++) {
+          for (let attempt = 1; attempt <= 4; attempt++) {
             try {
               row = await getDayRow(page, sessionBase, datum, emp.marktNr, emp.id);
               break;
             } catch (e) {
-              if (e instanceof SessionExpired && attempt < 2) {
-                console.log('  ⚠ Session abgelaufen — logge neu ein…');
+              if (e instanceof SessionExpired && attempt < 4) {
+                console.log(`  ⚠ Session abgelaufen (Versuch ${attempt}/4) — logge neu ein…`);
+                await new Promise((r) => setTimeout(r, 2000));
                 sessionBase = await login(page);
                 continue;
+              }
+              if (e instanceof SessionExpired) {
+                console.log(`  ✗ Session bleibt nach 4 Versuchen abgelaufen — überspringe diesen Tag (evtl. läuft eine zweite Welo-Sitzung parallel).`);
               }
               row = null;
               break;
@@ -183,13 +215,30 @@ async function main() {
   const outPath = path.join(outDir, 'ankunftsmuster_alle_wochentage.csv');
   const headerCols = ['PersonalNr', 'Name', 'Filiale'];
   for (const spalte of WOCHENTAG_SPALTEN) headerCols.push(spalte + '_Start', spalte + '_Ende', spalte + '_n');
-  const lines = [headerCols.join(';')];
+
+  // MERGEN statt Überschreiben: falls die Datei schon existiert (z.B. vom
+  // Voll-Lauf für die anderen Mitarbeiter), werden nur die Zeilen der hier
+  // neu berechneten PersonalNr ersetzt/ergänzt — alle anderen bleiben
+  // unangetastet erhalten.
+  const byId = {};
+  if (fs.existsSync(outPath)) {
+    const prevRaw = fs.readFileSync(outPath, 'utf8').replace(/^﻿/, '');
+    const prevLines = prevRaw.split('\n').filter((l) => l.trim());
+    for (let i = 1; i < prevLines.length; i++) {
+      const cols = prevLines[i].split(';');
+      if (cols[0]) byId[cols[0]] = cols;
+    }
+    console.log(`  Bestehende Datei gefunden mit ${Object.keys(byId).length} Mitarbeiter(n) — werde gemergt.`);
+  }
   for (const rec of results) {
     const row = [rec.id, rec.name, rec.marktname];
     for (const spalte of WOCHENTAG_SPALTEN) row.push(rec[spalte + '_Start'], rec[spalte + '_Ende'], rec[spalte + '_n']);
-    lines.push(row.join(';'));
+    byId[rec.id] = row;
   }
+  const lines = [headerCols.join(';')];
+  Object.values(byId).forEach((row) => lines.push(row.join(';')));
   fs.writeFileSync(outPath, '﻿' + lines.join('\n'), 'utf8');
+  console.log(`  Datei enthält jetzt insgesamt ${Object.keys(byId).length} Mitarbeiter.`);
   console.log(`\n✓ ${results.length} Mitarbeiter geschrieben nach: ${outPath}`);
 }
 

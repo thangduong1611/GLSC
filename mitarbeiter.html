@@ -1491,7 +1491,13 @@ function maRenderZielInfo(sess){
       var z=zdoc.data();
       if(z.ziel==null){ el.textContent=t('welo_ziel_unknown'); return; }
       var html='<div>'+t('welo_ziel',{filiale:z.marktname||d.marktname||'', ziel:weloFmtNum(z.ziel,2)+' €', vorjahr:weloFmtNum(z.umsatzVorjahr,2)+' €'})+'</div>';
-      if(z.produktionsziel!=null) html+='<div style="margin-top:2px">'+t('welo_produktion',{n:weloFmtNum(z.produktionsziel,2)+' €'})+'</div>';
+      if(typeof z.umsatzHeute==='number'){
+        var pct=Math.round(z.umsatzHeute/z.ziel*100);
+        var barColor=pct>=100?'var(--grn)':'var(--amb)';
+        html+='<div style="margin-top:6px;font-size:12px;font-weight:600;color:'+barColor+'">'+t('welo_heute',{n:weloFmtNum(z.umsatzHeute,2)+' €',pct:pct})+'</div>'
+          +'<div style="height:6px;border-radius:100px;background:var(--bg);overflow:hidden;margin-top:4px"><div style="height:100%;border-radius:100px;background:'+barColor+';width:'+Math.min(pct,100)+'%"></div></div>';
+      }
+      if(z.produktionsziel!=null) html+='<div style="margin-top:6px">'+t('welo_produktion',{n:weloFmtNum(z.produktionsziel,2)+' €'})+'</div>';
       el.innerHTML=html;
     });
   }).catch(function(e){ console.warn('maRenderZielInfo', e); el.innerHTML=''; });
@@ -1946,6 +1952,7 @@ de:{_name:'Deutsch',
  welo_ziel:'🎯 Tagesziel {filiale}: {ziel} (Vorjahr: {vorjahr})',
  welo_ziel_unknown:'🎯 Für heute liegt noch kein Umsatz-Ziel vor (kein Vorjahreswert gefunden).',
  welo_produktion:'📦 Produktion (inkl. ca. 25% Waste): {n}',
+ welo_heute:'💰 Heute erreicht: {n} ({pct} % vom Ziel)',
  welo_stand:'Stand: {datum} (aus Welo)',
  v_ov_own:'Überschneidung mit deinem eigenen offenen Antrag ({range}), der noch auf Freigabe wartet.',
  v_ov_appr:'Für diesen Zeitraum hast du bereits genehmigten Urlaub ({range}).',
@@ -2053,6 +2060,7 @@ vi:{_name:'Tiếng Việt',
  welo_ziel:'🎯 Mục tiêu hôm nay {filiale}: {ziel} (Năm trước: {vorjahr})',
  welo_ziel_unknown:'🎯 Chưa có mục tiêu doanh số hôm nay (không tìm thấy số liệu năm trước).',
  welo_produktion:'📦 Cần sản xuất (đã gồm ~25% hao hụt): {n}',
+ welo_heute:'💰 Hôm nay đạt: {n} ({pct}% mục tiêu)',
  welo_stand:'Cập nhật: {datum} (từ Welo)',
  v_ov_own:'Trùng với đơn của chính bạn ({range}) đang chờ duyệt.',
  v_ov_appr:'Bạn đã có lịch nghỉ được duyệt trong thời gian này ({range}).',
@@ -2160,6 +2168,7 @@ en:{_name:'English',
  welo_ziel:"🎯 Today's target {filiale}: {ziel} (Last year: {vorjahr})",
  welo_ziel_unknown:'🎯 No revenue target available for today yet (no figure found for last year).',
  welo_produktion:'📦 Production needed (incl. ~25% waste): {n}',
+ welo_heute:'💰 Today so far: {n} ({pct}% of target)',
  welo_stand:'As of: {datum} (from Welo)',
  v_ov_own:'Overlaps with your own open request ({range}), still waiting for approval.',
  v_ov_appr:'You already have approved vacation for this period ({range}).',
@@ -2267,6 +2276,7 @@ th:{_name:'ไทย',
  welo_ziel:'🎯 เป้าหมายวันนี้ {filiale}: {ziel} (ปีที่แล้ว: {vorjahr})',
  welo_ziel_unknown:'🎯 ยังไม่มีเป้าหมายยอดขายวันนี้ (ไม่พบข้อมูลปีที่แล้ว)',
  welo_produktion:'📦 ต้องผลิต (รวมของเสีย ~25%): {n}',
+ welo_heute:'💰 วันนี้ทำได้: {n} ({pct}% ของเป้าหมาย)',
  welo_stand:'ข้อมูล ณ: {datum} (จาก Welo)',
  v_ov_own:'ซ้ำกับคำขอของคุณเองที่ยังรออนุมัติ ({range})',
  v_ov_appr:'คุณมีวันลาที่อนุมัติแล้วในช่วงนี้ ({range})',
@@ -2374,6 +2384,7 @@ zh:{_name:'中文',
  welo_ziel:'🎯 今日目标 {filiale}：{ziel}（去年：{vorjahr}）',
  welo_ziel_unknown:'🎯 今天还没有营业额目标（未找到去年同期数据）。',
  welo_produktion:'📦 需生产量（含约25%损耗）：{n}',
+ welo_heute:'💰 今日已达：{n}（{pct}% 目标）',
  welo_stand:'更新时间：{datum}（来自 Welo）',
  v_ov_own:'与您自己尚未审批的申请（{range}）时间重叠。',
  v_ov_appr:'您在这个时间段已有获批的休假（{range}）。',

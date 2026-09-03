@@ -1,0 +1,72 @@
+﻿PersonalNr;Name;Filiale;SollStdWoche;ArbeitstageProWoche;Mo;Mo_n;Di;Di_n;Mi;Mi_n;Do;Do_n;Fr;Fr_n;Sa;Sa_n;So;So_n
+330158;Frau Chu, Thi Thu Hang;402297: MK-Einbeck-Altendorfer Tor;36;6;06:00-12:00;3;06:00-12:00;3;06:00-12:00;3;06:15-12:15;3;06:00-12:00;3;06:00-12:00;3;;0
+330254;Frau Cao, Thi Nhung;402257: E-Northeim-Robert-Schnabel-Str. - Schnabel;36;6;06:15-12:15;1;06:15-12:15;3;06:30-12:30;2;06:15-12:15;1;06:15-12:15;1;06:15-12:15;3;;0
+330314;Frau Trinh, Thi Minh Chau;402422: E-Leverkusen-Pommernstraße;40;6;08:15-15:25;3;06:00-13:10;2;06:15-13:25;2;06:00-13:10;1;06:00-13:10;3;06:30-13:40;2;;0
+330337;Frau Meliala, Endhamya Asemenintha;402523: K-Essen-Haedenkampstraße;36;6;07:45-13:45;2;08:45-14:45;2;08:00-14:00;1;08:00-14:00;1;08:00-14:00;1;07:45-13:45;2;;0
+330384;Frau Vu, Truong Thuy Vi Linh;402150: E-Sontra-Mühlbergstraße - Salzmann;38;6;06:45-13:35;3;07:00-13:50;3;07:15-14:05;2;07:00-13:50;1;07:45-14:35;2;06:30-13:20;2;;0
+330460;Frau Nguyen, Thi Thuy;402257: E-Northeim-Robert-Schnabel-Str. - Schnabel;20;6;07:00-10:20;3;08:15-11:35;2;06:30-09:50;1;05:30-08:50;2;06:30-09:50;2;08:30-11:50;1;;0
+330478;Frau Frunzescu, Panadda;402422: E-Leverkusen-Pommernstraße;36;6;06:00-12:00;2;06:00-12:00;3;06:00-12:00;3;06:00-12:00;1;06:00-12:00;3;06:00-12:00;3;;0
+330485;Frau Trinh, Thi Dieu Quynh;402414: E-Bergheim-Dansweilerstraße - Fischenich;38;6;05:15-12:05;3;05:15-12:05;2;05:45-12:35;2;05:15-12:05;2;05:30-12:20;3;05:15-12:05;3;;0
+330685;Herr Frias, Kim Aldrin;401891: E-Kassel-Frankfurter Str. - Aschoff;36;6;09:30-15:30;3;09:00-15:00;3;09:30-15:30;3;09:30-15:30;3;10:00-16:00;3;09:45-15:45;3;;0
+330697;Frau Tran, Thi Le;402207: E-Bovenden-Industriestraße;36;6;07:15-13:15;3;07:15-13:15;2;07:00-13:00;2;06:45-12:45;2;07:30-13:30;3;07:15-13:15;2;;0
+330722;Frau Ton, Thi Thanh Huyen;402257: E-Northeim-Robert-Schnabel-Str. - Schnabel;36;0;;0;;0;;0;;0;;0;;0;;0
+340259;Herr Huynh, Quoc Bao;402205: R-Hattingen-Heggerstraße;42;6;05:45-13:15;3;05:45-13:15;3;06:00-13:30;2;06:00-13:30;2;05:45-13:15;3;06:00-13:30;3;;0
+340276;Herr Chin, Chee Sam;402167: R-Düsseldorf-Hauptstr.;42;6;06:30-14:00;2;06:45-14:15;2;06:45-14:15;3;07:00-14:30;2;07:00-14:30;3;06:30-14:00;2;;0
+340301;Herr Li, Hongbiao;402302: R-Neuss-Allerheiligen-Am alten Bach - Friedrich;36;6;06:00-12:00;3;06:15-12:15;3;06:15-12:15;3;07:30-13:30;3;06:15-12:15;2;05:45-11:45;3;;0
+340312;Frau Kang, Xiaoxi;402302: R-Neuss-Allerheiligen-Am alten Bach - Friedrich;40;6;06:00-13:10;2;06:00-13:10;3;06:00-13:10;3;06:15-13:25;3;06:00-13:10;3;05:45-12:55;3;;0
+340322;Frau Nguyen, Kim Mai;402261: R-Hilden-Mittelstraße;40;6;05:45-12:55;3;05:45-12:55;3;05:45-12:55;3;05:45-12:55;3;05:45-12:55;3;05:45-12:55;3;;0
+340361;Herr Unurbat, Bayarmagnai;402363: R-Bergneustadt-Stadionstr.;36;6;08:30-14:30;2;09:45-15:45;2;09:30-15:30;1;06:45-12:45;2;06:30-12:30;2;07:00-13:00;2;;0
+340370;Frau Sharma, Archna Dhusia;402363: R-Bergneustadt-Stadionstr.;36;6;06:45-12:45;3;06:15-12:15;3;06:30-12:30;3;08:30-14:30;3;07:00-13:00;3;08:15-14:15;3;;0
+340404;Frau Pham, Thi Thu Hang;401891: E-Kassel-Frankfurter Str. - Aschoff;38;6;05:45-12:35;3;05:45-12:35;3;06:00-12:50;3;05:45-12:35;3;06:00-12:50;3;05:45-12:35;3;;0
+340429;Frau Doan, Duc Hanh;402507: K-Wesel-Rudolf-Diesel-Straße;42;1;06:30-01:15;1;;0;;0;;0;;0;;0;;0
+340444;Herr Doan, Vu Nguyen;402310: R-Wuppertal-Ascheweg - Brücken Kaufpark;30;6;10:00-15:00;3;13:30-18:30;3;13:45-18:45;3;14:00-19:00;2;13:30-18:30;2;10:30-15:30;3;;0
+340473;Frau Heidel, My Linh;402310: R-Wuppertal-Ascheweg - Brücken Kaufpark;36;6;06:45-12:45;3;06:30-12:30;3;06:45-12:45;3;06:45-12:45;3;06:30-12:30;3;06:45-12:45;2;;0
+340877;Frau Tran, Thi Hoan;402315: R-Bochum-Viktoriastraße - Mert;40;6;05:15-12:25;3;05:15-12:25;3;05:45-12:55;3;05:15-12:25;3;05:45-12:55;3;05:45-12:55;1;;0
+340910;Herr Nguyen, Hai;402167: R-Düsseldorf-Hauptstr.;30;6;05:45-10:45;2;06:00-11:00;1;06:00-11:00;1;06:00-11:00;1;05:45-10:45;1;05:45-10:45;1;;0
+340913;Herr Do, Minh Khue;402150: E-Sontra-Mühlbergstraße - Salzmann;20;0;;0;;0;;0;;0;;0;;0;;0
+340918;Herr Vu, Van Thanh;402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner;36;6;06:00-12:00;1;06:00-12:00;2;06:00-12:00;2;06:00-12:00;1;06:00-12:00;2;06:00-12:00;2;;0
+340944;Frau Hoang, Thi Phuong;402502: T-Göttingen-An-der-Lutter;36;0;;0;;0;;0;;0;;0;;0;;0
+340955;Herr Nguyen, Hong Minh;402251: R-Düsseldorf-Zeppelinstraße;40;0;;0;;0;;0;;0;;0;;0;;0
+341041;Frau Puchta, Yanisa;401888: R-Homberg (Efze)-Kasseler Str. - Mohr;32;0;;0;;0;;0;;0;;0;;0;;0
+341373;Herr Nguyen, Minh Hieu;402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme;10;0;;0;;0;;0;;0;;0;;0;;0
+341377;Herr Vu, Hong Son;402512: R-Remscheid-Wupperstraße;38;0;;0;;0;;0;;0;;0;;0;;0
+341384;Herr Amjad, Muhammad Yasir;402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner;40;6;08:45-15:55;2;08:45-15:55;2;09:00-16:10;1;09:15-16:25;1;08:45-15:55;2;09:00-16:10;1;;0
+341392;Frau Azizah, Rona Cita;402251: R-Düsseldorf-Zeppelinstraße;24;0;;0;;0;;0;;0;;0;;0;;0
+341409;Frau Hahlweg, Thanchanok;402205: R-Hattingen-Heggerstraße;8;0;;0;;0;;0;;0;;0;;0;;0
+341411;Herr Trinh, Trung Thanh;402523: K-Essen-Haedenkampstraße;40;0;;0;;0;;0;;0;;0;;0;;0
+341421;Frau Gimpel, Chutikan;401888: R-Homberg (Efze)-Kasseler Str. - Mohr;40;0;;0;;0;;0;;0;;0;;0;;0
+341424;Frau Shao, Hongli;402167: R-Düsseldorf-Hauptstr.;36;0;;0;;0;;0;;0;;0;;0;;0
+341443;Herr Doan, Phi Long;402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme;38;0;;0;;0;;0;;0;;0;;0;;0
+341450;Frau Purnomo, Paramita Dian;402261: R-Hilden-Mittelstraße;36;0;;0;;0;;0;;0;;0;;0;;0
+341457;Frau Nguyen, Diu Thuan;402512: R-Remscheid-Wupperstraße;8.5;0;;0;;0;;0;;0;;0;;0;;0
+341475;Frau Vi, Thi Thu;402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme;36;0;;0;;0;;0;;0;;0;;0;;0
+341476;Herr Sultan, Abdulhamid Husamuldin Abdulhamid;402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme;36;0;;0;;0;;0;;0;;0;;0;;0
+341495;Frau Loutchan, Chunhua;402254: R-Kirchheim-Industriestraße - Messerschmidt;40;0;;0;;0;;0;;0;;0;;0;;0
+341503;Herr Nguyen, Dinh Chien;402315: R-Bochum-Viktoriastraße - Mert;42;0;;0;;0;;0;;0;;0;;0;;0
+350152;Frau Schütte-Wei, Dandan;402185: K-Hagen-Auf dem Lölfert;40;0;;0;;0;;0;;0;;0;;0;;0
+350153;Frau Tran, Thi Bich;402133: K-Köln-Thebäerstraße;38;6;05:45-12:35;3;06:00-12:50;3;05:45-12:35;3;06:00-12:50;3;05:45-12:35;3;06:15-13:05;3;;0
+350445;Frau Nguyen, Thi Ngoc Anh;402422: E-Leverkusen-Pommernstraße;40;0;;0;;0;;0;;0;;0;;0;;0
+350527;Herr Ta, Eric;402185: K-Hagen-Auf dem Lölfert;15;0;;0;;0;;0;;0;;0;;0;;0
+350529;Herr Nguyen, Ngoc Thanh Nha;402507: K-Wesel-Rudolf-Diesel-Straße;42;0;;0;;0;;0;;0;;0;;0;;0
+350544;Frau Silitonga, Susdalia;402261: R-Hilden-Mittelstraße;30;0;;0;;0;;0;;0;;0;;0;;0
+350553;Frau Ngo, Thi Tu;402272: R-Düsseldorf-Münsterstraße;40;0;;0;;0;;0;;0;;0;;0;;0
+350561;Frau Nguyen, Thi Lan Anh;402286: K-Göttingen-Am Kauf Park;36;0;;0;;0;;0;;0;;0;;0;;0
+350596;Herr Ngo, Minh Giang;402286: K-Göttingen-Am Kauf Park;40;0;;0;;0;;0;;0;;0;;0;;0
+350598;Frau Khuu, Boi Anh;402507: K-Wesel-Rudolf-Diesel-Straße;30;0;;0;;0;;0;;0;;0;;0;;0
+350604;Herr Nguyen, The Hai;402261: R-Hilden-Mittelstraße;30;0;;0;;0;;0;;0;;0;;0;;0
+350605;Frau Park, Sumi;402133: K-Köln-Thebäerstraße;25;6;08:00-12:10;2;07:00-11:10;2;08:00-12:10;2;07:15-11:25;2;08:00-12:10;2;08:00-12:10;2;;0
+360011;Frau Nguyen, Thi Nuong;402155: M-Nordhausen-Darrweg;30;0;;0;;0;;0;;0;;0;;0;;0
+360021;Frau Pham, Thi Nga;402155: M-Nordhausen-Darrweg;36;0;;0;;0;;0;;0;;0;;0;;0
+360053;Frau Phung, Lan;402297: MK-Einbeck-Altendorfer Tor;36;0;;0;;0;;0;;0;;0;;0;;0
+360135;Frau Müller, Claudine Lucia Angeli;401125: RA-Baunatal-Fuldastraße;36;0;;0;;0;;0;;0;;0;;0;;0
+370116;Frau Roth, Diem Thi Thanh;401125: RA-Baunatal-Fuldastraße;24;0;;0;;0;;0;;0;;0;;0;;0
+410001;Herr Nguyen, Hai Thanh;402146: T-Bad Hersfeld-Heinrich-von-Stephan-Straße;42;0;;0;;0;;0;;0;;0;;0;;0
+410012;Frau Nguyen, Thi Viet;402501: T-Göttingen-Weender Str.;36;0;;0;;0;;0;;0;;0;;0;;0
+410013;Herr Ngo, Van Chung;402502: T-Göttingen-An-der-Lutter;36;0;;0;;0;;0;;0;;0;;0;;0
+410018;Frau Nguyen, Thi Viet;402501: T-Göttingen-Weender Str.;36;0;;0;;0;;0;;0;;0;;0;;0
+470008;Frau Kneipp, Hazel;401125: RA-Baunatal-Fuldastraße;36;0;;0;;0;;0;;0;;0;;0;;0
+470009;Frau Abramowski, Bongkotchakon;401125: RA-Baunatal-Fuldastraße;36;0;;0;;0;;0;;0;;0;;0;;0
+550042;Herr Chu, Quoc Cuong;402155: M-Nordhausen-Darrweg;42;0;;0;;0;;0;;0;;0;;0;;0
+550078;Herr Nguyen, Trong;402523: K-Essen-Haedenkampstraße;42;0;;0;;0;;0;;0;;0;;0;;0
+550152;Herr Kieu, Van Khang;402502: T-Göttingen-An-der-Lutter;42;0;;0;;0;;0;;0;;0;;0;;0
+550198;Herr Nguyen, Viet Hoang;402414: E-Bergheim-Dansweilerstraße - Fischenich;40;0;;0;;0;;0;;0;;0;;0;;0
