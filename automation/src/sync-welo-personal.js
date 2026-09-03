@@ -16,14 +16,24 @@
 //     nur bei Monatslohn-Verträgen) — ebenfalls von der Jahresansicht-Seite,
 //     dem Mitarbeiter selbst gezeigt UND dem Gebietsleiter beim
 //     Dienstplan-Erstellen als Klammerwert (Auftrag t.duong 03.09.2026).
-//  3. Tagesziel je Filiale: liest den Tagesumsatz von heute UND von genau
-//     einem Jahr zuvor (Statistiken > Tagesumsätze — Seite ist datumsbasiert
-//     aufrufbar und funktioniert auch rückwirkend, geprüft bis genau 1 Jahr
-//     zurück; frühere Jahre haben für unsere Filialen keine Daten, weil sie
-//     da noch nicht im System waren). Ziel = Vorjahreswert × ZIEL_FAKTOR
-//     (Standard 1,25 — "Vorjahresumsatz + 25 %", per t.duong am 02.09.2026
-//     bewusst als feste Formel statt Live-KI-Aufruf gewählt: kostenlos,
-//     schnell, nachvollziehbar). Zusätzlich Produktionsziel = ziel ÷
+//  3. Tagesziel je Filiale: Statistiken > Tagesumsätze, datumsbasiert
+//     aufrufbar, funktioniert rückwirkend bis mind. 2 Jahre (frühere Jahre
+//     haben für neuere Filialen keine Daten, weil sie da noch nicht im
+//     System waren). Ziel = robuste Vorjahres-Basis × effektiver Faktor
+//     (Details bei N1_GLAETTUNG_OFFSETS/TREND_TAGE weiter unten — kurz:
+//     Durchschnitt über 5 Vorjahres-Wochentage statt nur 1 Einzeltag, mit
+//     Fallback über 2 Jahre zurück skaliert per aktueller Wachstumsrate, falls
+//     die Vorjahreswoche selbst durch einen mehrtägigen Ausfall unbrauchbar
+//     ist — live bestätigt am 03.09.2026: Bad Hersfeld 402146 hatte
+//     28.08.-03.09.2025 einen ~einwöchigen Kassenausfall, 2024 lief derselbe
+//     Tag normal). Der effektive Faktor ist mindestens ZIEL_FAKTOR (Standard
+//     1,25, "Vorjahresumsatz + 25 %", per t.duong 02.09.2026 bewusst als
+//     feste Formel statt Live-KI-Aufruf gewählt), kann aber höher ausfallen,
+//     wenn eine Filiale laut den letzten 28 Tagen real schneller wächst —
+//     GEDÄMPFT um WACHSTUM_DAEMPFUNG (Standard 10 % des Anteils über 1,25
+//     hinaus, nicht das volle Wachstum): Auftrag t.duong 03.09.2026, ein zu
+//     schneller Ziel-Sprung lässt dem Personal keine Zeit, produktionsseitig
+//     mitzuziehen. Zusätzlich Produktionsziel = ziel ÷
 //     (1 − WASTE_FAKTOR) (Standard 25 % Waste — bei frisch zubereitetem
 //     Sushi wird ein Teil nicht verkauft; Waste ist 25 % der PRODUKTION,
 //     nicht 25 % oben auf das Ziel draufgerechnet — per t.duong 03.09.2026).
@@ -35,9 +45,23 @@
 //       monatIst, monatSoll, monatMinus}}
 //   azKonto: null = kein AZ-Konto (Stundenlohn-Vertrag), sonst aktueller
 //     Saldo in Stunden (negativ = Minusstunden, positiv = Plusstunden).
-//   tagesziel/{marktNr}_{YYYYMMDD} = {marktNr, marktname, datum,
-//     umsatzHeute, umsatzVorjahr, zielFaktor, ziel, wasteFaktor,
-//     produktionsziel, updatedAt}
+//   tagesziel/{marktNr}_{YYYYMMDD} = {marktNr, marktname, datum, umsatzHeute,
+//     umsatzVorjahrRoh, umsatzVorjahr, vorjahrMethode, wachstumsrate,
+//     zielFaktor, effektiverFaktor, ziel, wasteFaktor, produktionsziel,
+//     umsatzHeuteVerdaechtig, umsatzVorjahrVerdaechtig, updatedAt}
+//   umsatzVorjahrRoh: reiner Einzeltageswert vor genau 1 Jahr, NUR zur
+//     Transparenz — für ziel wird stattdessen umsatzVorjahr (die robuste
+//     Basis) verwendet.
+//   vorjahrMethode: 'geglaettet' (Normalfall, Durchschnitt über 5
+//     Vorjahres-Wochentage) | 'n2-skaliert' (Vorjahreswoche unbrauchbar,
+//     2-Jahre-Wert × Wachstumsrate verwendet) | 'einzeltag' (letzter
+//     Fallback, roher Einzeltageswert) | null (keine robuste Basis
+//     berechenbar → ziel/produktionsziel bleiben null).
+//   wachstumsrate: Summe der letzten 28 Tage ÷ Summe derselben 28 Tage vor
+//     einem Jahr, nur mit genug plausiblen Tagen berechnet, sonst null.
+//   *Verdaechtig-Felder: nur gesetzt, wenn Welo selbst einen unplausibel
+//     niedrigen Tagesumsatz gemeldet hat (< WELO_UMSATZ_MIN_PLAUSIBEL, Standard
+//     100 €) — enthalten den rohen (verworfenen) Wert zur Kontrolle.
 //
 // Für den 05:00-Uhr-Cron-Lauf gedacht. Braucht Playwright + Chromium
 // (bereits installiert für die Axonity-Skripte). page.goto() (echter
@@ -64,6 +88,26 @@ const ZIEL_FAKTOR = parseFloat(process.env.WELO_ZIEL_FAKTOR || '1.25');
 // für ziel = 0,75 × Produktion produziert werden, d.h.
 // Produktionsziel = ziel ÷ (1 − WASTE_FAKTOR).
 const WASTE_FAKTOR = parseFloat(process.env.WELO_WASTE_FAKTOR || '0.25');
+// Plausibilitäts-Grenze für Tagesumsatz: alles darunter ist für einen ganzen
+// Verkaufstag technisch unmöglich (schon eine einzelne 6-Std.-Schicht sollte
+// laut t.duong mind. ~500 € erwirtschaften) und damit ein Datenfehler auf
+// Welo-Seite, kein echter Umsatz — live bestätigt am 03.09.2026: Bad Hersfeld
+// (402146) zeigte für den Vorjahresvergleich "8,38 €", was Welo selbst so
+// eingetragen hat (kein Scraping-Bug). Solche Werte werden NICHT stillschweigend
+// verworfen, sondern als *Verdaechtig-Feld dokumentiert, damit HR es sieht —
+// nur ziel/produktionsziel werden dann nicht aus einem offensichtlich falschen
+// Wert berechnet.
+const UMSATZ_MIN_PLAUSIBEL = parseFloat(process.env.WELO_UMSATZ_MIN_PLAUSIBEL || '100');
+// Dämpfung für den Wachstums-Bonus: eine Filiale mit z.B. +33% realer
+// 28-Tage-Wachstumsrate soll NICHT sofort ein um 33% höheres Ziel bekommen —
+// per t.duong 03.09.2026: "tăng quá nhiều nhân viên sẽ không đủ thời gian
+// thực hiện" (zu starker Sprung, Personal hat keine Zeit sich darauf
+// einzustellen/hochzuproduzieren). Nur DAEMPFUNG (Standard 10%) des Anteils
+// oberhalb von ZIEL_FAKTOR fließt ins Ziel ein — der Rest des beobachteten
+// Wachstums wird zwar weiter in wachstumsrate protokolliert, aber nicht
+// sofort ins Ziel übernommen; steigt die Filiale weiter, wandert der
+// effektive Faktor beim nächsten Lauf entsprechend langsam nach.
+const WACHSTUM_DAEMPFUNG = parseFloat(process.env.WELO_WACHSTUM_DAEMPFUNG || '0.10');
 const EMP_COLLECTION = 'emp_welo';
 const ZIEL_COLLECTION = 'tagesziel';
 
@@ -368,6 +412,45 @@ async function berechneStunden(db, empId, emp, ja, planCache) {
 // auf eigene Filialen nötig, wir picken uns unsere marktNr-Schlüssel aus der
 // vollen Tabelle raus (DOM-Query, nicht Text-Regex — robuster gegen
 // Layout-Änderungen an der umgebenden Seite).
+// Vorjahres-Basis für das Tagesziel robust gegen mehrtägige Ausfälle machen
+// (per t.duong 03.09.2026, live bestätigt: Bad Hersfeld 402146 hatte
+// 28.08.-03.09.2025 einen ~einwöchigen Kassenausfall mit Werten von 0-8 €
+// statt normal ~400-600 €, danach sofort wieder normal — kein einzelner
+// Ausreißertag, den eine einfache ±1-Wochen-Glättung noch auffangen würde).
+//
+// Formel:
+//  A) Geglättete Vorjahres-Basis: Durchschnitt derselben Wochentage
+//     (Vorjahresdatum ±14/±7/0 Tage, 5 Kandidaten), aber nur die davon, die
+//     über UMSATZ_MIN_PLAUSIBEL liegen — ein mehrtägiger Ausfall filtert sich
+//     so selbst heraus, solange nicht alle 5 Kandidaten betroffen sind.
+//  B) Wachstumsrate: Summe der letzten 28 Tage ggü. denselben 28 Kalendertagen
+//     vor genau einem Jahr (nur mit genug plausiblen Tagen berechnet) — bildet
+//     ab, ob eine Filiale gerade schneller/langsamer wächst als die Vorjahres-
+//     Basis unterstellt.
+//  C) Fallback über 2 Jahre zurück: wenn (A) mangels genug plausibler Tage
+//     nicht berechenbar ist (z.B. eine ganze Woche Ausfall wie Bad Hersfeld),
+//     wird der sehr wahrscheinlich saubere Wert von vor genau 2 Jahren mit der
+//     Wachstumsrate aus (B) ein Jahr nach vorne skaliert.
+//  D) Ziel = Basis × effektiver Faktor, effektiver Faktor = max(Wachstumsrate,
+//     ZIEL_FAKTOR) — nie unter der bisherigen +25%-Politik, aber höher für
+//     Filialen, die real schon schneller wachsen (Auftrag t.duong 03.09.2026).
+const N1_GLAETTUNG_OFFSETS = [-14, -7, 0, 7, 14]; // Tage relativ zum Vorjahresdatum, exakt gleicher Wochentag
+const TREND_TAGE = 28;
+
+function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+
+// Lädt Tagesumsätze für mehrere Termine (Duplikate werden übersprungen) und
+// liefert eine Map compactDateStr -> {marktNr: umsatz}.
+async function fetchUmsatzFuerTermine(page, sessionBase, dates) {
+  const cache = {};
+  for (const d of dates) {
+    const key = compactDate(d);
+    if (cache[key]) continue;
+    cache[key] = await getTagesumsatzAlle(page, sessionBase, d);
+  }
+  return cache;
+}
+
 async function getTagesumsatzAlle(page, sessionBase, date) {
   // Serverseitig gerendert (kein Client-JS befüllt die Tabelle nach) — page.goto()
   // wartet schon auf "load", ein zusätzliches waitFor() auf ein bestimmtes <td>
@@ -387,7 +470,15 @@ async function getTagesumsatzAlle(page, sessionBase, date) {
   const out = {};
   for (const cells of rows) {
     const marktNrRaw = cells[0].split('-')[0];
-    const marktNr = marktNrRaw; // Tagesumsätze nutzt bereits die kanonische Nr, kein Alias nötig (611125 taucht dort separat auf)
+    // KORREKTUR (per t.duong 03.09.2026, echtem Test entdeckt): Ratio Baunatal
+    // taucht hier NICHT unter der kanonischen Nr 401125 auf, sondern nur unter
+    // der SushiTime-Alias-Nr 611125 (Zeile: "611125-00" / "401125: RA-Baunatal-
+    // Fuldastraße" / "1.035,35 €") — der alte Kommentar hier war falsch. Ohne
+    // Alias-Auflösung landete der Umsatz unter dem falschen Key und die
+    // spätere Suche nach marktNr="401125" fand nichts (umsatzVorjahr blieb
+    // dauerhaft null). Jetzt dieselbe MARKTNR_ALIASES-Auflösung wie überall
+    // sonst im Skript.
+    const marktNr = MARKTNR_ALIASES[marktNrRaw] || marktNrRaw;
     out[marktNr] = parseGermanNumber(cells[3]);
   }
   return out;
@@ -458,29 +549,91 @@ async function main() {
     await empBatch.commit();
     console.log(`✓ ${empCount} Mitarbeiter-Datensätze in "${EMP_COLLECTION}" geschrieben.`);
 
-    // Tagesziel: heute + genau vor einem Jahr
-    console.log('Lade Tagesumsatz heute…');
-    const heuteUmsatz = await getTagesumsatzAlle(page, sessionBase, heute);
-    const vorjahr = new Date(heute);
-    vorjahr.setFullYear(vorjahr.getFullYear() - 1);
-    console.log(`Lade Tagesumsatz Vorjahr (${isoDate(vorjahr)})…`);
-    const vorjahrUmsatz = await getTagesumsatzAlle(page, sessionBase, vorjahr);
+    // Tagesziel: heute + robuste Vorjahres-Basis (geglättet / 2-Jahre-Fallback,
+    // siehe Kommentar bei getTagesumsatzAlle/N1_GLAETTUNG_OFFSETS oben)
+    const vorjahrAnchor = new Date(heute); vorjahrAnchor.setFullYear(vorjahrAnchor.getFullYear() - 1);
+    const vorvorjahrAnchor = new Date(heute); vorvorjahrAnchor.setFullYear(vorvorjahrAnchor.getFullYear() - 2);
+    const n1WindowDates = N1_GLAETTUNG_OFFSETS.map((off) => addDays(vorjahrAnchor, off));
+    const recentDates = []; for (let i = 0; i < TREND_TAGE; i++) recentDates.push(addDays(heute, -i));
+    const recentVorjahrDates = recentDates.map((d) => addDays(d, -365));
+
+    const allTermine = [heute, vorvorjahrAnchor, ...n1WindowDates, ...recentDates, ...recentVorjahrDates];
+    console.log(`Lade Tagesumsätze für Ziel-Berechnung (${new Set(allTermine.map(compactDate)).size} unterschiedliche Tage: heute, ${N1_GLAETTUNG_OFFSETS.length} Tage Vorjahres-Fenster, 2×${TREND_TAGE} Tage Trend, 1 Tag vor 2 Jahren)…`);
+    const umsatzCache = await fetchUmsatzFuerTermine(page, sessionBase, allTermine);
+    const getUmsatzPlausibel = (marktNr, date) => {
+      const v = umsatzCache[compactDate(date)]?.[marktNr] ?? null;
+      return v != null && v >= UMSATZ_MIN_PLAUSIBEL ? v : null;
+    };
 
     const marktNrSet = new Set([...Object.values(personal).map((p) => p.marktNr)]);
     const zielBatch = db.batch();
     let zielCount = 0;
     for (const marktNr of marktNrSet) {
-      const uHeute = heuteUmsatz[marktNr] ?? null;
-      const uVorjahr = vorjahrUmsatz[marktNr] ?? null;
-      const ziel = uVorjahr != null ? Math.round(uVorjahr * ZIEL_FAKTOR * 100) / 100 : null;
+      // Heute (live, unverändert einfacher Plausibilitäts-Check)
+      const uHeuteRoh = umsatzCache[compactDate(heute)]?.[marktNr] ?? null;
+      const heuteVerdaechtig = uHeuteRoh != null && uHeuteRoh < UMSATZ_MIN_PLAUSIBEL;
+      const uHeute = heuteVerdaechtig ? null : uHeuteRoh;
+
+      // Roh-Einzeltageswert vor genau 1 Jahr, nur zur Transparenz gespeichert
+      const uVorjahrRoh = umsatzCache[compactDate(vorjahrAnchor)]?.[marktNr] ?? null;
+
+      // A) Geglättete Vorjahres-Basis
+      const n1Werte = n1WindowDates.map((d) => getUmsatzPlausibel(marktNr, d)).filter((v) => v != null);
+      let basis = null, methode = null;
+      if (n1Werte.length >= 2) {
+        basis = n1Werte.reduce((s, v) => s + v, 0) / n1Werte.length;
+        methode = 'geglaettet';
+      }
+
+      // B) Wachstumsrate (letzte 28 Tage ggü. denselben 28 Tagen vor 1 Jahr)
+      let recentSum = 0, recentCount = 0, recentSumVorjahr = 0, recentCountVorjahr = 0;
+      for (let i = 0; i < TREND_TAGE; i++) {
+        const v1 = getUmsatzPlausibel(marktNr, recentDates[i]);
+        if (v1 != null) { recentSum += v1; recentCount++; }
+        const v0 = getUmsatzPlausibel(marktNr, recentVorjahrDates[i]);
+        if (v0 != null) { recentSumVorjahr += v0; recentCountVorjahr++; }
+      }
+      const wachstumsrate = (recentCount >= 14 && recentCountVorjahr >= 14 && recentSumVorjahr > 0)
+        ? Math.round((recentSum / recentSumVorjahr) * 1000) / 1000
+        : null;
+
+      // C) Fallback über 2 Jahre zurück, skaliert mit der Wachstumsrate — nur
+      // wenn (A) mangels genug plausibler Tage nicht berechenbar war.
+      if (basis == null) {
+        const n2 = getUmsatzPlausibel(marktNr, vorvorjahrAnchor);
+        if (n2 != null && wachstumsrate != null) {
+          basis = n2 * wachstumsrate;
+          methode = 'n2-skaliert';
+        } else if (uVorjahrRoh != null && uVorjahrRoh >= UMSATZ_MIN_PLAUSIBEL) {
+          basis = uVorjahrRoh; // letzter Fallback: der einzelne Vorjahres-Tageswert war doch plausibel
+          methode = 'einzeltag';
+        }
+      }
+
+      // D) Ziel = Basis × effektiver Faktor (nie unter der Policy von 1,25;
+      // bei real schneller wachsenden Filialen steigt der Faktor, aber
+      // gedämpft — nur WACHSTUM_DAEMPFUNG (Standard 10%) des Anteils über
+      // 1,25 hinaus wird übernommen, damit das Ziel nicht schneller springt,
+      // als das Personal produktionsseitig mithalten kann.
+      const wachstumUeberschuss = wachstumsrate != null ? Math.max(wachstumsrate - ZIEL_FAKTOR, 0) : 0;
+      const effektiverFaktor = Math.round((ZIEL_FAKTOR + WACHSTUM_DAEMPFUNG * wachstumUeberschuss) * 10000) / 10000;
+      const ziel = basis != null ? Math.round(basis * effektiverFaktor * 100) / 100 : null;
       const produktionsziel = ziel != null ? Math.round((ziel / (1 - WASTE_FAKTOR)) * 100) / 100 : null;
+
       const marktname = Object.values(personal).find((p) => p.marktNr === marktNr)?.marktname || '';
       zielBatch.set(
         db.collection(ZIEL_COLLECTION).doc(`${marktNr}_${compactDate(heute)}`),
         {
           marktNr, marktname, datum: isoDate(heute),
-          umsatzHeute: uHeute, umsatzVorjahr: uVorjahr, zielFaktor: ZIEL_FAKTOR, ziel,
-          wasteFaktor: WASTE_FAKTOR, produktionsziel,
+          umsatzHeute: uHeute,
+          umsatzVorjahrRoh: uVorjahrRoh,
+          umsatzVorjahr: basis != null ? Math.round(basis * 100) / 100 : null,
+          vorjahrMethode: methode,
+          wachstumsrate,
+          zielFaktor: ZIEL_FAKTOR, effektiverFaktor,
+          ziel, wasteFaktor: WASTE_FAKTOR, produktionsziel,
+          umsatzHeuteVerdaechtig: heuteVerdaechtig ? uHeuteRoh : admin.firestore.FieldValue.delete(),
+          umsatzVorjahrVerdaechtig: (uVorjahrRoh != null && uVorjahrRoh < UMSATZ_MIN_PLAUSIBEL) ? uVorjahrRoh : admin.firestore.FieldValue.delete(),
           updatedAt: now,
         },
         { merge: true }

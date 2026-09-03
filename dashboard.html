@@ -226,11 +226,17 @@ header .sub{font-size:12px;opacity:.85;white-space:nowrap;overflow:hidden;text-o
       Axonity-Daten vorliegen, zeigt die Karte ersatzweise den Monatswert aus dem Welo-Export (steht dann als Quelle
       unter der Zahl). SX-Start/-Ende = aus Axonity, Stand heute. Fehlt ein Wert, hat der jeweilige Sync-Job für
       diese Filiale noch keine Daten geschrieben. Bestellungen = neueste Seite der Webshop-Bestellungen aus Axonity,
-      Erkennung neuer Bestellungen läuft alle paar Minuten über den Sync-Job. Tagesziel = Vorjahresumsatz vom
-      selben Kalendertag × 1,25. Produktion (+Waste) = Tagesziel ÷ 0,75 — bei frisch zubereitetem Sushi werden
-      ca. 25 % der Produktion nicht verkauft, um das Tagesziel tatsächlich zu erreichen muss also entsprechend
-      mehr produziert werden. Personal-Karten (Soll-Std./Urlaub/Krank) = beides aus Welo/SuCi-Net, täglich
-      05:00 Uhr aktualisiert.
+      Erkennung neuer Bestellungen läuft alle paar Minuten über den Sync-Job. Tagesziel = Vorjahres-Basis × Faktor
+      (mind. 1,25, "+25 %"). Vorjahres-Basis ist NICHT einfach der rohe Vorjahres-Einzeltag, sondern der Durchschnitt
+      über 5 Vorjahres-Wochentage (±14/±7/0 Tage) — filtert einzelne Ausfalltage (defekte Kasse, Personalausfall)
+      automatisch raus. Reicht das nicht (mehrtägiger Ausfall), wird stattdessen der Wert von vor 2 Jahren mit der
+      aktuellen 28-Tage-Wachstumsrate hochskaliert ("korrigiert"-Kennzeichnung, Mauszeiger für Details). Der Faktor
+      selbst steigt über 1,25, wenn eine Filiale laut Wachstum gerade schneller wächst. Produktion (+Waste) = Ziel ÷
+      0,75 — bei frisch zubereitetem Sushi werden ca. 25 % der Produktion nicht verkauft, um das Ziel tatsächlich zu
+      erreichen muss also entsprechend mehr produziert werden. "⚠️ Keine verlässliche Basis" = weder Vorjahr noch
+      2-Jahres-Vergleich lieferten einen plausiblen Wert (&gt; 100 €/Tag) — kein Ziel berechnet. Personal-Karten
+      (Soll-Std./Urlaub/Krank) = beides aus
+      Welo/SuCi-Net, täglich 05:00 Uhr aktualisiert.
     </p>
   </div>
 </div>
@@ -608,25 +614,39 @@ function drRenderZiel(){
 
   nrs.sort(function(a,b){ return drStandortName(a).localeCompare(drStandortName(b)); });
 
+  var METHODE_LABEL = { geglaettet: 'geglättet', 'n2-skaliert': '2 J. zurück skaliert', einzeltag: 'Einzeltag' };
   var cards = nrs.map(function(nr){
     var z = drZiel[nr];
     var name = drStandortName(nr) !== nr ? drStandortName(nr) : (z.marktname || nr);
     var pct = (typeof z.umsatzHeute === 'number' && z.ziel) ? Math.round(z.umsatzHeute / z.ziel * 100) : null;
+    // "Verdaechtig" heißt nur: der ROHE Einzeltageswert war unplausibel — dank
+    // Glättung/2-Jahres-Fallback kann trotzdem eine belastbare Basis (ziel)
+    // berechnet worden sein (z.B. Bad Hersfeld: roh 8,38 € durch Ausfall,
+    // geglättete Basis 489,59 €). Nur wenn GAR KEINE Basis zustande kam
+    // (ziel==null) ist es wirklich ein Datenproblem ohne Ziel.
+    var keineBasis = z.ziel == null && (z.umsatzVorjahrVerdaechtig != null || z.umsatzHeuteVerdaechtig != null);
+    var korrigiert = z.ziel != null && z.vorjahrMethode && z.vorjahrMethode !== 'einzeltag';
     var pill, bar = '';
-    if(z.ziel == null){ pill = '<span class="pill pill-mut">kein Vorjahr</span>'; }
+    if(keineBasis){ pill = '<span class="pill pill-warn" title="Welo hat einen unplausibel niedrigen Umsatz gemeldet (&lt; 100 €) und auch Glättung/2-Jahres-Vergleich fanden keine belastbare Basis">⚠️ Keine verlässliche Basis</span>'; }
+    else if(z.ziel == null){ pill = '<span class="pill pill-mut">kein Vorjahr</span>'; }
     else if(pct == null){ pill = '<span class="pill pill-mut">heute offen</span>'; }
     else {
       pill = pct >= 100 ? '<span class="pill pill-ok">'+pct+'%</span>' : '<span class="pill pill-warn">'+pct+'%</span>';
       bar = '<div class="dc-bar"><div class="dc-bar-fill'+(pct<100?' is-warn':'')+'" style="width:'+Math.min(pct,100)+'%"></div></div>';
     }
+    var zielLabel = 'Ziel (Basis ×'+(z.effektiverFaktor!=null?z.effektiverFaktor.toFixed(2).replace('.',','):'1,25')+')'+(korrigiert?' · korrigiert':'');
+    var vorjahrHtml = z.umsatzVorjahr!=null
+      ? drFmtEUR(z.umsatzVorjahr)+(korrigiert&&z.umsatzVorjahrRoh!=null?' <span style="opacity:.6;font-size:11px">(roh: '+drFmtEUR(z.umsatzVorjahrRoh)+')</span>':'')
+      : (z.umsatzVorjahrVerdaechtig!=null?drFmtEUR(z.umsatzVorjahrVerdaechtig)+' ⚠️':'—');
     return '<div class="data-card">'+
       '<div class="dc-head"><div class="dc-title">'+drEsc(name)+'<span class="nr">'+nr+'</span></div>'+pill+'</div>'+
-      '<div class="dc-hero-label">Ziel (Vorjahr ×1,25)</div>'+
+      '<div class="dc-hero-label" title="'+(korrigiert?'Vorjahres-Basis: '+METHODE_LABEL[z.vorjahrMethode]:'')+'">'+zielLabel+'</div>'+
       '<div class="dc-hero">'+(z.ziel!=null?drFmtEUR(z.ziel):'—')+'</div>'+
       bar+
       '<div class="dc-stats">'+
-        '<div class="dc-stat"><div class="k">Vorjahr</div><div class="v">'+(z.umsatzVorjahr!=null?drFmtEUR(z.umsatzVorjahr):'—')+'</div></div>'+
-        '<div class="dc-stat"><div class="k">Heute</div><div class="v">'+(typeof z.umsatzHeute==='number'?drFmtEUR(z.umsatzHeute):'—')+'</div></div>'+
+        '<div class="dc-stat"><div class="k">Vorjahr</div><div class="v">'+vorjahrHtml+'</div></div>'+
+        '<div class="dc-stat"><div class="k">Heute</div><div class="v">'+(typeof z.umsatzHeute==='number'?drFmtEUR(z.umsatzHeute):(z.umsatzHeuteVerdaechtig!=null?drFmtEUR(z.umsatzHeuteVerdaechtig)+' ⚠️':'—'))+'</div></div>'+
+        '<div class="dc-stat"><div class="k">Wachstum (28T)</div><div class="v">'+(z.wachstumsrate!=null?Math.round(z.wachstumsrate*100)+'%':'—')+'</div></div>'+
         '<div class="dc-stat"><div class="k">Produktion (+Waste)</div><div class="v">'+(z.produktionsziel!=null?drFmtEUR(z.produktionsziel):'—')+'</div></div>'+
       '</div>'+
       '</div>';
