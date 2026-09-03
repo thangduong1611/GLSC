@@ -8,8 +8,11 @@
 // dort wird stattdessen jede Zeile gegen diese Liste geprüft. Wird auch von
 // sync-welo-personal.js für die Region-West-Filialen verwendet.
 // Bei neuen/weggefallenen Filialen hier manuell nachpflegen.
-const BEKANNTE_KOSTENSTELLEN = new Set([
-  // Region Ost
+// Ost/West getrennt gepflegt (statt eines Sets), damit dieselbe Zuordnung
+// auch für MARKTNR_REGION unten wiederverwendet werden kann — vorher gab es
+// diese Liste nur als Set + Kommentar, die Region stand nirgends maschinell
+// lesbar zur Verfügung.
+const OST_KOSTENSTELLEN = [
   '401125', // Ratio Baunatal
   '401888', // Rewe Homberg Efze Mohr
   '401891', // Edeka Kassel Aschoff
@@ -24,7 +27,8 @@ const BEKANNTE_KOSTENSTELLEN = new Set([
   '402297', // Marktkauf Einbeck (Regie)
   '402501', // Tegut Göttingen (Weender Str.)
   '402502', // Tegut Göttingen (An der Lutter)
-  // Region West
+];
+const WEST_KOSTENSTELLEN = [
   '402167', // Rewe Düsseldorf Hauptstr.
   '402185', // Kaufland Hagen
   '402205', // Rewe Hattingen
@@ -36,8 +40,21 @@ const BEKANNTE_KOSTENSTELLEN = new Set([
   '402422', // Edeka Leverkusen
   '402507', // Kaufland Wesel
   '402512', // Rewe Remscheid
+  '402133', // Köln-Thebäerstraße
+  '402302', // Neuss-Allerheiligen-Am alten Bach - Friedrich
+  '402363', // Bergneustadt-Stadionstr.
+  '402414', // Bergheim-Dansweilerstraße - Fischenich
+  '402416', // Bergisch Gladbach-Odenthaler Str. - Gärtner
   '402523', // Kaufland Essen
-]);
+];
+const BEKANNTE_KOSTENSTELLEN = new Set([...OST_KOSTENSTELLEN, ...WEST_KOSTENSTELLEN]);
+
+// marktNr -> 'ost'|'west', für den automatischen emps-Sync aus Welo
+// (sync-welo-personal.js) — dieselben Region-Werte wie index.html's
+// REGION_LABELS/managers.regions ('ost'/'west', klein geschrieben).
+const MARKTNR_REGION = {};
+OST_KOSTENSTELLEN.forEach((nr) => { MARKTNR_REGION[nr] = 'ost'; });
+WEST_KOSTENSTELLEN.forEach((nr) => { MARKTNR_REGION[nr] = 'west'; });
 
 // Welo führt Ratio Baunatal unter seiner SushiTime-Nummer statt der
 // Axonity-Kostenstelle — siehe sync-welo-umsatz.js. Zentral hier, damit
@@ -49,4 +66,4 @@ const MARKTNR_ALIASES = {
 
 const GEBIETSLEITER_NAME = 'Thang Duc Duong';
 
-module.exports = { BEKANNTE_KOSTENSTELLEN, MARKTNR_ALIASES, GEBIETSLEITER_NAME };
+module.exports = { BEKANNTE_KOSTENSTELLEN, MARKTNR_ALIASES, MARKTNR_REGION, GEBIETSLEITER_NAME };

@@ -3467,8 +3467,28 @@ function maRequestUrlaub(){
     var col=fbDb.collection('filialen').doc(fbSlug(sess.filiale||'')).collection('urlaub');
     var editing=maEditReq;
     maReqSetBusy(true);
+    // Neue Anträge bekommen eine DETERMINISTISCHE Doc-ID (empId_from_to) statt
+    // einer zufälligen (col.add()) — per t.duong 03.09.2026: ein Mitarbeiter
+    // hatte denselben Antrag bis zu 7x als separate Dokumente angelegt.
+    // maValidateUrlaub() oben soll das eigentlich schon verhindern, aber wenn
+    // der lokale Cache (maFbUrlaub) durch ein kurzes Zeitfenster nach dem
+    // vorigen Absenden noch nicht aktuell ist, greift die Prüfung zu spät.
+    // Mit einer deterministischen ID trifft ein erneutes Absenden immer
+    // dasselbe Dokument statt ein neues zu erzeugen — echte Duplikate werden
+    // dadurch strukturell unmöglich, nicht nur durch die (racey) Vorab-Prüfung
+    // verhindert. Per Transaktion zusätzlich abgesichert: ein bereits
+    // genehmigter Antrag wird dabei nie versehentlich auf "pending"
+    // zurückgesetzt.
     var p=editing ? col.doc(editing).update({from:from,to:to,updated:new Date().toISOString()})
-                  : col.add(maBuildUrlaubDoc(sess,from,to));
+                  : fbDb.runTransaction(function(tx){
+                      var ref=col.doc(sess.id+'_'+from+'_'+to);
+                      return tx.get(ref).then(function(snap){
+                        if(snap.exists && snap.data().status==='approved'){
+                          throw new Error(t('v_ov_appr',{range:maFmtDE(from)+'–'+maFmtDE(to)}));
+                        }
+                        tx.set(ref, maBuildUrlaubDoc(sess,from,to));
+                      });
+                    });
     p.then(function(){
         maReqSetBusy(false);
         maEditReq=null; maEditReqRange=''; maReqRenderMode();

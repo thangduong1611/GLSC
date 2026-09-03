@@ -62,6 +62,22 @@
 //   *Verdaechtig-Felder: nur gesetzt, wenn Welo selbst einen unplausibel
 //     niedrigen Tagesumsatz gemeldet hat (< WELO_UMSATZ_MIN_PLAUSIBEL, Standard
 //     100 €) — enthalten den rohen (verworfenen) Wert zur Kontrolle.
+//  4. emps-Sync: schreibt Name/Filiale/FilialeNr/active/region für jeden
+//     aktiven Mitarbeiter direkt in die "emps"-Collection, die index.html's
+//     empsSyncListener() (live onSnapshot, region-gefiltert) sowieso schon
+//     beobachtet — die manuelle CSV-Import+Veröffentlichen-Runde entfällt für
+//     Neuzugänge/Abgänge damit komplett (Auftrag t.duong 03.09.2026: Liste
+//     ändert sich laufend, soll automatisch aktuell bleiben). Schreibt NUR
+//     name/filiale/filialeNr/active/region — zweit/shopleiter/vize/eintritt/
+//     austritt (rein GLSC-eigene Felder, die Welo nicht kennt) bleiben dank
+//     {merge:true} unangetastet. region wird, falls das emps-Dokument schon
+//     existiert, NIE verändert (nur beim allerersten Anlegen per
+//     MARKTNR_REGION gesetzt) — dieselbe Vorsicht wie bei fbPublish() in
+//     index.html, das aus genau demselben Grund (CSV mit gemischten Gebieten
+//     verschob sonst halbe Belegschaft ins falsche Postfach) die bestehende
+//     Region niemals überschreibt. Mitarbeiter, die aus der aktuellen
+//     Welo-Liste verschwinden (Austritt), werden auf active:false gesetzt —
+//     genau wie es der bisherige manuelle CSV-Import auch schon tat.
 //
 // Für den 05:00-Uhr-Cron-Lauf gedacht. Braucht Playwright + Chromium
 // (bereits installiert für die Axonity-Skripte). page.goto() (echter
@@ -75,7 +91,7 @@ require('dotenv').config();
 const { chromium } = require('playwright');
 const { parse } = require('csv-parse/sync');
 const { getDb, admin } = require('./firestore-client');
-const { MARKTNR_ALIASES } = require('./branches');
+const { MARKTNR_ALIASES, MARKTNR_REGION } = require('./branches');
 
 const BASE_URL = process.env.WELO_BASE_URL || 'https://welo.sushi-circle.de';
 const USER = process.env.WELO_USER;
@@ -110,6 +126,17 @@ const UMSATZ_MIN_PLAUSIBEL = parseFloat(process.env.WELO_UMSATZ_MIN_PLAUSIBEL ||
 const WACHSTUM_DAEMPFUNG = parseFloat(process.env.WELO_WACHSTUM_DAEMPFUNG || '0.10');
 const EMP_COLLECTION = 'emp_welo';
 const ZIEL_COLLECTION = 'tagesziel';
+const EMPS_COLLECTION = 'emps'; // index.html's echte Mitarbeiter-Stammdaten (region-gefiltert)
+
+// Welo liefert Namen als "Frau/Herr Nachname, Vorname" — die "emps"-Collection
+// (und damit die gesamte GLSC-App: Dienstplan, PDFs, Zweitfiliale-Listen …)
+// erwartet "Vorname Nachname" ohne Anrede. Bei unerwartetem Format (kein
+// Komma) wird der rohe Welo-Name unverändert übernommen statt zu raten.
+function reformatWeloName(weloName) {
+  const m = (weloName || '').match(/^(?:Frau|Herr)\s+(.+),\s*(.+)$/);
+  if (!m) return weloName || '';
+  return `${m[2].trim()} ${m[1].trim()}`;
+}
 
 function parseGermanNumber(raw) {
   if (raw == null) return null;
@@ -548,6 +575,43 @@ async function main() {
     }
     await empBatch.commit();
     console.log(`✓ ${empCount} Mitarbeiter-Datensätze in "${EMP_COLLECTION}" geschrieben.`);
+
+    // emps-Sync (siehe Doc-Kommentar oben, Punkt 4): ersetzt die manuelle
+    // CSV-Import+Veröffentlichen-Runde für Neuzugänge/Abgänge.
+    console.log('Synchronisiere "emps" (Mitarbeiter-Stammdaten für die HR-App)…');
+    const empsSnap = await db.collection(EMPS_COLLECTION).get();
+    const bestehendeRegion = {}, bestehendAktiv = new Set();
+    empsSnap.forEach((doc) => {
+      const d = doc.data() || {};
+      if (d.region) bestehendeRegion[doc.id] = d.region;
+      if (d.active !== false) bestehendAktiv.add(doc.id);
+    });
+
+    const empsBatch = db.batch();
+    let empsCount = 0, empsOhneRegion = 0;
+    for (const [id, p] of Object.entries(personal)) {
+      const region = bestehendeRegion[id] || MARKTNR_REGION[p.marktNr] || null;
+      if (!region) empsOhneRegion++;
+      const payload = {
+        name: reformatWeloName(p.name), filiale: p.marktname, filialeNr: p.marktNr,
+        active: true, updatedAt: now,
+      };
+      if (region) payload.region = region; // nie ein leeres/falsches region-Feld schreiben
+      empsBatch.set(db.collection(EMPS_COLLECTION).doc(id), payload, { merge: true });
+      empsCount++;
+    }
+    // Wer vorher aktiv war, aber jetzt nicht mehr in der Welo-Liste auftaucht,
+    // ist ausgeschieden — genau wie beim bisherigen manuellen CSV-Import.
+    let deaktiviert = 0;
+    for (const id of bestehendAktiv) {
+      if (!personal[id]) {
+        empsBatch.set(db.collection(EMPS_COLLECTION).doc(id), { active: false, updatedAt: now }, { merge: true });
+        deaktiviert++;
+      }
+    }
+    await empsBatch.commit();
+    console.log(`✓ ${empsCount} Mitarbeiter in "${EMPS_COLLECTION}" aktualisiert, ${deaktiviert} als ausgeschieden markiert.`
+      + (empsOhneRegion ? ` ⚠️ ${empsOhneRegion} ohne Region (MARKTNR_REGION in branches.js prüfen).` : ''));
 
     // Tagesziel: heute + robuste Vorjahres-Basis (geglättet / 2-Jahre-Fallback,
     // siehe Kommentar bei getTagesumsatzAlle/N1_GLAETTUNG_OFFSETS oben)
