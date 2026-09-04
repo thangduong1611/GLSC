@@ -1,0 +1,236 @@
+[
+  {
+    "id": "330485",
+    "name": "Frau Trinh, Thi Dieu Quynh",
+    "filiale": "402414: E-Bergheim-Dansweilerstraße - Fischenich",
+    "wohnort": "50769 Köln",
+    "praezise": true,
+    "naechsteFiliale": "402422: E-Leverkusen-Pommernstraße",
+    "km": 11.3,
+    "top3": [
+      {
+        "filiale": "402422: E-Leverkusen-Pommernstraße",
+        "marktNr": "402422",
+        "km": 11.293660826998256
+      },
+      {
+        "filiale": "402302: R-Neuss-Allerheiligen-Am alten Bach - Friedrich",
+        "marktNr": "402302",
+        "km": 11.749667031149393
+      },
+      {
+        "filiale": "402167: R-Düsseldorf-Hauptstr.",
+        "marktNr": "402167",
+        "km": 12.131955960125634
+      }
+    ]
+  },
+  {
+    "id": "340301",
+    "name": "Herr Li, Hongbiao",
+    "filiale": "402302: R-Neuss-Allerheiligen-Am alten Bach - Friedrich",
+    "wohnort": "41540 Dormagen",
+    "praezise": true,
+    "naechsteFiliale": "402414: E-Bergheim-Dansweilerstraße - Fischenich",
+    "km": 11.2,
+    "top3": [
+      {
+        "filiale": "402414: E-Bergheim-Dansweilerstraße - Fischenich",
+        "marktNr": "402414",
+        "km": 11.189277195176778
+      },
+      {
+        "filiale": "402167: R-Düsseldorf-Hauptstr.",
+        "marktNr": "402167",
+        "km": 12.39945370693129
+      },
+      {
+        "filiale": "402422: E-Leverkusen-Pommernstraße",
+        "marktNr": "402422",
+        "km": 14.33963787972721
+      }
+    ]
+  },
+  {
+    "id": "340312",
+    "name": "Frau Kang, Xiaoxi",
+    "filiale": "402302: R-Neuss-Allerheiligen-Am alten Bach - Friedrich",
+    "wohnort": "41540 Dormagen",
+    "praezise": true,
+    "naechsteFiliale": "402414: E-Bergheim-Dansweilerstraße - Fischenich",
+    "km": 11.2,
+    "top3": [
+      {
+        "filiale": "402414: E-Bergheim-Dansweilerstraße - Fischenich",
+        "marktNr": "402414",
+        "km": 11.189277195176778
+      },
+      {
+        "filiale": "402167: R-Düsseldorf-Hauptstr.",
+        "marktNr": "402167",
+        "km": 12.39945370693129
+      },
+      {
+        "filiale": "402422: E-Leverkusen-Pommernstraße",
+        "marktNr": "402422",
+        "km": 14.33963787972721
+      }
+    ]
+  },
+  {
+    "id": "340361",
+    "name": "Herr Unurbat, Bayarmagnai",
+    "filiale": "402363: R-Bergneustadt-Stadionstr.",
+    "wohnort": "51580 Reichshof",
+    "praezise": true,
+    "naechsteFiliale": "402512: R-Remscheid-Wupperstraße",
+    "km": 37.3,
+    "top3": [
+      {
+        "filiale": "402512: R-Remscheid-Wupperstraße",
+        "marktNr": "402512",
+        "km": 37.311363865633155
+      },
+      {
+        "filiale": "402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner",
+        "marktNr": "402416",
+        "km": 39.00375472383628
+      },
+      {
+        "filiale": "402185: K-Hagen-Auf dem Lölfert",
+        "marktNr": "402185",
+        "km": 42.16242465531048
+      }
+    ]
+  },
+  {
+    "id": "340370",
+    "name": "Frau Sharma, Archna Dhusia",
+    "filiale": "402363: R-Bergneustadt-Stadionstr.",
+    "wohnort": "51580 Reichshof",
+    "praezise": true,
+    "naechsteFiliale": "402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner",
+    "km": 35.3,
+    "top3": [
+      {
+        "filiale": "402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner",
+        "marktNr": "402416",
+        "km": 35.294013186651846
+      },
+      {
+        "filiale": "402512: R-Remscheid-Wupperstraße",
+        "marktNr": "402512",
+        "km": 36.36078037515308
+      },
+      {
+        "filiale": "402310: R-Wuppertal-Ascheweg - Brücken Kaufpark",
+        "marktNr": "402310",
+        "km": 42.269496846817084
+      }
+    ]
+  },
+  {
+    "id": "340918",
+    "name": "Herr Vu, Van Thanh",
+    "filiale": "402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner",
+    "wohnort": "51063 Köln",
+    "praezise": false,
+    "naechsteFiliale": "402133: K-Köln-Thebäerstraße",
+    "km": 6.3,
+    "top3": [
+      {
+        "filiale": "402133: K-Köln-Thebäerstraße",
+        "marktNr": "402133",
+        "km": 6.338842896274312
+      },
+      {
+        "filiale": "402422: E-Leverkusen-Pommernstraße",
+        "marktNr": "402422",
+        "km": 11.240079496869273
+      },
+      {
+        "filiale": "402414: E-Bergheim-Dansweilerstraße - Fischenich",
+        "marktNr": "402414",
+        "km": 17.472779596101322
+      }
+    ]
+  },
+  {
+    "id": "341384",
+    "name": "Herr Amjad, Muhammad Yasir",
+    "filiale": "402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner",
+    "wohnort": "51107 Köln",
+    "praezise": true,
+    "naechsteFiliale": "402133: K-Köln-Thebäerstraße",
+    "km": 8.1,
+    "top3": [
+      {
+        "filiale": "402133: K-Köln-Thebäerstraße",
+        "marktNr": "402133",
+        "km": 8.08377048715954
+      },
+      {
+        "filiale": "402422: E-Leverkusen-Pommernstraße",
+        "marktNr": "402422",
+        "km": 15.010301492683585
+      },
+      {
+        "filiale": "402414: E-Bergheim-Dansweilerstraße - Fischenich",
+        "marktNr": "402414",
+        "km": 19.890815147268892
+      }
+    ]
+  },
+  {
+    "id": "350153",
+    "name": "Frau Tran, Thi Bich",
+    "filiale": "402133: K-Köln-Thebäerstraße",
+    "wohnort": "51065 Köln",
+    "praezise": false,
+    "naechsteFiliale": "402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner",
+    "km": 9.9,
+    "top3": [
+      {
+        "filiale": "402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner",
+        "marktNr": "402416",
+        "km": 9.869089272905084
+      },
+      {
+        "filiale": "402422: E-Leverkusen-Pommernstraße",
+        "marktNr": "402422",
+        "km": 12.65719962321344
+      },
+      {
+        "filiale": "402414: E-Bergheim-Dansweilerstraße - Fischenich",
+        "marktNr": "402414",
+        "km": 17.928165227680875
+      }
+    ]
+  },
+  {
+    "id": "350605",
+    "name": "Frau Park, Sumi",
+    "filiale": "402133: K-Köln-Thebäerstraße",
+    "wohnort": "50999 Köln",
+    "praezise": true,
+    "naechsteFiliale": "402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner",
+    "km": 16.9,
+    "top3": [
+      {
+        "filiale": "402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner",
+        "marktNr": "402416",
+        "km": 16.943103865562854
+      },
+      {
+        "filiale": "402414: E-Bergheim-Dansweilerstraße - Fischenich",
+        "marktNr": "402414",
+        "km": 21.27018130914207
+      },
+      {
+        "filiale": "402422: E-Leverkusen-Pommernstraße",
+        "marktNr": "402422",
+        "km": 22.43569524180649
+      }
+    ]
+  }
+]

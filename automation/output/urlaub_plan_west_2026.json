@@ -1,0 +1,808 @@
+{
+  "generiertAm": "2026-09-04",
+  "zeitraum": {
+    "von": "2026-09-14",
+    "bis": "2026-12-31"
+  },
+  "plan": [
+    {
+      "id": "350544",
+      "name": "Susdalia Silitonga",
+      "filiale": "402261: R-Hilden-Mittelstraße",
+      "from": "2026-09-14",
+      "to": "2026-09-14",
+      "tage": 1
+    },
+    {
+      "id": "340877",
+      "name": "Thi Hoan Tran",
+      "filiale": "402315: R-Bochum-Viktoriastraße - Mert",
+      "from": "2026-09-14",
+      "to": "2026-09-22",
+      "tage": 8
+    },
+    {
+      "id": "340276",
+      "name": "Chee Sam Chin",
+      "filiale": "402167: R-Düsseldorf-Hauptstr.",
+      "from": "2026-09-14",
+      "to": "2026-09-19",
+      "tage": 6
+    },
+    {
+      "id": "340429",
+      "name": "Duc Hanh Doan",
+      "filiale": "402507: K-Wesel-Rudolf-Diesel-Straße",
+      "from": "2026-09-14",
+      "to": "2026-09-14",
+      "tage": 1
+    },
+    {
+      "id": "350605",
+      "name": "Sumi Park",
+      "filiale": "402133: K-Köln-Thebäerstraße",
+      "from": "2026-09-14",
+      "to": "2026-09-21",
+      "tage": 7
+    },
+    {
+      "id": "341384",
+      "name": "Muhammad Yasir Amjad",
+      "filiale": "402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner",
+      "from": "2026-09-14",
+      "to": "2026-09-24",
+      "tage": 10
+    },
+    {
+      "id": "340370",
+      "name": "Archna Dhusia Sharma",
+      "filiale": "402363: R-Bergneustadt-Stadionstr.",
+      "from": "2026-09-14",
+      "to": "2026-09-14",
+      "tage": 1
+    },
+    {
+      "id": "330485",
+      "name": "Thi Dieu Quynh Trinh",
+      "filiale": "402414: E-Bergheim-Dansweilerstraße - Fischenich",
+      "from": "2026-09-14",
+      "to": "2026-09-19",
+      "tage": 6
+    },
+    {
+      "id": "340322",
+      "name": "Kim Mai Nguyen",
+      "filiale": "402261: R-Hilden-Mittelstraße",
+      "from": "2026-09-15",
+      "to": "2026-09-15",
+      "tage": 1
+    },
+    {
+      "id": "341457",
+      "name": "Diu Thuan Nguyen",
+      "filiale": "402512: R-Remscheid-Wupperstraße",
+      "from": "2026-09-16",
+      "to": "2026-09-26",
+      "tage": 10
+    },
+    {
+      "id": "340955",
+      "name": "Hong Minh Nguyen",
+      "filiale": "402251: R-Düsseldorf-Zeppelinstraße",
+      "from": "2026-09-20",
+      "to": "2026-09-25",
+      "tage": 5
+    },
+    {
+      "id": "550078",
+      "name": "Trong Nguyen",
+      "filiale": "402523: K-Essen-Haedenkampstraße",
+      "from": "2026-09-20",
+      "to": "2026-09-26",
+      "tage": 6
+    },
+    {
+      "id": "350445",
+      "name": "Thi Ngoc Anh Nguyen",
+      "filiale": "402422: E-Leverkusen-Pommernstraße",
+      "from": "2026-09-22",
+      "to": "2026-09-26",
+      "tage": 5
+    },
+    {
+      "id": "350605",
+      "name": "Sumi Park",
+      "filiale": "402133: K-Köln-Thebäerstraße",
+      "from": "2026-09-22",
+      "to": "2026-09-29",
+      "tage": 7
+    },
+    {
+      "id": "350527",
+      "name": "Eric Ta",
+      "filiale": "402185: K-Hagen-Auf dem Lölfert",
+      "from": "2026-09-23",
+      "to": "2026-09-23",
+      "tage": 1
+    },
+    {
+      "id": "350598",
+      "name": "Boi Anh Khuu",
+      "filiale": "402507: K-Wesel-Rudolf-Diesel-Straße",
+      "from": "2026-09-23",
+      "to": "2026-10-02",
+      "tage": 9
+    },
+    {
+      "id": "341409",
+      "name": "Thanchanok Hahlweg",
+      "filiale": "402205: R-Hattingen-Heggerstraße",
+      "from": "2026-09-24",
+      "to": "2026-09-30",
+      "tage": 6
+    },
+    {
+      "id": "550078",
+      "name": "Trong Nguyen",
+      "filiale": "402523: K-Essen-Haedenkampstraße",
+      "from": "2026-09-27",
+      "to": "2026-10-02",
+      "tage": 5
+    },
+    {
+      "id": "350153",
+      "name": "Thi Bich Tran",
+      "filiale": "402133: K-Köln-Thebäerstraße",
+      "from": "2026-09-30",
+      "to": "2026-10-01",
+      "tage": 2
+    },
+    {
+      "id": "341450",
+      "name": "Paramita Dian Purnomo",
+      "filiale": "402261: R-Hilden-Mittelstraße",
+      "from": "2026-10-01",
+      "to": "2026-10-12",
+      "tage": 9
+    },
+    {
+      "id": "340259",
+      "name": "Quoc Bao Huynh",
+      "filiale": "402205: R-Hattingen-Heggerstraße",
+      "from": "2026-10-01",
+      "to": "2026-10-07",
+      "tage": 5
+    },
+    {
+      "id": "340473",
+      "name": "My Linh Heidel",
+      "filiale": "402310: R-Wuppertal-Ascheweg - Brücken Kaufpark",
+      "from": "2026-10-01",
+      "to": "2026-10-05",
+      "tage": 3
+    },
+    {
+      "id": "341392",
+      "name": "Rona Cita Azizah",
+      "filiale": "402251: R-Düsseldorf-Zeppelinstraße",
+      "from": "2026-10-02",
+      "to": "2026-10-14",
+      "tage": 10
+    },
+    {
+      "id": "350553",
+      "name": "Thi Tu Ngo",
+      "filiale": "402272: R-Düsseldorf-Münsterstraße",
+      "from": "2026-10-03",
+      "to": "2026-10-15",
+      "tage": 10
+    },
+    {
+      "id": "341377",
+      "name": "Hong Son Vu",
+      "filiale": "402512: R-Remscheid-Wupperstraße",
+      "from": "2026-10-13",
+      "to": "2026-10-15",
+      "tage": 3
+    },
+    {
+      "id": "340910",
+      "name": "Hai Nguyen",
+      "filiale": "402167: R-Düsseldorf-Hauptstr.",
+      "from": "2026-10-16",
+      "to": "2026-10-24",
+      "tage": 8
+    },
+    {
+      "id": "341450",
+      "name": "Paramita Dian Purnomo",
+      "filiale": "402261: R-Hilden-Mittelstraße",
+      "from": "2026-10-20",
+      "to": "2026-10-28",
+      "tage": 8
+    },
+    {
+      "id": "350553",
+      "name": "Thi Tu Ngo",
+      "filiale": "402272: R-Düsseldorf-Münsterstraße",
+      "from": "2026-10-27",
+      "to": "2026-11-06",
+      "tage": 10
+    },
+    {
+      "id": "350445",
+      "name": "Thi Ngoc Anh Nguyen",
+      "filiale": "402422: E-Leverkusen-Pommernstraße",
+      "from": "2026-11-03",
+      "to": "2026-11-09",
+      "tage": 6
+    },
+    {
+      "id": "340910",
+      "name": "Hai Nguyen",
+      "filiale": "402167: R-Düsseldorf-Hauptstr.",
+      "from": "2026-11-07",
+      "to": "2026-11-14",
+      "tage": 7
+    },
+    {
+      "id": "340910",
+      "name": "Hai Nguyen",
+      "filiale": "402167: R-Düsseldorf-Hauptstr.",
+      "from": "2026-11-15",
+      "to": "2026-11-23",
+      "tage": 7
+    },
+    {
+      "id": "350604",
+      "name": "The Hai Nguyen",
+      "filiale": "402261: R-Hilden-Mittelstraße",
+      "from": "2026-11-18",
+      "to": "2026-11-25",
+      "tage": 7
+    },
+    {
+      "id": "341457",
+      "name": "Diu Thuan Nguyen",
+      "filiale": "402512: R-Remscheid-Wupperstraße",
+      "from": "2026-11-19",
+      "to": "2026-11-30",
+      "tage": 10
+    },
+    {
+      "id": "340444",
+      "name": "Vu Nguyen Doan",
+      "filiale": "402310: R-Wuppertal-Ascheweg - Brücken Kaufpark",
+      "from": "2026-12-01",
+      "to": "2026-12-09",
+      "tage": 8
+    }
+  ],
+  "vertretung": [
+    {
+      "filiale": "402272: R-Düsseldorf-Münsterstraße",
+      "from": "2026-10-03",
+      "to": "2026-10-15",
+      "fuerName": "Thi Tu Ngo",
+      "fuerId": "350553"
+    },
+    {
+      "filiale": "402272: R-Düsseldorf-Münsterstraße",
+      "from": "2026-10-27",
+      "to": "2026-11-06",
+      "fuerName": "Thi Tu Ngo",
+      "fuerId": "350553"
+    },
+    {
+      "filiale": "402414: E-Bergheim-Dansweilerstraße - Fischenich",
+      "from": "2026-09-14",
+      "to": "2026-09-19",
+      "fuerName": "Thi Dieu Quynh Trinh",
+      "fuerId": "330485"
+    }
+  ],
+  "nichtVerplant": [],
+  "singleStaffBranches": [
+    "402414: E-Bergheim-Dansweilerstraße - Fischenich",
+    "402272: R-Düsseldorf-Münsterstraße"
+  ],
+  "feiertage": [
+    "2026-10-03",
+    "2026-11-01",
+    "2026-12-25",
+    "2026-12-26"
+  ],
+  "people": [
+    {
+      "id": "330314",
+      "name": "Thi Minh Chau Trinh",
+      "filiale": "402422: E-Leverkusen-Pommernstraße",
+      "zweit": [
+        "402167: R-Düsseldorf-Hauptstr."
+      ],
+      "urlaubOffen": 0,
+      "urlaubAnspruch": 25
+    },
+    {
+      "id": "330337",
+      "name": "Endhamya Asemenintha Meliala",
+      "filiale": "402523: K-Essen-Haedenkampstraße",
+      "zweit": [
+        "402315: R-Bochum-Viktoriastraße - Mert"
+      ],
+      "urlaubOffen": 0,
+      "urlaubAnspruch": 30
+    },
+    {
+      "id": "330478",
+      "name": "Panadda Frunzescu",
+      "filiale": "402422: E-Leverkusen-Pommernstraße",
+      "zweit": [
+        "402261: R-Hilden-Mittelstraße"
+      ],
+      "urlaubOffen": 17,
+      "urlaubAnspruch": 23
+    },
+    {
+      "id": "330485",
+      "name": "Thi Dieu Quynh Trinh",
+      "filiale": "402414: E-Bergheim-Dansweilerstraße - Fischenich",
+      "zweit": [],
+      "urlaubOffen": 6,
+      "urlaubAnspruch": 23
+    },
+    {
+      "id": "340259",
+      "name": "Quoc Bao Huynh",
+      "filiale": "402205: R-Hattingen-Heggerstraße",
+      "zweit": [
+        "402315: R-Bochum-Viktoriastraße - Mert"
+      ],
+      "urlaubOffen": 7,
+      "urlaubAnspruch": 30
+    },
+    {
+      "id": "340276",
+      "name": "Chee Sam Chin",
+      "filiale": "402167: R-Düsseldorf-Hauptstr.",
+      "zweit": [
+        "402251: R-Düsseldorf-Zeppelinstraße"
+      ],
+      "urlaubOffen": 6,
+      "urlaubAnspruch": 30
+    },
+    {
+      "id": "340301",
+      "name": "Hongbiao Li",
+      "filiale": "402302: R-Neuss-Allerheiligen-Am alten Bach - Friedrich",
+      "zweit": [],
+      "urlaubOffen": 0,
+      "urlaubAnspruch": 30
+    },
+    {
+      "id": "340312",
+      "name": "Xiaoxi Kang",
+      "filiale": "402302: R-Neuss-Allerheiligen-Am alten Bach - Friedrich",
+      "zweit": [],
+      "urlaubOffen": 0,
+      "urlaubAnspruch": 30
+    },
+    {
+      "id": "340322",
+      "name": "Kim Mai Nguyen",
+      "filiale": "402261: R-Hilden-Mittelstraße",
+      "zweit": [
+        "402512: R-Remscheid-Wupperstraße"
+      ],
+      "urlaubOffen": 1,
+      "urlaubAnspruch": 30
+    },
+    {
+      "id": "340361",
+      "name": "Bayarmagnai Unurbat",
+      "filiale": "402363: R-Bergneustadt-Stadionstr.",
+      "zweit": [],
+      "urlaubOffen": 0,
+      "urlaubAnspruch": 30
+    },
+    {
+      "id": "340370",
+      "name": "Archna Dhusia Sharma",
+      "filiale": "402363: R-Bergneustadt-Stadionstr.",
+      "zweit": [],
+      "urlaubOffen": 1,
+      "urlaubAnspruch": 30
+    },
+    {
+      "id": "340429",
+      "name": "Duc Hanh Doan",
+      "filiale": "402507: K-Wesel-Rudolf-Diesel-Straße",
+      "zweit": [],
+      "urlaubOffen": 1,
+      "urlaubAnspruch": 30
+    },
+    {
+      "id": "340444",
+      "name": "Vu Nguyen Doan",
+      "filiale": "402310: R-Wuppertal-Ascheweg - Brücken Kaufpark",
+      "zweit": [
+        "402512: R-Remscheid-Wupperstraße"
+      ],
+      "urlaubOffen": 11,
+      "urlaubAnspruch": 30
+    },
+    {
+      "id": "340473",
+      "name": "My Linh Heidel",
+      "filiale": "402310: R-Wuppertal-Ascheweg - Brücken Kaufpark",
+      "zweit": [
+        "402185: K-Hagen-Auf dem Lölfert"
+      ],
+      "urlaubOffen": 9,
+      "urlaubAnspruch": 30
+    },
+    {
+      "id": "340877",
+      "name": "Thi Hoan Tran",
+      "filiale": "402315: R-Bochum-Viktoriastraße - Mert",
+      "zweit": [
+        "402523: K-Essen-Haedenkampstraße"
+      ],
+      "urlaubOffen": 8,
+      "urlaubAnspruch": 30
+    },
+    {
+      "id": "340910",
+      "name": "Hai Nguyen",
+      "filiale": "402167: R-Düsseldorf-Hauptstr.",
+      "zweit": [
+        "402272: R-Düsseldorf-Münsterstraße"
+      ],
+      "urlaubOffen": 22,
+      "urlaubAnspruch": 30
+    },
+    {
+      "id": "340918",
+      "name": "Van Thanh Vu",
+      "filiale": "402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner",
+      "zweit": [],
+      "urlaubOffen": 0,
+      "urlaubAnspruch": 28
+    },
+    {
+      "id": "340955",
+      "name": "Hong Minh Nguyen",
+      "filiale": "402251: R-Düsseldorf-Zeppelinstraße",
+      "zweit": [
+        "402167: R-Düsseldorf-Hauptstr."
+      ],
+      "urlaubOffen": 6,
+      "urlaubAnspruch": 30
+    },
+    {
+      "id": "341377",
+      "name": "Hong Son Vu",
+      "filiale": "402512: R-Remscheid-Wupperstraße",
+      "zweit": [
+        "402310: R-Wuppertal-Ascheweg - Brücken Kaufpark"
+      ],
+      "urlaubOffen": 3,
+      "urlaubAnspruch": 30
+    },
+    {
+      "id": "341384",
+      "name": "Muhammad Yasir Amjad",
+      "filiale": "402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner",
+      "zweit": [],
+      "urlaubOffen": 10,
+      "urlaubAnspruch": 30
+    },
+    {
+      "id": "341392",
+      "name": "Rona Cita Azizah",
+      "filiale": "402251: R-Düsseldorf-Zeppelinstraße",
+      "zweit": [],
+      "urlaubOffen": 10,
+      "urlaubAnspruch": 30
+    },
+    {
+      "id": "341409",
+      "name": "Thanchanok Hahlweg",
+      "filiale": "402205: R-Hattingen-Heggerstraße",
+      "zweit": [
+        "402315: R-Bochum-Viktoriastraße - Mert"
+      ],
+      "urlaubOffen": 6,
+      "urlaubAnspruch": 23
+    },
+    {
+      "id": "341411",
+      "name": "Trung Thanh Trinh",
+      "filiale": "402523: K-Essen-Haedenkampstraße",
+      "zweit": [
+        "402315: R-Bochum-Viktoriastraße - Mert"
+      ],
+      "urlaubOffen": 0,
+      "urlaubAnspruch": 23
+    },
+    {
+      "id": "341424",
+      "name": "Hongli Shao",
+      "filiale": "402167: R-Düsseldorf-Hauptstr.",
+      "zweit": [
+        "402251: R-Düsseldorf-Zeppelinstraße"
+      ],
+      "urlaubOffen": 0,
+      "urlaubAnspruch": 25
+    },
+    {
+      "id": "341450",
+      "name": "Paramita Dian Purnomo",
+      "filiale": "402261: R-Hilden-Mittelstraße",
+      "zweit": [
+        "402512: R-Remscheid-Wupperstraße"
+      ],
+      "urlaubOffen": 17,
+      "urlaubAnspruch": 18
+    },
+    {
+      "id": "341457",
+      "name": "Diu Thuan Nguyen",
+      "filiale": "402512: R-Remscheid-Wupperstraße",
+      "zweit": [
+        "402310: R-Wuppertal-Ascheweg - Brücken Kaufpark"
+      ],
+      "urlaubOffen": 20,
+      "urlaubAnspruch": 23
+    },
+    {
+      "id": "341503",
+      "name": "Dinh Chien Nguyen",
+      "filiale": "402315: R-Bochum-Viktoriastraße - Mert",
+      "zweit": [
+        "402523: K-Essen-Haedenkampstraße"
+      ],
+      "urlaubOffen": 13,
+      "urlaubAnspruch": 13
+    },
+    {
+      "id": "350152",
+      "name": "Dandan Schütte-Wei",
+      "filiale": "402185: K-Hagen-Auf dem Lölfert",
+      "zweit": [
+        "402310: R-Wuppertal-Ascheweg - Brücken Kaufpark"
+      ],
+      "urlaubOffen": 11,
+      "urlaubAnspruch": 30
+    },
+    {
+      "id": "350153",
+      "name": "Thi Bich Tran",
+      "filiale": "402133: K-Köln-Thebäerstraße",
+      "zweit": [],
+      "urlaubOffen": 2,
+      "urlaubAnspruch": 30
+    },
+    {
+      "id": "350445",
+      "name": "Thi Ngoc Anh Nguyen",
+      "filiale": "402422: E-Leverkusen-Pommernstraße",
+      "zweit": [
+        "402261: R-Hilden-Mittelstraße"
+      ],
+      "urlaubOffen": 11,
+      "urlaubAnspruch": 30
+    },
+    {
+      "id": "350527",
+      "name": "Eric Ta",
+      "filiale": "402185: K-Hagen-Auf dem Lölfert",
+      "zweit": [
+        "402315: R-Bochum-Viktoriastraße - Mert"
+      ],
+      "urlaubOffen": 15,
+      "urlaubAnspruch": 30
+    },
+    {
+      "id": "350529",
+      "name": "Ngoc Thanh Nha Nguyen",
+      "filiale": "402507: K-Wesel-Rudolf-Diesel-Straße",
+      "zweit": [
+        "402251: R-Düsseldorf-Zeppelinstraße"
+      ],
+      "urlaubOffen": 0,
+      "urlaubAnspruch": 23
+    },
+    {
+      "id": "350544",
+      "name": "Susdalia Silitonga",
+      "filiale": "402261: R-Hilden-Mittelstraße",
+      "zweit": [
+        "402310: R-Wuppertal-Ascheweg - Brücken Kaufpark"
+      ],
+      "urlaubOffen": 1,
+      "urlaubAnspruch": 28
+    },
+    {
+      "id": "350553",
+      "name": "Thi Tu Ngo",
+      "filiale": "402272: R-Düsseldorf-Münsterstraße",
+      "zweit": [
+        "402523: K-Essen-Haedenkampstraße"
+      ],
+      "urlaubOffen": 20,
+      "urlaubAnspruch": 28
+    },
+    {
+      "id": "350598",
+      "name": "Boi Anh Khuu",
+      "filiale": "402507: K-Wesel-Rudolf-Diesel-Straße",
+      "zweit": [
+        "402523: K-Essen-Haedenkampstraße"
+      ],
+      "urlaubOffen": 9,
+      "urlaubAnspruch": 18
+    },
+    {
+      "id": "350604",
+      "name": "The Hai Nguyen",
+      "filiale": "402261: R-Hilden-Mittelstraße",
+      "zweit": [
+        "402422: E-Leverkusen-Pommernstraße"
+      ],
+      "urlaubOffen": 7,
+      "urlaubAnspruch": 15
+    },
+    {
+      "id": "350605",
+      "name": "Sumi Park",
+      "filiale": "402133: K-Köln-Thebäerstraße",
+      "zweit": [],
+      "urlaubOffen": 14,
+      "urlaubAnspruch": 15
+    },
+    {
+      "id": "550078",
+      "name": "Trong Nguyen",
+      "filiale": "402523: K-Essen-Haedenkampstraße",
+      "zweit": [
+        "402185: K-Hagen-Auf dem Lölfert",
+        "402205: R-Hattingen-Heggerstraße",
+        "402251: R-Düsseldorf-Zeppelinstraße",
+        "402261: R-Hilden-Mittelstraße",
+        "402272: R-Düsseldorf-Münsterstraße",
+        "402310: R-Wuppertal-Ascheweg - Brücken Kaufpark",
+        "402315: R-Bochum-Viktoriastraße - Mert",
+        "402422: E-Leverkusen-Pommernstraße",
+        "402507: K-Wesel-Rudolf-Diesel-Straße",
+        "402512: R-Remscheid-Wupperstraße",
+        "402523: K-Essen-Haedenkampstraße"
+      ],
+      "urlaubOffen": 11,
+      "urlaubAnspruch": 30
+    }
+  ],
+  "existingByPerson": {
+    "330478": [
+      {
+        "from": "2026-09-21",
+        "to": "2026-09-21",
+        "status": "approved"
+      },
+      {
+        "from": "2026-09-19",
+        "to": "2026-09-19",
+        "status": "pending"
+      },
+      {
+        "from": "2026-10-19",
+        "to": "2026-10-19",
+        "status": "pending"
+      },
+      {
+        "from": "2026-10-30",
+        "to": "2026-10-31",
+        "status": "pending"
+      },
+      {
+        "from": "2026-11-14",
+        "to": "2026-11-17",
+        "status": "pending"
+      },
+      {
+        "from": "2026-12-07",
+        "to": "2026-12-09",
+        "status": "pending"
+      },
+      {
+        "from": "2026-09-16",
+        "to": "2026-09-16",
+        "status": "approved"
+      },
+      {
+        "from": "2026-09-12",
+        "to": "2026-09-12",
+        "status": "approved"
+      },
+      {
+        "from": "2026-11-02",
+        "to": "2026-11-02",
+        "status": "approved"
+      },
+      {
+        "from": "2026-09-28",
+        "to": "2026-09-29",
+        "status": "approved"
+      }
+    ],
+    "340259": [
+      {
+        "from": "2026-12-01",
+        "to": "2026-12-02",
+        "status": "approved"
+      }
+    ],
+    "340444": [
+      {
+        "from": "2026-09-29",
+        "to": "2026-09-30",
+        "status": "approved"
+      },
+      {
+        "from": "2026-09-05",
+        "to": "2026-09-05",
+        "status": "approved"
+      }
+    ],
+    "340473": [
+      {
+        "from": "2026-09-28",
+        "to": "2026-09-28",
+        "status": "pending"
+      },
+      {
+        "from": "2026-10-17",
+        "to": "2026-10-19",
+        "status": "approved"
+      },
+      {
+        "from": "2026-11-17",
+        "to": "2026-11-18",
+        "status": "approved"
+      }
+    ],
+    "340955": [
+      {
+        "from": "2026-10-01",
+        "to": "2026-10-01",
+        "status": "approved"
+      }
+    ],
+    "341503": [
+      {
+        "from": "2026-11-16",
+        "to": "2026-11-21",
+        "status": "approved"
+      },
+      {
+        "from": "2026-10-17",
+        "to": "2026-10-26",
+        "status": "approved"
+      }
+    ],
+    "350152": [
+      {
+        "from": "2026-11-02",
+        "to": "2026-11-13",
+        "status": "approved"
+      }
+    ],
+    "350527": [
+      {
+        "from": "2026-12-03",
+        "to": "2026-12-16",
+        "status": "approved"
+      }
+    ]
+  }
+}

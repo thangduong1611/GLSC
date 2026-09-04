@@ -1,0 +1,364 @@
+<!doctype html>
+<title>Urlaubsplan West 2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+  :root {
+    --bg: #f5f6f8;
+    --surface: #ffffff;
+    --surface-2: #eef0f3;
+    --ink: #1b2430;
+    --ink-soft: #57606f;
+    --ink-faint: #8790a0;
+    --border: #dde1e7;
+    --accent: #0f6e63;
+    --accent-ink: #ffffff;
+    --accent-soft: #e4f1ee;
+    --amber: #a5680a;
+    --amber-soft: #fcefda;
+    --amber-border: #e3b566;
+    --danger: #a5372f;
+    --danger-soft: #fbeaea;
+    --holiday: #6a5aa8;
+    --shadow: 0 1px 2px rgba(20,30,45,.04), 0 8px 24px rgba(20,30,45,.06);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #11151b;
+      --surface: #171c24;
+      --surface-2: #1e2530;
+      --ink: #e8ebf0;
+      --ink-soft: #a3adba;
+      --ink-faint: #6b7481;
+      --border: #2a3340;
+      --accent: #3fcdb6;
+      --accent-ink: #08211d;
+      --accent-soft: #17332d;
+      --amber: #e8b258;
+      --amber-soft: #332711;
+      --amber-border: #6b511f;
+      --danger: #e58680;
+      --danger-soft: #3a1f1e;
+      --holiday: #a596e0;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #11151b;
+    --surface: #171c24;
+    --surface-2: #1e2530;
+    --ink: #e8ebf0;
+    --ink-soft: #a3adba;
+    --ink-faint: #6b7481;
+    --border: #2a3340;
+    --accent: #3fcdb6;
+    --accent-ink: #08211d;
+    --accent-soft: #17332d;
+    --amber: #e8b258;
+    --amber-soft: #332711;
+    --amber-border: #6b511f;
+    --danger: #e58680;
+    --danger-soft: #3a1f1e;
+    --holiday: #a596e0;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Public Sans', -apple-system, Segoe UI, sans-serif;
+    padding: 28px 32px 60px;
+    max-width: 1360px;
+    margin: 0 auto;
+  }
+  h1, h2, h3 { font-family: 'Archivo', sans-serif; font-weight: 800; letter-spacing: -0.01em; margin: 0; }
+  .mono { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
+
+  /* ---- Header ---- */
+  header {
+    display: flex; justify-content: space-between; align-items: flex-end; gap: 24px;
+    padding-bottom: 20px; margin-bottom: 24px; border-bottom: 2px solid var(--border);
+    flex-wrap: wrap;
+  }
+  header .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+  header h1 { font-size: 30px; }
+  header .sub { color: var(--ink-soft); font-size: 14.5px; margin-top: 6px; max-width: 640px; line-height: 1.5; }
+  .meta-box { text-align: right; font-size: 13px; color: var(--ink-soft); }
+  .meta-box .big { font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: var(--ink); font-weight: 600; }
+
+  /* ---- Stat cards ---- */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 12px; margin-bottom: 28px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; box-shadow: var(--shadow); }
+  .stat .n { font-family: 'IBM Plex Mono', monospace; font-size: 24px; font-weight: 600; color: var(--accent); }
+  .stat .l { font-size: 12.5px; color: var(--ink-soft); margin-top: 2px; }
+
+  /* ---- Legend ---- */
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 30px; box-shadow: var(--shadow); font-size: 13px; }
+  .legend .title { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-faint); width: 100%; margin-bottom: 4px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; color: var(--ink-soft); }
+  .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+
+  /* ---- Month block ---- */
+  .month { margin-bottom: 34px; }
+  .month h2 { font-size: 20px; margin-bottom: 12px; display: flex; align-items: baseline; gap: 10px; }
+  .month h2 .count { font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; font-weight: 600; color: var(--ink-faint); background: var(--surface-2); padding: 3px 8px; border-radius: 20px; }
+  .cal-wrap { overflow-x: auto; border-radius: 12px; box-shadow: var(--shadow); }
+  .cal { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--surface); min-width: 900px; }
+  .cal th { font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-faint); font-weight: 700; padding: 9px 6px; text-align: left; border-bottom: 1px solid var(--border); background: var(--surface-2); }
+  .cal th:first-child { border-top-left-radius: 12px; }
+  .cal th:last-child { border-top-right-radius: 12px; }
+  .cal td { vertical-align: top; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); padding: 6px; width: 14.28%; height: 84px; }
+  .cal td:last-child { border-right: none; }
+  .cal td.blank { background: var(--surface-2); opacity: .45; }
+  .cal td.weekend { background: color-mix(in srgb, var(--surface-2) 55%, transparent); }
+  .cal td.holiday { background: color-mix(in srgb, var(--holiday) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--holiday) 45%, transparent); }
+  .daynum { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--ink-faint); font-weight: 600; display: flex; align-items: baseline; gap: 4px; }
+  .holiday-tag { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--holiday); }
+  .chips { margin-top: 3px; display: flex; flex-direction: column; gap: 2px; }
+  .chip {
+    font-size: 10.6px; line-height: 1.35; padding: 1.5px 5px 1.5px 6px; border-radius: 4px;
+    background: hsl(var(--hue) 60% 95%); border-left: 3px solid hsl(var(--hue) 55% 42%);
+    color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-weight: 600;
+  }
+  :root:not([data-theme="light"]) .chip, :root[data-theme="dark"] .chip {
+    background: hsl(var(--hue) 38% 20%); border-left-color: hsl(var(--hue) 55% 60%);
+  }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .chip { background: hsl(var(--hue) 60% 95%); border-left-color: hsl(var(--hue) 55% 42%); } }
+  .chip.pending { opacity: .8; border-style: dashed; }
+  .chip.vertretung {
+    background: var(--amber-soft); border-left: 3px solid var(--amber); color: var(--amber); font-weight: 700;
+  }
+
+  /* ---- Notes ---- */
+  .notes { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; margin: 30px 0; }
+  @media (max-width: 900px) { .notes { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; box-shadow: var(--shadow); }
+  .card h3 { font-size: 14px; margin-bottom: 10px; }
+  .card p, .card li { font-size: 13.5px; color: var(--ink-soft); line-height: 1.6; }
+  .card ul { margin: 0; padding-left: 18px; }
+  .card.warn { border-color: var(--danger); background: var(--danger-soft); }
+  .card.warn h3 { color: var(--danger); }
+  .card.warn p, .card.warn li { color: var(--ink); }
+
+  /* ---- Summary table ---- */
+  .summary h2 { font-size: 20px; margin-bottom: 12px; }
+  .table-wrap { overflow-x: auto; border-radius: 12px; box-shadow: var(--shadow); }
+  table.emp { width: 100%; border-collapse: collapse; background: var(--surface); font-size: 13px; min-width: 980px; }
+  table.emp th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-faint); padding: 10px 12px; border-bottom: 2px solid var(--border); background: var(--surface-2); position: sticky; top: 0; }
+  table.emp th:first-child, table.emp td:first-child { position: sticky; left: 0; }
+  table.emp td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--ink); }
+  table.emp tr:hover td { background: var(--surface-2); }
+  table.emp .num { font-family: 'IBM Plex Mono', monospace; text-align: right; font-variant-numeric: tabular-nums; }
+  table.emp .branch-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ink-soft); }
+  table.emp .ranges { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--ink-soft); }
+  table.emp .ranges .r { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; }
+  .ok-badge { display: inline-block; font-size: 10.5px; font-weight: 700; padding: 1px 7px; border-radius: 20px; background: var(--accent-soft); color: var(--accent); }
+
+  footer { margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--ink-faint); }
+</style>
+
+<header>
+  <div>
+    <div class="eyebrow">Filial Radar &middot; West-Region</div>
+    <h1>Urlaubsplan West — Rest 2026</h1>
+    <div class="sub">Planvorschlag, damit alle aktiven Mitarbeiter der West-Region ihren Resturlaub bis Jahresende aufbrauchen (ohne Bereichsleitungen anderer Regionen). Innerhalb jeder Filiale (inkl. Zweitfiliale-Kolleg:innen) überschneiden sich keine Urlaubszeiträume. Herr Nguyen, Trong dient als filialübergreifende Vertretung.</div>
+  </div>
+  <div class="meta-box">
+    <span class="ok-badge" style="font-size:12px;padding:3px 10px;">✓ In Firestore eingetragen (status: approved)</span>
+    <div style="margin-top:8px;">Erstellt am</div>
+    <div class="big" id="genDate"></div>
+    <div style="margin-top:6px;">Planungszeitraum</div>
+    <div class="big" id="genRange"></div>
+  </div>
+</header>
+
+<div class="stats" id="statsRow"></div>
+
+<div class="legend" id="legendBox"></div>
+
+<div id="calendars"></div>
+
+<div class="notes">
+  <div class="card">
+    <h3>Methodik</h3>
+    <ul>
+      <li><b>Überschneidungsregel:</b> Für jede Filiale gilt ein gemeinsamer &bdquo;Besetzungs-Pool&ldquo; aus Stammkräften + allen Kolleg:innen, die diese Filiale als Zweitfiliale führen. Innerhalb eines Pools bekommt niemand einen überlappenden Urlaubszeitraum.</li>
+      <li><b>Herr Nguyen, Trong (dép dự phòng):</b> Zweitfiliale-Eintrag umfasst alle 11 West-Filialen &rarr; aus der Überschneidungsregel ausgenommen, damit er niemanden blockiert. Sein eigener Resturlaub (11 Tage) wurde trotzdem eingeplant.</li>
+      <li><b>Vertretung:</b> R-Düsseldorf-Münsterstraße (Frau Ngo, Thi Tu) und E-Bergheim-Fischenich (Frau Trinh, Thi Dieu Quynh) haben jeweils nur 1 Stammkraft. An deren Urlaubstagen ist Herr Nguyen, Trong als Vertretung markiert (gelb) &mdash; seine eigenen Urlaubstage wurden bewusst außerhalb dieser Zeiträume gelegt.</li>
+      <li><b>Nicht enthalten:</b> Herr Nguyen, Viet Hoang (550198) ist Bereichsleiter einer anderen Region und wurde komplett aus diesem Plan herausgenommen.</li>
+      <li><b>Start ab 14.09.2026:</b> entspricht der 10-Tage-Vorlauffrist im Mitarbeiter-Portal.</li>
+      <li><b>Feiertage (NRW) + Sonntag:</b> 03.10., 01.11., 25.–26.12. sowie jeder Sonntag zählen nicht als Urlaubstag (Mitarbeiter arbeiten nur Mo–Sa). Überschneidet ein Block einen Feiertag oder Sonntag, wird er automatisch um genau diese Tage verlängert &mdash; die "Tage"-Anzahl in der Übersichtstabelle bleibt trotzdem korrekt.</li>
+      <li><b>Bereits gebuchter Urlaub</b> (2026, aus dem System) wurde vom Resturlaub abgezogen und im Kalender mit dünnerem Rahmen dargestellt.</li>
+    </ul>
+  </div>
+  <div class="card warn" id="warnCard"></div>
+</div>
+
+<div class="summary">
+  <h2>Übersicht pro Mitarbeiter</h2>
+  <div class="table-wrap">
+    <table class="emp" id="empTable">
+      <thead><tr>
+        <th>Name</th><th>Filiale</th><th class="num">Anspruch</th><th class="num">Offen (vorher)</th><th>Geplante Zeiträume (neu)</th><th class="num">Tage neu</th><th>Status</th>
+      </tr></thead>
+      <tbody id="empTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<footer>Filial Radar &middot; automatisch erstellter Planvorschlag (automation/src/plan-urlaub-west.js) &middot; Gebietsleiter-Review vor Freigabe erforderlich.</footer>
+
+<script>
+const DATA = {"generiertAm":"2026-09-04","zeitraum":{"von":"2026-09-14","bis":"2026-12-31"},"plan":[{"id":"350544","name":"Susdalia Silitonga","filiale":"402261: R-Hilden-Mittelstraße","from":"2026-09-14","to":"2026-09-14","tage":1},{"id":"340877","name":"Thi Hoan Tran","filiale":"402315: R-Bochum-Viktoriastraße - Mert","from":"2026-09-14","to":"2026-09-22","tage":8},{"id":"340276","name":"Chee Sam Chin","filiale":"402167: R-Düsseldorf-Hauptstr.","from":"2026-09-14","to":"2026-09-19","tage":6},{"id":"340429","name":"Duc Hanh Doan","filiale":"402507: K-Wesel-Rudolf-Diesel-Straße","from":"2026-09-14","to":"2026-09-14","tage":1},{"id":"350605","name":"Sumi Park","filiale":"402133: K-Köln-Thebäerstraße","from":"2026-09-14","to":"2026-09-21","tage":7},{"id":"341384","name":"Muhammad Yasir Amjad","filiale":"402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner","from":"2026-09-14","to":"2026-09-24","tage":10},{"id":"340370","name":"Archna Dhusia Sharma","filiale":"402363: R-Bergneustadt-Stadionstr.","from":"2026-09-14","to":"2026-09-14","tage":1},{"id":"330485","name":"Thi Dieu Quynh Trinh","filiale":"402414: E-Bergheim-Dansweilerstraße - Fischenich","from":"2026-09-14","to":"2026-09-19","tage":6},{"id":"340322","name":"Kim Mai Nguyen","filiale":"402261: R-Hilden-Mittelstraße","from":"2026-09-15","to":"2026-09-15","tage":1},{"id":"341457","name":"Diu Thuan Nguyen","filiale":"402512: R-Remscheid-Wupperstraße","from":"2026-09-16","to":"2026-09-26","tage":10},{"id":"340955","name":"Hong Minh Nguyen","filiale":"402251: R-Düsseldorf-Zeppelinstraße","from":"2026-09-20","to":"2026-09-25","tage":5},{"id":"550078","name":"Trong Nguyen","filiale":"402523: K-Essen-Haedenkampstraße","from":"2026-09-20","to":"2026-09-26","tage":6},{"id":"350445","name":"Thi Ngoc Anh Nguyen","filiale":"402422: E-Leverkusen-Pommernstraße","from":"2026-09-22","to":"2026-09-26","tage":5},{"id":"350605","name":"Sumi Park","filiale":"402133: K-Köln-Thebäerstraße","from":"2026-09-22","to":"2026-09-29","tage":7},{"id":"350527","name":"Eric Ta","filiale":"402185: K-Hagen-Auf dem Lölfert","from":"2026-09-23","to":"2026-09-23","tage":1},{"id":"350598","name":"Boi Anh Khuu","filiale":"402507: K-Wesel-Rudolf-Diesel-Straße","from":"2026-09-23","to":"2026-10-02","tage":9},{"id":"341409","name":"Thanchanok Hahlweg","filiale":"402205: R-Hattingen-Heggerstraße","from":"2026-09-24","to":"2026-09-30","tage":6},{"id":"550078","name":"Trong Nguyen","filiale":"402523: K-Essen-Haedenkampstraße","from":"2026-09-27","to":"2026-10-02","tage":5},{"id":"350153","name":"Thi Bich Tran","filiale":"402133: K-Köln-Thebäerstraße","from":"2026-09-30","to":"2026-10-01","tage":2},{"id":"341450","name":"Paramita Dian Purnomo","filiale":"402261: R-Hilden-Mittelstraße","from":"2026-10-01","to":"2026-10-12","tage":9},{"id":"340259","name":"Quoc Bao Huynh","filiale":"402205: R-Hattingen-Heggerstraße","from":"2026-10-01","to":"2026-10-07","tage":5},{"id":"340473","name":"My Linh Heidel","filiale":"402310: R-Wuppertal-Ascheweg - Brücken Kaufpark","from":"2026-10-01","to":"2026-10-05","tage":3},{"id":"341392","name":"Rona Cita Azizah","filiale":"402251: R-Düsseldorf-Zeppelinstraße","from":"2026-10-02","to":"2026-10-14","tage":10},{"id":"350553","name":"Thi Tu Ngo","filiale":"402272: R-Düsseldorf-Münsterstraße","from":"2026-10-03","to":"2026-10-15","tage":10},{"id":"341377","name":"Hong Son Vu","filiale":"402512: R-Remscheid-Wupperstraße","from":"2026-10-13","to":"2026-10-15","tage":3},{"id":"340910","name":"Hai Nguyen","filiale":"402167: R-Düsseldorf-Hauptstr.","from":"2026-10-16","to":"2026-10-24","tage":8},{"id":"341450","name":"Paramita Dian Purnomo","filiale":"402261: R-Hilden-Mittelstraße","from":"2026-10-20","to":"2026-10-28","tage":8},{"id":"350553","name":"Thi Tu Ngo","filiale":"402272: R-Düsseldorf-Münsterstraße","from":"2026-10-27","to":"2026-11-06","tage":10},{"id":"350445","name":"Thi Ngoc Anh Nguyen","filiale":"402422: E-Leverkusen-Pommernstraße","from":"2026-11-03","to":"2026-11-09","tage":6},{"id":"340910","name":"Hai Nguyen","filiale":"402167: R-Düsseldorf-Hauptstr.","from":"2026-11-07","to":"2026-11-14","tage":7},{"id":"340910","name":"Hai Nguyen","filiale":"402167: R-Düsseldorf-Hauptstr.","from":"2026-11-15","to":"2026-11-23","tage":7},{"id":"350604","name":"The Hai Nguyen","filiale":"402261: R-Hilden-Mittelstraße","from":"2026-11-18","to":"2026-11-25","tage":7},{"id":"341457","name":"Diu Thuan Nguyen","filiale":"402512: R-Remscheid-Wupperstraße","from":"2026-11-19","to":"2026-11-30","tage":10},{"id":"340444","name":"Vu Nguyen Doan","filiale":"402310: R-Wuppertal-Ascheweg - Brücken Kaufpark","from":"2026-12-01","to":"2026-12-09","tage":8}],"vertretung":[{"filiale":"402272: R-Düsseldorf-Münsterstraße","from":"2026-10-03","to":"2026-10-15","fuerName":"Thi Tu Ngo","fuerId":"350553"},{"filiale":"402272: R-Düsseldorf-Münsterstraße","from":"2026-10-27","to":"2026-11-06","fuerName":"Thi Tu Ngo","fuerId":"350553"},{"filiale":"402414: E-Bergheim-Dansweilerstraße - Fischenich","from":"2026-09-14","to":"2026-09-19","fuerName":"Thi Dieu Quynh Trinh","fuerId":"330485"}],"nichtVerplant":[],"singleStaffBranches":["402414: E-Bergheim-Dansweilerstraße - Fischenich","402272: R-Düsseldorf-Münsterstraße"],"feiertage":["2026-10-03","2026-11-01","2026-12-25","2026-12-26"],"people":[{"id":"330314","name":"Thi Minh Chau Trinh","filiale":"402422: E-Leverkusen-Pommernstraße","zweit":["402167: R-Düsseldorf-Hauptstr."],"urlaubOffen":0,"urlaubAnspruch":25},{"id":"330337","name":"Endhamya Asemenintha Meliala","filiale":"402523: K-Essen-Haedenkampstraße","zweit":["402315: R-Bochum-Viktoriastraße - Mert"],"urlaubOffen":0,"urlaubAnspruch":30},{"id":"330478","name":"Panadda Frunzescu","filiale":"402422: E-Leverkusen-Pommernstraße","zweit":["402261: R-Hilden-Mittelstraße"],"urlaubOffen":17,"urlaubAnspruch":23},{"id":"330485","name":"Thi Dieu Quynh Trinh","filiale":"402414: E-Bergheim-Dansweilerstraße - Fischenich","zweit":[],"urlaubOffen":6,"urlaubAnspruch":23},{"id":"340259","name":"Quoc Bao Huynh","filiale":"402205: R-Hattingen-Heggerstraße","zweit":["402315: R-Bochum-Viktoriastraße - Mert"],"urlaubOffen":7,"urlaubAnspruch":30},{"id":"340276","name":"Chee Sam Chin","filiale":"402167: R-Düsseldorf-Hauptstr.","zweit":["402251: R-Düsseldorf-Zeppelinstraße"],"urlaubOffen":6,"urlaubAnspruch":30},{"id":"340301","name":"Hongbiao Li","filiale":"402302: R-Neuss-Allerheiligen-Am alten Bach - Friedrich","zweit":[],"urlaubOffen":0,"urlaubAnspruch":30},{"id":"340312","name":"Xiaoxi Kang","filiale":"402302: R-Neuss-Allerheiligen-Am alten Bach - Friedrich","zweit":[],"urlaubOffen":0,"urlaubAnspruch":30},{"id":"340322","name":"Kim Mai Nguyen","filiale":"402261: R-Hilden-Mittelstraße","zweit":["402512: R-Remscheid-Wupperstraße"],"urlaubOffen":1,"urlaubAnspruch":30},{"id":"340361","name":"Bayarmagnai Unurbat","filiale":"402363: R-Bergneustadt-Stadionstr.","zweit":[],"urlaubOffen":0,"urlaubAnspruch":30},{"id":"340370","name":"Archna Dhusia Sharma","filiale":"402363: R-Bergneustadt-Stadionstr.","zweit":[],"urlaubOffen":1,"urlaubAnspruch":30},{"id":"340429","name":"Duc Hanh Doan","filiale":"402507: K-Wesel-Rudolf-Diesel-Straße","zweit":[],"urlaubOffen":1,"urlaubAnspruch":30},{"id":"340444","name":"Vu Nguyen Doan","filiale":"402310: R-Wuppertal-Ascheweg - Brücken Kaufpark","zweit":["402512: R-Remscheid-Wupperstraße"],"urlaubOffen":11,"urlaubAnspruch":30},{"id":"340473","name":"My Linh Heidel","filiale":"402310: R-Wuppertal-Ascheweg - Brücken Kaufpark","zweit":["402185: K-Hagen-Auf dem Lölfert"],"urlaubOffen":9,"urlaubAnspruch":30},{"id":"340877","name":"Thi Hoan Tran","filiale":"402315: R-Bochum-Viktoriastraße - Mert","zweit":["402523: K-Essen-Haedenkampstraße"],"urlaubOffen":8,"urlaubAnspruch":30},{"id":"340910","name":"Hai Nguyen","filiale":"402167: R-Düsseldorf-Hauptstr.","zweit":["402272: R-Düsseldorf-Münsterstraße"],"urlaubOffen":22,"urlaubAnspruch":30},{"id":"340918","name":"Van Thanh Vu","filiale":"402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner","zweit":[],"urlaubOffen":0,"urlaubAnspruch":28},{"id":"340955","name":"Hong Minh Nguyen","filiale":"402251: R-Düsseldorf-Zeppelinstraße","zweit":["402167: R-Düsseldorf-Hauptstr."],"urlaubOffen":6,"urlaubAnspruch":30},{"id":"341377","name":"Hong Son Vu","filiale":"402512: R-Remscheid-Wupperstraße","zweit":["402310: R-Wuppertal-Ascheweg - Brücken Kaufpark"],"urlaubOffen":3,"urlaubAnspruch":30},{"id":"341384","name":"Muhammad Yasir Amjad","filiale":"402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner","zweit":[],"urlaubOffen":10,"urlaubAnspruch":30},{"id":"341392","name":"Rona Cita Azizah","filiale":"402251: R-Düsseldorf-Zeppelinstraße","zweit":[],"urlaubOffen":10,"urlaubAnspruch":30},{"id":"341409","name":"Thanchanok Hahlweg","filiale":"402205: R-Hattingen-Heggerstraße","zweit":["402315: R-Bochum-Viktoriastraße - Mert"],"urlaubOffen":6,"urlaubAnspruch":23},{"id":"341411","name":"Trung Thanh Trinh","filiale":"402523: K-Essen-Haedenkampstraße","zweit":["402315: R-Bochum-Viktoriastraße - Mert"],"urlaubOffen":0,"urlaubAnspruch":23},{"id":"341424","name":"Hongli Shao","filiale":"402167: R-Düsseldorf-Hauptstr.","zweit":["402251: R-Düsseldorf-Zeppelinstraße"],"urlaubOffen":0,"urlaubAnspruch":25},{"id":"341450","name":"Paramita Dian Purnomo","filiale":"402261: R-Hilden-Mittelstraße","zweit":["402512: R-Remscheid-Wupperstraße"],"urlaubOffen":17,"urlaubAnspruch":18},{"id":"341457","name":"Diu Thuan Nguyen","filiale":"402512: R-Remscheid-Wupperstraße","zweit":["402310: R-Wuppertal-Ascheweg - Brücken Kaufpark"],"urlaubOffen":20,"urlaubAnspruch":23},{"id":"341503","name":"Dinh Chien Nguyen","filiale":"402315: R-Bochum-Viktoriastraße - Mert","zweit":["402523: K-Essen-Haedenkampstraße"],"urlaubOffen":13,"urlaubAnspruch":13},{"id":"350152","name":"Dandan Schütte-Wei","filiale":"402185: K-Hagen-Auf dem Lölfert","zweit":["402310: R-Wuppertal-Ascheweg - Brücken Kaufpark"],"urlaubOffen":11,"urlaubAnspruch":30},{"id":"350153","name":"Thi Bich Tran","filiale":"402133: K-Köln-Thebäerstraße","zweit":[],"urlaubOffen":2,"urlaubAnspruch":30},{"id":"350445","name":"Thi Ngoc Anh Nguyen","filiale":"402422: E-Leverkusen-Pommernstraße","zweit":["402261: R-Hilden-Mittelstraße"],"urlaubOffen":11,"urlaubAnspruch":30},{"id":"350527","name":"Eric Ta","filiale":"402185: K-Hagen-Auf dem Lölfert","zweit":["402315: R-Bochum-Viktoriastraße - Mert"],"urlaubOffen":15,"urlaubAnspruch":30},{"id":"350529","name":"Ngoc Thanh Nha Nguyen","filiale":"402507: K-Wesel-Rudolf-Diesel-Straße","zweit":["402251: R-Düsseldorf-Zeppelinstraße"],"urlaubOffen":0,"urlaubAnspruch":23},{"id":"350544","name":"Susdalia Silitonga","filiale":"402261: R-Hilden-Mittelstraße","zweit":["402310: R-Wuppertal-Ascheweg - Brücken Kaufpark"],"urlaubOffen":1,"urlaubAnspruch":28},{"id":"350553","name":"Thi Tu Ngo","filiale":"402272: R-Düsseldorf-Münsterstraße","zweit":["402523: K-Essen-Haedenkampstraße"],"urlaubOffen":20,"urlaubAnspruch":28},{"id":"350598","name":"Boi Anh Khuu","filiale":"402507: K-Wesel-Rudolf-Diesel-Straße","zweit":["402523: K-Essen-Haedenkampstraße"],"urlaubOffen":9,"urlaubAnspruch":18},{"id":"350604","name":"The Hai Nguyen","filiale":"402261: R-Hilden-Mittelstraße","zweit":["402422: E-Leverkusen-Pommernstraße"],"urlaubOffen":7,"urlaubAnspruch":15},{"id":"350605","name":"Sumi Park","filiale":"402133: K-Köln-Thebäerstraße","zweit":[],"urlaubOffen":14,"urlaubAnspruch":15},{"id":"550078","name":"Trong Nguyen","filiale":"402523: K-Essen-Haedenkampstraße","zweit":["402185: K-Hagen-Auf dem Lölfert","402205: R-Hattingen-Heggerstraße","402251: R-Düsseldorf-Zeppelinstraße","402261: R-Hilden-Mittelstraße","402272: R-Düsseldorf-Münsterstraße","402310: R-Wuppertal-Ascheweg - Brücken Kaufpark","402315: R-Bochum-Viktoriastraße - Mert","402422: E-Leverkusen-Pommernstraße","402507: K-Wesel-Rudolf-Diesel-Straße","402512: R-Remscheid-Wupperstraße","402523: K-Essen-Haedenkampstraße"],"urlaubOffen":11,"urlaubAnspruch":30}],"existingByPerson":{"330478":[{"from":"2026-09-21","to":"2026-09-21","status":"approved"},{"from":"2026-09-19","to":"2026-09-19","status":"pending"},{"from":"2026-10-19","to":"2026-10-19","status":"pending"},{"from":"2026-10-30","to":"2026-10-31","status":"pending"},{"from":"2026-11-14","to":"2026-11-17","status":"pending"},{"from":"2026-12-07","to":"2026-12-09","status":"pending"},{"from":"2026-09-16","to":"2026-09-16","status":"approved"},{"from":"2026-09-12","to":"2026-09-12","status":"approved"},{"from":"2026-11-02","to":"2026-11-02","status":"approved"},{"from":"2026-09-28","to":"2026-09-29","status":"approved"}],"340259":[{"from":"2026-12-01","to":"2026-12-02","status":"approved"}],"340444":[{"from":"2026-09-29","to":"2026-09-30","status":"approved"},{"from":"2026-09-05","to":"2026-09-05","status":"approved"}],"340473":[{"from":"2026-09-28","to":"2026-09-28","status":"pending"},{"from":"2026-10-17","to":"2026-10-19","status":"approved"},{"from":"2026-11-17","to":"2026-11-18","status":"approved"}],"340955":[{"from":"2026-10-01","to":"2026-10-01","status":"approved"}],"341503":[{"from":"2026-11-16","to":"2026-11-21","status":"approved"},{"from":"2026-10-17","to":"2026-10-26","status":"approved"}],"350152":[{"from":"2026-11-02","to":"2026-11-13","status":"approved"}],"350527":[{"from":"2026-12-03","to":"2026-12-16","status":"approved"}]}};
+
+const WOCHENTAGE = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+const MONATE = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+
+function shortBranch(full) {
+  // "402272: R-Düsseldorf-Münsterstraße" -> "Düsseldorf-Münsterstr."
+  const afterColon = full.split(':').slice(1).join(':').trim();
+  const stripped = afterColon.replace(/^[A-Z]-/, '');
+  return stripped;
+}
+function firstNameLastInit(name) {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0];
+  return parts.slice(0, -1).join(' ') + ' ' + parts[parts.length - 1][0] + '.';
+}
+function dateRange(fromIso, toIso) {
+  const out = [];
+  let d = new Date(fromIso + 'T00:00:00');
+  const end = new Date(toIso + 'T00:00:00');
+  while (d <= end) { out.push(d.toISOString().slice(0, 10)); d.setDate(d.getDate() + 1); }
+  return out;
+}
+function fmtD(iso) { const [y,m,d] = iso.split('-'); return d + '.' + m + '.'; }
+
+// ---- Branch hue assignment ----
+const branches = Array.from(new Set(DATA.people.map(p => p.filiale))).sort();
+const hueOf = {};
+branches.forEach((b, i) => { hueOf[b] = Math.round((i * 360) / branches.length); });
+
+const peopleById = {}; DATA.people.forEach(p => peopleById[p.id] = p);
+
+// ---- Build per-day event map ----
+const dayMap = {}; // iso -> [{empId,name,filiale,hue,source,status}]
+function addEvent(empId, name, filiale, from, to, source, status) {
+  const hue = hueOf[filiale] != null ? hueOf[filiale] : 200;
+  dateRange(from, to).forEach(iso => {
+    (dayMap[iso] = dayMap[iso] || []).push({ empId, name, filiale, hue, source, status });
+  });
+}
+DATA.plan.forEach(e => addEvent(e.id, e.name, e.filiale, e.from, e.to, 'neu', 'vorschlag'));
+Object.entries(DATA.existingByPerson).forEach(([id, arr]) => {
+  const p = peopleById[id];
+  arr.forEach(e => addEvent(id, p ? p.name : id, p ? p.filiale : '', e.from, e.to, 'bestehend', e.status));
+});
+const vertretungMap = {}; // iso -> {fuerName, filiale}
+DATA.vertretung.forEach(v => {
+  dateRange(v.from, v.to).forEach(iso => { vertretungMap[iso] = v; });
+});
+
+// ---- Stats ----
+const totalNeu = DATA.plan.reduce((s,e)=>s+e.tage,0);
+const totalPeopleScheduled = new Set(DATA.plan.map(e=>e.id)).size;
+const totalOffenVor = DATA.people.reduce((s,p)=>s+p.urlaubOffen,0);
+document.getElementById('statsRow').innerHTML = [
+  [String(DATA.people.length),'West-Mitarbeiter im Plan'],
+  [String(totalPeopleScheduled),'erhalten neuen Urlaub'],
+  [String(totalNeu)+' Tage','neu verplant'],
+  [String(totalOffenVor)+' Tage','Resturlaub gesamt (vorher)'],
+  [String(DATA.vertretung.length)+' Blöcke','Trong-Vertretung nötig'],
+].map(([n,l]) => `<div class="stat"><div class="n mono">${n}</div><div class="l">${l}</div></div>`).join('');
+
+document.getElementById('genDate').textContent = DATA.generiertAm.split('-').reverse().join('.');
+document.getElementById('genRange').textContent = DATA.zeitraum.von.split('-').reverse().join('.') + ' – ' + DATA.zeitraum.bis.split('-').reverse().join('.');
+
+// ---- Legend ----
+let legendHtml = '<div class="title">Filialen</div>';
+branches.forEach(b => {
+  legendHtml += `<div class="legend-item"><span class="dot" style="background:hsl(${hueOf[b]} 55% 45%)"></span>${shortBranch(b)}</div>`;
+});
+legendHtml += `<div class="legend-item" style="margin-left:auto;"><span class="dot" style="background:var(--amber)"></span>Trong &mdash; Vertretung (dự bị)</div>`;
+legendHtml += `<div class="legend-item"><span class="dot" style="background:var(--holiday)"></span>Feiertag (NRW) &mdash; zählt nicht als Urlaubstag</div>`;
+legendHtml += `<div class="legend-item"><span class="dot" style="background:var(--ink-faint); opacity:.5"></span>gestrichelt = noch ausstehend</div>`;
+document.getElementById('legendBox').innerHTML = legendHtml;
+
+// ---- Calendar rendering ----
+function buildMonth(year, month) { // month 0-indexed
+  const first = new Date(year, month, 1);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  let startWeekday = first.getDay(); // 0=So
+  startWeekday = (startWeekday + 6) % 7; // convert to Mo=0
+
+  let html = `<div class="month"><h2>${MONATE[month]} ${year} <span class="count">${daysInMonth} Tage</span></h2>`;
+  html += '<div class="cal-wrap"><table class="cal"><thead><tr>' + WOCHENTAGE.map(w=>`<th>${w}</th>`).join('') + '</tr></thead><tbody><tr>';
+
+  for (let i = 0; i < startWeekday; i++) html += '<td class="blank"></td>';
+  let col = startWeekday;
+  const holidaySet = new Set(DATA.feiertage || []);
+  for (let day = 1; day <= daysInMonth; day++) {
+    const iso = year + '-' + String(month+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+    const isWeekend = col === 5 || col === 6;
+    const isHoliday = holidaySet.has(iso);
+    const events = (dayMap[iso] || []).slice().sort((a,b) => a.filiale < b.filiale ? -1 : 1);
+    const vert = vertretungMap[iso];
+    let chips = events.map(e => {
+      const cls = 'chip' + (e.status === 'pending' ? ' pending' : '');
+      const label = firstNameLastInit(e.name);
+      const title = e.name + ' — ' + shortBranch(e.filiale) + (e.status === 'pending' ? ' (ausstehend)' : e.source === 'bestehend' ? ' (bereits gebucht)' : '');
+      return `<div class="${cls}" style="--hue:${e.hue}" title="${title}">${label}</div>`;
+    }).join('');
+    if (vert) {
+      chips += `<div class="chip vertretung" title="Trong Nguyen deckt ${shortBranch(vert.filiale)} ab (${vert.fuerName} im Urlaub)">🛟 Trong (dự bị)</div>`;
+    }
+    const tdClass = [isWeekend ? 'weekend' : '', isHoliday ? 'holiday' : ''].filter(Boolean).join(' ');
+    const holidayTag = isHoliday ? '<span class="holiday-tag">Feiertag</span>' : '';
+    html += `<td class="${tdClass}"><div class="daynum">${day}${holidayTag}</div><div class="chips">${chips}</div></td>`;
+    col++;
+    if (col === 7) { html += '</tr><tr>'; col = 0; }
+  }
+  while (col !== 0 && col < 7) { html += '<td class="blank"></td>'; col++; }
+  html += '</tr></tbody></table></div></div>';
+  return html;
+}
+
+let calHtml = '';
+[[2026,8],[2026,9],[2026,10],[2026,11]].forEach(([y,m]) => { calHtml += buildMonth(y,m); });
+document.getElementById('calendars').innerHTML = calHtml;
+
+// ---- Warn card: pre-existing overlap conflicts ----
+document.getElementById('warnCard').innerHTML = `
+  <h3>✓ Keine Überschneidungen</h3>
+  <p>Der zuvor gefundene Konflikt (Eric Ta / Dinh Chien Nguyen / My Linh Heidel, Mitte Oktober) wurde behoben &mdash; Eric Tas Urlaub wurde auf einen freien Zeitraum verschoben. Aktuell keine überlappenden Urlaubszeiträume im gesamten West-Datensatz.</p>
+`;
+
+// ---- Summary table ----
+const planByEmp = {};
+DATA.plan.forEach(e => { (planByEmp[e.id] = planByEmp[e.id] || []).push(e); });
+const rows = DATA.people.slice().sort((a,b) => a.filiale < b.filiale ? -1 : a.filiale > b.filiale ? 1 : a.name < b.name ? -1 : 1);
+let bodyHtml = '';
+rows.forEach(p => {
+  const already = (DATA.existingByPerson[p.id] || []).reduce((s,e) => s + dateRange(e.from,e.to).length, 0);
+  const rest = Math.max(0, p.urlaubOffen - already);
+  const blocks = planByEmp[p.id] || [];
+  const gesamt = blocks.reduce((s,e) => s+e.tage, 0);
+  const ranges = blocks.map(e => `<span class="r">${fmtD(e.from)}–${fmtD(e.to)} (${e.tage}T)</span>`).join('');
+  const statusBadge = p.urlaubOffen === 0
+    ? '<span style="color:var(--ink-faint);font-size:12px;">kein Resturlaub</span>'
+    : (gesamt === rest ? '<span class="ok-badge">✓ vollständig verplant</span>' : `<span style="color:var(--danger);font-size:12px;font-weight:700;">nur ${gesamt}/${rest}T</span>`);
+  bodyHtml += `<tr>
+    <td><b>${p.name}</b>${p.id==='550078' ? ' <span style="color:var(--amber);font-size:11px;">(dự bị)</span>' : ''}</td>
+    <td><span class="branch-tag"><span class="dot" style="background:hsl(${hueOf[p.filiale]} 55% 45%)"></span>${shortBranch(p.filiale)}</span>${p.zweit.length ? '<br><span style="font-size:11px;color:var(--ink-faint);">Zweit: '+p.zweit.map(shortBranch).join(', ')+'</span>' : ''}</td>
+    <td class="num">${p.urlaubAnspruch ?? '–'}</td>
+    <td class="num">${p.urlaubOffen}</td>
+    <td><div class="ranges">${ranges || '<span style="color:var(--ink-faint);">—</span>'}</div></td>
+    <td class="num">${gesamt}</td>
+    <td>${statusBadge}</td>
+  </tr>`;
+});
+document.getElementById('empTableBody').innerHTML = bodyHtml;
+</script>

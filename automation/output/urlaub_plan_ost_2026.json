@@ -1,0 +1,904 @@
+{
+  "generiertAm": "2026-09-04",
+  "zeitraum": {
+    "von": "2026-09-14",
+    "bis": "2026-12-31"
+  },
+  "plan": [
+    {
+      "id": "341373",
+      "name": "Minh Hieu Nguyen",
+      "filiale": "402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme",
+      "from": "2026-09-14",
+      "to": "2026-09-22",
+      "tage": 8
+    },
+    {
+      "id": "330460",
+      "name": "Thi Thuy Nguyen",
+      "filiale": "402257: E-Northeim-Robert-Schnabel-Str. - Schnabel",
+      "from": "2026-09-14",
+      "to": "2026-09-22",
+      "tage": 8
+    },
+    {
+      "id": "550042",
+      "name": "Quoc Cuong Chu",
+      "filiale": "402155: M-Nordhausen-Darrweg",
+      "from": "2026-09-14",
+      "to": "2026-09-17",
+      "tage": 4
+    },
+    {
+      "id": "340913",
+      "name": "Minh Khue Do",
+      "filiale": "402150: E-Sontra-Mühlbergstraße - Salzmann",
+      "from": "2026-09-14",
+      "to": "2026-09-24",
+      "tage": 10
+    },
+    {
+      "id": "410001",
+      "name": "Hai Thanh Nguyen",
+      "filiale": "402146: T-Bad Hersfeld-Heinrich-von-Stephan-Straße",
+      "from": "2026-09-14",
+      "to": "2026-09-22",
+      "tage": 8
+    },
+    {
+      "id": "330697",
+      "name": "Thi Le Tran",
+      "filiale": "402207: E-Bovenden-Industriestraße",
+      "from": "2026-09-23",
+      "to": "2026-09-29",
+      "tage": 6
+    },
+    {
+      "id": "341373",
+      "name": "Minh Hieu Nguyen",
+      "filiale": "402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme",
+      "from": "2026-09-23",
+      "to": "2026-10-01",
+      "tage": 8
+    },
+    {
+      "id": "410001",
+      "name": "Hai Thanh Nguyen",
+      "filiale": "402146: T-Bad Hersfeld-Heinrich-von-Stephan-Straße",
+      "from": "2026-09-23",
+      "to": "2026-09-30",
+      "tage": 7
+    },
+    {
+      "id": "341041",
+      "name": "Yanisa Puchta",
+      "filiale": "401888: R-Homberg (Efze)-Kasseler Str. - Mohr",
+      "from": "2026-09-24",
+      "to": "2026-09-30",
+      "tage": 6
+    },
+    {
+      "id": "341495",
+      "name": "Chunhua Loutchan",
+      "filiale": "402254: R-Kirchheim-Industriestraße - Messerschmidt",
+      "from": "2026-09-24",
+      "to": "2026-10-02",
+      "tage": 8
+    },
+    {
+      "id": "470009",
+      "name": "Bongkotchakon Abramowski",
+      "filiale": "401125: RA-Baunatal-Fuldastraße",
+      "from": "2026-09-25",
+      "to": "2026-10-05",
+      "tage": 8
+    },
+    {
+      "id": "340913",
+      "name": "Minh Khue Do",
+      "filiale": "402150: E-Sontra-Mühlbergstraße - Salzmann",
+      "from": "2026-09-25",
+      "to": "2026-10-07",
+      "tage": 10
+    },
+    {
+      "id": "341041",
+      "name": "Yanisa Puchta",
+      "filiale": "401888: R-Homberg (Efze)-Kasseler Str. - Mohr",
+      "from": "2026-10-01",
+      "to": "2026-10-08",
+      "tage": 6
+    },
+    {
+      "id": "410001",
+      "name": "Hai Thanh Nguyen",
+      "filiale": "402146: T-Bad Hersfeld-Heinrich-von-Stephan-Straße",
+      "from": "2026-10-01",
+      "to": "2026-10-09",
+      "tage": 7
+    },
+    {
+      "id": "470009",
+      "name": "Bongkotchakon Abramowski",
+      "filiale": "401125: RA-Baunatal-Fuldastraße",
+      "from": "2026-10-06",
+      "to": "2026-10-13",
+      "tage": 7
+    },
+    {
+      "id": "340913",
+      "name": "Minh Khue Do",
+      "filiale": "402150: E-Sontra-Mühlbergstraße - Salzmann",
+      "from": "2026-10-08",
+      "to": "2026-10-19",
+      "tage": 10
+    },
+    {
+      "id": "330697",
+      "name": "Thi Le Tran",
+      "filiale": "402207: E-Bovenden-Industriestraße",
+      "from": "2026-10-09",
+      "to": "2026-10-15",
+      "tage": 6
+    },
+    {
+      "id": "330722",
+      "name": "Thi Thanh Huyen Ton",
+      "filiale": "402257: E-Northeim-Robert-Schnabel-Str. - Schnabel",
+      "from": "2026-10-27",
+      "to": "2026-11-07",
+      "tage": 10
+    },
+    {
+      "id": "410013",
+      "name": "Van Chung Ngo",
+      "filiale": "402502: T-Göttingen-An-der-Lutter",
+      "from": "2026-10-31",
+      "to": "2026-11-10",
+      "tage": 8
+    },
+    {
+      "id": "330460",
+      "name": "Thi Thuy Nguyen",
+      "filiale": "402257: E-Northeim-Robert-Schnabel-Str. - Schnabel",
+      "from": "2026-11-08",
+      "to": "2026-11-18",
+      "tage": 9
+    },
+    {
+      "id": "410013",
+      "name": "Van Chung Ngo",
+      "filiale": "402502: T-Göttingen-An-der-Lutter",
+      "from": "2026-11-11",
+      "to": "2026-11-19",
+      "tage": 8
+    },
+    {
+      "id": "330460",
+      "name": "Thi Thuy Nguyen",
+      "filiale": "402257: E-Northeim-Robert-Schnabel-Str. - Schnabel",
+      "from": "2026-11-19",
+      "to": "2026-11-27",
+      "tage": 8
+    },
+    {
+      "id": "410013",
+      "name": "Van Chung Ngo",
+      "filiale": "402502: T-Göttingen-An-der-Lutter",
+      "from": "2026-11-20",
+      "to": "2026-11-27",
+      "tage": 7
+    },
+    {
+      "id": "410018",
+      "name": "Thi Viet Nguyen",
+      "filiale": "402501: T-Göttingen-Weender Str.",
+      "from": "2026-11-28",
+      "to": "2026-12-05",
+      "tage": 7
+    },
+    {
+      "id": "410018",
+      "name": "Thi Viet Nguyen",
+      "filiale": "402501: T-Göttingen-Weender Str.",
+      "from": "2026-12-06",
+      "to": "2026-12-12",
+      "tage": 6
+    }
+  ],
+  "vertretung": [],
+  "nichtVerplant": [],
+  "singleStaffBranches": [
+    "402207: E-Bovenden-Industriestraße",
+    "402254: R-Kirchheim-Industriestraße - Messerschmidt",
+    "402146: T-Bad Hersfeld-Heinrich-von-Stephan-Straße"
+  ],
+  "singleStaffOhneVertretung": [
+    "402207: E-Bovenden-Industriestraße",
+    "402254: R-Kirchheim-Industriestraße - Messerschmidt",
+    "402146: T-Bad Hersfeld-Heinrich-von-Stephan-Straße"
+  ],
+  "feiertageJeMarktNr": {
+    "402297: MK-Einbeck-Altendorfer Tor": [
+      "2026-10-03",
+      "2026-10-31",
+      "2026-12-25",
+      "2026-12-26"
+    ],
+    "402257: E-Northeim-Robert-Schnabel-Str. - Schnabel": [
+      "2026-10-03",
+      "2026-10-31",
+      "2026-12-25",
+      "2026-12-26"
+    ],
+    "402150: E-Sontra-Mühlbergstraße - Salzmann": [
+      "2026-10-03",
+      "2026-12-25",
+      "2026-12-26"
+    ],
+    "401891: E-Kassel-Frankfurter Str. - Aschoff": [
+      "2026-10-03",
+      "2026-12-25",
+      "2026-12-26"
+    ],
+    "402207: E-Bovenden-Industriestraße": [
+      "2026-10-03",
+      "2026-10-31",
+      "2026-12-25",
+      "2026-12-26"
+    ],
+    "402502: T-Göttingen-An-der-Lutter": [
+      "2026-10-03",
+      "2026-10-31",
+      "2026-12-25",
+      "2026-12-26"
+    ],
+    "401888: R-Homberg (Efze)-Kasseler Str. - Mohr": [
+      "2026-10-03",
+      "2026-12-25",
+      "2026-12-26"
+    ],
+    "402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme": [
+      "2026-09-20",
+      "2026-10-03",
+      "2026-10-31",
+      "2026-12-25",
+      "2026-12-26"
+    ],
+    "402254: R-Kirchheim-Industriestraße - Messerschmidt": [
+      "2026-10-03",
+      "2026-12-25",
+      "2026-12-26"
+    ],
+    "402286: K-Göttingen-Am Kauf Park": [
+      "2026-10-03",
+      "2026-10-31",
+      "2026-12-25",
+      "2026-12-26"
+    ],
+    "402155: M-Nordhausen-Darrweg": [
+      "2026-09-20",
+      "2026-10-03",
+      "2026-10-31",
+      "2026-12-25",
+      "2026-12-26"
+    ],
+    "401125: RA-Baunatal-Fuldastraße": [
+      "2026-10-03",
+      "2026-12-25",
+      "2026-12-26"
+    ],
+    "402146: T-Bad Hersfeld-Heinrich-von-Stephan-Straße": [
+      "2026-10-03",
+      "2026-12-25",
+      "2026-12-26"
+    ],
+    "402501: T-Göttingen-Weender Str.": [
+      "2026-10-03",
+      "2026-10-31",
+      "2026-12-25",
+      "2026-12-26"
+    ]
+  },
+  "people": [
+    {
+      "id": "330158",
+      "name": "Thi Thu Hang Chu",
+      "filiale": "402297: MK-Einbeck-Altendorfer Tor",
+      "zweit": [
+        "Edeka Northeim Robert-Schnabel-Str."
+      ],
+      "zweitKanonisch": [
+        "402257: E-Northeim-Robert-Schnabel-Str. - Schnabel"
+      ],
+      "urlaubOffen": 9,
+      "urlaubAnspruch": 30,
+      "shopleiter": false
+    },
+    {
+      "id": "330254",
+      "name": "Thi Nhung Cao",
+      "filiale": "402257: E-Northeim-Robert-Schnabel-Str. - Schnabel",
+      "zweit": [
+        "Einbeck-Altendorfer Tor"
+      ],
+      "zweitKanonisch": [
+        "402297: MK-Einbeck-Altendorfer Tor"
+      ],
+      "urlaubOffen": 0,
+      "urlaubAnspruch": 30,
+      "shopleiter": false
+    },
+    {
+      "id": "330384",
+      "name": "Truong Thuy Vi Linh Vu",
+      "filiale": "402150: E-Sontra-Mühlbergstraße - Salzmann",
+      "zweit": [
+        "401125: RA-Baunatal-Fuldastraße",
+        "401891: E-Kassel-Frankfurter Str. - Aschoff"
+      ],
+      "zweitKanonisch": [
+        "401125: RA-Baunatal-Fuldastraße",
+        "401891: E-Kassel-Frankfurter Str. - Aschoff"
+      ],
+      "urlaubOffen": 6,
+      "urlaubAnspruch": 30,
+      "shopleiter": false
+    },
+    {
+      "id": "330460",
+      "name": "Thi Thuy Nguyen",
+      "filiale": "402257: E-Northeim-Robert-Schnabel-Str. - Schnabel",
+      "zweit": [
+        "Einbeck-Altendorfer Tor"
+      ],
+      "zweitKanonisch": [
+        "402297: MK-Einbeck-Altendorfer Tor"
+      ],
+      "urlaubOffen": 25,
+      "urlaubAnspruch": 25,
+      "shopleiter": false
+    },
+    {
+      "id": "330685",
+      "name": "Kim Aldrin Frias",
+      "filiale": "401891: E-Kassel-Frankfurter Str. - Aschoff",
+      "zweit": [
+        "Baunatal-Fuldastraße"
+      ],
+      "zweitKanonisch": [
+        "401125: RA-Baunatal-Fuldastraße"
+      ],
+      "urlaubOffen": 17,
+      "urlaubAnspruch": 20,
+      "shopleiter": true
+    },
+    {
+      "id": "330697",
+      "name": "Thi Le Tran",
+      "filiale": "402207: E-Bovenden-Industriestraße",
+      "zweit": [
+        "Bovenden-Industriestraße",
+        "Kaufland Göttingen Am Kauf Park",
+        "Tegut Göttingen An-der-Lutter",
+        "Tegut Göttingen Weender Str."
+      ],
+      "zweitKanonisch": [
+        "402207: E-Bovenden-Industriestraße",
+        "402286: K-Göttingen-Am Kauf Park",
+        "402502: T-Göttingen-An-der-Lutter",
+        "402501: T-Göttingen-Weender Str."
+      ],
+      "urlaubOffen": 14,
+      "urlaubAnspruch": 15,
+      "shopleiter": false
+    },
+    {
+      "id": "330722",
+      "name": "Thi Thanh Huyen Ton",
+      "filiale": "402257: E-Northeim-Robert-Schnabel-Str. - Schnabel",
+      "zweit": [
+        "402207: E-Bovenden-Industriestraße",
+        "402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme"
+      ],
+      "zweitKanonisch": [
+        "402207: E-Bovenden-Industriestraße",
+        "402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme"
+      ],
+      "urlaubOffen": 10,
+      "urlaubAnspruch": 10,
+      "shopleiter": false
+    },
+    {
+      "id": "340404",
+      "name": "Thi Thu Hang Pham",
+      "filiale": "401891: E-Kassel-Frankfurter Str. - Aschoff",
+      "zweit": [
+        "Baunatal-Fuldastraße"
+      ],
+      "zweitKanonisch": [
+        "401125: RA-Baunatal-Fuldastraße"
+      ],
+      "urlaubOffen": 6,
+      "urlaubAnspruch": 28,
+      "shopleiter": false
+    },
+    {
+      "id": "340913",
+      "name": "Minh Khue Do",
+      "filiale": "402150: E-Sontra-Mühlbergstraße - Salzmann",
+      "zweit": [],
+      "zweitKanonisch": [],
+      "urlaubOffen": 30,
+      "urlaubAnspruch": 30,
+      "shopleiter": false
+    },
+    {
+      "id": "340944",
+      "name": "Thi Phuong Hoang",
+      "filiale": "402502: T-Göttingen-An-der-Lutter",
+      "zweit": [
+        "Göttingen-Am Kauf Park",
+        "Göttingen-Weender Str."
+      ],
+      "zweitKanonisch": [
+        "402286: K-Göttingen-Am Kauf Park",
+        "402501: T-Göttingen-Weender Str."
+      ],
+      "urlaubOffen": 10,
+      "urlaubAnspruch": 30,
+      "shopleiter": true
+    },
+    {
+      "id": "341041",
+      "name": "Yanisa Puchta",
+      "filiale": "401888: R-Homberg (Efze)-Kasseler Str. - Mohr",
+      "zweit": [],
+      "zweitKanonisch": [],
+      "urlaubOffen": 12,
+      "urlaubAnspruch": 30,
+      "shopleiter": false
+    },
+    {
+      "id": "341373",
+      "name": "Minh Hieu Nguyen",
+      "filiale": "402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme",
+      "zweit": [],
+      "zweitKanonisch": [],
+      "urlaubOffen": 22,
+      "urlaubAnspruch": 30,
+      "shopleiter": false
+    },
+    {
+      "id": "341421",
+      "name": "Chutikan Gimpel",
+      "filiale": "401888: R-Homberg (Efze)-Kasseler Str. - Mohr",
+      "zweit": [
+        "402254: R-Kirchheim-Industriestraße - Messerschmidt"
+      ],
+      "zweitKanonisch": [
+        "402254: R-Kirchheim-Industriestraße - Messerschmidt"
+      ],
+      "urlaubOffen": 16,
+      "urlaubAnspruch": 30,
+      "shopleiter": true
+    },
+    {
+      "id": "341443",
+      "name": "Phi Long Doan",
+      "filiale": "402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme",
+      "zweit": [
+        "Marktkauf Nordhausen Darrweg"
+      ],
+      "zweitKanonisch": [
+        "402155: M-Nordhausen-Darrweg"
+      ],
+      "urlaubOffen": 0,
+      "urlaubAnspruch": 28,
+      "shopleiter": false
+    },
+    {
+      "id": "341475",
+      "name": "Thi Thu Vi",
+      "filiale": "402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme",
+      "zweit": [
+        "Nordhausen-Darrweg"
+      ],
+      "zweitKanonisch": [
+        "402155: M-Nordhausen-Darrweg"
+      ],
+      "urlaubOffen": 0,
+      "urlaubAnspruch": 18,
+      "shopleiter": false
+    },
+    {
+      "id": "341476",
+      "name": "Abdulhamid Husamuldin Abdulhamid Sultan",
+      "filiale": "402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme",
+      "zweit": [
+        "Göttingen-Am Kauf Park",
+        "Göttingen-An-der-Lutter",
+        "Göttingen-Weender Str."
+      ],
+      "zweitKanonisch": [
+        "402286: K-Göttingen-Am Kauf Park",
+        "402502: T-Göttingen-An-der-Lutter",
+        "402501: T-Göttingen-Weender Str."
+      ],
+      "urlaubOffen": 0,
+      "urlaubAnspruch": 18,
+      "shopleiter": false
+    },
+    {
+      "id": "341495",
+      "name": "Chunhua Loutchan",
+      "filiale": "402254: R-Kirchheim-Industriestraße - Messerschmidt",
+      "zweit": [],
+      "zweitKanonisch": [],
+      "urlaubOffen": 15,
+      "urlaubAnspruch": 15,
+      "shopleiter": false
+    },
+    {
+      "id": "350561",
+      "name": "Thi Lan Anh Nguyen",
+      "filiale": "402286: K-Göttingen-Am Kauf Park",
+      "zweit": [
+        "Edeka Bovenden Industriestraße",
+        "Göttingen-An-der-Lutter",
+        "Göttingen-Weender Str."
+      ],
+      "zweitKanonisch": [
+        "402207: E-Bovenden-Industriestraße",
+        "402502: T-Göttingen-An-der-Lutter",
+        "402501: T-Göttingen-Weender Str."
+      ],
+      "urlaubOffen": 28,
+      "urlaubAnspruch": 28,
+      "shopleiter": false
+    },
+    {
+      "id": "350596",
+      "name": "Minh Giang Ngo",
+      "filiale": "402286: K-Göttingen-Am Kauf Park",
+      "zweit": [
+        "402501: T-Göttingen-Weender Str."
+      ],
+      "zweitKanonisch": [
+        "402501: T-Göttingen-Weender Str."
+      ],
+      "urlaubOffen": 5,
+      "urlaubAnspruch": 23,
+      "shopleiter": false
+    },
+    {
+      "id": "360011",
+      "name": "Thi Nuong Nguyen",
+      "filiale": "402155: M-Nordhausen-Darrweg",
+      "zweit": [
+        "Heilbad Heiligenstadt-Sperberwiese - Ihme"
+      ],
+      "zweitKanonisch": [
+        "402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme"
+      ],
+      "urlaubOffen": 0,
+      "urlaubAnspruch": 30,
+      "shopleiter": false
+    },
+    {
+      "id": "360021",
+      "name": "Thi Nga Pham",
+      "filiale": "402155: M-Nordhausen-Darrweg",
+      "zweit": [],
+      "zweitKanonisch": [],
+      "urlaubOffen": 7,
+      "urlaubAnspruch": 30,
+      "shopleiter": true
+    },
+    {
+      "id": "360053",
+      "name": "Lan Phung",
+      "filiale": "402297: MK-Einbeck-Altendorfer Tor",
+      "zweit": [
+        "402257: E-Northeim-Robert-Schnabel-Str. - Schnabel"
+      ],
+      "zweitKanonisch": [
+        "402257: E-Northeim-Robert-Schnabel-Str. - Schnabel"
+      ],
+      "urlaubOffen": 9,
+      "urlaubAnspruch": 25,
+      "shopleiter": false
+    },
+    {
+      "id": "370116",
+      "name": "Diem Thi Thanh Roth",
+      "filiale": "401125: RA-Baunatal-Fuldastraße",
+      "zweit": [
+        "Baunatal-Fuldastraße"
+      ],
+      "zweitKanonisch": [
+        "401125: RA-Baunatal-Fuldastraße"
+      ],
+      "urlaubOffen": 8,
+      "urlaubAnspruch": 30,
+      "shopleiter": false
+    },
+    {
+      "id": "410001",
+      "name": "Hai Thanh Nguyen",
+      "filiale": "402146: T-Bad Hersfeld-Heinrich-von-Stephan-Straße",
+      "zweit": [],
+      "zweitKanonisch": [],
+      "urlaubOffen": 22,
+      "urlaubAnspruch": 30,
+      "shopleiter": false
+    },
+    {
+      "id": "410012",
+      "name": "Thi Viet Nguyen",
+      "filiale": "402501: T-Göttingen-Weender Str.",
+      "zweit": [
+        "402286: K-Göttingen-Am Kauf Park",
+        "402502: T-Göttingen-An-der-Lutter"
+      ],
+      "zweitKanonisch": [
+        "402286: K-Göttingen-Am Kauf Park",
+        "402502: T-Göttingen-An-der-Lutter"
+      ],
+      "urlaubOffen": 7,
+      "urlaubAnspruch": 25,
+      "shopleiter": false
+    },
+    {
+      "id": "410013",
+      "name": "Van Chung Ngo",
+      "filiale": "402502: T-Göttingen-An-der-Lutter",
+      "zweit": [
+        "Göttingen-Am Kauf Park",
+        "Göttingen-Weender Str."
+      ],
+      "zweitKanonisch": [
+        "402286: K-Göttingen-Am Kauf Park",
+        "402501: T-Göttingen-Weender Str."
+      ],
+      "urlaubOffen": 23,
+      "urlaubAnspruch": 23,
+      "shopleiter": false
+    },
+    {
+      "id": "410018",
+      "name": "Thi Viet Nguyen",
+      "filiale": "402501: T-Göttingen-Weender Str.",
+      "zweit": [],
+      "zweitKanonisch": [],
+      "urlaubOffen": 13,
+      "urlaubAnspruch": 13,
+      "shopleiter": false
+    },
+    {
+      "id": "470009",
+      "name": "Bongkotchakon Abramowski",
+      "filiale": "401125: RA-Baunatal-Fuldastraße",
+      "zweit": [],
+      "zweitKanonisch": [],
+      "urlaubOffen": 15,
+      "urlaubAnspruch": 15,
+      "shopleiter": false
+    },
+    {
+      "id": "470010",
+      "name": "Thi Hoang My Pham",
+      "filiale": "401125: RA-Baunatal-Fuldastraße",
+      "zweit": [
+        "401891: E-Kassel-Frankfurter Str. - Aschoff"
+      ],
+      "zweitKanonisch": [
+        "401891: E-Kassel-Frankfurter Str. - Aschoff"
+      ],
+      "urlaubOffen": 0,
+      "urlaubAnspruch": null,
+      "shopleiter": false
+    },
+    {
+      "id": "550042",
+      "name": "Quoc Cuong Chu",
+      "filiale": "402155: M-Nordhausen-Darrweg",
+      "zweit": [],
+      "zweitKanonisch": [],
+      "urlaubOffen": 4,
+      "urlaubAnspruch": 30,
+      "shopleiter": false
+    },
+    {
+      "id": "550152",
+      "name": "Van Khang Kieu",
+      "filiale": "402502: T-Göttingen-An-der-Lutter",
+      "zweit": [
+        "401125: RA-Baunatal-Fuldastraße",
+        "401888: R-Homberg (Efze)-Kasseler Str. - Mohr",
+        "401891: E-Kassel-Frankfurter Str. - Aschoff"
+      ],
+      "zweitKanonisch": [
+        "401125: RA-Baunatal-Fuldastraße",
+        "401888: R-Homberg (Efze)-Kasseler Str. - Mohr",
+        "401891: E-Kassel-Frankfurter Str. - Aschoff"
+      ],
+      "urlaubOffen": 29,
+      "urlaubAnspruch": 30,
+      "shopleiter": true
+    }
+  ],
+  "existingByPerson": {
+    "330158": [
+      {
+        "from": "2026-09-23",
+        "to": "2026-10-17",
+        "status": "approved"
+      }
+    ],
+    "330384": [
+      {
+        "from": "2026-12-11",
+        "to": "2027-01-13",
+        "status": "approved"
+      }
+    ],
+    "330685": [
+      {
+        "from": "2026-10-26",
+        "to": "2026-11-21",
+        "status": "approved"
+      }
+    ],
+    "330697": [
+      {
+        "from": "2026-08-01",
+        "to": "2026-08-02",
+        "status": "approved"
+      }
+    ],
+    "340404": [
+      {
+        "from": "2026-09-17",
+        "to": "2026-09-24",
+        "status": "approved"
+      }
+    ],
+    "340944": [
+      {
+        "from": "2026-07-17",
+        "to": "2026-08-08",
+        "status": "approved"
+      }
+    ],
+    "341373": [
+      {
+        "from": "2026-08-24",
+        "to": "2026-08-29",
+        "status": "approved"
+      },
+      {
+        "from": "2027-01-25",
+        "to": "2027-02-27",
+        "status": "approved"
+      }
+    ],
+    "341421": [
+      {
+        "from": "2026-09-07",
+        "to": "2026-09-23",
+        "status": "approved"
+      }
+    ],
+    "341443": [
+      {
+        "from": "2026-06-22",
+        "to": "2026-07-20",
+        "status": "approved"
+      }
+    ],
+    "341475": [
+      {
+        "from": "2026-07-25",
+        "to": "2026-08-15",
+        "status": "approved"
+      }
+    ],
+    "341495": [
+      {
+        "from": "2026-11-02",
+        "to": "2026-11-08",
+        "status": "approved"
+      }
+    ],
+    "350561": [
+      {
+        "from": "2026-10-26",
+        "to": "2026-10-26",
+        "status": "pending"
+      },
+      {
+        "from": "2026-09-11",
+        "to": "2026-09-22",
+        "status": "approved"
+      },
+      {
+        "from": "2026-10-01",
+        "to": "2026-10-06",
+        "status": "approved"
+      },
+      {
+        "from": "2026-12-21",
+        "to": "2027-01-02",
+        "status": "approved"
+      }
+    ],
+    "350596": [
+      {
+        "from": "2026-10-07",
+        "to": "2026-10-08",
+        "status": "approved"
+      },
+      {
+        "from": "2026-10-28",
+        "to": "2026-10-30",
+        "status": "approved"
+      },
+      {
+        "from": "2026-07-20",
+        "to": "2026-08-08",
+        "status": "approved"
+      }
+    ],
+    "360011": [
+      {
+        "from": "2026-06-22",
+        "to": "2026-07-20",
+        "status": "approved"
+      }
+    ],
+    "360021": [
+      {
+        "from": "2026-07-13",
+        "to": "2026-08-03",
+        "status": "approved"
+      },
+      {
+        "from": "2026-08-15",
+        "to": "2026-08-19",
+        "status": "approved"
+      }
+    ],
+    "360053": [
+      {
+        "from": "2026-07-20",
+        "to": "2026-08-01",
+        "status": "approved"
+      }
+    ],
+    "370116": [
+      {
+        "from": "2026-08-03",
+        "to": "2026-08-08",
+        "status": "approved"
+      },
+      {
+        "from": "2026-12-28",
+        "to": "2026-12-30",
+        "status": "approved"
+      }
+    ],
+    "410012": [
+      {
+        "from": "2026-08-03",
+        "to": "2026-08-22",
+        "status": "approved"
+      },
+      {
+        "from": "2026-10-19",
+        "to": "2026-10-24",
+        "status": "approved"
+      }
+    ]
+  }
+}

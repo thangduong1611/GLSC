@@ -1,0 +1,1321 @@
+{
+  "filialen": [
+    {
+      "ort": "Homberg (Efze)",
+      "name": "401888: R-Homberg (Efze)-Kasseler Str. - Mohr",
+      "active": true,
+      "region": "ost",
+      "marktNr": "401888",
+      "strasse": "Kasseler Str.",
+      "plz": "34576",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "lon": 9.3984555,
+      "lat": 51.0360359
+    },
+    {
+      "ort": "Kassel",
+      "name": "401891: E-Kassel-Frankfurter Str. - Aschoff",
+      "active": true,
+      "region": "ost",
+      "marktNr": "401891",
+      "strasse": "Frankfurter Str. 114-120",
+      "plz": "34121",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "lon": 9.4815486,
+      "lat": 51.3015101
+    },
+    {
+      "name": "402133: K-Köln-Thebäerstraße",
+      "marktNr": "402133",
+      "ort": "Köln",
+      "strasse": "Thebäerstraße 9",
+      "plz": "50823",
+      "region": "west",
+      "active": true,
+      "updatedAt": "2026-09-04T20:10:13.949Z",
+      "lon": 6.9218296,
+      "lat": 50.9463833
+    },
+    {
+      "ort": "Bad Hersfeld",
+      "strasse": "Heinrich-von-Stephan-Straße 4",
+      "name": "402146: T-Bad Hersfeld-Heinrich-von-Stephan-Straße",
+      "active": true,
+      "region": "ost",
+      "marktNr": "402146",
+      "plz": "36251",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "lon": 9.7070619,
+      "lat": 50.8635145
+    },
+    {
+      "ort": "Sontra",
+      "strasse": "Burhaver Straße  1",
+      "name": "402150: E-Sontra-Mühlbergstraße - Salzmann",
+      "active": true,
+      "region": "ost",
+      "marktNr": "402150",
+      "plz": "36205",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "lon": 9.9327475,
+      "lat": 51.0706962
+    },
+    {
+      "ort": "Nordhausen",
+      "name": "402155: M-Nordhausen-Darrweg",
+      "active": true,
+      "region": "ost",
+      "marktNr": "402155",
+      "strasse": "Darrweg 67",
+      "plz": "99734",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "lon": 10.8025066,
+      "lat": 51.4827781
+    },
+    {
+      "ort": "Düsseldorf",
+      "strasse": "Hauptstraße 6-8",
+      "name": "402167: R-Düsseldorf-Hauptstr.",
+      "active": true,
+      "marktNr": "402167",
+      "plz": "40597",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "region": "west",
+      "lon": 6.8741915,
+      "lat": 51.1650312
+    },
+    {
+      "ort": "Hagen",
+      "strasse": "Auf dem Lölfert 50",
+      "name": "402185: K-Hagen-Auf dem Lölfert",
+      "active": true,
+      "marktNr": "402185",
+      "plz": "58119",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "region": "west",
+      "lon": 7.5859388,
+      "lat": 51.3637442
+    },
+    {
+      "ort": "Hattingen",
+      "strasse": "Heggerstraße 21",
+      "name": "402205: R-Hattingen-Heggerstraße",
+      "active": true,
+      "marktNr": "402205",
+      "plz": "45525",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "region": "west",
+      "lon": 7.1845282,
+      "lat": 51.3998193
+    },
+    {
+      "ort": "Bovenden",
+      "name": "402207: E-Bovenden-Industriestraße",
+      "active": true,
+      "region": "ost",
+      "marktNr": "402207",
+      "strasse": "Industriestraße",
+      "plz": "37120",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "lon": 9.9274555,
+      "lat": 51.5974546
+    },
+    {
+      "ort": "Heilbad Heiligenstadt",
+      "name": "402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme",
+      "active": true,
+      "region": "ost",
+      "marktNr": "402240",
+      "strasse": "Sperberwiese 1",
+      "plz": "37308",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "lon": 10.1312059,
+      "lat": 51.3792452
+    },
+    {
+      "ort": "Düsseldorf",
+      "strasse": "Zeppelinstraße 3-7",
+      "name": "402251: R-Düsseldorf-Zeppelinstraße",
+      "active": true,
+      "marktNr": "402251",
+      "plz": "40231",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "region": "west",
+      "lon": 6.8349375,
+      "lat": 51.2036647
+    },
+    {
+      "ort": "Kirchheim",
+      "name": "402254: R-Kirchheim-Industriestraße - Messerschmidt",
+      "active": true,
+      "region": "ost",
+      "marktNr": "402254",
+      "plz": "36275",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "strasse": "Industriestr. 4",
+      "lon": 9.5725292,
+      "lat": 50.8338819
+    },
+    {
+      "ort": "Northeim",
+      "name": "402257: E-Northeim-Robert-Schnabel-Str. - Schnabel",
+      "active": true,
+      "region": "ost",
+      "marktNr": "402257",
+      "strasse": "Robert-Schnabel-Str. 1",
+      "plz": "37154",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "lon": 10.0012562,
+      "lat": 51.6994304
+    },
+    {
+      "ort": "Hilden",
+      "strasse": "Mittelstraße 75-77",
+      "name": "402261: R-Hilden-Mittelstraße",
+      "active": true,
+      "marktNr": "402261",
+      "plz": "40721",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "region": "west",
+      "lon": 6.9395347,
+      "lat": 51.1691353
+    },
+    {
+      "ort": "Düsseldorf",
+      "strasse": "Münsterstraße 100",
+      "name": "402272: R-Düsseldorf-Münsterstraße",
+      "active": true,
+      "marktNr": "402272",
+      "plz": "40476",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "region": "west",
+      "lon": 6.7875838,
+      "lat": 51.2450935
+    },
+    {
+      "ort": "Göttingen",
+      "name": "402286: K-Göttingen-Am Kauf Park",
+      "active": true,
+      "region": "ost",
+      "marktNr": "402286",
+      "strasse": "Am Kauf Park 2",
+      "plz": "37079",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "lon": 9.8820231,
+      "lat": 51.5301768
+    },
+    {
+      "ort": "Einbeck",
+      "name": "402297: MK-Einbeck-Altendorfer Tor",
+      "active": true,
+      "region": "ost",
+      "marktNr": "402297",
+      "strasse": "Altendorfer Tor 24",
+      "plz": "37574",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "lon": 9.8775379,
+      "lat": 51.8132948
+    },
+    {
+      "name": "402302: R-Neuss-Allerheiligen-Am alten Bach - Friedrich",
+      "marktNr": "402302",
+      "ort": "Neuss",
+      "strasse": "Am alten Bach 39",
+      "plz": "41470",
+      "region": "west",
+      "active": true,
+      "updatedAt": "2026-09-04T20:10:13.949Z",
+      "lon": 6.7498172,
+      "lat": 51.1394098
+    },
+    {
+      "ort": "Wuppertal",
+      "strasse": "Ascheweg 19",
+      "name": "402310: R-Wuppertal-Ascheweg - Brücken Kaufpark",
+      "active": true,
+      "marktNr": "402310",
+      "plz": "42369",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "region": "west",
+      "lon": 7.2015145,
+      "lat": 51.2280229
+    },
+    {
+      "ort": "Bochum",
+      "strasse": "Viktoriastraße 8",
+      "name": "402315: R-Bochum-Viktoriastraße - Mert",
+      "active": true,
+      "marktNr": "402315",
+      "plz": "44787",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "region": "west",
+      "lon": 7.2158372,
+      "lat": 51.4802948
+    },
+    {
+      "name": "402363: R-Bergneustadt-Stadionstr.",
+      "marktNr": "402363",
+      "ort": "Bergneustadt",
+      "strasse": "Stadionstraße 1",
+      "plz": "51702",
+      "region": "west",
+      "active": true,
+      "updatedAt": "2026-09-04T20:10:13.826Z",
+      "lon": 7.6426391,
+      "lat": 51.0187087
+    },
+    {
+      "name": "402414: E-Bergheim-Dansweilerstraße - Fischenich",
+      "marktNr": "402414",
+      "ort": "Bergheim",
+      "strasse": "Dansweilerstraße 3",
+      "plz": "50129",
+      "region": "west",
+      "active": true,
+      "updatedAt": "2026-09-04T20:10:13.949Z",
+      "lon": 6.7562292,
+      "lat": 50.9662852
+    },
+    {
+      "name": "402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner",
+      "marktNr": "402416",
+      "ort": "Bergisch Gladbach",
+      "strasse": "Odenthaler Straße 196",
+      "plz": "51467",
+      "region": "west",
+      "active": true,
+      "updatedAt": "2026-09-04T20:10:13.948Z",
+      "lon": 7.1328231,
+      "lat": 51.000124
+    },
+    {
+      "ort": "Leverkusen",
+      "strasse": "Pommernstraße 4-6",
+      "name": "402422: E-Leverkusen-Pommernstraße",
+      "active": true,
+      "marktNr": "402422",
+      "plz": "51379",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "region": "west",
+      "lon": 7.0148765,
+      "lat": 51.0686697
+    },
+    {
+      "ort": "Göttingen",
+      "name": "402501: T-Göttingen-Weender Str.",
+      "active": true,
+      "region": "ost",
+      "marktNr": "402501",
+      "strasse": "Weender Str. 75",
+      "plz": "37073",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "lon": 9.9340647,
+      "lat": 51.5364581
+    },
+    {
+      "ort": "Göttingen",
+      "name": "402502: T-Göttingen-An-der-Lutter",
+      "active": true,
+      "region": "ost",
+      "marktNr": "402502",
+      "strasse": "An der Lutter 22",
+      "plz": "37073",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "lon": 9.9395014,
+      "lat": 51.5560084
+    },
+    {
+      "ort": "Wesel",
+      "strasse": "Rudolf-Diesel-Straße 7",
+      "name": "402507: K-Wesel-Rudolf-Diesel-Straße",
+      "active": true,
+      "marktNr": "402507",
+      "plz": "46485",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "region": "west",
+      "lon": 6.6656448,
+      "lat": 51.663963
+    },
+    {
+      "ort": "Remscheid",
+      "strasse": "Wupperstr. 13",
+      "name": "402512: R-Remscheid-Wupperstraße",
+      "active": true,
+      "marktNr": "402512",
+      "plz": "42897",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "region": "west",
+      "lon": 7.2603841,
+      "lat": 51.1897284
+    },
+    {
+      "ort": "Essen",
+      "strasse": "Haedenkampstraße 21",
+      "name": "402523: K-Essen-Haedenkampstraße",
+      "active": true,
+      "marktNr": "402523",
+      "plz": "45143",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "region": "west",
+      "lon": 6.9860043,
+      "lat": 51.4571875
+    },
+    {
+      "ort": "Baunatal",
+      "name": "401125: RA-Baunatal-Fuldastraße",
+      "active": true,
+      "region": "ost",
+      "marktNr": "611125",
+      "strasse": "Fuldastraße 1-5",
+      "plz": "34225",
+      "updatedAt": "2026-09-01T05:46:56.107Z",
+      "lon": 9.4288917,
+      "lat": 51.2285215
+    }
+  ],
+  "emps": [
+    {
+      "id": "330158",
+      "name": "Thi Thu Hang Chu",
+      "filiale": "402297: MK-Einbeck-Altendorfer Tor",
+      "zweit": [
+        "Edeka Northeim Robert-Schnabel-Str."
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Tiedexerstraße 13",
+      "plz": "37574",
+      "ort": "Einbeck"
+    },
+    {
+      "id": "330254",
+      "name": "Thi Nhung Cao",
+      "filiale": "402257: E-Northeim-Robert-Schnabel-Str. - Schnabel",
+      "zweit": [
+        "Einbeck-Altendorfer Tor"
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Tiedexer Straße 13",
+      "plz": "37574",
+      "ort": "Einbeck"
+    },
+    {
+      "id": "330314",
+      "name": "Thi Minh Chau Trinh",
+      "filiale": "402422: E-Leverkusen-Pommernstraße",
+      "zweit": [
+        "402167: R-Düsseldorf-Hauptstr."
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Nobel Straße 11",
+      "plz": "51373",
+      "ort": "Leverkusen"
+    },
+    {
+      "id": "330337",
+      "name": "Endhamya Asemenintha Meliala",
+      "filiale": "402523: K-Essen-Haedenkampstraße",
+      "zweit": [
+        "402315: R-Bochum-Viktoriastraße - Mert"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Spickemannstraße 19",
+      "plz": "45149",
+      "ort": "Essen"
+    },
+    {
+      "id": "330384",
+      "name": "Truong Thuy Vi Linh Vu",
+      "filiale": "402150: E-Sontra-Mühlbergstraße - Salzmann",
+      "zweit": [
+        "401125: RA-Baunatal-Fuldastraße",
+        "401891: E-Kassel-Frankfurter Str. - Aschoff"
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Posthofstr. 4",
+      "plz": "34326",
+      "ort": "Morschen"
+    },
+    {
+      "id": "330460",
+      "name": "Thi Thuy Nguyen",
+      "filiale": "402257: E-Northeim-Robert-Schnabel-Str. - Schnabel",
+      "zweit": [
+        "Einbeck-Altendorfer Tor"
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Graf-Otto-Str. 12",
+      "plz": "37154",
+      "ort": "Northeim"
+    },
+    {
+      "id": "330478",
+      "name": "Panadda Frunzescu",
+      "filiale": "402422: E-Leverkusen-Pommernstraße",
+      "zweit": [
+        "402261: R-Hilden-Mittelstraße"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Kurt-Schumacher-Ring 190",
+      "plz": "51377",
+      "ort": "Leverkusen"
+    },
+    {
+      "id": "330485",
+      "name": "Thi Dieu Quynh Trinh",
+      "filiale": "402414: E-Bergheim-Dansweilerstraße - Fischenich",
+      "zweit": [
+        "402422: E-Leverkusen-Pommernstraße"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Heinrich-Bebber-Str. 31",
+      "plz": "50769",
+      "ort": "Köln"
+    },
+    {
+      "id": "330685",
+      "name": "Kim Aldrin Frias",
+      "filiale": "401891: E-Kassel-Frankfurter Str. - Aschoff",
+      "zweit": [
+        "Baunatal-Fuldastraße"
+      ],
+      "region": "ost",
+      "shopleiter": true,
+      "strasse": "Bremelbachstraße 16 a",
+      "plz": "34131",
+      "ort": "Kassel"
+    },
+    {
+      "id": "330697",
+      "name": "Thi Le Tran",
+      "filiale": "402207: E-Bovenden-Industriestraße",
+      "zweit": [
+        "Bovenden-Industriestraße",
+        "Kaufland Göttingen Am Kauf Park",
+        "Tegut Göttingen An-der-Lutter",
+        "Tegut Göttingen Weender Str."
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "St.-Heinrich-Straße 37",
+      "plz": "37081",
+      "ort": "Göttingen"
+    },
+    {
+      "id": "330722",
+      "name": "Thi Thanh Huyen Ton",
+      "filiale": "402257: E-Northeim-Robert-Schnabel-Str. - Schnabel",
+      "zweit": [
+        "402207: E-Bovenden-Industriestraße",
+        "402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme"
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Spickenweg 36",
+      "plz": "37124",
+      "ort": "Rosdorf"
+    },
+    {
+      "id": "340259",
+      "name": "Quoc Bao Huynh",
+      "filiale": "402205: R-Hattingen-Heggerstraße",
+      "zweit": [
+        "402315: R-Bochum-Viktoriastraße - Mert"
+      ],
+      "region": "west",
+      "shopleiter": true,
+      "strasse": "Steinstr. 2",
+      "plz": "44866",
+      "ort": "Bochum"
+    },
+    {
+      "id": "340276",
+      "name": "Chee Sam Chin",
+      "filiale": "402167: R-Düsseldorf-Hauptstr.",
+      "zweit": [
+        "402251: R-Düsseldorf-Zeppelinstraße"
+      ],
+      "region": "west",
+      "shopleiter": true,
+      "strasse": "Peter-Richarz-Str. 52",
+      "plz": "40229",
+      "ort": "Düsseldorf"
+    },
+    {
+      "id": "340301",
+      "name": "Hongbiao Li",
+      "filiale": "402302: R-Neuss-Allerheiligen-Am alten Bach - Friedrich",
+      "zweit": [
+        "402414: E-Bergheim-Dansweilerstraße - Fischenich"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Mainstraße 4",
+      "plz": "41540",
+      "ort": "Dormagen"
+    },
+    {
+      "id": "340312",
+      "name": "Xiaoxi Kang",
+      "filiale": "402302: R-Neuss-Allerheiligen-Am alten Bach - Friedrich",
+      "zweit": [
+        "402414: E-Bergheim-Dansweilerstraße - Fischenich"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Mainstraße 4",
+      "plz": "41540",
+      "ort": "Dormagen"
+    },
+    {
+      "id": "340322",
+      "name": "Kim Mai Nguyen",
+      "filiale": "402261: R-Hilden-Mittelstraße",
+      "zweit": [
+        "402512: R-Remscheid-Wupperstraße"
+      ],
+      "region": "west",
+      "shopleiter": true,
+      "strasse": "Kronenstraße 19",
+      "plz": "42697",
+      "ort": "Solingen"
+    },
+    {
+      "id": "340361",
+      "name": "Bayarmagnai Unurbat",
+      "filiale": "402363: R-Bergneustadt-Stadionstr.",
+      "zweit": [
+        "402512: R-Remscheid-Wupperstraße"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Am Aggerberg 14",
+      "plz": "51580",
+      "ort": "Reichshof"
+    },
+    {
+      "id": "340370",
+      "name": "Archna Dhusia Sharma",
+      "filiale": "402363: R-Bergneustadt-Stadionstr.",
+      "zweit": [
+        "402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Zum Obersten Hof 28",
+      "plz": "51580",
+      "ort": "Reichshof"
+    },
+    {
+      "id": "340404",
+      "name": "Thi Thu Hang Pham",
+      "filiale": "401891: E-Kassel-Frankfurter Str. - Aschoff",
+      "zweit": [
+        "Baunatal-Fuldastraße"
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Untere Königsstraße 60",
+      "plz": "34117",
+      "ort": "Kassel"
+    },
+    {
+      "id": "340429",
+      "name": "Duc Hanh Doan",
+      "filiale": "402507: K-Wesel-Rudolf-Diesel-Straße",
+      "zweit": [
+        "402523: K-Essen-Haedenkampstraße"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Claubergstraße 6",
+      "plz": "47051",
+      "ort": "Duisburg"
+    },
+    {
+      "id": "340444",
+      "name": "Vu Nguyen Doan",
+      "filiale": "402310: R-Wuppertal-Ascheweg - Brücken Kaufpark",
+      "zweit": [
+        "402512: R-Remscheid-Wupperstraße"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Elbestraße 33",
+      "plz": "44791",
+      "ort": "Bochum"
+    },
+    {
+      "id": "340473",
+      "name": "My Linh Heidel",
+      "filiale": "402310: R-Wuppertal-Ascheweg - Brücken Kaufpark",
+      "zweit": [
+        "402185: K-Hagen-Auf dem Lölfert"
+      ],
+      "region": "west",
+      "shopleiter": true,
+      "strasse": "Moltkestr. 33",
+      "plz": "58332",
+      "ort": "Schwelm"
+    },
+    {
+      "id": "340877",
+      "name": "Thi Hoan Tran",
+      "filiale": "402315: R-Bochum-Viktoriastraße - Mert",
+      "zweit": [
+        "402523: K-Essen-Haedenkampstraße"
+      ],
+      "region": "west",
+      "shopleiter": true,
+      "strasse": "Flözstr. 32",
+      "plz": "44799",
+      "ort": "Bochum"
+    },
+    {
+      "id": "340910",
+      "name": "Hai Nguyen",
+      "filiale": "402167: R-Düsseldorf-Hauptstr.",
+      "zweit": [
+        "402272: R-Düsseldorf-Münsterstraße"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Talstraße 10",
+      "plz": "40217",
+      "ort": "Düsseldorf"
+    },
+    {
+      "id": "340913",
+      "name": "Minh Khue Do",
+      "filiale": "402150: E-Sontra-Mühlbergstraße - Salzmann",
+      "zweit": [
+        "402254: R-Kirchheim-Industriestraße - Messerschmidt"
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Steinstraße 67 a",
+      "plz": "35290",
+      "ort": "Gießen"
+    },
+    {
+      "id": "340918",
+      "name": "Van Thanh Vu",
+      "filiale": "402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner",
+      "zweit": [
+        "402133: K-Köln-Thebäerstraße"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Am Springbom 7",
+      "plz": "51063",
+      "ort": "Köln"
+    },
+    {
+      "id": "340944",
+      "name": "Thi Phuong Hoang",
+      "filiale": "402502: T-Göttingen-An-der-Lutter",
+      "zweit": [
+        "Göttingen-Am Kauf Park",
+        "Göttingen-Weender Str."
+      ],
+      "region": "ost",
+      "shopleiter": true,
+      "strasse": "Am Kreuze 31",
+      "plz": "37075",
+      "ort": "Göttingen"
+    },
+    {
+      "id": "340955",
+      "name": "Hong Minh Nguyen",
+      "filiale": "402251: R-Düsseldorf-Zeppelinstraße",
+      "zweit": [
+        "402167: R-Düsseldorf-Hauptstr."
+      ],
+      "region": "west",
+      "shopleiter": true,
+      "strasse": "Graf-Adolf-Platz 4",
+      "plz": "40213",
+      "ort": "Düsseldorf"
+    },
+    {
+      "id": "341041",
+      "name": "Yanisa Puchta",
+      "filiale": "401888: R-Homberg (Efze)-Kasseler Str. - Mohr",
+      "zweit": [
+        "401125: RA-Baunatal-Fuldastraße"
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Schafgasse 1",
+      "plz": "34590",
+      "ort": "Wabern"
+    },
+    {
+      "id": "341373",
+      "name": "Minh Hieu Nguyen",
+      "filiale": "402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme",
+      "zweit": [
+        "402501: T-Göttingen-Weender Str."
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Windische Gasse 11a",
+      "plz": "37308",
+      "ort": "Heilbad Heiligenstadt"
+    },
+    {
+      "id": "341377",
+      "name": "Hong Son Vu",
+      "filiale": "402512: R-Remscheid-Wupperstraße",
+      "zweit": [
+        "402310: R-Wuppertal-Ascheweg - Brücken Kaufpark"
+      ],
+      "region": "west",
+      "shopleiter": true,
+      "strasse": "Zunftstraße 24",
+      "plz": "42119",
+      "ort": "Wuppertal"
+    },
+    {
+      "id": "341384",
+      "name": "Muhammad Yasir Amjad",
+      "filiale": "402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner",
+      "zweit": [
+        "402133: K-Köln-Thebäerstraße"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Gernsheimer Straße 10",
+      "plz": "51107",
+      "ort": "Köln"
+    },
+    {
+      "id": "341392",
+      "name": "Rona Cita Azizah",
+      "filiale": "402251: R-Düsseldorf-Zeppelinstraße",
+      "zweit": [
+        "402167: R-Düsseldorf-Hauptstr."
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Josef-Stick-Straße 3",
+      "plz": "40229",
+      "ort": "Düsseldorf"
+    },
+    {
+      "id": "341409",
+      "name": "Thanchanok Hahlweg",
+      "filiale": "402205: R-Hattingen-Heggerstraße",
+      "zweit": [
+        "402315: R-Bochum-Viktoriastraße - Mert"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Alte Poststr. 63",
+      "plz": "45527",
+      "ort": "Hattingen"
+    },
+    {
+      "id": "341411",
+      "name": "Trung Thanh Trinh",
+      "filiale": "402523: K-Essen-Haedenkampstraße",
+      "zweit": [
+        "402315: R-Bochum-Viktoriastraße - Mert"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Vogenbeck 4",
+      "plz": "45144",
+      "ort": "Essen"
+    },
+    {
+      "id": "341421",
+      "name": "Chutikan Gimpel",
+      "filiale": "401888: R-Homberg (Efze)-Kasseler Str. - Mohr",
+      "zweit": [
+        "402254: R-Kirchheim-Industriestraße - Messerschmidt"
+      ],
+      "region": "ost",
+      "shopleiter": true,
+      "strasse": "Rosenstraße 8",
+      "plz": "34621",
+      "ort": "Frielendorf"
+    },
+    {
+      "id": "341424",
+      "name": "Hongli Shao",
+      "filiale": "402167: R-Düsseldorf-Hauptstr.",
+      "zweit": [
+        "402251: R-Düsseldorf-Zeppelinstraße"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Peter-Richarz-Straße 52",
+      "plz": "40229",
+      "ort": "Düsseldorf"
+    },
+    {
+      "id": "341443",
+      "name": "Phi Long Doan",
+      "filiale": "402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme",
+      "zweit": [
+        "Marktkauf Nordhausen Darrweg"
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Hardenbergstraße 44",
+      "plz": "99734",
+      "ort": "Nordhausen"
+    },
+    {
+      "id": "341450",
+      "name": "Paramita Dian Purnomo",
+      "filiale": "402261: R-Hilden-Mittelstraße",
+      "zweit": [
+        "402512: R-Remscheid-Wupperstraße"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Focher Straße 137 B",
+      "plz": "42719",
+      "ort": "Solingen"
+    },
+    {
+      "id": "341457",
+      "name": "Diu Thuan Nguyen",
+      "filiale": "402512: R-Remscheid-Wupperstraße",
+      "zweit": [
+        "402310: R-Wuppertal-Ascheweg - Brücken Kaufpark"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Dahler Straße 83",
+      "plz": "42389",
+      "ort": "Wuppertal"
+    },
+    {
+      "id": "341475",
+      "name": "Thi Thu Vi",
+      "filiale": "402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme",
+      "zweit": [
+        "Nordhausen-Darrweg"
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Bochumer Straße 144",
+      "plz": "99734",
+      "ort": "Nordhausen"
+    },
+    {
+      "id": "341476",
+      "name": "Abdulhamid Husamuldin Abdulhamid Sultan",
+      "filiale": "402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme",
+      "zweit": [
+        "Göttingen-Am Kauf Park",
+        "Göttingen-An-der-Lutter",
+        "Göttingen-Weender Str."
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Grünewaldstraße 14",
+      "plz": "37308",
+      "ort": "Heilbad Heiligenstadt"
+    },
+    {
+      "id": "341495",
+      "name": "Chunhua Loutchan",
+      "filiale": "402254: R-Kirchheim-Industriestraße - Messerschmidt",
+      "zweit": [
+        "402146: T-Bad Hersfeld-Heinrich-von-Stephan-Straße"
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Vogelsang 7 a",
+      "plz": "36251",
+      "ort": "Bad Hersfeld"
+    },
+    {
+      "id": "341503",
+      "name": "Dinh Chien Nguyen",
+      "filiale": "402315: R-Bochum-Viktoriastraße - Mert",
+      "zweit": [
+        "402523: K-Essen-Haedenkampstraße"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Flözstraße 32",
+      "plz": "44799",
+      "ort": "Bochum"
+    },
+    {
+      "id": "350152",
+      "name": "Dandan Schütte-Wei",
+      "filiale": "402185: K-Hagen-Auf dem Lölfert",
+      "zweit": [
+        "402310: R-Wuppertal-Ascheweg - Brücken Kaufpark"
+      ],
+      "region": "west",
+      "shopleiter": true,
+      "strasse": "Loxbaumstr. 107",
+      "plz": "58097",
+      "ort": "Hagen"
+    },
+    {
+      "id": "350153",
+      "name": "Thi Bich Tran",
+      "filiale": "402133: K-Köln-Thebäerstraße",
+      "zweit": [
+        "402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Kalk-Mühlheimer-Straße 386 A",
+      "plz": "51065",
+      "ort": "Köln"
+    },
+    {
+      "id": "350445",
+      "name": "Thi Ngoc Anh Nguyen",
+      "filiale": "402422: E-Leverkusen-Pommernstraße",
+      "zweit": [
+        "402261: R-Hilden-Mittelstraße"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Günther-Weisenborn-Straße 10",
+      "plz": "51379",
+      "ort": "Leverkusen"
+    },
+    {
+      "id": "350527",
+      "name": "Eric Ta",
+      "filiale": "402185: K-Hagen-Auf dem Lölfert",
+      "zweit": [
+        "402315: R-Bochum-Viktoriastraße - Mert"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Hörder Straße 127",
+      "plz": "58239",
+      "ort": "Schwerte"
+    },
+    {
+      "id": "350529",
+      "name": "Ngoc Thanh Nha Nguyen",
+      "filiale": "402507: K-Wesel-Rudolf-Diesel-Straße",
+      "zweit": [
+        "402251: R-Düsseldorf-Zeppelinstraße"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Friedrich-Ebert-Straße 210",
+      "plz": "41236",
+      "ort": "Mönchengladbach"
+    },
+    {
+      "id": "350544",
+      "name": "Susdalia Silitonga",
+      "filiale": "402261: R-Hilden-Mittelstraße",
+      "zweit": [
+        "402310: R-Wuppertal-Ascheweg - Brücken Kaufpark"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Rudolf Straße 40",
+      "plz": "42285",
+      "ort": "Wuppertal"
+    },
+    {
+      "id": "350553",
+      "name": "Thi Tu Ngo",
+      "filiale": "402272: R-Düsseldorf-Münsterstraße",
+      "zweit": [
+        "402523: K-Essen-Haedenkampstraße"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Savignystraße 68",
+      "plz": "45147",
+      "ort": "Essen"
+    },
+    {
+      "id": "350561",
+      "name": "Thi Lan Anh Nguyen",
+      "filiale": "402286: K-Göttingen-Am Kauf Park",
+      "zweit": [
+        "Edeka Bovenden Industriestraße",
+        "Göttingen-An-der-Lutter",
+        "Göttingen-Weender Str."
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Harzstr. 23",
+      "plz": "37081",
+      "ort": "Göttingen"
+    },
+    {
+      "id": "350596",
+      "name": "Minh Giang Ngo",
+      "filiale": "402286: K-Göttingen-Am Kauf Park",
+      "zweit": [
+        "402501: T-Göttingen-Weender Str."
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Kasseler Landatraße 86",
+      "plz": "37081",
+      "ort": "Göttingen"
+    },
+    {
+      "id": "350598",
+      "name": "Boi Anh Khuu",
+      "filiale": "402507: K-Wesel-Rudolf-Diesel-Straße",
+      "zweit": [
+        "402523: K-Essen-Haedenkampstraße"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Korbmacherstr. 24",
+      "plz": "46483",
+      "ort": "Wesel"
+    },
+    {
+      "id": "350604",
+      "name": "The Hai Nguyen",
+      "filiale": "402261: R-Hilden-Mittelstraße",
+      "zweit": [
+        "402422: E-Leverkusen-Pommernstraße"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Kölner Straße 144",
+      "plz": "41539",
+      "ort": "Dormagen"
+    },
+    {
+      "id": "350605",
+      "name": "Sumi Park",
+      "filiale": "402133: K-Köln-Thebäerstraße",
+      "zweit": [
+        "402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Sürther Hauptstraße 165",
+      "plz": "50999",
+      "ort": "Köln"
+    },
+    {
+      "id": "360011",
+      "name": "Thi Nuong Nguyen",
+      "filiale": "402155: M-Nordhausen-Darrweg",
+      "zweit": [
+        "Heilbad Heiligenstadt-Sperberwiese - Ihme"
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Hardenberg Straße 44",
+      "plz": "99734",
+      "ort": "Nordhausen"
+    },
+    {
+      "id": "360021",
+      "name": "Thi Nga Pham",
+      "filiale": "402155: M-Nordhausen-Darrweg",
+      "zweit": [
+        "402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme"
+      ],
+      "region": "ost",
+      "shopleiter": true,
+      "strasse": "Bahnhofstraße 1",
+      "plz": "99734",
+      "ort": "Nordhausen"
+    },
+    {
+      "id": "360053",
+      "name": "Lan Phung",
+      "filiale": "402297: MK-Einbeck-Altendorfer Tor",
+      "zweit": [
+        "402257: E-Northeim-Robert-Schnabel-Str. - Schnabel"
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Kükenschnipp 4",
+      "plz": "37574",
+      "ort": "Einbeck"
+    },
+    {
+      "id": "360135",
+      "name": "Claudine Lucia Angeli Müller",
+      "filiale": "401125: RA-Baunatal-Fuldastraße",
+      "zweit": [
+        "Edeka Kassel Frankfurter Str."
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Johann-Gutenberg-Str. 7",
+      "plz": "34302",
+      "ort": "Guxhagen"
+    },
+    {
+      "id": "370116",
+      "name": "Diem Thi Thanh Roth",
+      "filiale": "401125: RA-Baunatal-Fuldastraße",
+      "zweit": [
+        "Baunatal-Fuldastraße"
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Parkstraße 32",
+      "plz": "34253",
+      "ort": "Lohfelden"
+    },
+    {
+      "id": "410001",
+      "name": "Hai Thanh Nguyen",
+      "filiale": "402146: T-Bad Hersfeld-Heinrich-von-Stephan-Straße",
+      "zweit": [
+        "402254: R-Kirchheim-Industriestraße - Messerschmidt"
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Wehneberger Straße 1",
+      "plz": "36251",
+      "ort": "Bad Hersfeld"
+    },
+    {
+      "id": "410012",
+      "name": "Thi Viet Nguyen",
+      "filiale": "402502: T-Göttingen-An-der-Lutter",
+      "zweit": [
+        "402286: K-Göttingen-Am Kauf Park",
+        "402502: T-Göttingen-An-der-Lutter"
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Kasseler Landstraße 86",
+      "plz": "37081",
+      "ort": "Göttingen"
+    },
+    {
+      "id": "410013",
+      "name": "Van Chung Ngo",
+      "filiale": "402502: T-Göttingen-An-der-Lutter",
+      "zweit": [
+        "Göttingen-Am Kauf Park",
+        "Göttingen-Weender Str."
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Spickenweg 36",
+      "plz": "37124",
+      "ort": "Rosdorf"
+    },
+    {
+      "id": "410018",
+      "name": "Thi Viet Nguyen",
+      "filiale": "402501: T-Göttingen-Weender Str.",
+      "zweit": [
+        "402286: K-Göttingen-Am Kauf Park"
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Kasseler Landstraße 86",
+      "plz": "37081",
+      "ort": "Göttingen"
+    },
+    {
+      "id": "470008",
+      "name": "Hazel Kneipp",
+      "filiale": "401125: RA-Baunatal-Fuldastraße",
+      "zweit": [
+        "Edeka Kassel Frankfurter Str."
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "An den Steinäckern 15",
+      "plz": "34225",
+      "ort": "Baunatal"
+    },
+    {
+      "id": "470009",
+      "name": "Bongkotchakon Abramowski",
+      "filiale": "401125: RA-Baunatal-Fuldastraße",
+      "zweit": [
+        "401891: E-Kassel-Frankfurter Str. - Aschoff"
+      ],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Frankfurter Straße 106D",
+      "plz": "34121",
+      "ort": "Kassel"
+    },
+    {
+      "id": "550042",
+      "name": "Quoc Cuong Chu",
+      "filiale": "402155: M-Nordhausen-Darrweg",
+      "zweit": [],
+      "region": "ost",
+      "shopleiter": false,
+      "strasse": "Spener Straße 13",
+      "plz": "01309",
+      "ort": "Dresden"
+    },
+    {
+      "id": "550078",
+      "name": "Trong Nguyen",
+      "filiale": "402523: K-Essen-Haedenkampstraße",
+      "zweit": [
+        "402185: K-Hagen-Auf dem Lölfert",
+        "402205: R-Hattingen-Heggerstraße",
+        "402251: R-Düsseldorf-Zeppelinstraße",
+        "402261: R-Hilden-Mittelstraße",
+        "402272: R-Düsseldorf-Münsterstraße",
+        "402310: R-Wuppertal-Ascheweg - Brücken Kaufpark",
+        "402315: R-Bochum-Viktoriastraße - Mert",
+        "402422: E-Leverkusen-Pommernstraße",
+        "402507: K-Wesel-Rudolf-Diesel-Straße",
+        "402512: R-Remscheid-Wupperstraße",
+        "402523: K-Essen-Haedenkampstraße"
+      ],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Waldenburger Staße 27",
+      "plz": "44795",
+      "ort": "Bochum"
+    },
+    {
+      "id": "550152",
+      "name": "Van Khang Kieu",
+      "filiale": "402502: T-Göttingen-An-der-Lutter",
+      "zweit": [
+        "401125: RA-Baunatal-Fuldastraße",
+        "401888: R-Homberg (Efze)-Kasseler Str. - Mohr",
+        "401891: E-Kassel-Frankfurter Str. - Aschoff"
+      ],
+      "region": "ost",
+      "shopleiter": true,
+      "strasse": "Heiligenberg Straße 40",
+      "plz": "34134",
+      "ort": "Kassel"
+    },
+    {
+      "id": "550198",
+      "name": "Viet Hoang Nguyen",
+      "filiale": "402414: E-Bergheim-Dansweilerstraße - Fischenich",
+      "zweit": [],
+      "region": "west",
+      "shopleiter": false,
+      "strasse": "Stolpestraße 17",
+      "plz": "50765",
+      "ort": "Köln"
+    }
+  ]
+}

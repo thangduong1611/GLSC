@@ -1,0 +1,393 @@
+<!doctype html>
+<title>Urlaubsplan Ost 2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+  :root {
+    --bg: #f5f6f8;
+    --surface: #ffffff;
+    --surface-2: #eef0f3;
+    --ink: #1b2430;
+    --ink-soft: #57606f;
+    --ink-faint: #8790a0;
+    --border: #dde1e7;
+    --accent: #0f6e63;
+    --accent-ink: #ffffff;
+    --accent-soft: #e4f1ee;
+    --amber: #a5680a;
+    --amber-soft: #fcefda;
+    --amber-border: #e3b566;
+    --danger: #a5372f;
+    --danger-soft: #fbeaea;
+    --shadow: 0 1px 2px rgba(20,30,45,.04), 0 8px 24px rgba(20,30,45,.06);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #11151b;
+      --surface: #171c24;
+      --surface-2: #1e2530;
+      --ink: #e8ebf0;
+      --ink-soft: #a3adba;
+      --ink-faint: #6b7481;
+      --border: #2a3340;
+      --accent: #3fcdb6;
+      --accent-ink: #08211d;
+      --accent-soft: #17332d;
+      --amber: #e8b258;
+      --amber-soft: #332711;
+      --amber-border: #6b511f;
+      --danger: #e58680;
+      --danger-soft: #3a1f1e;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #11151b;
+    --surface: #171c24;
+    --surface-2: #1e2530;
+    --ink: #e8ebf0;
+    --ink-soft: #a3adba;
+    --ink-faint: #6b7481;
+    --border: #2a3340;
+    --accent: #3fcdb6;
+    --accent-ink: #08211d;
+    --accent-soft: #17332d;
+    --amber: #e8b258;
+    --amber-soft: #332711;
+    --amber-border: #6b511f;
+    --danger: #e58680;
+    --danger-soft: #3a1f1e;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Public Sans', -apple-system, Segoe UI, sans-serif;
+    padding: 28px 32px 60px;
+    max-width: 1360px;
+    margin: 0 auto;
+  }
+  h1, h2, h3 { font-family: 'Archivo', sans-serif; font-weight: 800; letter-spacing: -0.01em; margin: 0; }
+  .mono { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
+
+  /* ---- Header ---- */
+  header {
+    display: flex; justify-content: space-between; align-items: flex-end; gap: 24px;
+    padding-bottom: 20px; margin-bottom: 24px; border-bottom: 2px solid var(--border);
+    flex-wrap: wrap;
+  }
+  header .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+  header h1 { font-size: 30px; }
+  header .sub { color: var(--ink-soft); font-size: 14.5px; margin-top: 6px; max-width: 640px; line-height: 1.5; }
+  .meta-box { text-align: right; font-size: 13px; color: var(--ink-soft); }
+  .meta-box .big { font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: var(--ink); font-weight: 600; }
+
+  /* ---- Stat cards ---- */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 12px; margin-bottom: 28px; }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; box-shadow: var(--shadow); }
+  .stat .n { font-family: 'IBM Plex Mono', monospace; font-size: 24px; font-weight: 600; color: var(--accent); }
+  .stat.warn .n { color: var(--danger); }
+  .stat .l { font-size: 12.5px; color: var(--ink-soft); margin-top: 2px; }
+
+  /* ---- Legend ---- */
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 30px; box-shadow: var(--shadow); font-size: 13px; }
+  .legend .title { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-faint); width: 100%; margin-bottom: 4px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; color: var(--ink-soft); }
+  .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+
+  /* ---- Month block ---- */
+  .month { margin-bottom: 34px; }
+  .month h2 { font-size: 20px; margin-bottom: 12px; display: flex; align-items: baseline; gap: 10px; }
+  .month h2 .count { font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; font-weight: 600; color: var(--ink-faint); background: var(--surface-2); padding: 3px 8px; border-radius: 20px; }
+  .cal-wrap { overflow-x: auto; border-radius: 12px; box-shadow: var(--shadow); }
+  .cal { width: 100%; border-collapse: separate; border-spacing: 0; background: var(--surface); min-width: 900px; }
+  .cal th { font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-faint); font-weight: 700; padding: 9px 6px; text-align: left; border-bottom: 1px solid var(--border); background: var(--surface-2); }
+  .cal th:first-child { border-top-left-radius: 12px; }
+  .cal th:last-child { border-top-right-radius: 12px; }
+  .cal td { vertical-align: top; border-bottom: 1px solid var(--border); border-right: 1px solid var(--border); padding: 6px; width: 14.28%; height: 84px; }
+  .cal td:last-child { border-right: none; }
+  .cal td.blank { background: var(--surface-2); opacity: .45; }
+  .cal td.weekend { background: color-mix(in srgb, var(--surface-2) 55%, transparent); }
+  .daynum { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--ink-faint); font-weight: 600; }
+  .chips { margin-top: 3px; display: flex; flex-direction: column; gap: 2px; }
+  .chip {
+    font-size: 10.6px; line-height: 1.35; padding: 1.5px 5px 1.5px 6px; border-radius: 4px;
+    background: hsl(var(--hue) 60% 95%); border-left: 3px solid hsl(var(--hue) 55% 42%);
+    color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-weight: 600;
+  }
+  :root:not([data-theme="light"]) .chip, :root[data-theme="dark"] .chip {
+    background: hsl(var(--hue) 38% 20%); border-left-color: hsl(var(--hue) 55% 60%);
+  }
+  @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .chip { background: hsl(var(--hue) 60% 95%); border-left-color: hsl(var(--hue) 55% 42%); } }
+  .chip.pending { opacity: .8; border-style: dashed; }
+  .chip.vertretung {
+    background: var(--amber-soft); border-left: 3px solid var(--amber); color: var(--amber); font-weight: 700;
+  }
+
+  /* ---- Notes ---- */
+  .notes { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; margin: 30px 0; }
+  @media (max-width: 900px) { .notes { grid-template-columns: 1fr; } }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; box-shadow: var(--shadow); }
+  .card h3 { font-size: 14px; margin-bottom: 10px; }
+  .card p, .card li { font-size: 13.5px; color: var(--ink-soft); line-height: 1.6; }
+  .card ul { margin: 0; padding-left: 18px; }
+  .card.warn { border-color: var(--danger); background: var(--danger-soft); }
+  .card.warn h3 { color: var(--danger); }
+  .card.warn p, .card.warn li { color: var(--ink); }
+  .card.info { border-color: var(--amber-border); background: var(--amber-soft); }
+  .card.info h3 { color: var(--amber); }
+  .card.info p, .card.info li { color: var(--ink); }
+
+  /* ---- Summary table ---- */
+  .summary h2 { font-size: 20px; margin-bottom: 12px; }
+  .table-wrap { overflow-x: auto; border-radius: 12px; box-shadow: var(--shadow); }
+  table.emp { width: 100%; border-collapse: collapse; background: var(--surface); font-size: 13px; min-width: 980px; }
+  table.emp th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-faint); padding: 10px 12px; border-bottom: 2px solid var(--border); background: var(--surface-2); position: sticky; top: 0; }
+  table.emp th:first-child, table.emp td:first-child { position: sticky; left: 0; }
+  table.emp td { padding: 9px 12px; border-bottom: 1px solid var(--border); color: var(--ink); }
+  table.emp tr:hover td { background: var(--surface-2); }
+  table.emp .num { font-family: 'IBM Plex Mono', monospace; text-align: right; font-variant-numeric: tabular-nums; }
+  table.emp .branch-tag { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ink-soft); }
+  table.emp .ranges { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--ink-soft); }
+  table.emp .ranges .r { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; }
+  .ok-badge { display: inline-block; font-size: 10.5px; font-weight: 700; padding: 1px 7px; border-radius: 20px; background: var(--accent-soft); color: var(--accent); }
+  .sl-badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 20px; background: var(--surface-2); color: var(--ink-faint); margin-left: 4px; }
+
+  footer { margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--ink-faint); }
+</style>
+
+<header>
+  <div>
+    <div class="eyebrow">Filial Radar &middot; Ost-Region (Hauptgebiet)</div>
+    <h1>Urlaubsplan Ost — Rest 2026</h1>
+    <div class="sub">Planvorschlag, damit alle aktiven Mitarbeiter der Ost-Region ihren Resturlaub bis Jahresende aufbrauchen (ohne Frau Müller, Claudine und Frau Kneipp, Hazel). Gleiche Regel wie im West-Plan: innerhalb jeder Filiale (inkl. Zweitfiliale-Pool) überschneiden sich keine Urlaubszeiträume. Herr Kieu, Van Khang ist filialübergreifende Vertretung für Baunatal/Homberg/Kassel. Die Ost-Filialen liegen in Hessen, Niedersachsen und Thüringen — Feiertage wurden je Bundesland berücksichtigt.</div>
+  </div>
+  <div class="meta-box">
+    <div>Erstellt am</div>
+    <div class="big" id="genDate"></div>
+    <div style="margin-top:6px;">Planungszeitraum</div>
+    <div class="big" id="genRange"></div>
+  </div>
+</header>
+
+<div class="stats" id="statsRow"></div>
+
+<div class="legend" id="legendBox"></div>
+
+<div id="calendars"></div>
+
+<div class="notes">
+  <div class="card">
+    <h3>Methodik</h3>
+    <ul>
+      <li><b>Überschneidungsregel:</b> Für jede Filiale gilt ein gemeinsamer &bdquo;Besetzungs-Pool&ldquo; aus Stammkräften + allen Kolleg:innen, die diese Filiale als Zweitfiliale führen. Innerhalb eines Pools bekommt niemand einen überlappenden Urlaubszeitraum.</li>
+      <li><b>Zweitfiliale-Namen normalisiert:</b> Bei Ost sind Zweitfiliale-Einträge im System teils ohne Marktnummer/uneinheitlich geschrieben (z.B. „Edeka Kassel Frankfurter Str.“ statt „401891: E-Kassel-Frankfurter Str. - Aschoff“) &mdash; wurden vor der Planung auf die kanonische Filiale abgeglichen, damit keine Verknüpfung übersehen wird.</li>
+      <li><b>Herr Kieu, Van Khang (Vertretung):</b> Springer-Analog zu Herrn Nguyen, Trong im West-Plan &mdash; aus der Überschneidungsregel ausgenommen (blockiert niemanden), eigener Resturlaub trotzdem verplant, dient als Vertretung für Einzel-Stammkraft-Filialen INNERHALB seines eigenen Zweitfiliale-Bereichs (Baunatal/Homberg/Kassel). Anders als Trong (alle 11 West-Filialen) deckt sein Zweitfiliale-Eintrag nur diese 3 Filialen ab &mdash; für die übrigen Einzel-Stammkraft-Filialen siehe Hinweis unten.</li>
+      <li><b>Nicht enthalten:</b> Frau Müller, Claudine (360135) und Frau Kneipp, Hazel (470008) wurden komplett aus diesem Plan herausgenommen.</li>
+      <li><b>Start ab 14.09.2026:</b> entspricht der 10-Tage-Vorlauffrist im Mitarbeiter-Portal.</li>
+      <li><b>Feiertage je Bundesland + Sonntag:</b> bundesweit 03.10., 25.–26.12.; zusätzlich Niedersachsen + Thüringen 31.10. (Reformationstag); zusätzlich Thüringen 20.09. (Weltkindertag). Zusammen mit jedem Sonntag (Mitarbeiter arbeiten nur Mo–Sa) zählen diese Tage nicht als Urlaubstag &mdash; ein Block, der einen Feiertag oder Sonntag überdeckt, wird automatisch verlängert, ohne die Resturlaub-Tage zu erhöhen.</li>
+      <li><b>Bereits gebuchter Urlaub</b> (2026, aus dem System) wurde vom Resturlaub abgezogen. Bei 3 Personen reicht der Buchungszeitraum über den 31.12. hinaus (z.B. Weihnachtsurlaub bis Januar) &mdash; hier zählt nur der 2026-Anteil gegen den Resturlaub.</li>
+    </ul>
+  </div>
+  <div class="card warn" id="warnCard"></div>
+</div>
+
+<div class="card info" id="infoCard" style="margin-bottom:30px;"></div>
+
+<div class="summary">
+  <h2>Übersicht pro Mitarbeiter</h2>
+  <div class="table-wrap">
+    <table class="emp" id="empTable">
+      <thead><tr>
+        <th>Name</th><th>Filiale</th><th class="num">Anspruch</th><th class="num">Offen (vorher)</th><th>Geplante Zeiträume (neu)</th><th class="num">Tage neu</th><th>Status</th>
+      </tr></thead>
+      <tbody id="empTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<footer>Filial Radar &middot; automatisch erstellter Planvorschlag (automation/src/plan-urlaub-ost.js) &middot; Gebietsleiter-Review vor Freigabe erforderlich.</footer>
+
+<script>
+const DATA = {"generiertAm":"2026-09-04","zeitraum":{"von":"2026-09-14","bis":"2026-12-31"},"plan":[{"id":"341373","name":"Minh Hieu Nguyen","filiale":"402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme","from":"2026-09-14","to":"2026-09-22","tage":8},{"id":"330460","name":"Thi Thuy Nguyen","filiale":"402257: E-Northeim-Robert-Schnabel-Str. - Schnabel","from":"2026-09-14","to":"2026-09-22","tage":8},{"id":"550042","name":"Quoc Cuong Chu","filiale":"402155: M-Nordhausen-Darrweg","from":"2026-09-14","to":"2026-09-17","tage":4},{"id":"340913","name":"Minh Khue Do","filiale":"402150: E-Sontra-Mühlbergstraße - Salzmann","from":"2026-09-14","to":"2026-09-24","tage":10},{"id":"410001","name":"Hai Thanh Nguyen","filiale":"402146: T-Bad Hersfeld-Heinrich-von-Stephan-Straße","from":"2026-09-14","to":"2026-09-22","tage":8},{"id":"330697","name":"Thi Le Tran","filiale":"402207: E-Bovenden-Industriestraße","from":"2026-09-23","to":"2026-09-29","tage":6},{"id":"341373","name":"Minh Hieu Nguyen","filiale":"402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme","from":"2026-09-23","to":"2026-10-01","tage":8},{"id":"410001","name":"Hai Thanh Nguyen","filiale":"402146: T-Bad Hersfeld-Heinrich-von-Stephan-Straße","from":"2026-09-23","to":"2026-09-30","tage":7},{"id":"341041","name":"Yanisa Puchta","filiale":"401888: R-Homberg (Efze)-Kasseler Str. - Mohr","from":"2026-09-24","to":"2026-09-30","tage":6},{"id":"341495","name":"Chunhua Loutchan","filiale":"402254: R-Kirchheim-Industriestraße - Messerschmidt","from":"2026-09-24","to":"2026-10-02","tage":8},{"id":"470009","name":"Bongkotchakon Abramowski","filiale":"401125: RA-Baunatal-Fuldastraße","from":"2026-09-25","to":"2026-10-05","tage":8},{"id":"340913","name":"Minh Khue Do","filiale":"402150: E-Sontra-Mühlbergstraße - Salzmann","from":"2026-09-25","to":"2026-10-07","tage":10},{"id":"341041","name":"Yanisa Puchta","filiale":"401888: R-Homberg (Efze)-Kasseler Str. - Mohr","from":"2026-10-01","to":"2026-10-08","tage":6},{"id":"410001","name":"Hai Thanh Nguyen","filiale":"402146: T-Bad Hersfeld-Heinrich-von-Stephan-Straße","from":"2026-10-01","to":"2026-10-09","tage":7},{"id":"470009","name":"Bongkotchakon Abramowski","filiale":"401125: RA-Baunatal-Fuldastraße","from":"2026-10-06","to":"2026-10-13","tage":7},{"id":"340913","name":"Minh Khue Do","filiale":"402150: E-Sontra-Mühlbergstraße - Salzmann","from":"2026-10-08","to":"2026-10-19","tage":10},{"id":"330697","name":"Thi Le Tran","filiale":"402207: E-Bovenden-Industriestraße","from":"2026-10-09","to":"2026-10-15","tage":6},{"id":"330722","name":"Thi Thanh Huyen Ton","filiale":"402257: E-Northeim-Robert-Schnabel-Str. - Schnabel","from":"2026-10-27","to":"2026-11-07","tage":10},{"id":"410013","name":"Van Chung Ngo","filiale":"402502: T-Göttingen-An-der-Lutter","from":"2026-10-31","to":"2026-11-10","tage":8},{"id":"330460","name":"Thi Thuy Nguyen","filiale":"402257: E-Northeim-Robert-Schnabel-Str. - Schnabel","from":"2026-11-08","to":"2026-11-18","tage":9},{"id":"410013","name":"Van Chung Ngo","filiale":"402502: T-Göttingen-An-der-Lutter","from":"2026-11-11","to":"2026-11-19","tage":8},{"id":"330460","name":"Thi Thuy Nguyen","filiale":"402257: E-Northeim-Robert-Schnabel-Str. - Schnabel","from":"2026-11-19","to":"2026-11-27","tage":8},{"id":"410013","name":"Van Chung Ngo","filiale":"402502: T-Göttingen-An-der-Lutter","from":"2026-11-20","to":"2026-11-27","tage":7},{"id":"410018","name":"Thi Viet Nguyen","filiale":"402501: T-Göttingen-Weender Str.","from":"2026-11-28","to":"2026-12-05","tage":7},{"id":"410018","name":"Thi Viet Nguyen","filiale":"402501: T-Göttingen-Weender Str.","from":"2026-12-06","to":"2026-12-12","tage":6}],"vertretung":[],"nichtVerplant":[],"singleStaffBranches":["402207: E-Bovenden-Industriestraße","402254: R-Kirchheim-Industriestraße - Messerschmidt","402146: T-Bad Hersfeld-Heinrich-von-Stephan-Straße"],"singleStaffOhneVertretung":["402207: E-Bovenden-Industriestraße","402254: R-Kirchheim-Industriestraße - Messerschmidt","402146: T-Bad Hersfeld-Heinrich-von-Stephan-Straße"],"feiertageJeMarktNr":{"402297: MK-Einbeck-Altendorfer Tor":["2026-10-03","2026-10-31","2026-12-25","2026-12-26"],"402257: E-Northeim-Robert-Schnabel-Str. - Schnabel":["2026-10-03","2026-10-31","2026-12-25","2026-12-26"],"402150: E-Sontra-Mühlbergstraße - Salzmann":["2026-10-03","2026-12-25","2026-12-26"],"401891: E-Kassel-Frankfurter Str. - Aschoff":["2026-10-03","2026-12-25","2026-12-26"],"402207: E-Bovenden-Industriestraße":["2026-10-03","2026-10-31","2026-12-25","2026-12-26"],"402502: T-Göttingen-An-der-Lutter":["2026-10-03","2026-10-31","2026-12-25","2026-12-26"],"401888: R-Homberg (Efze)-Kasseler Str. - Mohr":["2026-10-03","2026-12-25","2026-12-26"],"402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme":["2026-09-20","2026-10-03","2026-10-31","2026-12-25","2026-12-26"],"402254: R-Kirchheim-Industriestraße - Messerschmidt":["2026-10-03","2026-12-25","2026-12-26"],"402286: K-Göttingen-Am Kauf Park":["2026-10-03","2026-10-31","2026-12-25","2026-12-26"],"402155: M-Nordhausen-Darrweg":["2026-09-20","2026-10-03","2026-10-31","2026-12-25","2026-12-26"],"401125: RA-Baunatal-Fuldastraße":["2026-10-03","2026-12-25","2026-12-26"],"402146: T-Bad Hersfeld-Heinrich-von-Stephan-Straße":["2026-10-03","2026-12-25","2026-12-26"],"402501: T-Göttingen-Weender Str.":["2026-10-03","2026-10-31","2026-12-25","2026-12-26"]},"people":[{"id":"330158","name":"Thi Thu Hang Chu","filiale":"402297: MK-Einbeck-Altendorfer Tor","zweit":["Edeka Northeim Robert-Schnabel-Str."],"zweitKanonisch":["402257: E-Northeim-Robert-Schnabel-Str. - Schnabel"],"urlaubOffen":9,"urlaubAnspruch":30,"shopleiter":false},{"id":"330254","name":"Thi Nhung Cao","filiale":"402257: E-Northeim-Robert-Schnabel-Str. - Schnabel","zweit":["Einbeck-Altendorfer Tor"],"zweitKanonisch":["402297: MK-Einbeck-Altendorfer Tor"],"urlaubOffen":0,"urlaubAnspruch":30,"shopleiter":false},{"id":"330384","name":"Truong Thuy Vi Linh Vu","filiale":"402150: E-Sontra-Mühlbergstraße - Salzmann","zweit":["401125: RA-Baunatal-Fuldastraße","401891: E-Kassel-Frankfurter Str. - Aschoff"],"zweitKanonisch":["401125: RA-Baunatal-Fuldastraße","401891: E-Kassel-Frankfurter Str. - Aschoff"],"urlaubOffen":6,"urlaubAnspruch":30,"shopleiter":false},{"id":"330460","name":"Thi Thuy Nguyen","filiale":"402257: E-Northeim-Robert-Schnabel-Str. - Schnabel","zweit":["Einbeck-Altendorfer Tor"],"zweitKanonisch":["402297: MK-Einbeck-Altendorfer Tor"],"urlaubOffen":25,"urlaubAnspruch":25,"shopleiter":false},{"id":"330685","name":"Kim Aldrin Frias","filiale":"401891: E-Kassel-Frankfurter Str. - Aschoff","zweit":["Baunatal-Fuldastraße"],"zweitKanonisch":["401125: RA-Baunatal-Fuldastraße"],"urlaubOffen":17,"urlaubAnspruch":20,"shopleiter":true},{"id":"330697","name":"Thi Le Tran","filiale":"402207: E-Bovenden-Industriestraße","zweit":["Bovenden-Industriestraße","Kaufland Göttingen Am Kauf Park","Tegut Göttingen An-der-Lutter","Tegut Göttingen Weender Str."],"zweitKanonisch":["402207: E-Bovenden-Industriestraße","402286: K-Göttingen-Am Kauf Park","402502: T-Göttingen-An-der-Lutter","402501: T-Göttingen-Weender Str."],"urlaubOffen":14,"urlaubAnspruch":15,"shopleiter":false},{"id":"330722","name":"Thi Thanh Huyen Ton","filiale":"402257: E-Northeim-Robert-Schnabel-Str. - Schnabel","zweit":["402207: E-Bovenden-Industriestraße","402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme"],"zweitKanonisch":["402207: E-Bovenden-Industriestraße","402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme"],"urlaubOffen":10,"urlaubAnspruch":10,"shopleiter":false},{"id":"340404","name":"Thi Thu Hang Pham","filiale":"401891: E-Kassel-Frankfurter Str. - Aschoff","zweit":["Baunatal-Fuldastraße"],"zweitKanonisch":["401125: RA-Baunatal-Fuldastraße"],"urlaubOffen":6,"urlaubAnspruch":28,"shopleiter":false},{"id":"340913","name":"Minh Khue Do","filiale":"402150: E-Sontra-Mühlbergstraße - Salzmann","zweit":[],"zweitKanonisch":[],"urlaubOffen":30,"urlaubAnspruch":30,"shopleiter":false},{"id":"340944","name":"Thi Phuong Hoang","filiale":"402502: T-Göttingen-An-der-Lutter","zweit":["Göttingen-Am Kauf Park","Göttingen-Weender Str."],"zweitKanonisch":["402286: K-Göttingen-Am Kauf Park","402501: T-Göttingen-Weender Str."],"urlaubOffen":10,"urlaubAnspruch":30,"shopleiter":true},{"id":"341041","name":"Yanisa Puchta","filiale":"401888: R-Homberg (Efze)-Kasseler Str. - Mohr","zweit":[],"zweitKanonisch":[],"urlaubOffen":12,"urlaubAnspruch":30,"shopleiter":false},{"id":"341373","name":"Minh Hieu Nguyen","filiale":"402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme","zweit":[],"zweitKanonisch":[],"urlaubOffen":22,"urlaubAnspruch":30,"shopleiter":false},{"id":"341421","name":"Chutikan Gimpel","filiale":"401888: R-Homberg (Efze)-Kasseler Str. - Mohr","zweit":["402254: R-Kirchheim-Industriestraße - Messerschmidt"],"zweitKanonisch":["402254: R-Kirchheim-Industriestraße - Messerschmidt"],"urlaubOffen":16,"urlaubAnspruch":30,"shopleiter":true},{"id":"341443","name":"Phi Long Doan","filiale":"402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme","zweit":["Marktkauf Nordhausen Darrweg"],"zweitKanonisch":["402155: M-Nordhausen-Darrweg"],"urlaubOffen":0,"urlaubAnspruch":28,"shopleiter":false},{"id":"341475","name":"Thi Thu Vi","filiale":"402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme","zweit":["Nordhausen-Darrweg"],"zweitKanonisch":["402155: M-Nordhausen-Darrweg"],"urlaubOffen":0,"urlaubAnspruch":18,"shopleiter":false},{"id":"341476","name":"Abdulhamid Husamuldin Abdulhamid Sultan","filiale":"402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme","zweit":["Göttingen-Am Kauf Park","Göttingen-An-der-Lutter","Göttingen-Weender Str."],"zweitKanonisch":["402286: K-Göttingen-Am Kauf Park","402502: T-Göttingen-An-der-Lutter","402501: T-Göttingen-Weender Str."],"urlaubOffen":0,"urlaubAnspruch":18,"shopleiter":false},{"id":"341495","name":"Chunhua Loutchan","filiale":"402254: R-Kirchheim-Industriestraße - Messerschmidt","zweit":[],"zweitKanonisch":[],"urlaubOffen":15,"urlaubAnspruch":15,"shopleiter":false},{"id":"350561","name":"Thi Lan Anh Nguyen","filiale":"402286: K-Göttingen-Am Kauf Park","zweit":["Edeka Bovenden Industriestraße","Göttingen-An-der-Lutter","Göttingen-Weender Str."],"zweitKanonisch":["402207: E-Bovenden-Industriestraße","402502: T-Göttingen-An-der-Lutter","402501: T-Göttingen-Weender Str."],"urlaubOffen":28,"urlaubAnspruch":28,"shopleiter":false},{"id":"350596","name":"Minh Giang Ngo","filiale":"402286: K-Göttingen-Am Kauf Park","zweit":["402501: T-Göttingen-Weender Str."],"zweitKanonisch":["402501: T-Göttingen-Weender Str."],"urlaubOffen":5,"urlaubAnspruch":23,"shopleiter":false},{"id":"360011","name":"Thi Nuong Nguyen","filiale":"402155: M-Nordhausen-Darrweg","zweit":["Heilbad Heiligenstadt-Sperberwiese - Ihme"],"zweitKanonisch":["402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme"],"urlaubOffen":0,"urlaubAnspruch":30,"shopleiter":false},{"id":"360021","name":"Thi Nga Pham","filiale":"402155: M-Nordhausen-Darrweg","zweit":[],"zweitKanonisch":[],"urlaubOffen":7,"urlaubAnspruch":30,"shopleiter":true},{"id":"360053","name":"Lan Phung","filiale":"402297: MK-Einbeck-Altendorfer Tor","zweit":["402257: E-Northeim-Robert-Schnabel-Str. - Schnabel"],"zweitKanonisch":["402257: E-Northeim-Robert-Schnabel-Str. - Schnabel"],"urlaubOffen":9,"urlaubAnspruch":25,"shopleiter":false},{"id":"370116","name":"Diem Thi Thanh Roth","filiale":"401125: RA-Baunatal-Fuldastraße","zweit":["Baunatal-Fuldastraße"],"zweitKanonisch":["401125: RA-Baunatal-Fuldastraße"],"urlaubOffen":8,"urlaubAnspruch":30,"shopleiter":false},{"id":"410001","name":"Hai Thanh Nguyen","filiale":"402146: T-Bad Hersfeld-Heinrich-von-Stephan-Straße","zweit":[],"zweitKanonisch":[],"urlaubOffen":22,"urlaubAnspruch":30,"shopleiter":false},{"id":"410012","name":"Thi Viet Nguyen","filiale":"402501: T-Göttingen-Weender Str.","zweit":["402286: K-Göttingen-Am Kauf Park","402502: T-Göttingen-An-der-Lutter"],"zweitKanonisch":["402286: K-Göttingen-Am Kauf Park","402502: T-Göttingen-An-der-Lutter"],"urlaubOffen":7,"urlaubAnspruch":25,"shopleiter":false},{"id":"410013","name":"Van Chung Ngo","filiale":"402502: T-Göttingen-An-der-Lutter","zweit":["Göttingen-Am Kauf Park","Göttingen-Weender Str."],"zweitKanonisch":["402286: K-Göttingen-Am Kauf Park","402501: T-Göttingen-Weender Str."],"urlaubOffen":23,"urlaubAnspruch":23,"shopleiter":false},{"id":"410018","name":"Thi Viet Nguyen","filiale":"402501: T-Göttingen-Weender Str.","zweit":[],"zweitKanonisch":[],"urlaubOffen":13,"urlaubAnspruch":13,"shopleiter":false},{"id":"470009","name":"Bongkotchakon Abramowski","filiale":"401125: RA-Baunatal-Fuldastraße","zweit":[],"zweitKanonisch":[],"urlaubOffen":15,"urlaubAnspruch":15,"shopleiter":false},{"id":"470010","name":"Thi Hoang My Pham","filiale":"401125: RA-Baunatal-Fuldastraße","zweit":["401891: E-Kassel-Frankfurter Str. - Aschoff"],"zweitKanonisch":["401891: E-Kassel-Frankfurter Str. - Aschoff"],"urlaubOffen":0,"urlaubAnspruch":null,"shopleiter":false},{"id":"550042","name":"Quoc Cuong Chu","filiale":"402155: M-Nordhausen-Darrweg","zweit":[],"zweitKanonisch":[],"urlaubOffen":4,"urlaubAnspruch":30,"shopleiter":false},{"id":"550152","name":"Van Khang Kieu","filiale":"402502: T-Göttingen-An-der-Lutter","zweit":["401125: RA-Baunatal-Fuldastraße","401888: R-Homberg (Efze)-Kasseler Str. - Mohr","401891: E-Kassel-Frankfurter Str. - Aschoff"],"zweitKanonisch":["401125: RA-Baunatal-Fuldastraße","401888: R-Homberg (Efze)-Kasseler Str. - Mohr","401891: E-Kassel-Frankfurter Str. - Aschoff"],"urlaubOffen":29,"urlaubAnspruch":30,"shopleiter":true}],"existingByPerson":{"330158":[{"from":"2026-09-23","to":"2026-10-17","status":"approved"}],"330384":[{"from":"2026-12-11","to":"2027-01-13","status":"approved"}],"330685":[{"from":"2026-10-26","to":"2026-11-21","status":"approved"}],"330697":[{"from":"2026-08-01","to":"2026-08-02","status":"approved"}],"340404":[{"from":"2026-09-17","to":"2026-09-24","status":"approved"}],"340944":[{"from":"2026-07-17","to":"2026-08-08","status":"approved"}],"341373":[{"from":"2026-08-24","to":"2026-08-29","status":"approved"},{"from":"2027-01-25","to":"2027-02-27","status":"approved"}],"341421":[{"from":"2026-09-07","to":"2026-09-23","status":"approved"}],"341443":[{"from":"2026-06-22","to":"2026-07-20","status":"approved"}],"341475":[{"from":"2026-07-25","to":"2026-08-15","status":"approved"}],"341495":[{"from":"2026-11-02","to":"2026-11-08","status":"approved"}],"350561":[{"from":"2026-10-26","to":"2026-10-26","status":"pending"},{"from":"2026-09-11","to":"2026-09-22","status":"approved"},{"from":"2026-10-01","to":"2026-10-06","status":"approved"},{"from":"2026-12-21","to":"2027-01-02","status":"approved"}],"350596":[{"from":"2026-10-07","to":"2026-10-08","status":"approved"},{"from":"2026-10-28","to":"2026-10-30","status":"approved"},{"from":"2026-07-20","to":"2026-08-08","status":"approved"}],"360011":[{"from":"2026-06-22","to":"2026-07-20","status":"approved"}],"360021":[{"from":"2026-07-13","to":"2026-08-03","status":"approved"},{"from":"2026-08-15","to":"2026-08-19","status":"approved"}],"360053":[{"from":"2026-07-20","to":"2026-08-01","status":"approved"}],"370116":[{"from":"2026-08-03","to":"2026-08-08","status":"approved"},{"from":"2026-12-28","to":"2026-12-30","status":"approved"}],"410012":[{"from":"2026-08-03","to":"2026-08-22","status":"approved"},{"from":"2026-10-19","to":"2026-10-24","status":"approved"}]}};
+
+const WOCHENTAGE = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+const MONATE = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+
+function shortBranch(full) {
+  const afterColon = (full||'').split(':').slice(1).join(':').trim();
+  const stripped = afterColon.replace(/^[A-Za-z]{1,3}-/, '');
+  return stripped || full;
+}
+function firstNameLastInit(name) {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0];
+  return parts.slice(0, -1).join(' ') + ' ' + parts[parts.length - 1][0] + '.';
+}
+function dateRange(fromIso, toIso) {
+  const out = [];
+  let d = new Date(fromIso + 'T00:00:00');
+  const end = new Date(toIso + 'T00:00:00');
+  while (d <= end) { out.push(d.toISOString().slice(0, 10)); d.setDate(d.getDate() + 1); }
+  return out;
+}
+function fmtD(iso) { const [y,m,d] = iso.split('-'); return d + '.' + m + '.'; }
+function clampRange(fromIso, toIso, lo, hi) {
+  const f = fromIso < lo ? lo : fromIso;
+  const t = toIso > hi ? hi : toIso;
+  if (t < f) return [];
+  return dateRange(f, t);
+}
+
+// ---- Branch hue assignment ----
+const branches = Array.from(new Set(DATA.people.map(p => p.filiale))).sort();
+const hueOf = {};
+branches.forEach((b, i) => { hueOf[b] = Math.round((i * 360) / branches.length); });
+
+const peopleById = {}; DATA.people.forEach(p => peopleById[p.id] = p);
+
+// ---- Build per-day event map (existing bookings clamped to 2026 for display range) ----
+const dayMap = {};
+function addEvent(empId, name, filiale, from, to, source, status) {
+  const hue = hueOf[filiale] != null ? hueOf[filiale] : 200;
+  dateRange(from, to).forEach(iso => {
+    (dayMap[iso] = dayMap[iso] || []).push({ empId, name, filiale, hue, source, status });
+  });
+}
+DATA.plan.forEach(e => addEvent(e.id, e.name, e.filiale, e.from, e.to, 'neu', 'vorschlag'));
+Object.entries(DATA.existingByPerson).forEach(([id, arr]) => {
+  const p = peopleById[id];
+  arr.forEach(e => addEvent(id, p ? p.name : id, p ? p.filiale : '', e.from, e.to, 'bestehend', e.status));
+});
+const vertretungMap = {};
+(DATA.vertretung || []).forEach(v => {
+  dateRange(v.from, v.to).forEach(iso => { vertretungMap[iso] = v; });
+});
+
+// ---- Stats ----
+const totalNeu = DATA.plan.reduce((s,e)=>s+e.tage,0);
+const totalPeopleScheduled = new Set(DATA.plan.map(e=>e.id)).size;
+const totalOffenVor = DATA.people.reduce((s,p)=>s+p.urlaubOffen,0);
+const totalNichtVerplant = DATA.nichtVerplant.reduce((s,e)=>s+e.tage,0);
+document.getElementById('statsRow').innerHTML = [
+  [String(DATA.people.length),'Ost-Mitarbeiter im Plan', false],
+  [String(totalPeopleScheduled),'erhalten neuen Urlaub', false],
+  [String(totalNeu)+' Tage','neu verplant', false],
+  [String(totalOffenVor)+' Tage','Resturlaub gesamt (vorher)', false],
+  [String((DATA.vertretung||[]).length)+' Blöcke','Khang-Vertretung nötig', false],
+  [String(totalNichtVerplant)+' Tage','nicht unterbringbar', totalNichtVerplant>0],
+].map(([n,l,warn]) => `<div class="stat${warn?' warn':''}"><div class="n mono">${n}</div><div class="l">${l}</div></div>`).join('');
+
+document.getElementById('genDate').textContent = DATA.generiertAm.split('-').reverse().join('.');
+document.getElementById('genRange').textContent = DATA.zeitraum.von.split('-').reverse().join('.') + ' – ' + DATA.zeitraum.bis.split('-').reverse().join('.');
+
+// ---- Legend ----
+let legendHtml = '<div class="title">Filialen</div>';
+branches.forEach(b => {
+  legendHtml += `<div class="legend-item"><span class="dot" style="background:hsl(${hueOf[b]} 55% 45%)"></span>${shortBranch(b)}</div>`;
+});
+legendHtml += `<div class="legend-item" style="margin-left:auto;"><span class="dot" style="background:var(--amber)"></span>Khang &mdash; Vertretung (Baunatal/Homberg/Kassel)</div>`;
+legendHtml += `<div class="legend-item"><span class="dot" style="background:var(--ink-faint); opacity:.5"></span>gestrichelt = noch ausstehend</div>`;
+document.getElementById('legendBox').innerHTML = legendHtml;
+
+// ---- Calendar rendering ----
+function buildMonth(year, month) {
+  const first = new Date(year, month, 1);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  let startWeekday = first.getDay();
+  startWeekday = (startWeekday + 6) % 7;
+
+  let html = `<div class="month"><h2>${MONATE[month]} ${year} <span class="count">${daysInMonth} Tage</span></h2>`;
+  html += '<div class="cal-wrap"><table class="cal"><thead><tr>' + WOCHENTAGE.map(w=>`<th>${w}</th>`).join('') + '</tr></thead><tbody><tr>';
+
+  for (let i = 0; i < startWeekday; i++) html += '<td class="blank"></td>';
+  let col = startWeekday;
+  for (let day = 1; day <= daysInMonth; day++) {
+    const iso = year + '-' + String(month+1).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+    const isWeekend = col === 5 || col === 6;
+    const events = (dayMap[iso] || []).slice().sort((a,b) => a.filiale < b.filiale ? -1 : 1);
+    const vert = vertretungMap[iso];
+    let chips = events.map(e => {
+      const cls = 'chip' + (e.status === 'pending' ? ' pending' : '');
+      const label = firstNameLastInit(e.name);
+      const title = e.name + ' — ' + shortBranch(e.filiale) + (e.status === 'pending' ? ' (ausstehend)' : e.source === 'bestehend' ? ' (bereits gebucht)' : '');
+      return `<div class="${cls}" style="--hue:${e.hue}" title="${title}">${label}</div>`;
+    }).join('');
+    if (vert) {
+      chips += `<div class="chip vertretung" title="Van Khang Kieu deckt ${shortBranch(vert.filiale)} ab (${vert.fuerName} im Urlaub)">🛟 Khang (Vertretung)</div>`;
+    }
+    html += `<td class="${isWeekend?'weekend':''}"><div class="daynum">${day}</div><div class="chips">${chips}</div></td>`;
+    col++;
+    if (col === 7) { html += '</tr><tr>'; col = 0; }
+  }
+  while (col !== 0 && col < 7) { html += '<td class="blank"></td>'; col++; }
+  html += '</tr></tbody></table></div></div>';
+  return html;
+}
+
+let calHtml = '';
+[[2026,8],[2026,9],[2026,10],[2026,11]].forEach(([y,m]) => { calHtml += buildMonth(y,m); });
+document.getElementById('calendars').innerHTML = calHtml;
+
+// ---- Warn card: capacity problem (Baunatal/Kassel/Homberg cluster) ----
+if (DATA.nichtVerplant.length) {
+  const byPerson = {};
+  DATA.nichtVerplant.forEach(n => { (byPerson[n.name] = byPerson[n.name] || 0); byPerson[n.name] += n.tage; });
+  const list = Object.entries(byPerson).map(([name,tage]) => `<li><b>${name}</b>: ${tage} Tage konnten nicht mehr untergebracht werden</li>`).join('');
+  document.getElementById('warnCard').innerHTML = `
+    <h3>⚠ Kapazitätsproblem: Baunatal / Kassel / Homberg</h3>
+    <p>Diese 3 Filialen teilen sich über Herrn Kieu, Van Khang (Zweitfiliale in allen dreien) einen gemeinsamen Besetzungs-Pool. Der gemeinsame Resturlaub-Bedarf dieser Gruppe (Claudine Müller 30T, Van Khang Kieu 29T, Bongkotchakon Abramowski 15T, Hazel Kneipp 13T, weitere) übersteigt praktisch die verfügbaren ${DATA.zeitraum.von}–${DATA.zeitraum.bis} Tage, sobald alle sich gegenseitig nicht überlappen dürfen.</p>
+    <ul>${list}</ul>
+    <p><b>Insgesamt ${totalNichtVerplant} Tage</b> nicht unterbringbar. Optionen: Reste ins nächste Jahr übertragen, Kollegenhilfe aus einer anderen Filiale organisieren, oder die Zweitfiliale-Zuordnung von Herrn Kieu prüfen (blockiert aktuell alle 3 Filialen gleichzeitig).</p>
+  `;
+} else {
+  document.getElementById('warnCard').innerHTML = `<h3>✓ Keine Kapazitätsprobleme</h3><p>Alle Resturlaubstage konnten ohne Überschneidung untergebracht werden.</p>`;
+}
+document.getElementById('warnCard').innerHTML += `
+  <hr style="border:none;border-top:1px solid var(--border);margin:14px 0;">
+  <p style="font-size:12.5px;"><b>⚠ Separater Hinweis:</b> Frau Vu, Truong Thuy Vi Linh (330384, Sontra) hat seit kurzem Baunatal + Kassel als Zweitfiliale eingetragen. Dadurch überschneidet sich ihr bereits genehmigter Urlaub (11.12.2026–13.01.2027) neu mit dem von Frau Roth, Diem Thi Thanh (Baunatal, 28.–30.12., genehmigt) &mdash; beide teilen jetzt den Baunatal-Pool. Beide Termine waren schon vor dieser Planung genehmigt und wurden nicht verändert.</p>
+`;
+
+// ---- Info card: branches without backup coverage ----
+const ohneVertretung = DATA.singleStaffOhneVertretung || DATA.singleStaffBranches;
+document.getElementById('infoCard').innerHTML = `
+  <h3>ℹ Hinweis: Filialen ohne Vertretung bei Urlaub der einzigen Stammkraft</h3>
+  <p>Herr Kieu, Van Khang deckt als Vertretung nur Baunatal, Homberg und Kassel ab (sein eigener Zweitfiliale-Bereich). Diese Filialen haben ebenfalls nur 1 Stammkraft, aber liegen außerhalb seines Bereichs &mdash; an deren Urlaubstagen ist die Filiale ggf. ohne feste Besetzung, sofern keine Zweitfiliale-Hilfe von woanders eingeteilt wird:</p>
+  <ul>${ohneVertretung.map(b => `<li>${shortBranch(b)}</li>`).join('') || '<li>keine</li>'}</ul>
+`;
+
+// ---- Summary table ----
+const planByEmp = {};
+DATA.plan.forEach(e => { (planByEmp[e.id] = planByEmp[e.id] || []).push(e); });
+const nichtVerplantByEmp = {};
+DATA.nichtVerplant.forEach(e => { nichtVerplantByEmp[e.id] = (nichtVerplantByEmp[e.id]||0) + e.tage; });
+const rows = DATA.people.slice().sort((a,b) => a.filiale < b.filiale ? -1 : a.filiale > b.filiale ? 1 : a.name < b.name ? -1 : 1);
+let bodyHtml = '';
+rows.forEach(p => {
+  const already = (DATA.existingByPerson[p.id] || []).reduce((s,e) => s + clampRange(e.from,e.to,'2026-01-01','2026-12-31').length, 0);
+  const rest = Math.max(0, p.urlaubOffen - already);
+  const blocks = planByEmp[p.id] || [];
+  const gesamt = blocks.reduce((s,e) => s+e.tage, 0);
+  const fehlend = nichtVerplantByEmp[p.id] || 0;
+  const ranges = blocks.map(e => `<span class="r">${fmtD(e.from)}–${fmtD(e.to)} (${e.tage}T)</span>`).join('');
+  let statusBadge;
+  if (p.urlaubOffen === 0) statusBadge = '<span style="color:var(--ink-faint);font-size:12px;">kein Resturlaub</span>';
+  else if (fehlend > 0) statusBadge = `<span style="color:var(--danger);font-size:12px;font-weight:700;">${gesamt}/${rest}T &mdash; ${fehlend}T nicht unterbringbar</span>`;
+  else if (gesamt === rest) statusBadge = '<span class="ok-badge">✓ vollständig verplant</span>';
+  else statusBadge = `<span style="color:var(--danger);font-size:12px;font-weight:700;">nur ${gesamt}/${rest}T</span>`;
+  bodyHtml += `<tr>
+    <td><b>${p.name}</b>${p.shopleiter ? '<span class="sl-badge">SL</span>' : ''}${p.id==='550152' ? ' <span style="color:var(--amber);font-size:11px;">(Vertretung)</span>' : ''}</td>
+    <td><span class="branch-tag"><span class="dot" style="background:hsl(${hueOf[p.filiale]} 55% 45%)"></span>${shortBranch(p.filiale)}</span>${p.zweitKanonisch.length ? '<br><span style="font-size:11px;color:var(--ink-faint);">Zweit: '+p.zweitKanonisch.map(shortBranch).join(', ')+'</span>' : ''}</td>
+    <td class="num">${p.urlaubAnspruch ?? '–'}</td>
+    <td class="num">${p.urlaubOffen}</td>
+    <td><div class="ranges">${ranges || '<span style="color:var(--ink-faint);">—</span>'}</div></td>
+    <td class="num">${gesamt}</td>
+    <td>${statusBadge}</td>
+  </tr>`;
+});
+document.getElementById('empTableBody').innerHTML = bodyHtml;
+</script>

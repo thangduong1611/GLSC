@@ -5168,7 +5168,7 @@ function uManualAdd(){
   if(!emp){ umStatus('⚠️ Mitarbeiter nicht gefunden.', '#C0392B'); return; }
   var filiale=emp.filiale||'';
   if(!filiale){ umStatus('⚠️ Mitarbeiter hat keine Stammfiliale.', '#C0392B'); return; }
-  var doc={ empId:''+emp.id, name:emp.name, filiale:filiale,
+  var doc={ empId:''+emp.id, name:emp.name, filiale:filiale, region:activeRegion,
     from:from, to:to, status:'approved',
     created:new Date().toISOString(), decidedAt:new Date().toISOString(),
     source:'hr' };

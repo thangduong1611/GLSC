@@ -152,6 +152,7 @@ td.c-krank{background:var(--red-l);color:var(--red-d);font-weight:700;}
 .ustat.g{background:var(--grn-bg);color:var(--grn);}
 .ustat.o{background:var(--org-bg);color:var(--org);}
 .ustat.r{background:var(--red-l);color:var(--red-d);}
+.ul-list-item .ugl{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--blu-bg);color:var(--blu);margin-top:4px;display:inline-block;}
 
 /* SIGNATURE */
 .canvas-wrap{margin-top:8px;border-radius:var(--r);overflow:hidden;border:1.5px solid var(--brd);background:#fff;cursor:crosshair;}
@@ -662,7 +663,7 @@ function maBuildUrlaubDoc(sess, from, to){
 // Wandelt Firestore-Docs in App-Einträge (testbar)
 function maMapUrlaubSnapshot(rawDocs){
   return rawDocs.map(function(d){ var v=d.data||{};
-    return { docId:d.id, id:v.empId, name:v.name, filiale:v.filiale, from:v.from, to:v.to, status:v.status||'pending' };
+    return { docId:d.id, id:v.empId, name:v.name, filiale:v.filiale, from:v.from, to:v.to, status:v.status||'pending', source:v.source||'' };
   });
 }
 function maStartFbUrlaub(sess){
@@ -1944,7 +1945,7 @@ de:{_name:'Deutsch',
  dp_not_pub:'Der Dienstplan für {m} wurde noch nicht veröffentlicht.',dp_loading:'⏳ Lade Dienstplan…',dp_load_err:'Fehler beim Laden: ',
  my_shifts:'👤 Meine Schichten',dp_pdf:'PDF laden',dp_pdf_none:'Kein PDF vorhanden.',whole_store:'🏪 Ganze Filiale',th_emp:'Mitarbeiter',no_entries:'Keine Einträge für dich in diesem Monat.',
  v_frei:'Frei',v_url:'Urlaub',v_krank:'Krank',
- ul_title:'🌴 Urlaub – Filiale',leg_ok:'Genehmigt',leg_wait:'Wartet auf Freigabe',leg_no:'Abgelehnt',st_wait:'Wartet',
+ ul_title:'🌴 Urlaub – Filiale',leg_ok:'Genehmigt',leg_wait:'Wartet auf Freigabe',leg_no:'Abgelehnt',st_wait:'Wartet',ul_gl_tag:'Vorschlag Gebietsleiter',
  ul_year:'📋 Urlaub dieses Jahr',ul_none:'Noch kein Urlaub für {y} eingetragen.',
  req_title:'✏️ Meinen Urlaub beantragen',
  rules:'Regeln: mindestens <strong>10 Tage im Voraus</strong> · <strong>keine Überschneidung</strong> mit Kollegen der Filiale. Nach dem Absenden wartet der Antrag auf Freigabe durch den Gebietsleiter (🟧).',
@@ -2052,7 +2053,7 @@ vi:{_name:'Tiếng Việt',
  dp_not_pub:'Lịch làm tháng {m} chưa được công bố.',dp_loading:'⏳ Đang tải lịch…',dp_load_err:'Lỗi khi tải: ',
  my_shifts:'👤 Ca của tôi',dp_pdf:'Tải PDF',dp_pdf_none:'Chưa có file PDF.',whole_store:'🏪 Cả cửa hàng',th_emp:'Nhân viên',no_entries:'Tháng này bạn chưa có ca nào.',
  v_frei:'Nghỉ',v_url:'Nghỉ phép',v_krank:'Ốm',
- ul_title:'🌴 Nghỉ phép – Cửa hàng',leg_ok:'Đã duyệt',leg_wait:'Chờ duyệt',leg_no:'Từ chối',st_wait:'Chờ',
+ ul_title:'🌴 Nghỉ phép – Cửa hàng',leg_ok:'Đã duyệt',leg_wait:'Chờ duyệt',leg_no:'Từ chối',st_wait:'Chờ',ul_gl_tag:'GL đề xuất',
  ul_year:'📋 Nghỉ phép năm nay',ul_none:'Chưa có nghỉ phép nào trong năm {y}.',
  req_title:'✏️ Đăng ký nghỉ phép',
  rules:'Quy định: đăng ký trước <strong>ít nhất 10 ngày</strong> · <strong>không trùng lịch</strong> với đồng nghiệp cùng cửa hàng. Sau khi gửi, đơn chờ Gebietsleiter duyệt (🟧).',
@@ -2160,7 +2161,7 @@ en:{_name:'English',
  dp_not_pub:'The schedule for {m} has not been published yet.',dp_loading:'⏳ Loading schedule…',dp_load_err:'Error loading: ',
  my_shifts:'👤 My shifts',dp_pdf:'Get PDF',dp_pdf_none:'No PDF available.',whole_store:'🏪 Whole store',th_emp:'Employee',no_entries:'No entries for you this month.',
  v_frei:'Off',v_url:'Vacation',v_krank:'Sick',
- ul_title:'🌴 Vacation – Store',leg_ok:'Approved',leg_wait:'Pending approval',leg_no:'Rejected',st_wait:'Pending',
+ ul_title:'🌴 Vacation – Store',leg_ok:'Approved',leg_wait:'Pending approval',leg_no:'Rejected',st_wait:'Pending',ul_gl_tag:'Manager proposal',
  ul_year:'📋 Vacation this year',ul_none:'No vacation entered for {y} yet.',
  req_title:'✏️ Request my vacation',
  rules:'Rules: at least <strong>10 days in advance</strong> · <strong>no overlap</strong> with colleagues of your store. After sending, the request waits for approval by the area manager (🟧).',
@@ -2268,7 +2269,7 @@ th:{_name:'ไทย',
  dp_not_pub:'ตารางงานเดือน {m} ยังไม่ประกาศ',dp_loading:'⏳ กำลังโหลด…',dp_load_err:'โหลดไม่สำเร็จ: ',
  my_shifts:'👤 กะของฉัน',dp_pdf:'ดาวน์โหลด PDF',dp_pdf_none:'ไม่มีไฟล์ PDF',whole_store:'🏪 ทั้งสาขา',th_emp:'พนักงาน',no_entries:'เดือนนี้คุณยังไม่มีกะงาน',
  v_frei:'หยุด',v_url:'ลาพักร้อน',v_krank:'ป่วย',
- ul_title:'🌴 วันลา – สาขา',leg_ok:'อนุมัติแล้ว',leg_wait:'รออนุมัติ',leg_no:'ถูกปฏิเสธ',st_wait:'รอ',
+ ul_title:'🌴 วันลา – สาขา',leg_ok:'อนุมัติแล้ว',leg_wait:'รออนุมัติ',leg_no:'ถูกปฏิเสธ',st_wait:'รอ',ul_gl_tag:'ผู้จัดการเขตเสนอ',
  ul_year:'📋 วันลาปีนี้',ul_none:'ยังไม่มีวันลาสำหรับปี {y}',
  req_title:'✏️ ยื่นขอวันลา',
  rules:'กฎ: ยื่นล่วงหน้า<strong>อย่างน้อย 10 วัน</strong> · <strong>ห้ามซ้ำ</strong>กับเพื่อนร่วมสาขา หลังส่ง คำขอจะรอผู้จัดการเขตอนุมัติ (🟧)',
@@ -2376,7 +2377,7 @@ zh:{_name:'中文',
  dp_not_pub:'{m}的排班表尚未发布。',dp_loading:'⏳ 正在加载排班表…',dp_load_err:'加载失败：',
  my_shifts:'👤 我的班次',dp_pdf:'下载PDF',dp_pdf_none:'暂无PDF文件。',whole_store:'🏪 整个门店',th_emp:'员工',no_entries:'本月您还没有排班。',
  v_frei:'休息',v_url:'休假',v_krank:'病假',
- ul_title:'🌴 休假 – 门店',leg_ok:'已批准',leg_wait:'等待批准',leg_no:'已拒绝',st_wait:'等待中',
+ ul_title:'🌴 休假 – 门店',leg_ok:'已批准',leg_wait:'等待批准',leg_no:'已拒绝',st_wait:'等待中',ul_gl_tag:'区域经理提议',
  ul_year:'📋 今年的休假',ul_none:'{y}年还没有休假记录。',
  req_title:'✏️ 申请我的休假',
  rules:'规定：至少<strong>提前10天</strong>申请 · <strong>不得与</strong>同门店同事的休假时间重叠。发送后，申请将等待区域经理批准 (🟧)。',
@@ -3415,8 +3416,9 @@ function maRenderUlList(){
   box.innerHTML=ul.map(function(u){
     var c=maStatusClass(u.status);
     var stTxt=u.status==='approved'?t('leg_ok'):u.status==='rejected'?t('leg_no'):t('st_wait');
+    var glTag=u.source==='hr'?'<div class="ugl">'+t('ul_gl_tag')+'</div>':'';
     return '<div class="ul-list-item '+c+'"><div style="flex:1"><div class="uname">'+u.name+'</div>'
-      +'<div class="udate">'+maFmtDE(u.from)+' – '+maFmtDE(u.to)+'</div></div>'
+      +'<div class="udate">'+maFmtDE(u.from)+' – '+maFmtDE(u.to)+'</div>'+glTag+'</div>'
       +'<span class="ustat '+c+'">'+stTxt+'</span></div>';
   }).join('');
 }
