@@ -1486,15 +1486,27 @@ function maRenderZielInfo(sess){
     if(!d.marktNr){ el.innerHTML=''; return; }
     var heute=new Date();
     var compact=heute.getFullYear()+(''+(heute.getMonth()+1)).padStart(2,'0')+(''+heute.getDate()).padStart(2,'0');
-    return fbDb.collection('tagesziel').doc(d.marktNr+'_'+compact).get().then(function(zdoc){
+    var iso=heute.getFullYear()+'-'+(''+(heute.getMonth()+1)).padStart(2,'0')+'-'+(''+heute.getDate()).padStart(2,'0');
+    // Welo meldet den Tagesumsatz erst am Folgetag (dieselbe "gestern"-
+    // Verzögerung wie bei den Ist-Stunden) — tagesziel.umsatzHeute ist für
+    // den laufenden Tag deshalb strukturell immer leer (live bestätigt
+    // 03.09.2026). Für "heute" wird stattdessen der echte Live-Wert aus
+    // Axonity benutzt (filiale_produktion, von sync-axonity-produktion.js
+    // mehrmals täglich aktualisiert) — Ziel/Vorjahr bleiben aus Welo.
+    return Promise.all([
+      fbDb.collection('tagesziel').doc(d.marktNr+'_'+compact).get(),
+      fbDb.collection('filiale_produktion').doc(d.marktNr+'_'+iso).get(),
+    ]).then(function(results){
+      var zdoc=results[0], pdoc=results[1];
       if(!zdoc.exists){ el.innerHTML=''; return; }
       var z=zdoc.data();
       if(z.ziel==null){ el.textContent=t('welo_ziel_unknown'); return; }
+      var umsatzHeuteLive=(pdoc.exists && typeof pdoc.data().umsatzHeute==='number') ? pdoc.data().umsatzHeute : null;
       var html='<div>'+t('welo_ziel',{filiale:z.marktname||d.marktname||'', ziel:weloFmtNum(z.ziel,2)+' €', vorjahr:weloFmtNum(z.umsatzVorjahr,2)+' €'})+'</div>';
-      if(typeof z.umsatzHeute==='number'){
-        var pct=Math.round(z.umsatzHeute/z.ziel*100);
+      if(umsatzHeuteLive!=null){
+        var pct=Math.round(umsatzHeuteLive/z.ziel*100);
         var barColor=pct>=100?'var(--grn)':'var(--amb)';
-        html+='<div style="margin-top:6px;font-size:12px;font-weight:600;color:'+barColor+'">'+t('welo_heute',{n:weloFmtNum(z.umsatzHeute,2)+' €',pct:pct})+'</div>'
+        html+='<div style="margin-top:6px;font-size:12px;font-weight:600;color:'+barColor+'">'+t('welo_heute',{n:weloFmtNum(umsatzHeuteLive,2)+' €',pct:pct})+'</div>'
           +'<div style="height:6px;border-radius:100px;background:var(--bg);overflow:hidden;margin-top:4px"><div style="height:100%;border-radius:100px;background:'+barColor+';width:'+Math.min(pct,100)+'%"></div></div>';
       }
       if(z.produktionsziel!=null) html+='<div style="margin-top:6px">'+t('welo_produktion',{n:weloFmtNum(z.produktionsziel,2)+' €'})+'</div>';

@@ -234,8 +234,10 @@ header .sub{font-size:12px;opacity:.85;white-space:nowrap;overflow:hidden;text-o
       selbst steigt über 1,25, wenn eine Filiale laut Wachstum gerade schneller wächst. Produktion (+Waste) = Ziel ÷
       0,75 — bei frisch zubereitetem Sushi werden ca. 25 % der Produktion nicht verkauft, um das Ziel tatsächlich zu
       erreichen muss also entsprechend mehr produziert werden. "⚠️ Keine verlässliche Basis" = weder Vorjahr noch
-      2-Jahres-Vergleich lieferten einen plausiblen Wert (&gt; 100 €/Tag) — kein Ziel berechnet. Personal-Karten
-      (Soll-Std./Urlaub/Krank) = beides aus
+      2-Jahres-Vergleich lieferten einen plausiblen Wert (&gt; 100 €/Tag) — kein Ziel berechnet. "Heute (Axonity)" +
+      Fortschrittsbalken vergleichen das Ziel mit dem LIVE-Umsatz aus Axonity (filiale_produktion, mehrmals täglich
+      aktualisiert) — NICHT mit Welo: Welo meldet den Tagesumsatz erst am Folgetag, "heute" wäre dort strukturell
+      immer leer. Personal-Karten (Soll-Std./Urlaub/Krank) = beides aus
       Welo/SuCi-Net, täglich 05:00 Uhr aktualisiert.
     </p>
   </div>
@@ -618,7 +620,17 @@ function drRenderZiel(){
   var cards = nrs.map(function(nr){
     var z = drZiel[nr];
     var name = drStandortName(nr) !== nr ? drStandortName(nr) : (z.marktname || nr);
-    var pct = (typeof z.umsatzHeute === 'number' && z.ziel) ? Math.round(z.umsatzHeute / z.ziel * 100) : null;
+    // Welo meldet den Tagesumsatz erst mit einem Tag Verzug (dieselbe
+    // "Yesterday only"-Einschränkung wie bei Ist-Stunden) — z.umsatzHeute
+    // ist für den LAUFENDEN Tag deshalb strukturell immer null, live
+    // bestätigt am 03.09.2026 (Welo listet "heute" gar nicht erst als
+    // wählbares Datum auf der Tagesumsätze-Seite). Für den "Heute"-Vergleich
+    // wird stattdessen der echte Live-Wert aus Axonity (filiale_produktion,
+    // von sync-axonity-produktion.js mehrmals täglich aktualisiert) benutzt
+    // — dieselbe Quelle, die der Filialen-Tab schon fürs 30-Tage-Umsatz nutzt.
+    var prod = drProd[nr];
+    var umsatzHeuteLive = prod && typeof prod.umsatzHeute === 'number' ? prod.umsatzHeute : null;
+    var pct = (umsatzHeuteLive != null && z.ziel) ? Math.round(umsatzHeuteLive / z.ziel * 100) : null;
     // "Verdaechtig" heißt nur: der ROHE Einzeltageswert war unplausibel — dank
     // Glättung/2-Jahres-Fallback kann trotzdem eine belastbare Basis (ziel)
     // berechnet worden sein (z.B. Bad Hersfeld: roh 8,38 € durch Ausfall,
@@ -645,7 +657,7 @@ function drRenderZiel(){
       bar+
       '<div class="dc-stats">'+
         '<div class="dc-stat"><div class="k">Vorjahr</div><div class="v">'+vorjahrHtml+'</div></div>'+
-        '<div class="dc-stat"><div class="k">Heute</div><div class="v">'+(typeof z.umsatzHeute==='number'?drFmtEUR(z.umsatzHeute):(z.umsatzHeuteVerdaechtig!=null?drFmtEUR(z.umsatzHeuteVerdaechtig)+' ⚠️':'—'))+'</div></div>'+
+        '<div class="dc-stat"><div class="k">Heute (Axonity)</div><div class="v">'+(umsatzHeuteLive!=null?drFmtEUR(umsatzHeuteLive):'—')+'</div></div>'+
         '<div class="dc-stat"><div class="k">Wachstum (28T)</div><div class="v">'+(z.wachstumsrate!=null?Math.round(z.wachstumsrate*100)+'%':'—')+'</div></div>'+
         '<div class="dc-stat"><div class="k">Produktion (+Waste)</div><div class="v">'+(z.produktionsziel!=null?drFmtEUR(z.produktionsziel):'—')+'</div></div>'+
       '</div>'+
