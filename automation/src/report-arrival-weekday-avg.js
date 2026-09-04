@@ -19,6 +19,19 @@ const path = require('path');
 const { chromium } = require('playwright');
 const { getDb } = require('./firestore-client');
 const { withWeloLock } = require('./sync-lock');
+const { MARKTNR_ALIASES } = require('./branches');
+
+// MARKTNR_ALIASES bildet SushiTime-Alias -> kanonische Nr ab (z.B.
+// '611125' -> '401125' für Ratio Baunatal). emp_welo.marktNr speichert immer
+// die kanonische Nr, aber die SuCi-Time-Seite (/sn/edit/…), die dieses
+// Skript hier abfragt, braucht für Baunatal die ALIAS-Nr — live bestätigt
+// 04.09.2026: /sn/edit/{datum}-401125/ lieferte 0 Zeilen, /sn/edit/{datum}-
+// 611125/ dieselbe Seite mit echten Daten. Betraf 4 von 44 zuvor
+// fälschlich auf "0 Stichproben" gesetzten Mitarbeitern (alle Baunatal).
+// Deshalb hier die UMGEKEHRTE Zuordnung aufbauen und beim Seitenaufruf
+// verwenden, an der Ausgabe (CSV) aber weiter die kanonische Nr zeigen.
+const KANONISCH_ZU_SN_ALIAS = {};
+Object.entries(MARKTNR_ALIASES).forEach(([alias, kanonisch]) => { KANONISCH_ZU_SN_ALIAS[kanonisch] = alias; });
 
 const BASE_URL = process.env.WELO_BASE_URL || 'https://welo.sushi-circle.de';
 const USER = process.env.WELO_USER;
@@ -122,7 +135,7 @@ async function syncAll() {
   let employees = [];
   empSnap.forEach((doc) => {
     const d = doc.data();
-    if (d.marktNr) employees.push({ id: doc.id, name: d.name || '', marktNr: d.marktNr, marktname: d.marktname || '' });
+    if (d.marktNr) employees.push({ id: doc.id, name: d.name || '', marktNr: d.marktNr, snMarktNr: KANONISCH_ZU_SN_ALIAS[d.marktNr] || d.marktNr, marktname: d.marktname || '' });
   });
   console.log(`  ${employees.length} Mitarbeiter mit Filiale gefunden.`);
   // Zweiter Zweck neben dem Testen mit wenigen Leuten: ein Nachtrag NUR für
@@ -171,7 +184,7 @@ async function syncAll() {
           let row = null;
           for (let attempt = 1; attempt <= 4; attempt++) {
             try {
-              row = await getDayRow(page, sessionBase, datum, emp.marktNr, emp.id);
+              row = await getDayRow(page, sessionBase, datum, emp.snMarktNr, emp.id);
               break;
             } catch (e) {
               if (e instanceof SessionExpired && attempt < 4) {

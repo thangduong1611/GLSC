@@ -18,13 +18,22 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
+const { MARKTNR_ALIASES } = require('./branches');
 
 const BASE_URL = process.env.WELO_BASE_URL || 'https://welo.sushi-circle.de';
 const USER = process.env.WELO_USER;
 const PASSWORD = process.env.WELO_PASSWORD;
 
 const PERSONAL_NR = process.argv[2] || '330384';
-const MARKT_NR = process.argv[3] || '402150';
+// Die SuCi-Time-Seite (/sn/edit/…) braucht für manche Filialen (z.B. Ratio
+// Baunatal) die SushiTime-ALIAS-Nr statt der kanonischen — live bestätigt
+// 04.09.2026: 401125 lieferte 0 Zeilen, 611125 dieselbe Seite mit echten
+// Daten. Falls die kanonische Nr übergeben wird, hier automatisch auf den
+// Alias auflösen (KANONISCH_ZU_SN_ALIAS = MARKTNR_ALIASES umgekehrt).
+const KANONISCH_ZU_SN_ALIAS = {};
+Object.entries(MARKTNR_ALIASES).forEach(([alias, kanonisch]) => { KANONISCH_ZU_SN_ALIAS[kanonisch] = alias; });
+const MARKT_NR_ROH = process.argv[3] || '402150';
+const MARKT_NR = KANONISCH_ZU_SN_ALIAS[MARKT_NR_ROH] || MARKT_NR_ROH;
 const TAGE_ZURUECK = parseInt(process.argv[4] || '90', 10);
 
 async function login(page) {
