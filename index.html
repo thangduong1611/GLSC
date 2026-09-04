@@ -85,6 +85,8 @@ textarea{min-height:72px;resize:vertical;line-height:1.6;}
 .btn-grn{background:var(--grn);color:#fff;border-color:var(--grn);}
 .btn-grn:hover{opacity:.9;}
 .btn-sm{padding:5px 11px;font-size:12px;}
+.ov-mchip{padding:6px 12px;font-size:12.5px;}
+.ov-mchip.active{background:var(--red);color:#fff;border-color:var(--red);}
 .btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
 .btn-del{background:none;border:1px solid var(--brd);border-radius:var(--rs);padding:5px 9px;cursor:pointer;color:var(--mut);font-size:14px;transition:all .15s;}
 .btn-del:hover{color:var(--red);border-color:var(--red);}
@@ -1276,9 +1278,10 @@ window.onerror=function(msg,src,line){
       <p id="dp-status" style="font-size:12px;color:var(--mut);text-align:center;margin-top:8px"></p>
     </div>
     <div class="card">
-      <div class="card-h"><span>📊 Gesamtübersicht (2 Monate)</span></div>
-      <p style="font-size:13px;color:var(--mut);margin:0 0 12px">Exportiert <strong>alle Filialen</strong> mit Dienstplan und genehmigtem Urlaub für den aktuellen und den nächsten Monat — plus eine Übersicht, welcher Mitarbeiter in welchen Filialen eingesetzt ist.</p>
-      <div id="ov-months" style="font-size:12.5px;color:var(--mut);margin-bottom:10px"></div>
+      <div class="card-h"><span>📊 Gesamtübersicht</span></div>
+      <p style="font-size:13px;color:var(--mut);margin:0 0 12px">Exportiert <strong>alle Filialen</strong> mit Dienstplan und genehmigtem Urlaub für die ausgewählten Monate — plus eine Übersicht, welcher Mitarbeiter in welchen Filialen eingesetzt ist. Das PDF zeigt jeden Monat in zwei Halbmonats-Blöcken für größere, besser lesbare Zellen beim Ausdruck.</p>
+      <label style="font-size:12px;font-weight:600;color:var(--mut);display:block;margin-bottom:6px">MONAT(E) WÄHLEN</label>
+      <div id="ov-months" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px"></div>
       <div class="btn-row">
         <button class="btn btn-red" onclick="ovExportPDF()" style="flex:1;justify-content:center">⬇ PDF herunterladen</button>
         <button class="btn" onclick="ovExportCSV()">📄 CSV (Excel)</button>
@@ -3946,13 +3949,13 @@ function ovStatus(msg,color){
   var el=document.getElementById('ov-status'); if(!el) return;
   el.textContent=msg||''; el.style.color=color||'var(--mut)';
 }
-function ovTwoMonths(){
-  var n=new Date();
-  function key(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2); }
-  var m1=new Date(n.getFullYear(), n.getMonth(), 1);
-  var m2=new Date(n.getFullYear(), n.getMonth()+1, 1);
-  return [key(m1), key(m2)];
-}
+// Frei waehlbare Monate statt fest "aktueller + naechster Monat" (Auftrag
+// t.duong): der Nutzer waehlt per Klick auf Monats-Chips, welche Monate ins
+// PDF/CSV sollen - 1 oder beliebig viele. Auswahl bleibt bestehen, solange
+// die Seite offen ist (auch wenn man den Dienstplan-Tab verlaesst und wieder
+// zurueckkommt), damit ein wiederholter Export nicht jedes Mal neu waehlen muss.
+var ovSelMonths=null; // erst beim ersten Rendern mit dem aktuellen Monat vorbelegt
+function ovMonthKey(d){ return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2); }
 function ovMonthLabel(m){
   var p=m.split('-'), names=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
   return names[parseInt(p[1],10)-1]+' '+p[0];
@@ -3963,10 +3966,25 @@ function ovMonthDates(m){
   for(var d=1; d<=last; d++) out.push(y+'-'+('0'+(mo+1)).slice(-2)+'-'+('0'+d).slice(-2));
   return out;
 }
+function ovToggleMonth(m){
+  var i=ovSelMonths.indexOf(m);
+  if(i===-1) ovSelMonths.push(m); else ovSelMonths.splice(i,1);
+  ovSelMonths.sort();
+  ovRenderMonthsHint();
+}
 function ovRenderMonthsHint(){
   var el=document.getElementById('ov-months'); if(!el) return;
-  var ms=ovTwoMonths();
-  el.textContent='Zeitraum: '+ovMonthLabel(ms[0])+' + '+ovMonthLabel(ms[1]);
+  var n=new Date();
+  if(!ovSelMonths) ovSelMonths=[ovMonthKey(new Date(n.getFullYear(),n.getMonth(),1))];
+  var chips=[];
+  for(var i=-2;i<=11;i++){
+    var d=new Date(n.getFullYear(), n.getMonth()+i, 1);
+    chips.push(ovMonthKey(d));
+  }
+  el.innerHTML=chips.map(function(m){
+    var on=ovSelMonths.indexOf(m)!==-1;
+    return '<button type="button" class="btn ov-mchip'+(on?' active':'')+'" onclick="ovToggleMonth(\''+m+'\')">'+ovMonthLabel(m)+'</button>';
+  }).join('');
 }
 // Alle bekannten Filialen (aus Mitarbeiterdaten)
 function ovAllFilialen(){
@@ -4005,7 +4023,8 @@ function ovLoadPlans(fils, months){
 }
 // Baut die Datenstruktur für Export
 function ovBuild(){
-  var months=ovTwoMonths(), fils=ovAllFilialen();
+  var months=(ovSelMonths||[]).slice(), fils=ovAllFilialen();
+  if(!months.length) return Promise.reject(new Error('Bitte mindestens einen Monat auswählen.'));
   if(!fils.length) return Promise.reject(new Error('Keine Filialen gefunden — bitte zuerst Mitarbeiter-CSV importieren.'));
   var urlaub=ovUrlaubMap();
   return ovLoadPlans(fils, months).then(function(plans){
@@ -4073,7 +4092,7 @@ function ovExportCSV(){
     var blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
     var a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
-    a.download='Gesamtuebersicht_'+D.months[0]+'_'+D.months[1]+'.csv';
+    a.download='Gesamtuebersicht_'+D.months.join('_')+'.csv';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     ovStatus('✓ CSV heruntergeladen','var(--grn)');
   }).catch(function(e){ ovStatus('Fehler: '+e.message,'#C0392B'); });
@@ -4100,62 +4119,77 @@ function ovExportPDF(){
     }
     function needSpace(h, title, sub){ if(y+h>PH-10){ doc.addPage(); header(title, sub); } }
 
+    // Jeder Monat wird in 2 Halbmonats-Bloecke (Tag 1-15/16, Rest) aufgeteilt
+    // statt alle 28-31 Tage in eine Zeile zu quetschen (Auftrag t.duong: Zellen
+    // beim Ausdruck waren zu klein). Halbiert die Anzahl Tagesspalten -> pro
+    // Zelle etwa doppelt so viel Breite fuer Text und Rahmen.
+    var CN=42; // Namensspalte
+    function splitHalves(dates){
+      var mid=Math.ceil(dates.length/2);
+      return [dates.slice(0,mid), dates.slice(mid)];
+    }
+    function renderBranchBlock(f, pd, emps, dates, m, halbLabel){
+      var CD=(PW-2*ML-CN)/dates.length; // Tagesspalte, jetzt auf Basis der Halbmonats-Laenge
+      needSpace(15, 'Gesamtübersicht — '+ovMonthLabel(m), 'Stand: '+avTodayDE());
+      // Filial-Titel
+      doc.setFillColor(240,238,235); doc.rect(ML,y,PW-2*ML,6.5,'F');
+      doc.setFontSize(9); doc.setFont('helvetica','bold');
+      doc.text(f+'  ·  '+halbLabel, ML+2, y+4.5); y+=6.5;
+      // Datumszeile
+      doc.setFontSize(7); doc.setFont('helvetica','normal');
+      dates.forEach(function(dt,di){
+        var dd=new Date(dt), wd=['So','Mo','Di','Mi','Do','Fr','Sa'][dd.getDay()];
+        var isWe=(dd.getDay()===0||dd.getDay()===6);
+        var x=ML+CN+di*CD;
+        if(isWe){ doc.setFillColor(232,228,224); doc.rect(x,y,CD,5,'F'); }
+        doc.text(wd+' '+dt.slice(8), x+CD/2, y+3.5, {align:'center'});
+      });
+      y+=5;
+      if(!emps.length){
+        doc.setFontSize(7); doc.setTextColor(140,135,128);
+        doc.text('(kein Dienstplan hinterlegt)', ML+2, y+4);
+        doc.setTextColor(0,0,0); y+=7; return;
+      }
+      emps.forEach(function(emp){
+        needSpace(6.2, 'Gesamtübersicht — '+ovMonthLabel(m), 'Stand: '+avTodayDE());
+        var ek=dpEmpKey(emp), eid=''+(emp.id||'');
+        var RH=5.6;
+        doc.setFontSize(7.2); doc.setFont('helvetica','normal');
+        var nm=emp.name.length>26?emp.name.substring(0,25)+'…':emp.name;
+        doc.text(nm, ML+1, y+3.7);
+        dates.forEach(function(dt,di){
+          var x=ML+CN+di*CD;
+          var u=D.urlaub[eid]&&D.urlaub[eid][dt];
+          var v=u?'Urlaub':((pd.shifts&&pd.shifts[ek]&&pd.shifts[ek][dt])||'');
+          if(v==='Urlaub') doc.setFillColor(212,239,223);
+          else if(v==='Krank') doc.setFillColor(253,222,219);
+          else if(v==='Frei') doc.setFillColor(245,243,240);
+          else doc.setFillColor(255,255,255);
+          doc.rect(x,y,CD,RH,'F');
+          doc.setDrawColor(215,211,205); doc.rect(x,y,CD,RH,'S');
+          if(v){
+            doc.setFontSize(v.length>7?5.5:7);
+            doc.setFont('helvetica', v==='Frei'?'normal':'bold');
+            doc.text(v==='Urlaub'?'Url.':(v==='Krank'?'Krank':v), x+CD/2, y+3.7, {align:'center'});
+          }
+        });
+        y+=RH;
+      });
+      y+=3.5;
+    }
+
     D.months.forEach(function(m, mi){
-      var dates=ovMonthDates(m);
-      var CN=42;                                  // Namensspalte
-      var CD=(PW-2*ML-CN)/dates.length;           // Tagesspalte
+      var halves=splitHalves(ovMonthDates(m));
       if(mi>0) doc.addPage();
       header('Gesamtübersicht — '+ovMonthLabel(m), 'Stand: '+avTodayDE());
 
       D.fils.forEach(function(f){
         var pd=D.byFil[f] && D.byFil[f][m];
         var emps=(pd && pd.employees)||[];
-        needSpace(14, 'Gesamtübersicht — '+ovMonthLabel(m), 'Stand: '+avTodayDE());
-        // Filial-Titel
-        doc.setFillColor(240,238,235); doc.rect(ML,y,PW-2*ML,6,'F');
-        doc.setFontSize(8.5); doc.setFont('helvetica','bold');
-        doc.text(f, ML+2, y+4.2); y+=6;
-        // Datumszeile
-        doc.setFontSize(5.4); doc.setFont('helvetica','normal');
-        dates.forEach(function(dt,di){
-          var dd=new Date(dt), wd=['So','Mo','Di','Mi','Do','Fr','Sa'][dd.getDay()];
-          var isWe=(dd.getDay()===0||dd.getDay()===6);
-          var x=ML+CN+di*CD;
-          if(isWe){ doc.setFillColor(232,228,224); doc.rect(x,y,CD,4,'F'); }
-          doc.text(wd+' '+dt.slice(8), x+CD/2, y+2.8, {align:'center'});
-        });
-        y+=4;
-        if(!emps.length){
-          doc.setFontSize(6.5); doc.setTextColor(140,135,128);
-          doc.text('(kein Dienstplan hinterlegt)', ML+2, y+3.4);
-          doc.setTextColor(0,0,0); y+=6; return;
-        }
-        emps.forEach(function(emp){
-          needSpace(5.2, 'Gesamtübersicht — '+ovMonthLabel(m), 'Stand: '+avTodayDE());
-          var ek=dpEmpKey(emp), eid=''+(emp.id||'');
-          var RH=4.6;
-          doc.setFontSize(6); doc.setFont('helvetica','normal');
-          var nm=emp.name.length>26?emp.name.substring(0,25)+'…':emp.name;
-          doc.text(nm, ML+1, y+3.1);
-          dates.forEach(function(dt,di){
-            var x=ML+CN+di*CD;
-            var u=D.urlaub[eid]&&D.urlaub[eid][dt];
-            var v=u?'Urlaub':((pd.shifts&&pd.shifts[ek]&&pd.shifts[ek][dt])||'');
-            if(v==='Urlaub') doc.setFillColor(212,239,223);
-            else if(v==='Krank') doc.setFillColor(253,222,219);
-            else if(v==='Frei') doc.setFillColor(245,243,240);
-            else doc.setFillColor(255,255,255);
-            doc.rect(x,y,CD,RH,'F');
-            doc.setDrawColor(215,211,205); doc.rect(x,y,CD,RH,'S');
-            if(v){
-              doc.setFontSize(v.length>7?4.1:5);
-              doc.setFont('helvetica', v==='Frei'?'normal':'bold');
-              doc.text(v==='Urlaub'?'Url.':(v==='Krank'?'Krank':v), x+CD/2, y+3.1, {align:'center'});
-            }
-          });
-          y+=RH;
-        });
-        y+=3;
+        var lbl1='Tag '+halves[0][0].slice(8)+'–'+halves[0][halves[0].length-1].slice(8);
+        var lbl2='Tag '+halves[1][0].slice(8)+'–'+halves[1][halves[1].length-1].slice(8);
+        renderBranchBlock(f, pd, emps, halves[0], m, lbl1);
+        renderBranchBlock(f, pd, emps, halves[1], m, lbl2);
       });
     });
 
@@ -4188,7 +4222,7 @@ function ovExportPDF(){
       y+=RH;
     });
 
-    doc.save('Gesamtuebersicht_'+D.months[0]+'_'+D.months[1]+'.pdf');
+    doc.save('Gesamtuebersicht_'+D.months.join('_')+'.pdf');
     ovStatus('✓ PDF heruntergeladen','var(--grn)');
   }).catch(function(e){ ovStatus('Fehler: '+e.message,'#C0392B'); });
 }
