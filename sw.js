@@ -1,4 +1,4 @@
-const CACHE = 'hr-sushi-v6';
+const CACHE = 'hr-sushi-v7';
 const PRECACHE = ['icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -38,9 +38,20 @@ self.addEventListener('fetch', e => {
     return;
   }
 
+  // Eigene Dateien (index.html, mitarbeiter.html, sw.js selbst, ...):
+  // cache:'no-store' erzwingt eine ECHTE Netzwerk-Anfrage - ohne das würde
+  // "network-first" nur die eigene Service-Worker-Cache-Storage umgehen,
+  // aber der fetch() könnte trotzdem still aus dem normalen HTTP-Cache des
+  // Browsers bedient werden (abhängig von den Cache-Control-Headern von
+  // GitHub Pages), sodass Änderungen erst nach Ablauf dieses Caches ankommen.
+  // Fremde CDN-Skripte (jsPDF, ExcelJS, Firebase-SDK, Google Fonts, ...)
+  // bleiben normal cachebar - deren URLs sind ohnehin versioniert/gepinnt,
+  // aendern sich also nie unter derselben Adresse, und profitieren vom
+  // normalen Browser-Cache (schneller, weniger Datenverbrauch).
+  const isOwn = url.origin === location.origin;
   e.respondWith(
-    fetch(req).then(res => {
-      if (res && res.ok && new URL(req.url).origin === location.origin) {
+    fetch(req, isOwn ? { cache: 'no-store' } : {}).then(res => {
+      if (res && res.ok && isOwn) {
         const copy = res.clone();
         caches.open(CACHE).then(c => c.put(req, copy)).catch(()=>{});
       }

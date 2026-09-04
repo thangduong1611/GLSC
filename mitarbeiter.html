@@ -237,6 +237,11 @@ window.onerror=function(msg,src,line){
   </div>
 </header>
 
+<div id="update-box" style="display:none;background:var(--blu-bg);border-bottom:1px solid #AED6F1;padding:10px 14px;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap">
+  <span style="font-size:13.5px;color:var(--blu)">🔄 <span data-i18n="update_avail">Neue Version verfügbar.</span></span>
+  <button class="btn btn-grn" style="padding:6px 14px;font-size:13px" onclick="location.reload()" data-i18n="update_btn">Jetzt aktualisieren</button>
+</div>
+
 <div class="nav-wrap">
   <div class="nav-grid">
     <button class="app-ico active" id="ico-dp" onclick="maNav('dp')"><span class="ico-e">📅</span><span class="ico-l" data-i18n="nav_dp">Dienstplan</span></button>
@@ -1946,6 +1951,7 @@ de:{_name:'Deutsch',
  my_shifts:'👤 Meine Schichten',dp_pdf:'PDF laden',dp_pdf_none:'Kein PDF vorhanden.',whole_store:'🏪 Ganze Filiale',th_emp:'Mitarbeiter',no_entries:'Keine Einträge für dich in diesem Monat.',
  v_frei:'Frei',v_url:'Urlaub',v_krank:'Krank',
  ul_title:'🌴 Urlaub – Filiale',leg_ok:'Genehmigt',leg_wait:'Wartet auf Freigabe',leg_no:'Abgelehnt',st_wait:'Wartet',ul_gl_tag:'Vorschlag Gebietsleiter',
+ update_avail:'Neue Version verfügbar.',update_btn:'Jetzt aktualisieren',
  ul_year:'📋 Urlaub dieses Jahr',ul_none:'Noch kein Urlaub für {y} eingetragen.',
  req_title:'✏️ Meinen Urlaub beantragen',
  rules:'Regeln: mindestens <strong>10 Tage im Voraus</strong> · <strong>keine Überschneidung</strong> mit Kollegen der Filiale. Nach dem Absenden wartet der Antrag auf Freigabe durch den Gebietsleiter (🟧).',
@@ -2054,6 +2060,7 @@ vi:{_name:'Tiếng Việt',
  my_shifts:'👤 Ca của tôi',dp_pdf:'Tải PDF',dp_pdf_none:'Chưa có file PDF.',whole_store:'🏪 Cả cửa hàng',th_emp:'Nhân viên',no_entries:'Tháng này bạn chưa có ca nào.',
  v_frei:'Nghỉ',v_url:'Nghỉ phép',v_krank:'Ốm',
  ul_title:'🌴 Nghỉ phép – Cửa hàng',leg_ok:'Đã duyệt',leg_wait:'Chờ duyệt',leg_no:'Từ chối',st_wait:'Chờ',ul_gl_tag:'GL đề xuất',
+ update_avail:'Có phiên bản mới.',update_btn:'Cập nhật ngay',
  ul_year:'📋 Nghỉ phép năm nay',ul_none:'Chưa có nghỉ phép nào trong năm {y}.',
  req_title:'✏️ Đăng ký nghỉ phép',
  rules:'Quy định: đăng ký trước <strong>ít nhất 10 ngày</strong> · <strong>không trùng lịch</strong> với đồng nghiệp cùng cửa hàng. Sau khi gửi, đơn chờ Gebietsleiter duyệt (🟧).',
@@ -2162,6 +2169,7 @@ en:{_name:'English',
  my_shifts:'👤 My shifts',dp_pdf:'Get PDF',dp_pdf_none:'No PDF available.',whole_store:'🏪 Whole store',th_emp:'Employee',no_entries:'No entries for you this month.',
  v_frei:'Off',v_url:'Vacation',v_krank:'Sick',
  ul_title:'🌴 Vacation – Store',leg_ok:'Approved',leg_wait:'Pending approval',leg_no:'Rejected',st_wait:'Pending',ul_gl_tag:'Manager proposal',
+ update_avail:'A new version is available.',update_btn:'Update now',
  ul_year:'📋 Vacation this year',ul_none:'No vacation entered for {y} yet.',
  req_title:'✏️ Request my vacation',
  rules:'Rules: at least <strong>10 days in advance</strong> · <strong>no overlap</strong> with colleagues of your store. After sending, the request waits for approval by the area manager (🟧).',
@@ -2270,6 +2278,7 @@ th:{_name:'ไทย',
  my_shifts:'👤 กะของฉัน',dp_pdf:'ดาวน์โหลด PDF',dp_pdf_none:'ไม่มีไฟล์ PDF',whole_store:'🏪 ทั้งสาขา',th_emp:'พนักงาน',no_entries:'เดือนนี้คุณยังไม่มีกะงาน',
  v_frei:'หยุด',v_url:'ลาพักร้อน',v_krank:'ป่วย',
  ul_title:'🌴 วันลา – สาขา',leg_ok:'อนุมัติแล้ว',leg_wait:'รออนุมัติ',leg_no:'ถูกปฏิเสธ',st_wait:'รอ',ul_gl_tag:'ผู้จัดการเขตเสนอ',
+ update_avail:'มีเวอร์ชันใหม่',update_btn:'อัปเดตตอนนี้',
  ul_year:'📋 วันลาปีนี้',ul_none:'ยังไม่มีวันลาสำหรับปี {y}',
  req_title:'✏️ ยื่นขอวันลา',
  rules:'กฎ: ยื่นล่วงหน้า<strong>อย่างน้อย 10 วัน</strong> · <strong>ห้ามซ้ำ</strong>กับเพื่อนร่วมสาขา หลังส่ง คำขอจะรอผู้จัดการเขตอนุมัติ (🟧)',
@@ -2378,6 +2387,7 @@ zh:{_name:'中文',
  my_shifts:'👤 我的班次',dp_pdf:'下载PDF',dp_pdf_none:'暂无PDF文件。',whole_store:'🏪 整个门店',th_emp:'员工',no_entries:'本月您还没有排班。',
  v_frei:'休息',v_url:'休假',v_krank:'病假',
  ul_title:'🌴 休假 – 门店',leg_ok:'已批准',leg_wait:'等待批准',leg_no:'已拒绝',st_wait:'等待中',ul_gl_tag:'区域经理提议',
+ update_avail:'有新版本可用。',update_btn:'立即更新',
  ul_year:'📋 今年的休假',ul_none:'{y}年还没有休假记录。',
  req_title:'✏️ 申请我的休假',
  rules:'规定：至少<strong>提前10天</strong>申请 · <strong>不得与</strong>同门店同事的休假时间重叠。发送后，申请将等待区域经理批准 (🟧)。',
@@ -3953,7 +3963,29 @@ function instInit(){
   }
 }
 if('serviceWorker' in navigator){
-  window.addEventListener('load', function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+  window.addEventListener('load', function(){
+    // updateViaCache:'none' verhindert, dass der Browser sw.js selbst aus dem
+    // HTTP-Cache liefert, wenn wir unten aktiv nach einer neuen Version fragen.
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(function(reg){
+      // Browser prüfen von sich aus nur bei Navigation auf ein neues sw.js -
+      // in einem lange offenen Tab (oder einer PWA, die vom Handy nur
+      // "eingefroren", nicht wirklich geschlossen wird) kommt das sonst nie
+      // an. Deshalb zusätzlich aktiv nachfragen: sobald der Tab wieder
+      // sichtbar wird (deckt genau den "App zu/wieder auf"-Fall ab) und
+      // zur Sicherheit alle 5 Minuten, solange die App offen bleibt.
+      document.addEventListener('visibilitychange', function(){
+        if(document.visibilityState==='visible') reg.update().catch(function(){});
+      });
+      setInterval(function(){ reg.update().catch(function(){}); }, 5*60*1000);
+    }).catch(function(){});
+    // skipWaiting()+clients.claim() im Service Worker sorgen dafür, dass eine
+    // neue Version sofort übernimmt, sobald sie gefunden wurde - hier nur
+    // sichtbar machen (kein Zwangs-Reload mitten in einer Eingabe).
+    navigator.serviceWorker.addEventListener('controllerchange', function(){
+      var box=document.getElementById('update-box');
+      if(box) box.style.display='flex'; else location.reload();
+    });
+  });
 }
 applyLang();
 instInit();

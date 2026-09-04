@@ -223,6 +223,11 @@ window.onerror=function(msg,src,line){
   </div>
 </header>
 
+<div id="update-box" style="display:none;background:var(--blu-bg);border-bottom:1px solid #AED6F1;padding:10px 14px;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap">
+  <span style="font-size:13.5px;color:var(--blu)">🔄 Neue Version verfügbar.</span>
+  <button class="btn btn-grn" style="padding:6px 14px;font-size:13px" onclick="location.reload()">Jetzt aktualisieren</button>
+</div>
+
 <div class="wrap">
 <div class="nav-wrap">
   <div class="nav-grid">
@@ -6495,9 +6500,19 @@ fbBootStatus();
 <script>
 if("serviceWorker" in navigator){
   window.addEventListener("load",function(){
-    navigator.serviceWorker.register("sw.js")
-      .then(function(r){console.log("SW ok",r.scope);})
+    navigator.serviceWorker.register("sw.js", { updateViaCache: "none" })
+      .then(function(reg){
+        console.log("SW ok",reg.scope);
+        document.addEventListener("visibilitychange", function(){
+          if(document.visibilityState==="visible") reg.update().catch(function(){});
+        });
+        setInterval(function(){ reg.update().catch(function(){}); }, 5*60*1000);
+      })
       .catch(function(e){console.log("SW err",e);});
+    navigator.serviceWorker.addEventListener("controllerchange", function(){
+      var box=document.getElementById("update-box");
+      if(box) box.style.display="flex"; else location.reload();
+    });
   });
 }
 
