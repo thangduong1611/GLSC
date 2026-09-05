@@ -1,0 +1,582 @@
+[
+  {
+    "branch": "402523: K-Essen-Haedenkampstraße",
+    "a": {
+      "id": "340429",
+      "name": "Duc Hanh Doan",
+      "from": "2026-10-16",
+      "to": "2026-10-16",
+      "source": "hr",
+      "path": "filialen/402507:_k-wesel-rudolf-diesel-straße/urlaub/340429_2026-10-16_2026-10-16"
+    },
+    "b": {
+      "id": "340877",
+      "name": "Thi Hoan Tran",
+      "from": "2026-10-12",
+      "to": "2026-10-27",
+      "source": "welo",
+      "path": "filialen/402315:_r-bochum-viktoriastraße_-_mert/urlaub/340877_2026-10-12_2026-10-27"
+    }
+  },
+  {
+    "branch": "402523: K-Essen-Haedenkampstraße",
+    "a": {
+      "id": "340877",
+      "name": "Thi Hoan Tran",
+      "from": "2026-10-12",
+      "to": "2026-10-27",
+      "source": "welo",
+      "path": "filialen/402315:_r-bochum-viktoriastraße_-_mert/urlaub/340877_2026-10-12_2026-10-27"
+    },
+    "b": {
+      "id": "341503",
+      "name": "Dinh Chien Nguyen",
+      "from": "2026-10-17",
+      "to": "2026-10-26",
+      "path": "filialen/402315:_r-bochum-viktoriastraße_-_mert/urlaub/CBgCVHKAurnxhx1h72gQ"
+    }
+  },
+  {
+    "branch": "402523: K-Essen-Haedenkampstraße",
+    "a": {
+      "id": "340877",
+      "name": "Thi Hoan Tran",
+      "from": "2026-10-12",
+      "to": "2026-10-27",
+      "source": "welo",
+      "path": "filialen/402315:_r-bochum-viktoriastraße_-_mert/urlaub/340877_2026-10-12_2026-10-27"
+    },
+    "b": {
+      "id": "350553",
+      "name": "Thi Tu Ngo",
+      "from": "2026-10-05",
+      "to": "2026-10-15",
+      "source": "hr",
+      "path": "filialen/402272:_r-düsseldorf-münsterstraße/urlaub/350553_2026-10-03_2026-10-15"
+    }
+  },
+  {
+    "branch": "402523: K-Essen-Haedenkampstraße",
+    "a": {
+      "id": "340877",
+      "name": "Thi Hoan Tran",
+      "from": "2026-10-12",
+      "to": "2026-10-27",
+      "source": "welo",
+      "path": "filialen/402315:_r-bochum-viktoriastraße_-_mert/urlaub/340877_2026-10-12_2026-10-27"
+    },
+    "b": {
+      "id": "350553",
+      "name": "Thi Tu Ngo",
+      "from": "2026-10-27",
+      "to": "2026-11-06",
+      "source": "hr",
+      "path": "filialen/402272:_r-düsseldorf-münsterstraße/urlaub/350553_2026-10-27_2026-11-06"
+    }
+  },
+  {
+    "branch": "402315: R-Bochum-Viktoriastraße - Mert",
+    "a": {
+      "id": "340259",
+      "name": "Quoc Bao Huynh",
+      "from": "2026-10-01",
+      "to": "2026-10-07",
+      "source": "hr",
+      "path": "filialen/402205:_r-hattingen-heggerstraße/urlaub/340259_2026-10-01_2026-10-07"
+    },
+    "b": {
+      "id": "350527",
+      "name": "Eric Ta",
+      "from": "2026-10-05",
+      "to": "2026-10-17",
+      "source": "welo",
+      "path": "filialen/402185:_k-hagen-auf_dem_lölfert/urlaub/350527_2026-10-05_2026-10-17"
+    }
+  },
+  {
+    "branch": "402315: R-Bochum-Viktoriastraße - Mert",
+    "a": {
+      "id": "340877",
+      "name": "Thi Hoan Tran",
+      "from": "2026-10-12",
+      "to": "2026-10-27",
+      "source": "welo",
+      "path": "filialen/402315:_r-bochum-viktoriastraße_-_mert/urlaub/340877_2026-10-12_2026-10-27"
+    },
+    "b": {
+      "id": "350527",
+      "name": "Eric Ta",
+      "from": "2026-10-05",
+      "to": "2026-10-17",
+      "source": "welo",
+      "path": "filialen/402185:_k-hagen-auf_dem_lölfert/urlaub/350527_2026-10-05_2026-10-17"
+    }
+  },
+  {
+    "branch": "402315: R-Bochum-Viktoriastraße - Mert",
+    "a": {
+      "id": "341503",
+      "name": "Dinh Chien Nguyen",
+      "from": "2026-10-17",
+      "to": "2026-10-26",
+      "path": "filialen/402315:_r-bochum-viktoriastraße_-_mert/urlaub/CBgCVHKAurnxhx1h72gQ"
+    },
+    "b": {
+      "id": "350527",
+      "name": "Eric Ta",
+      "from": "2026-10-05",
+      "to": "2026-10-17",
+      "source": "welo",
+      "path": "filialen/402185:_k-hagen-auf_dem_lölfert/urlaub/350527_2026-10-05_2026-10-17"
+    }
+  },
+  {
+    "branch": "401125: RA-Baunatal-Fuldastraße",
+    "a": {
+      "id": "330384",
+      "name": "Truong Thuy Vi Linh Vu",
+      "from": "2026-12-11",
+      "to": "2027-01-13",
+      "path": "filialen/402150:_e-sontra-mühlbergstraße_-_salzmann/urlaub/CrMLqu4zJ4lRRjmxDVbq"
+    },
+    "b": {
+      "id": "370116",
+      "name": "Diem Thi Thanh Roth",
+      "from": "2026-12-28",
+      "to": "2026-12-30",
+      "path": "filialen/baunatal-fuldastraße/urlaub/G8rzGWpkuWgx0lQhOvO3"
+    }
+  },
+  {
+    "branch": "401125: RA-Baunatal-Fuldastraße",
+    "a": {
+      "id": "341041",
+      "name": "Yanisa Puchta",
+      "from": "2026-09-24",
+      "to": "2026-09-30",
+      "source": "hr",
+      "path": "filialen/401888:_r-homberg_(efze)-kasseler_str._-_mohr/urlaub/341041_2026-09-24_2026-09-30"
+    },
+    "b": {
+      "id": "470009",
+      "name": "Bongkotchakon Abramowski",
+      "from": "2026-09-25",
+      "to": "2026-10-05",
+      "source": "hr",
+      "path": "filialen/401125:_ra-baunatal-fuldastraße/urlaub/470009_2026-09-25_2026-10-05"
+    }
+  },
+  {
+    "branch": "401125: RA-Baunatal-Fuldastraße",
+    "a": {
+      "id": "341041",
+      "name": "Yanisa Puchta",
+      "from": "2026-10-01",
+      "to": "2026-10-08",
+      "source": "hr",
+      "path": "filialen/401888:_r-homberg_(efze)-kasseler_str._-_mohr/urlaub/341041_2026-10-01_2026-10-08"
+    },
+    "b": {
+      "id": "470009",
+      "name": "Bongkotchakon Abramowski",
+      "from": "2026-09-25",
+      "to": "2026-10-05",
+      "source": "hr",
+      "path": "filialen/401125:_ra-baunatal-fuldastraße/urlaub/470009_2026-09-25_2026-10-05"
+    }
+  },
+  {
+    "branch": "401125: RA-Baunatal-Fuldastraße",
+    "a": {
+      "id": "341041",
+      "name": "Yanisa Puchta",
+      "from": "2026-10-01",
+      "to": "2026-10-08",
+      "source": "hr",
+      "path": "filialen/401888:_r-homberg_(efze)-kasseler_str._-_mohr/urlaub/341041_2026-10-01_2026-10-08"
+    },
+    "b": {
+      "id": "470009",
+      "name": "Bongkotchakon Abramowski",
+      "from": "2026-10-06",
+      "to": "2026-10-13",
+      "source": "hr",
+      "path": "filialen/401125:_ra-baunatal-fuldastraße/urlaub/470009_2026-10-06_2026-10-13"
+    }
+  },
+  {
+    "branch": "402261: R-Hilden-Mittelstraße",
+    "a": {
+      "id": "330478",
+      "name": "Panadda Frunzescu",
+      "from": "2026-10-30",
+      "to": "2026-10-31",
+      "path": "filialen/402422:_e-leverkusen-pommernstraße/urlaub/330478_2026-10-30_2026-10-31"
+    },
+    "b": {
+      "id": "350544",
+      "name": "Susdalia Silitonga",
+      "from": "2026-10-26",
+      "to": "2026-10-31",
+      "source": "welo",
+      "path": "filialen/402261:_r-hilden-mittelstraße/urlaub/350544_2026-10-26_2026-10-31"
+    }
+  },
+  {
+    "branch": "402261: R-Hilden-Mittelstraße",
+    "a": {
+      "id": "340322",
+      "name": "Kim Mai Nguyen",
+      "from": "2026-10-05",
+      "to": "2026-10-10",
+      "source": "welo",
+      "path": "filialen/402261:_r-hilden-mittelstraße/urlaub/340322_2026-10-05_2026-10-10"
+    },
+    "b": {
+      "id": "341450",
+      "name": "Paramita Dian Purnomo",
+      "from": "2026-10-01",
+      "to": "2026-10-12",
+      "source": "hr",
+      "path": "filialen/402261:_r-hilden-mittelstraße/urlaub/341450_2026-10-01_2026-10-12"
+    }
+  },
+  {
+    "branch": "402261: R-Hilden-Mittelstraße",
+    "a": {
+      "id": "341450",
+      "name": "Paramita Dian Purnomo",
+      "from": "2026-10-20",
+      "to": "2026-10-28",
+      "source": "hr",
+      "path": "filialen/402261:_r-hilden-mittelstraße/urlaub/341450_2026-10-20_2026-10-28"
+    },
+    "b": {
+      "id": "350544",
+      "name": "Susdalia Silitonga",
+      "from": "2026-10-26",
+      "to": "2026-10-31",
+      "source": "welo",
+      "path": "filialen/402261:_r-hilden-mittelstraße/urlaub/350544_2026-10-26_2026-10-31"
+    }
+  },
+  {
+    "branch": "402251: R-Düsseldorf-Zeppelinstraße",
+    "a": {
+      "id": "340276",
+      "name": "Chee Sam Chin",
+      "from": "2026-09-14",
+      "to": "2026-09-19",
+      "source": "hr",
+      "path": "filialen/402167:_r-düsseldorf-hauptstr./urlaub/340276_2026-09-14_2026-09-19"
+    },
+    "b": {
+      "id": "350529",
+      "name": "Ngoc Thanh Nha Nguyen",
+      "from": "2026-09-01",
+      "to": "2026-09-15",
+      "source": "welo",
+      "path": "filialen/402507:_k-wesel-rudolf-diesel-straße/urlaub/350529_2026-09-01_2026-09-15"
+    }
+  },
+  {
+    "branch": "402251: R-Düsseldorf-Zeppelinstraße",
+    "a": {
+      "id": "340955",
+      "name": "Hong Minh Nguyen",
+      "from": "2026-09-03",
+      "to": "2026-09-03",
+      "source": "welo",
+      "path": "filialen/402251:_r-düsseldorf-zeppelinstraße/urlaub/340955_2026-09-03_2026-09-03"
+    },
+    "b": {
+      "id": "350529",
+      "name": "Ngoc Thanh Nha Nguyen",
+      "from": "2026-09-01",
+      "to": "2026-09-15",
+      "source": "welo",
+      "path": "filialen/402507:_k-wesel-rudolf-diesel-straße/urlaub/350529_2026-09-01_2026-09-15"
+    }
+  },
+  {
+    "branch": "402310: R-Wuppertal-Ascheweg - Brücken Kaufpark",
+    "a": {
+      "id": "340473",
+      "name": "My Linh Heidel",
+      "from": "2026-09-08",
+      "to": "2026-09-09",
+      "source": "hr",
+      "path": "filialen/402310:_r-wuppertal-ascheweg_-_brücken_kaufpark/urlaub/xtmbNqjQaAMheA7J5COI"
+    },
+    "b": {
+      "id": "341377",
+      "name": "Hong Son Vu",
+      "from": "2026-09-07",
+      "to": "2026-09-08",
+      "source": "welo",
+      "path": "filialen/402512:_r-remscheid-wupperstraße/urlaub/341377_2026-09-07_2026-09-08"
+    }
+  },
+  {
+    "branch": "402185: K-Hagen-Auf dem Lölfert",
+    "a": {
+      "id": "340473",
+      "name": "My Linh Heidel",
+      "from": "2026-10-01",
+      "to": "2026-10-05",
+      "source": "hr",
+      "path": "filialen/402310:_r-wuppertal-ascheweg_-_brücken_kaufpark/urlaub/340473_2026-10-01_2026-10-05"
+    },
+    "b": {
+      "id": "350527",
+      "name": "Eric Ta",
+      "from": "2026-10-05",
+      "to": "2026-10-17",
+      "source": "welo",
+      "path": "filialen/402185:_k-hagen-auf_dem_lölfert/urlaub/350527_2026-10-05_2026-10-17"
+    }
+  },
+  {
+    "branch": "402185: K-Hagen-Auf dem Lölfert",
+    "a": {
+      "id": "340473",
+      "name": "My Linh Heidel",
+      "from": "2026-10-17",
+      "to": "2026-10-19",
+      "path": "filialen/402310:_r-wuppertal-ascheweg_-_brücken_kaufpark/urlaub/MU3GkHFkUFe47PoFemep"
+    },
+    "b": {
+      "id": "350527",
+      "name": "Eric Ta",
+      "from": "2026-10-05",
+      "to": "2026-10-17",
+      "source": "welo",
+      "path": "filialen/402185:_k-hagen-auf_dem_lölfert/urlaub/350527_2026-10-05_2026-10-17"
+    }
+  },
+  {
+    "branch": "402254: R-Kirchheim-Industriestraße - Messerschmidt",
+    "a": {
+      "id": "340913",
+      "name": "Minh Khue Do",
+      "from": "2026-09-14",
+      "to": "2026-09-24",
+      "source": "hr",
+      "path": "filialen/402150:_e-sontra-mühlbergstraße_-_salzmann/urlaub/340913_2026-09-14_2026-09-24"
+    },
+    "b": {
+      "id": "341421",
+      "name": "Chutikan Gimpel",
+      "from": "2026-09-07",
+      "to": "2026-09-23",
+      "path": "filialen/401888:_r-homberg_(efze)-kasseler_str._-_mohr/urlaub/NTlymhz7jUGowKptG8G2"
+    }
+  },
+  {
+    "branch": "402254: R-Kirchheim-Industriestraße - Messerschmidt",
+    "a": {
+      "id": "340913",
+      "name": "Minh Khue Do",
+      "from": "2026-09-14",
+      "to": "2026-09-24",
+      "source": "hr",
+      "path": "filialen/402150:_e-sontra-mühlbergstraße_-_salzmann/urlaub/340913_2026-09-14_2026-09-24"
+    },
+    "b": {
+      "id": "341495",
+      "name": "Chunhua Loutchan",
+      "from": "2026-09-24",
+      "to": "2026-10-02",
+      "source": "hr",
+      "path": "filialen/402254:_r-kirchheim-industriestraße_-_messerschmidt/urlaub/341495_2026-09-24_2026-10-02"
+    }
+  },
+  {
+    "branch": "402254: R-Kirchheim-Industriestraße - Messerschmidt",
+    "a": {
+      "id": "340913",
+      "name": "Minh Khue Do",
+      "from": "2026-09-25",
+      "to": "2026-10-07",
+      "source": "hr",
+      "path": "filialen/402150:_e-sontra-mühlbergstraße_-_salzmann/urlaub/340913_2026-09-25_2026-10-07"
+    },
+    "b": {
+      "id": "341495",
+      "name": "Chunhua Loutchan",
+      "from": "2026-09-24",
+      "to": "2026-10-02",
+      "source": "hr",
+      "path": "filialen/402254:_r-kirchheim-industriestraße_-_messerschmidt/urlaub/341495_2026-09-24_2026-10-02"
+    }
+  },
+  {
+    "branch": "402254: R-Kirchheim-Industriestraße - Messerschmidt",
+    "a": {
+      "id": "340913",
+      "name": "Minh Khue Do",
+      "from": "2026-09-14",
+      "to": "2026-09-24",
+      "source": "hr",
+      "path": "filialen/402150:_e-sontra-mühlbergstraße_-_salzmann/urlaub/340913_2026-09-14_2026-09-24"
+    },
+    "b": {
+      "id": "410001",
+      "name": "Hai Thanh Nguyen",
+      "from": "2026-09-14",
+      "to": "2026-09-22",
+      "source": "hr",
+      "path": "filialen/402146:_t-bad_hersfeld-heinrich-von-stephan-straße/urlaub/410001_2026-09-14_2026-09-22"
+    }
+  },
+  {
+    "branch": "402254: R-Kirchheim-Industriestraße - Messerschmidt",
+    "a": {
+      "id": "340913",
+      "name": "Minh Khue Do",
+      "from": "2026-09-14",
+      "to": "2026-09-24",
+      "source": "hr",
+      "path": "filialen/402150:_e-sontra-mühlbergstraße_-_salzmann/urlaub/340913_2026-09-14_2026-09-24"
+    },
+    "b": {
+      "id": "410001",
+      "name": "Hai Thanh Nguyen",
+      "from": "2026-09-23",
+      "to": "2026-09-30",
+      "source": "hr",
+      "path": "filialen/402146:_t-bad_hersfeld-heinrich-von-stephan-straße/urlaub/410001_2026-09-23_2026-09-30"
+    }
+  },
+  {
+    "branch": "402254: R-Kirchheim-Industriestraße - Messerschmidt",
+    "a": {
+      "id": "340913",
+      "name": "Minh Khue Do",
+      "from": "2026-09-25",
+      "to": "2026-10-07",
+      "source": "hr",
+      "path": "filialen/402150:_e-sontra-mühlbergstraße_-_salzmann/urlaub/340913_2026-09-25_2026-10-07"
+    },
+    "b": {
+      "id": "410001",
+      "name": "Hai Thanh Nguyen",
+      "from": "2026-09-23",
+      "to": "2026-09-30",
+      "source": "hr",
+      "path": "filialen/402146:_t-bad_hersfeld-heinrich-von-stephan-straße/urlaub/410001_2026-09-23_2026-09-30"
+    }
+  },
+  {
+    "branch": "402254: R-Kirchheim-Industriestraße - Messerschmidt",
+    "a": {
+      "id": "340913",
+      "name": "Minh Khue Do",
+      "from": "2026-09-25",
+      "to": "2026-10-07",
+      "source": "hr",
+      "path": "filialen/402150:_e-sontra-mühlbergstraße_-_salzmann/urlaub/340913_2026-09-25_2026-10-07"
+    },
+    "b": {
+      "id": "410001",
+      "name": "Hai Thanh Nguyen",
+      "from": "2026-10-01",
+      "to": "2026-10-09",
+      "source": "hr",
+      "path": "filialen/402146:_t-bad_hersfeld-heinrich-von-stephan-straße/urlaub/410001_2026-10-01_2026-10-09"
+    }
+  },
+  {
+    "branch": "402254: R-Kirchheim-Industriestraße - Messerschmidt",
+    "a": {
+      "id": "340913",
+      "name": "Minh Khue Do",
+      "from": "2026-10-08",
+      "to": "2026-10-19",
+      "source": "hr",
+      "path": "filialen/402150:_e-sontra-mühlbergstraße_-_salzmann/urlaub/340913_2026-10-08_2026-10-19"
+    },
+    "b": {
+      "id": "410001",
+      "name": "Hai Thanh Nguyen",
+      "from": "2026-10-01",
+      "to": "2026-10-09",
+      "source": "hr",
+      "path": "filialen/402146:_t-bad_hersfeld-heinrich-von-stephan-straße/urlaub/410001_2026-10-01_2026-10-09"
+    }
+  },
+  {
+    "branch": "402254: R-Kirchheim-Industriestraße - Messerschmidt",
+    "a": {
+      "id": "341421",
+      "name": "Chutikan Gimpel",
+      "from": "2026-09-07",
+      "to": "2026-09-23",
+      "path": "filialen/401888:_r-homberg_(efze)-kasseler_str._-_mohr/urlaub/NTlymhz7jUGowKptG8G2"
+    },
+    "b": {
+      "id": "410001",
+      "name": "Hai Thanh Nguyen",
+      "from": "2026-09-14",
+      "to": "2026-09-22",
+      "source": "hr",
+      "path": "filialen/402146:_t-bad_hersfeld-heinrich-von-stephan-straße/urlaub/410001_2026-09-14_2026-09-22"
+    }
+  },
+  {
+    "branch": "402254: R-Kirchheim-Industriestraße - Messerschmidt",
+    "a": {
+      "id": "341421",
+      "name": "Chutikan Gimpel",
+      "from": "2026-09-07",
+      "to": "2026-09-23",
+      "path": "filialen/401888:_r-homberg_(efze)-kasseler_str._-_mohr/urlaub/NTlymhz7jUGowKptG8G2"
+    },
+    "b": {
+      "id": "410001",
+      "name": "Hai Thanh Nguyen",
+      "from": "2026-09-23",
+      "to": "2026-09-30",
+      "source": "hr",
+      "path": "filialen/402146:_t-bad_hersfeld-heinrich-von-stephan-straße/urlaub/410001_2026-09-23_2026-09-30"
+    }
+  },
+  {
+    "branch": "402254: R-Kirchheim-Industriestraße - Messerschmidt",
+    "a": {
+      "id": "341495",
+      "name": "Chunhua Loutchan",
+      "from": "2026-09-24",
+      "to": "2026-10-02",
+      "source": "hr",
+      "path": "filialen/402254:_r-kirchheim-industriestraße_-_messerschmidt/urlaub/341495_2026-09-24_2026-10-02"
+    },
+    "b": {
+      "id": "410001",
+      "name": "Hai Thanh Nguyen",
+      "from": "2026-09-23",
+      "to": "2026-09-30",
+      "source": "hr",
+      "path": "filialen/402146:_t-bad_hersfeld-heinrich-von-stephan-straße/urlaub/410001_2026-09-23_2026-09-30"
+    }
+  },
+  {
+    "branch": "402254: R-Kirchheim-Industriestraße - Messerschmidt",
+    "a": {
+      "id": "341495",
+      "name": "Chunhua Loutchan",
+      "from": "2026-09-24",
+      "to": "2026-10-02",
+      "source": "hr",
+      "path": "filialen/402254:_r-kirchheim-industriestraße_-_messerschmidt/urlaub/341495_2026-09-24_2026-10-02"
+    },
+    "b": {
+      "id": "410001",
+      "name": "Hai Thanh Nguyen",
+      "from": "2026-10-01",
+      "to": "2026-10-09",
+      "source": "hr",
+      "path": "filialen/402146:_t-bad_hersfeld-heinrich-von-stephan-straße/urlaub/410001_2026-10-01_2026-10-09"
+    }
+  }
+]

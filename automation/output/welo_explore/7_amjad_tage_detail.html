@@ -1,0 +1,281 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"><html><head>
+<title>SC - Übersichtsseite zur Personalpflege - Sushi-Circle GmbH</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-15">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="pcode" content="pf-index-de">
+<meta name="mdname" content="suci">
+<meta name="Author" content="webmaster@metatexx.de">
+<meta name="Description" content="Default Description">
+<meta name="Keywords" content="Sushi Circle GmbH, Sushi Circle GmbH, Zeiterfassung, METATEXX GmbH">
+<link rel="stylesheet" href="/styles/suci8.css" type="text/css">
+<link rel="stylesheet" href="/styles/main16.css" type="text/css">
+<link rel="stylesheet" href="/js/jquery-ui-1.12.1-2.css" type="text/css">
+<link rel="stylesheet" href="/styles/ui.tabs4.css" type="text/css">
+<script type="text/javascript" src="/js/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="/js/jquery-ui-1.12.1-2.min.js"></script>
+<script type="text/javascript" src="/js/jquery.scrollto-1.3.0.js"></script>
+<script type="text/javascript" src="/js/jquery.blockui-2.70.js"></script>
+<script type="text/javascript" src="/js/jquery.taconite-3.66.js"></script>
+<script type="text/javascript" src="/js/jquery.sse-0.1.4.js"></script>
+<script type="text/javascript" src="/js/utils-17.js"></script>
+<script type="text/javascript" src="/js/popup-5.js"></script>
+<script type="text/javascript" src="/js/vue-1.0.26.min.js"></script>
+<script type="text/javascript" src="/js/vue-resource-0.9.3.min.js"></script>
+<script language="JavaScript" type="text/javascript">
+<!-- // hide
+var roMSG=0;
+var urlMSG='/8499ecb-518c6cf/export/msg.json';
+var urlIDLE='/8499ecb-518c6cf/idle.png';
+var scrollto='';
+var guimatch_hook=undefined;
+
+// das sollte eigentlich mehrere adds unterstützen. muss es aber (noch) nicht
+function add_guimatch_hook(func) {
+	guimatch_hook=func;
+}
+
+$(function() {
+$(document).ajaxStart(function() { $('#loading').show(); }).ajaxStop(function() { $('#loading').hide(); });
+$("form.isearch").submit(function() { $.blockUI( { message:'<div class="imsg">Suche&nbsp;wird&nbsp;ausgeführt...</div>', overlayCSS: { opacity: '0.2' }} ); });
+$("form.isend").submit(function() { $.blockUI( { message:'<div class="imsg">Daten&nbsp;werden&nbsp;verarbeitet...</div>', overlayCSS: { opacity: '0.2' }} ); });
+$("form.ilogin").submit(function() { $.blockUI( { message:'<div class="imsg">Sie&nbsp;werden&nbsp;angemeldet...</div>', overlayCSS: { opacity: '0.2' }} ); });
+});
+initIdle();
+// -->
+</script>
+
+
+</head>
+<body class="suci" bgcolor="#CCD7E5" text="#000000" link="#000000" vlink="#000000" alink="#000000">
+<table id="masterw" border="0" cellspacing="0" cellpadding="0" width="100%"><tbody><tr><td></td></tr></tbody></table>
+<div style="height: 100%;" id="lowerpage">
+<table class="framed" border="0" cellspacing="0" cellpadding="0" width="100%">
+<tbody><tr><td bgcolor="#D4032B">
+<div style="width:11px; height:11px; float:right; cursor: pointer; color:white; font-weight:bold;" href="#" id="minw">-</div><div id="loading" style="height:15px; width:54px; padding:3px; background-color: #FFE000; position:absolute; z-index:2; display:none; color:#000000;">Lade... <img src="/images/ind1.gif" width="10" height="10" alt=""></div>
+<div id="lefthalter" style="min-width: 130px; float: left; height:5px;"></div><img src="/images/space.gif" height="2" width="1" alt=""><br><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td>&nbsp;<span style="color:white">&gt;</span></td><td><img src="/images/space.gif" height="20" width="10" alt=""></td><td>&nbsp;&nbsp;&nbsp;<a class="tnav_unsel" href="/8499ecb-518c6cf/index.html" target="_self">Postfach</a>&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;<a class="tnav_unsel" href="/8499ecb-518c6cf/an/index.html" target="_self">AN</a>&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;<a class="tnav_unsel" href="/8499ecb-518c6cf/sn/index.html" target="_self">SN</a>&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;<a class="tnav_unsel" href="/8499ecb-518c6cf/sucitime/disposition.html" target="_self">SuCi-Time</a>&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;<a class="tnav_unsel" href="/8499ecb-518c6cf/abrechnung/index.html" target="_self">Abrechnung</a>&nbsp;&nbsp;&nbsp;</td><td><img src="/images/tnl.png" width="12" height="20" alt=""></td><td bgcolor="#ffffff"><a class="tnav_sel" href="/8499ecb-518c6cf/pf/index.html" target="_self">Personal</a></td><td><img src="/images/tnr.png" width="12" height="20" alt=""></td><td>&nbsp;&nbsp;&nbsp;<a class="tnav_unsel" href="/8499ecb-518c6cf/marktpflege/index.html" target="_self">Märkte</a>&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;<a class="tnav_unsel" href="/8499ecb-518c6cf/statistiken/meingebiet/index.html" target="_self">Statistiken</a>&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;<a class="tnav_unsel" href="/8499ecb-518c6cf/hilfe/formulare.html" target="_self">Informationen</a>&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;<a class="tnav_unsel" href="/8499ecb-518c6cf/sc-homepage.html" target="_blank">&gt;&gt;&gt;&gt; SC Website</a>&nbsp;&nbsp;&nbsp;</td><td>&nbsp;&nbsp;&nbsp;<a class="tnav_unsel" href="/8499ecb-518c6cf/abmelden.html" target="_self">Abmelden</a>&nbsp;&nbsp;&nbsp;</td></tr></tbody></table>
+</td></tr><tr><td bgcolor="#ffffff" class="watermark">
+<table border="0" cellpadding="5" cellspacing="0"><tbody><tr><td valign="top" bgcolor="#F2F2F2">
+<div id="lsize">
+<div style="text-align: center;"><img src="/images/suci/logo.png" alt="Sushi Circle Gastronomie GmbH" border="0"></div>
+<br>
+<table border="0" cellpadding="0" cellspacing="4"><tbody><tr><td align="right">
+<img src="/images/space.gif" width="130" height="1" alt=""><br>
+<b>&gt;</b> <a class="lnav" href="/8499ecb-518c6cf/pf/index.html">Übersicht &amp; Suche</a><br><img src="/images/space.gif" height="3" width="130" alt=""><br><a class="lnav" href="/8499ecb-518c6cf/pf/anlegen.html">Neu anlegen</a><br><img src="/images/space.gif" height="3" width="130" alt=""><br><a class="lnav" href="/8499ecb-518c6cf/mehr-150-std/index.html">Mehrarbeitszeit-Liste</a><br><img src="/images/space.gif" height="3" width="130" alt=""><br><a class="lnav" href="/8499ecb-518c6cf/mehr-8-std/index.html">MA &gt;8 Std./Tag</a><br><img src="/images/space.gif" height="3" width="130" alt=""><br><a class="lnav" href="/8499ecb-518c6cf/sn-std-sollzeit/index.html">SN Stunden&gt;Sollzeit</a><br><img src="/images/space.gif" height="3" width="130" alt=""><br><a class="lnav" href="/8499ecb-518c6cf/sn-std-sollzeit-kleiner/index.html">SN Stunden&lt;Sollzeit</a><br><img src="/images/space.gif" height="3" width="130" alt=""><br><a class="lnav" href="/8499ecb-518c6cf/pf/fehlerliste.html">Fehlerliste!</a><br><img src="/images/space.gif" height="3" width="130" alt=""><br><a class="lnav" href="/8499ecb-518c6cf/pf/ruecklauf-liste/index.html">Ruecklaufliste</a><br><img src="/images/space.gif" height="3" width="130" alt=""><br><a class="lnav" href="/8499ecb-518c6cf/pf/fristenliste/index.html">Fristenliste!</a><br><img src="/images/space.gif" height="3" width="130" alt=""><br><a class="lnav" href="/8499ecb-518c6cf/pf/maerktliste.html">Entgeltlisten</a><br><img src="/images/space.gif" height="3" width="130" alt=""><br><a class="lnav" href="/8499ecb-518c6cf/pf/neupersonal.html">Neueinstellungen</a><br><img src="/images/space.gif" height="3" width="130" alt=""><br><a class="lnav" href="/8499ecb-518c6cf/pf/austritte/index.html">Austritte</a><br><img src="/images/space.gif" height="3" width="130" alt=""><br><a class="lnav" href="/8499ecb-518c6cf/pf/inaktives-personal.html">Inaktives Pers.</a><br><img src="/images/space.gif" height="3" width="130" alt=""><br><a class="lnav" href="/8499ecb-518c6cf/festangestellten/uebersicht.html">FA Übersicht</a><br><img src="/images/space.gif" height="3" width="130" alt=""><br><a class="lnav" href="/8499ecb-518c6cf/urlaubsliste/index.html">U/K Liste</a><br><img src="/images/space.gif" height="3" width="130" alt=""><br><a class="lnav" href="/8499ecb-518c6cf/pf/aktives-personal/index.html">Aktives Personal</a><br><img src="/images/space.gif" height="3" width="130" alt=""><br>
+</td></tr></tbody></table>
+
+<br><br>
+<b>Schnellzugriff</b><br>
+<img src="/images/tdot.gif" width="130" height="1" alt=""><br><span class="subtitle">Arbeitshilfen u.a.</span><br><br>
+<table border="0" cellpadding="0" cellspacing="4"><tbody><tr><td align="right">
+<img src="/images/space.gif" width="130" height="1" alt=""><br>
+<a class="anav" href="/8499ecb-518c6cf/post/weiter.html">Nächste Nachricht (4)</a><br>
+
+</td><td><img src="/images/space.gif" width="1" height="1" alt=""></td></tr></tbody></table>
+
+
+
+<table border="0" cellpadding="0" cellspacing="4"><tbody><tr><td align="right">
+<img src="/images/space.gif" width="130" height="1" alt=""><br>
+<a style="font-size:11px; color:#808080; font-weight:bold" href="javascript:void(0);" onclick="printPage('/8499ecb-518c6cf/print/pf/index.html')"><img src="/images/printer.gif" alt="printer" border="0" width="21" height="17"> <span style="width:77px" id="druckwait">Seite drucken</span></a>
+<iframe style="border:none;" id="printframe" src="/blank.html" width="0" height="0" onload="printMe();"></iframe>
+</td></tr></tbody></table>
+
+
+<br>
+<br>
+<table id="tagtab" width="140" style="border: 2px solid rgb(224, 0, 0);" bgcolor="#F0F0E0" cellpadding="1" cellspacing="0" border="0">
+	<tbody><tr>
+		<td>&nbsp;</td>
+		<td id="tagc1" style="font-size: 22px; font-weight: bold; color: rgb(224, 0, 0);">&nbsp;<span id="tagnum">25</span>T&nbsp;</td>
+		<td id="tagc2" style="font-size: 12px; font-weight: bold; color: rgb(224, 0, 0);"><span id="taguhr">11H 19M 44S</span></td>
+		<td>&nbsp;</td></tr>
+	<tr>
+		<td>&nbsp;</td>
+		<td colspan="2" align="center"><span class="f11">bis zum Eingabestopp<br>für September!</span></td>
+		<td>&nbsp;</td></tr>
+</tbody></table>
+<br>
+<script language="javascript" type="text/javascript">
+	var jahr=2026, monat=10, tag=1, stunde=0, minute=0, sekunde=0;
+			var zielDatum=new Date(jahr,monat-1,tag,stunde,minute,sekunde);
+			var blinkState=0;
+
+			function countdown() {
+		startDatum=new Date();
+		if(startDatum<zielDatum)  {
+		var jahre=0, monate=0, tage=0, stunden=0, minuten=0, sekunden=0;
+		while(startDatum<zielDatum) {
+		jahre++;
+		startDatum.setFullYear(startDatum.getFullYear()+1);
+	}
+		startDatum.setFullYear(startDatum.getFullYear()-1);
+		jahre--;
+		while(startDatum<zielDatum) {
+		monate++;
+		startDatum.setMonth(startDatum.getMonth()+1);
+	}
+		startDatum.setMonth(startDatum.getMonth()-1);
+		monate--;
+		while(startDatum.getTime()+(24*60*60*1000)<zielDatum) {
+		tage++;
+		startDatum.setTime(startDatum.getTime()+(24*60*60*1000));
+	}
+		stunden=Math.floor((zielDatum-startDatum)/(60*60*1000));
+		startDatum.setTime(startDatum.getTime()+stunden*60*60*1000);
+		minuten=Math.floor((zielDatum-startDatum)/(60*1000));
+		startDatum.setTime(startDatum.getTime()+minuten*60*1000);
+		sekunden=Math.floor((zielDatum-startDatum)/1000);
+		if(stunden<10) stunden="0"+stunden;
+		if(minuten<10) minuten="0"+minuten;
+		if(sekunden<10) sekunden="0"+sekunden;
+
+		if(blinkState) {
+		blinkState=0;
+		col='#E00000';
+		setTimeout('countdown()',700);
+	} else {
+		blinkState=1;
+		col='#000000';
+		setTimeout('countdown()',300);
+	}
+		el=document.getElementById('tagc1');
+		el.style.color=col;
+		el=document.getElementById('tagc2');
+		el.style.color=col;
+		el=document.getElementById('tagtab');
+		el.style.border='2px solid '+col;
+	} else {
+		tage='0';
+		stunden='00';
+		minuten='00';
+		sekunden='00';
+	}
+		el=document.getElementById('tagnum');
+		el.innerHTML=tage;
+		el=document.getElementById('taguhr');
+		el.innerHTML=stunden+'H '+minuten+'M '+sekunden+'S';
+	}
+	countdown();
+</script>
+
+<br><br>
+<b>Nutzerdaten</b><br>
+<img src="/images/tdot.gif" width="130" height="1" alt="">
+<table border="0">
+	<tbody><tr><td>Herr Duc Thang Duong <a href="javascript:void(0)" onclick="return messenger('us518');"><img src="/images/msg.gif" border="0" width="15" height="11" alt=""></a></td></tr>
+	<tr><td>Teammanager</td></tr>
+	<tr><td>05.09.2026 12:40:13 Uhr</td></tr>
+</tbody></table>
+</div>
+</td><td>&nbsp;</td><td valign="top">
+<table border="0" cellpadding="0" cellspacing="0">
+<tbody><tr><td>
+<table border="0" cellpadding="0" cellspacing="0">
+<tbody><tr><td><b class="title">Übersichtsseite zur Personalpflege</b></td>
+<td rowspan="4"><img src="/images/space.gif" width="4" height="10" alt=""></td>
+<td rowspan="4"></td>
+</tr>
+<tr><td><img src="/images/tdot.gif" class="w670" width="670" height="1" alt="" style="width: 1180px;"></td></tr>
+<tr><td class="subtitle">Hier finden Sie Ihr Personal!</td></tr>
+<tr><td><br></td></tr></tbody></table>
+</td></tr>
+<tr><td><div id="pagecontent" style="width: 1220px; height: 1106px;">
+
+<style>
+.inp_query { width:150px; background-color:#E0FFE0; }
+</style>
+
+<p><b>Personalbearbeitung</b></p>
+
+<p>Hier können Sie nach Personalnummer oder Namen (mit Platzhalter '*') suchen! Wenn Sie zwei Wörter eingeben, dann wird das zweite Wort als Vorname gesucht. Umlaute und Sonderzeichen werden automatisch in verschiedenen Varianten gesucht!</p><p>Wenn Sie nur nach '*' (nur der Stern) suchen, werden Ihnen alle Mitarbeiter angezeigt, die direkt oder indirekt im Zusammenhang mit Ihnen als Teammanager oder Ihren Teamchefs und Märkten stehen.</p>
+
+<form class="isearch" action="https://welo.sushi-circle.de/8499ecb-518c6cf/pf/index.html" method="post">
+	<input id="starthere" type="text" class="inp_query ziel_stern" name="query" value="" style="">
+	
+nur in Markt: <input class="inp_query maidsearch ui-autocomplete-input" type="text" name="marktnr" value="" autocomplete="off" style="">
+
+	<input type="submit" name="search" value="Suchen" style="">
+</form>
+
+<br>
+
+<b>Erklärung zu komplexen Suchmöglichkeiten:</b><br>
+<ul>
+	<li> {zahl} (Personalnummer)</li>
+	<li> {expr} (Suche nach Nachname oder Ext-ID)</li>
+	<li> {expr} {expr} (Suche nach "Name Vorname")</li>
+	<li> {datum} (Geburtsdatum)</li>
+	<li> {expr} {datum} (Suche nach "Name Geburtsdatum")</li>
+	<li> dummy:aktiv (Alle aktiven Dummy-Personalnummern im Mandant)</li>
+	<li> dummy:inaktiv (Alle inaktiven Dummy-Personalnummern im Mandant)</li>
+	<li> status:unbekannt</li>
+	<li> !status:geprüft</li>
+	<li> anlage:{datum} (Personal angelegt seit Datum)</li>
+</ul>
+
+
+Umlaute und Sonderzeichen werden automatisch in verschiedenen Varianten gesucht<br>
+
+{expr} ist ein Ausdruck, der <b>*</b> und <b>?</b> als Platzhalter enthalten kann.<br>
+
+
+<br>
+Beispiele:<br>
+<br>
+<b>123456</b><br>
+<br>
+Findet den Mitarbeiter mit der Personalnummer 123456.<br>
+<br>
+<b>Müller</b><br>
+<br>
+Findet alle Mitarbeiter mit dem Nachnamen Müller.<br>
+<br>
+<b>*</b><br>
+<br>
+Findet alle zugeordneten Personen (bis zum Limit).<br>
+<br>
+<b>M?ller An*</b><br>
+<br>
+Findet alle Mitarbeiter mit dem Nachnamen Müller, Miller etc, deren Vorname mit An beginnt.<br>
+<br>
+<b>1.1.1990</b><br>
+<br>
+Findet alle Mitarbeiter, die am 1.1.1990 geboren sind.<br>
+<br>
+<b>Müller 1.1.1990</b><br>
+<br>
+Findet alle Mitarbeiter mit dem Nachnamen Müller, die am 1.1.1990 geboren sind.<br>
+<br>
+<b>anlage:1.10.2017</b><br>
+<br>
+Findet alle Mitarbeiter, die seit dem 1.10.2017 angelegt worden sind.<br>
+<br>
+
+
+
+
+
+
+
+
+
+</div></td></tr>
+</tbody></table>
+</td></tr></tbody></table>
+</td></tr>
+<tr><td bgcolor="#D4032B"><div id="pagefooter"><img src="/images/space.gif" width="173" height="2" alt=""><br>
+<img src="/images/space.gif" width="4" height="1"><span style="font-size:11px; color:white">ARCHIV - Lizensiert für Sushi-Circle GmbH / Nutzt DynaForm © 1999-2026 METATEXX GmbH (#<a class="nolink" href="#c80d46b34">12409-MAIN</a> / U:518-TM / Q:57 / S:0.02)</span>
+<a href="#" id="pdsep" style="width:8px;">&nbsp;</a></div></td></tr>
+</tbody></table>
+</div>
+<script language="JavaScript" type="text/javascript">
+$(function() {
+init_globaljs('/8499ecb-518c6cf/export/uiext.json');
+
+
+});
+// -->
+</script>
+
+
+<div id="popdiv" style="position: absolute; z-index: 3000; border: 1px solid rgb(0, 0, 0); background-color: rgb(255, 255, 255); padding: 5px; display: none;"></div><ul id="ui-id-1" tabindex="0" class="ui-menu ui-widget ui-widget-content ui-autocomplete ui-front" style="display: none;"></ul><div role="status" aria-live="assertive" aria-relevant="additions" class="ui-helper-hidden-accessible"></div></body></html>

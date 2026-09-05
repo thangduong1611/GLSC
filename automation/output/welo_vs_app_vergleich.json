@@ -1,0 +1,366 @@
+{
+  "330158": {
+    "name": "Frau Chu, Thi Thu HangSushi Shopleiterin",
+    "weloUrlaub": [
+      {
+        "from": "2026-09-23",
+        "to": "2026-10-02"
+      },
+      {
+        "from": "2026-10-05",
+        "to": "2026-10-17"
+      }
+    ],
+    "appEntries": [
+      {
+        "from": "2026-09-23",
+        "to": "2026-10-17",
+        "status": "approved"
+      }
+    ],
+    "fehlendInApp": [],
+    "sonstigeKategorien": []
+  },
+  "330314": {
+    "name": "Frau Trinh, Thi Minh ChauSushi Shop MA",
+    "weloUrlaub": [
+      {
+        "from": "2026-09-01",
+        "to": "2026-09-01"
+      }
+    ],
+    "appEntries": [],
+    "fehlendInApp": [
+      {
+        "from": "2026-09-01",
+        "to": "2026-09-01"
+      }
+    ],
+    "sonstigeKategorien": []
+  },
+  "340301": {
+    "name": "Herr Li, HongbiaoSushi Shop MA",
+    "weloUrlaub": [
+      {
+        "from": "2026-10-19",
+        "to": "2026-10-31"
+      }
+    ],
+    "appEntries": [],
+    "fehlendInApp": [
+      {
+        "from": "2026-10-19",
+        "to": "2026-10-31"
+      }
+    ],
+    "sonstigeKategorien": []
+  },
+  "340312": {
+    "name": "Frau Kang, XiaoxiSushi Shop MA",
+    "weloUrlaub": [
+      {
+        "from": "2026-09-01",
+        "to": "2026-09-08"
+      }
+    ],
+    "appEntries": [],
+    "fehlendInApp": [
+      {
+        "from": "2026-09-01",
+        "to": "2026-09-08"
+      }
+    ],
+    "sonstigeKategorien": []
+  },
+  "340322": {
+    "name": "Frau Nguyen, Kim MaiSushi Shop MA",
+    "weloUrlaub": [
+      {
+        "from": "2026-09-07",
+        "to": "2026-10-02"
+      },
+      {
+        "from": "2026-10-05",
+        "to": "2026-10-10"
+      }
+    ],
+    "appEntries": [
+      {
+        "from": "2026-09-15",
+        "to": "2026-09-15",
+        "status": "approved",
+        "source": "hr"
+      }
+    ],
+    "fehlendInApp": [
+      {
+        "from": "2026-10-05",
+        "to": "2026-10-10"
+      }
+    ],
+    "sonstigeKategorien": []
+  },
+  "340370": {
+    "name": "Frau Sharma, Archna DhusiaSushi Shop MA",
+    "weloUrlaub": [
+      {
+        "from": "2026-10-24",
+        "to": "2026-10-31"
+      },
+      {
+        "from": "2026-11-02",
+        "to": "2026-11-24"
+      }
+    ],
+    "appEntries": [
+      {
+        "from": "2026-10-02",
+        "to": "2026-10-02",
+        "status": "approved",
+        "source": "hr"
+      }
+    ],
+    "fehlendInApp": [
+      {
+        "from": "2026-10-24",
+        "to": "2026-10-31"
+      },
+      {
+        "from": "2026-11-02",
+        "to": "2026-11-24"
+      }
+    ],
+    "sonstigeKategorien": []
+  },
+  "340444": {
+    "name": "Herr Doan, Vu NguyenSushi Shop MA",
+    "weloUrlaub": [
+      {
+        "from": "2026-09-05",
+        "to": "2026-09-05"
+      }
+    ],
+    "appEntries": [
+      {
+        "from": "2026-12-01",
+        "to": "2026-12-09",
+        "status": "approved",
+        "source": "hr"
+      },
+      {
+        "from": "2026-09-29",
+        "to": "2026-09-30",
+        "status": "approved"
+      },
+      {
+        "from": "2026-09-05",
+        "to": "2026-09-05",
+        "status": "approved",
+        "source": "hr"
+      }
+    ],
+    "fehlendInApp": [],
+    "sonstigeKategorien": []
+  },
+  "340473": {
+    "name": "Frau Heidel, My LinhSushi Shop MA",
+    "weloUrlaub": [
+      {
+        "from": "2026-09-08",
+        "to": "2026-09-09"
+      },
+      {
+        "from": "2026-10-17",
+        "to": "2026-10-19"
+      },
+      {
+        "from": "2026-11-17",
+        "to": "2026-11-18"
+      }
+    ],
+    "appEntries": [
+      {
+        "from": "2026-09-28",
+        "to": "2026-09-28",
+        "status": "approved"
+      },
+      {
+        "from": "2026-10-01",
+        "to": "2026-10-05",
+        "status": "approved",
+        "source": "hr"
+      },
+      {
+        "from": "2026-12-11",
+        "to": "2026-12-12",
+        "status": "approved"
+      },
+      {
+        "from": "2026-10-17",
+        "to": "2026-10-19",
+        "status": "approved"
+      },
+      {
+        "from": "2026-11-17",
+        "to": "2026-11-18",
+        "status": "approved"
+      },
+      {
+        "from": "2026-09-08",
+        "to": "2026-09-09",
+        "status": "approved",
+        "source": "hr"
+      }
+    ],
+    "fehlendInApp": [],
+    "sonstigeKategorien": []
+  },
+  "340877": {
+    "name": "Frau Tran, Thi HoanSushi Shop MA",
+    "weloUrlaub": [
+      {
+        "from": "2026-10-12",
+        "to": "2026-10-27"
+      }
+    ],
+    "appEntries": [
+      {
+        "from": "2026-09-14",
+        "to": "2026-09-22",
+        "status": "approved",
+        "source": "hr"
+      }
+    ],
+    "fehlendInApp": [
+      {
+        "from": "2026-10-12",
+        "to": "2026-10-27"
+      }
+    ],
+    "sonstigeKategorien": []
+  },
+  "340955": {
+    "name": "Herr Nguyen, Hong MinhSushi Shop MA",
+    "weloUrlaub": [
+      {
+        "from": "2026-09-03",
+        "to": "2026-09-03"
+      }
+    ],
+    "appEntries": [
+      {
+        "from": "2026-09-21",
+        "to": "2026-09-25",
+        "status": "approved",
+        "source": "hr"
+      },
+      {
+        "from": "2026-10-01",
+        "to": "2026-10-01",
+        "status": "approved"
+      }
+    ],
+    "fehlendInApp": [
+      {
+        "from": "2026-09-03",
+        "to": "2026-09-03"
+      }
+    ],
+    "sonstigeKategorien": []
+  },
+  "341377": {
+    "name": "Herr Vu, Hong SonSushi Shop MA",
+    "weloUrlaub": [
+      {
+        "from": "2026-09-07",
+        "to": "2026-09-08"
+      }
+    ],
+    "appEntries": [
+      {
+        "from": "2026-10-13",
+        "to": "2026-10-15",
+        "status": "approved",
+        "source": "hr"
+      }
+    ],
+    "fehlendInApp": [
+      {
+        "from": "2026-09-07",
+        "to": "2026-09-08"
+      }
+    ],
+    "sonstigeKategorien": []
+  },
+  "350527": {
+    "name": "Herr Ta, EricShop MA",
+    "weloUrlaub": [
+      {
+        "from": "2026-10-05",
+        "to": "2026-10-17"
+      }
+    ],
+    "appEntries": [
+      {
+        "from": "2026-09-23",
+        "to": "2026-09-23",
+        "status": "approved",
+        "source": "hr"
+      },
+      {
+        "from": "2026-12-14",
+        "to": "2026-12-31",
+        "status": "approved",
+        "source": "hr"
+      }
+    ],
+    "fehlendInApp": [
+      {
+        "from": "2026-10-05",
+        "to": "2026-10-17"
+      }
+    ],
+    "sonstigeKategorien": []
+  },
+  "350529": {
+    "name": "Herr Nguyen, Ngoc Thanh NhaShop MA",
+    "weloUrlaub": [
+      {
+        "from": "2026-09-01",
+        "to": "2026-09-15"
+      }
+    ],
+    "appEntries": [],
+    "fehlendInApp": [
+      {
+        "from": "2026-09-01",
+        "to": "2026-09-15"
+      }
+    ],
+    "sonstigeKategorien": []
+  },
+  "350544": {
+    "name": "Frau Silitonga, SusdaliaShop MA",
+    "weloUrlaub": [
+      {
+        "from": "2026-10-26",
+        "to": "2026-10-31"
+      }
+    ],
+    "appEntries": [
+      {
+        "from": "2026-09-14",
+        "to": "2026-09-14",
+        "status": "approved",
+        "source": "hr"
+      }
+    ],
+    "fehlendInApp": [
+      {
+        "from": "2026-10-26",
+        "to": "2026-10-31"
+      }
+    ],
+    "sonstigeKategorien": []
+  }
+}

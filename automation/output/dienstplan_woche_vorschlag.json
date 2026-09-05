@@ -1,0 +1,1053 @@
+{
+  "wocheStart": "2026-09-21",
+  "ergebnisse": [
+    {
+      "id": "330158",
+      "name": "Frau Chu, Thi Thu Hang",
+      "filiale": "402297: MK-Einbeck-Altendorfer Tor",
+      "sollStd": 36,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "06:00-12:00",
+        "Di": "06:00-12:00",
+        "Mi": "06:00-12:00",
+        "Do": "06:15-12:15",
+        "Fr": "06:00-12:00",
+        "Sa": "06:00-12:00"
+      },
+      "wochensumme": 36
+    },
+    {
+      "id": "330254",
+      "name": "Frau Cao, Thi Nhung",
+      "filiale": "402257: E-Northeim-Robert-Schnabel-Str. - Schnabel",
+      "sollStd": 36,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "06:15-12:15",
+        "Di": "06:15-12:15",
+        "Mi": "06:30-12:30",
+        "Do": "06:15-12:15",
+        "Fr": "06:15-12:15",
+        "Sa": "06:15-12:15"
+      },
+      "wochensumme": 36
+    },
+    {
+      "id": "330314",
+      "name": "Frau Trinh, Thi Minh Chau",
+      "filiale": "402422: E-Leverkusen-Pommernstraße",
+      "sollStd": 40,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "08:15-15:45",
+        "Di": "06:00-12:00",
+        "Mi": "06:15-12:15",
+        "Do": "06:00-13:30",
+        "Fr": "06:00-13:30",
+        "Sa": "06:30-14:00"
+      },
+      "wochensumme": 40
+    },
+    {
+      "id": "330337",
+      "name": "Frau Meliala, Endhamya Asemenintha",
+      "filiale": "402523: K-Essen-Haedenkampstraße",
+      "sollStd": 36,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "07:45-13:45",
+        "Di": "08:45-14:45",
+        "Mi": "08:00-14:00",
+        "Do": "08:00-14:00",
+        "Fr": "08:00-14:00",
+        "Sa": "07:45-13:45"
+      },
+      "wochensumme": 36
+    },
+    {
+      "id": "330384",
+      "name": "Frau Vu, Truong Thuy Vi Linh",
+      "filiale": "402150: E-Sontra-Mühlbergstraße - Salzmann",
+      "sollStd": 38,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "06:45-13:45",
+        "Di": "07:00-13:00",
+        "Mi": "07:15-13:15",
+        "Do": "07:00-14:00",
+        "Fr": "07:45-14:45",
+        "Sa": "06:30-13:30"
+      },
+      "wochensumme": 38
+    },
+    {
+      "id": "330460",
+      "name": "Frau Nguyen, Thi Thuy",
+      "filiale": "402257: E-Northeim-Robert-Schnabel-Str. - Schnabel",
+      "sollStd": 20,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "07:00-10:30",
+        "Di": "08:15-11:15",
+        "Mi": "06:30-09:30",
+        "Do": "05:30-09:00",
+        "Fr": "06:30-10:00",
+        "Sa": "08:30-12:00"
+      },
+      "wochensumme": 20
+    },
+    {
+      "id": "330478",
+      "name": "Frau Frunzescu, Panadda",
+      "filiale": "402422: E-Leverkusen-Pommernstraße",
+      "sollStd": 36,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "06:00-12:00",
+        "Di": "06:00-12:00",
+        "Mi": "06:00-12:00",
+        "Do": "06:00-12:00",
+        "Fr": "06:00-12:00",
+        "Sa": "06:00-12:00"
+      },
+      "wochensumme": 36
+    },
+    {
+      "id": "330485",
+      "name": "Frau Trinh, Thi Dieu Quynh",
+      "filiale": "402414: E-Bergheim-Dansweilerstraße - Fischenich",
+      "sollStd": 38,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "05:15-12:15",
+        "Di": "05:15-11:15",
+        "Mi": "05:45-11:45",
+        "Do": "05:15-12:15",
+        "Fr": "05:30-12:30",
+        "Sa": "05:15-12:15"
+      },
+      "wochensumme": 38
+    },
+    {
+      "id": "330685",
+      "name": "Herr Frias, Kim Aldrin",
+      "filiale": "401891: E-Kassel-Frankfurter Str. - Aschoff",
+      "sollStd": 36,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "09:30-15:30",
+        "Di": "09:00-15:00",
+        "Mi": "09:30-15:30",
+        "Do": "09:30-15:30",
+        "Fr": "10:00-16:00",
+        "Sa": "09:45-15:45"
+      },
+      "wochensumme": 36
+    },
+    {
+      "id": "330697",
+      "name": "Frau Tran, Thi Le",
+      "filiale": "402207: E-Bovenden-Industriestraße",
+      "sollStd": 36,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "07:15-13:15",
+        "Di": "07:15-13:15",
+        "Mi": "07:00-13:00",
+        "Do": "06:45-12:45",
+        "Fr": "07:30-13:30",
+        "Sa": "07:15-13:15"
+      },
+      "wochensumme": 36
+    },
+    {
+      "id": "340259",
+      "name": "Herr Huynh, Quoc Bao",
+      "filiale": "402205: R-Hattingen-Heggerstraße",
+      "sollStd": 42,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "05:45-13:15",
+        "Di": "05:45-13:15",
+        "Mi": "06:00-13:30",
+        "Do": "06:00-13:30",
+        "Fr": "05:45-13:15",
+        "Sa": "06:00-13:30"
+      },
+      "wochensumme": 42
+    },
+    {
+      "id": "340276",
+      "name": "Herr Chin, Chee Sam",
+      "filiale": "402167: R-Düsseldorf-Hauptstr.",
+      "sollStd": 42,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "06:30-14:00",
+        "Di": "06:45-14:15",
+        "Mi": "06:45-14:15",
+        "Do": "07:00-14:30",
+        "Fr": "07:00-14:30",
+        "Sa": "06:30-14:00"
+      },
+      "wochensumme": 42
+    },
+    {
+      "id": "340301",
+      "name": "Herr Li, Hongbiao",
+      "filiale": "402302: R-Neuss-Allerheiligen-Am alten Bach - Friedrich",
+      "sollStd": 36,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "06:00-12:00",
+        "Di": "06:15-12:15",
+        "Mi": "06:15-12:15",
+        "Do": "07:30-13:30",
+        "Fr": "06:15-12:15",
+        "Sa": "05:45-11:45"
+      },
+      "wochensumme": 36
+    },
+    {
+      "id": "340312",
+      "name": "Frau Kang, Xiaoxi",
+      "filiale": "402302: R-Neuss-Allerheiligen-Am alten Bach - Friedrich",
+      "sollStd": 40,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "06:00-13:30",
+        "Di": "06:00-12:00",
+        "Mi": "06:00-12:00",
+        "Do": "06:15-13:45",
+        "Fr": "06:00-13:30",
+        "Sa": "05:45-13:15"
+      },
+      "wochensumme": 40
+    },
+    {
+      "id": "340322",
+      "name": "Frau Nguyen, Kim Mai",
+      "filiale": "402261: R-Hilden-Mittelstraße",
+      "sollStd": 40,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "05:45-13:15",
+        "Di": "05:45-11:45",
+        "Mi": "05:45-11:45",
+        "Do": "05:45-13:15",
+        "Fr": "05:45-13:15",
+        "Sa": "05:45-13:15"
+      },
+      "wochensumme": 40
+    },
+    {
+      "id": "340361",
+      "name": "Herr Unurbat, Bayarmagnai",
+      "filiale": "402363: R-Bergneustadt-Stadionstr.",
+      "sollStd": 36,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "08:30-14:30",
+        "Di": "09:45-15:45",
+        "Mi": "09:30-15:30",
+        "Do": "06:45-12:45",
+        "Fr": "06:30-12:30",
+        "Sa": "07:00-13:00"
+      },
+      "wochensumme": 36
+    },
+    {
+      "id": "340370",
+      "name": "Frau Sharma, Archna Dhusia",
+      "filiale": "402363: R-Bergneustadt-Stadionstr.",
+      "sollStd": 36,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "06:45-12:45",
+        "Di": "06:15-12:15",
+        "Mi": "06:30-12:30",
+        "Do": "08:30-14:30",
+        "Fr": "07:00-13:00",
+        "Sa": "08:15-14:15"
+      },
+      "wochensumme": 36
+    },
+    {
+      "id": "340404",
+      "name": "Frau Pham, Thi Thu Hang",
+      "filiale": "401891: E-Kassel-Frankfurter Str. - Aschoff",
+      "sollStd": 38,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "05:45-12:45",
+        "Di": "05:45-11:45",
+        "Mi": "06:00-12:00",
+        "Do": "05:45-12:45",
+        "Fr": "06:00-13:00",
+        "Sa": "05:45-12:45"
+      },
+      "wochensumme": 38
+    },
+    {
+      "id": "340429",
+      "name": "Frau Doan, Duc Hanh",
+      "filiale": "402507: K-Wesel-Rudolf-Diesel-Straße",
+      "sollStd": 42,
+      "arbeitstage": 1,
+      "tage": {
+        "Mo": "06:30-49:15",
+        "Di": "Frei",
+        "Mi": "Frei",
+        "Do": "Frei",
+        "Fr": "Frei",
+        "Sa": "Frei"
+      },
+      "wochensumme": 42
+    },
+    {
+      "id": "340444",
+      "name": "Herr Doan, Vu Nguyen",
+      "filiale": "402310: R-Wuppertal-Ascheweg - Brücken Kaufpark",
+      "sollStd": 30,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "10:00-15:00",
+        "Di": "13:30-18:30",
+        "Mi": "13:45-18:45",
+        "Do": "14:00-19:00",
+        "Fr": "13:30-18:30",
+        "Sa": "10:30-15:30"
+      },
+      "wochensumme": 30
+    },
+    {
+      "id": "340473",
+      "name": "Frau Heidel, My Linh",
+      "filiale": "402310: R-Wuppertal-Ascheweg - Brücken Kaufpark",
+      "sollStd": 36,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "06:45-12:45",
+        "Di": "06:30-12:30",
+        "Mi": "06:45-12:45",
+        "Do": "06:45-12:45",
+        "Fr": "06:30-12:30",
+        "Sa": "06:45-12:45"
+      },
+      "wochensumme": 36
+    },
+    {
+      "id": "340877",
+      "name": "Frau Tran, Thi Hoan",
+      "filiale": "402315: R-Bochum-Viktoriastraße - Mert",
+      "sollStd": 40,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "05:15-12:45",
+        "Di": "05:15-11:15",
+        "Mi": "05:45-11:45",
+        "Do": "05:15-12:45",
+        "Fr": "05:45-13:15",
+        "Sa": "05:45-13:15"
+      },
+      "wochensumme": 40
+    },
+    {
+      "id": "340910",
+      "name": "Herr Nguyen, Hai",
+      "filiale": "402167: R-Düsseldorf-Hauptstr.",
+      "sollStd": 30,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "05:45-10:45",
+        "Di": "06:00-11:00",
+        "Mi": "06:00-11:00",
+        "Do": "06:00-11:00",
+        "Fr": "05:45-10:45",
+        "Sa": "05:45-10:45"
+      },
+      "wochensumme": 30
+    },
+    {
+      "id": "340913",
+      "name": "Herr Do, Minh Khue",
+      "filiale": "402150: E-Sontra-Mühlbergstraße - Salzmann",
+      "sollStd": 20,
+      "arbeitstage": 4,
+      "tage": {
+        "Mo": "Frei",
+        "Di": "06:45-11:45",
+        "Mi": "07:30-12:30",
+        "Do": "Frei",
+        "Fr": "07:00-12:00",
+        "Sa": "06:30-11:30"
+      },
+      "wochensumme": 20
+    },
+    {
+      "id": "340918",
+      "name": "Herr Vu, Van Thanh",
+      "filiale": "402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner",
+      "sollStd": 36,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "06:00-12:00",
+        "Di": "06:00-12:00",
+        "Mi": "06:00-12:00",
+        "Do": "06:00-12:00",
+        "Fr": "06:00-12:00",
+        "Sa": "06:00-12:00"
+      },
+      "wochensumme": 36
+    },
+    {
+      "id": "340944",
+      "name": "Frau Hoang, Thi Phuong",
+      "filiale": "402502: T-Göttingen-An-der-Lutter",
+      "sollStd": 36,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "08:00-14:00",
+        "Di": "09:00-15:00",
+        "Mi": "08:30-14:30",
+        "Do": "08:45-14:45",
+        "Fr": "08:30-14:30",
+        "Sa": "06:30-12:30"
+      },
+      "wochensumme": 36
+    },
+    {
+      "id": "340955",
+      "name": "Herr Nguyen, Hong Minh",
+      "filiale": "402251: R-Düsseldorf-Zeppelinstraße",
+      "sollStd": 40,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "05:45-13:15",
+        "Di": "05:45-11:45",
+        "Mi": "05:45-11:45",
+        "Do": "08:15-15:45",
+        "Fr": "05:45-13:15",
+        "Sa": "06:00-13:30"
+      },
+      "wochensumme": 40
+    },
+    {
+      "id": "341041",
+      "name": "Frau Puchta, Yanisa",
+      "filiale": "401888: R-Homberg (Efze)-Kasseler Str. - Mohr",
+      "sollStd": 32,
+      "arbeitstage": 5,
+      "tage": {
+        "Mo": "08:30-15:45",
+        "Di": "09:00-15:00",
+        "Mi": "05:45-11:45",
+        "Do": "Frei",
+        "Fr": "09:00-16:15",
+        "Sa": "08:45-16:00"
+      },
+      "wochensumme": 32.25
+    },
+    {
+      "id": "341373",
+      "name": "Herr Nguyen, Minh Hieu",
+      "filiale": "402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme",
+      "sollStd": 10,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "15:30-17:30",
+        "Di": "15:45-16:45",
+        "Mi": "15:45-16:45",
+        "Do": "16:00-18:00",
+        "Fr": "16:00-18:00",
+        "Sa": "13:00-15:00"
+      },
+      "wochensumme": 10
+    },
+    {
+      "id": "341377",
+      "name": "Herr Vu, Hong Son",
+      "filiale": "402512: R-Remscheid-Wupperstraße",
+      "sollStd": 38,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "06:15-13:15",
+        "Di": "06:15-12:15",
+        "Mi": "06:00-12:00",
+        "Do": "06:15-13:15",
+        "Fr": "06:15-13:15",
+        "Sa": "06:15-13:15"
+      },
+      "wochensumme": 38
+    },
+    {
+      "id": "341384",
+      "name": "Herr Amjad, Muhammad Yasir",
+      "filiale": "402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner",
+      "sollStd": 40,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "08:45-16:15",
+        "Di": "08:45-14:45",
+        "Mi": "09:00-15:00",
+        "Do": "09:15-16:45",
+        "Fr": "08:45-16:15",
+        "Sa": "09:00-16:30"
+      },
+      "wochensumme": 40
+    },
+    {
+      "id": "341392",
+      "name": "Frau Azizah, Rona Cita",
+      "filiale": "402251: R-Düsseldorf-Zeppelinstraße",
+      "sollStd": 24,
+      "arbeitstage": 3,
+      "tage": {
+        "Mo": "Frei",
+        "Di": "10:30-19:00",
+        "Mi": "Frei",
+        "Do": "10:30-19:00",
+        "Fr": "Frei",
+        "Sa": "10:45-19:15"
+      },
+      "wochensumme": 24
+    },
+    {
+      "id": "341409",
+      "name": "Frau Hahlweg, Thanchanok",
+      "filiale": "402205: R-Hattingen-Heggerstraße",
+      "sollStd": 8,
+      "arbeitstage": 4,
+      "tage": {
+        "Mo": "11:45-13:45",
+        "Di": "10:45-12:45",
+        "Mi": "11:45-13:45",
+        "Do": "Frei",
+        "Fr": "11:30-13:30",
+        "Sa": "Frei"
+      },
+      "wochensumme": 8
+    },
+    {
+      "id": "341411",
+      "name": "Herr Trinh, Trung Thanh",
+      "filiale": "402523: K-Essen-Haedenkampstraße",
+      "sollStd": 40,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "05:45-13:15",
+        "Di": "05:45-11:45",
+        "Mi": "05:45-11:45",
+        "Do": "05:45-13:15",
+        "Fr": "05:45-13:15",
+        "Sa": "05:45-13:15"
+      },
+      "wochensumme": 40
+    },
+    {
+      "id": "341421",
+      "name": "Frau Gimpel, Chutikan",
+      "filiale": "401888: R-Homberg (Efze)-Kasseler Str. - Mohr",
+      "sollStd": 40,
+      "arbeitstage": 5,
+      "tage": {
+        "Mo": "06:00-14:30",
+        "Di": "06:00-14:30",
+        "Mi": "Frei",
+        "Do": "06:00-14:30",
+        "Fr": "06:00-14:30",
+        "Sa": "05:45-14:15"
+      },
+      "wochensumme": 40
+    },
+    {
+      "id": "341424",
+      "name": "Frau Shao, Hongli",
+      "filiale": "402167: R-Düsseldorf-Hauptstr.",
+      "sollStd": 36,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "08:45-14:45",
+        "Di": "09:00-15:00",
+        "Mi": "09:00-15:00",
+        "Do": "09:00-15:00",
+        "Fr": "09:00-15:00",
+        "Sa": "08:45-14:45"
+      },
+      "wochensumme": 36
+    },
+    {
+      "id": "341443",
+      "name": "Herr Doan, Phi Long",
+      "filiale": "402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme",
+      "sollStd": 38,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "07:30-14:30",
+        "Di": "07:00-13:00",
+        "Mi": "07:15-13:15",
+        "Do": "07:00-14:00",
+        "Fr": "07:15-14:15",
+        "Sa": "07:15-14:15"
+      },
+      "wochensumme": 38
+    },
+    {
+      "id": "341457",
+      "name": "Frau Nguyen, Diu Thuan",
+      "filiale": "402512: R-Remscheid-Wupperstraße",
+      "sollStd": 8.5,
+      "arbeitstage": 3,
+      "tage": {
+        "Mo": "13:15-16:30",
+        "Di": "Frei",
+        "Mi": "12:45-14:45",
+        "Do": "Frei",
+        "Fr": "12:45-16:00",
+        "Sa": "Frei"
+      },
+      "wochensumme": 8.5
+    },
+    {
+      "id": "341475",
+      "name": "Frau Vi, Thi Thu",
+      "filiale": "402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme",
+      "sollStd": 36,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "09:15-15:15",
+        "Di": "07:45-13:45",
+        "Mi": "07:30-13:30",
+        "Do": "08:15-14:15",
+        "Fr": "09:15-15:15",
+        "Sa": "08:45-14:45"
+      },
+      "wochensumme": 36
+    },
+    {
+      "id": "341476",
+      "name": "Herr Sultan, Abdulhamid Husamuldin Abdulhamid",
+      "filiale": "402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme",
+      "sollStd": 36,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "05:45-11:45",
+        "Di": "07:00-13:00",
+        "Mi": "06:45-12:45",
+        "Do": "06:30-12:30",
+        "Fr": "06:45-12:45",
+        "Sa": "06:30-12:30"
+      },
+      "wochensumme": 36
+    },
+    {
+      "id": "341495",
+      "name": "Frau Loutchan, Chunhua",
+      "filiale": "402254: R-Kirchheim-Industriestraße - Messerschmidt",
+      "sollStd": 40,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "05:45-13:15",
+        "Di": "05:45-11:45",
+        "Mi": "05:45-11:45",
+        "Do": "05:45-13:15",
+        "Fr": "05:45-13:15",
+        "Sa": "05:45-13:15"
+      },
+      "wochensumme": 40
+    },
+    {
+      "id": "341503",
+      "name": "Herr Nguyen, Dinh Chien",
+      "filiale": "402315: R-Bochum-Viktoriastraße - Mert",
+      "sollStd": 42,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "06:15-13:45",
+        "Di": "05:30-13:00",
+        "Mi": "05:30-13:00",
+        "Do": "05:30-13:00",
+        "Fr": "06:00-13:30",
+        "Sa": "06:45-14:15"
+      },
+      "wochensumme": 42
+    },
+    {
+      "id": "350152",
+      "name": "Frau Schütte-Wei, Dandan",
+      "filiale": "402185: K-Hagen-Auf dem Lölfert",
+      "sollStd": 40,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "06:00-13:30",
+        "Di": "06:00-12:00",
+        "Mi": "06:00-12:00",
+        "Do": "06:00-13:30",
+        "Fr": "06:00-13:30",
+        "Sa": "06:00-13:30"
+      },
+      "wochensumme": 40
+    },
+    {
+      "id": "350153",
+      "name": "Frau Tran, Thi Bich",
+      "filiale": "402133: K-Köln-Thebäerstraße",
+      "sollStd": 38,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "05:45-12:45",
+        "Di": "06:00-12:00",
+        "Mi": "05:45-11:45",
+        "Do": "06:00-13:00",
+        "Fr": "05:45-12:45",
+        "Sa": "06:15-13:15"
+      },
+      "wochensumme": 38
+    },
+    {
+      "id": "350445",
+      "name": "Frau Nguyen, Thi Ngoc Anh",
+      "filiale": "402422: E-Leverkusen-Pommernstraße",
+      "sollStd": 40,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "09:30-17:00",
+        "Di": "07:15-13:15",
+        "Mi": "08:45-14:45",
+        "Do": "09:00-16:30",
+        "Fr": "08:00-15:30",
+        "Sa": "07:30-15:00"
+      },
+      "wochensumme": 40
+    },
+    {
+      "id": "350527",
+      "name": "Herr Ta, Eric",
+      "filiale": "402185: K-Hagen-Auf dem Lölfert",
+      "sollStd": 15,
+      "arbeitstage": 5,
+      "tage": {
+        "Mo": "Frei",
+        "Di": "11:15-14:15",
+        "Mi": "11:00-14:00",
+        "Do": "11:15-14:15",
+        "Fr": "11:00-14:00",
+        "Sa": "11:00-14:00"
+      },
+      "wochensumme": 15
+    },
+    {
+      "id": "350529",
+      "name": "Herr Nguyen, Ngoc Thanh Nha",
+      "filiale": "402507: K-Wesel-Rudolf-Diesel-Straße",
+      "sollStd": 42,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "07:45-15:15",
+        "Di": "10:00-17:30",
+        "Mi": "07:45-15:15",
+        "Do": "09:15-16:45",
+        "Fr": "07:30-15:00",
+        "Sa": "08:30-16:00"
+      },
+      "wochensumme": 42
+    },
+    {
+      "id": "350544",
+      "name": "Frau Silitonga, Susdalia",
+      "filiale": "402261: R-Hilden-Mittelstraße",
+      "sollStd": 30,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "07:15-12:15",
+        "Di": "07:15-12:15",
+        "Mi": "08:45-13:45",
+        "Do": "07:30-12:30",
+        "Fr": "07:45-12:45",
+        "Sa": "07:00-12:00"
+      },
+      "wochensumme": 30
+    },
+    {
+      "id": "350553",
+      "name": "Frau Ngo, Thi Tu",
+      "filiale": "402272: R-Düsseldorf-Münsterstraße",
+      "sollStd": 40,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "06:00-13:30",
+        "Di": "06:00-12:00",
+        "Mi": "06:00-12:00",
+        "Do": "06:30-14:00",
+        "Fr": "05:45-13:15",
+        "Sa": "06:30-14:00"
+      },
+      "wochensumme": 40
+    },
+    {
+      "id": "350561",
+      "name": "Frau Nguyen, Thi Lan Anh",
+      "filiale": "402286: K-Göttingen-Am Kauf Park",
+      "sollStd": 36,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "05:30-11:30",
+        "Di": "05:30-11:30",
+        "Mi": "05:45-11:45",
+        "Do": "05:45-11:45",
+        "Fr": "05:30-11:30",
+        "Sa": "05:45-11:45"
+      },
+      "wochensumme": 36
+    },
+    {
+      "id": "350596",
+      "name": "Herr Ngo, Minh Giang",
+      "filiale": "402286: K-Göttingen-Am Kauf Park",
+      "sollStd": 40,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "05:30-13:00",
+        "Di": "05:45-11:45",
+        "Mi": "05:45-11:45",
+        "Do": "05:45-13:15",
+        "Fr": "05:45-13:15",
+        "Sa": "05:45-13:15"
+      },
+      "wochensumme": 40
+    },
+    {
+      "id": "350598",
+      "name": "Frau Khuu, Boi Anh",
+      "filiale": "402507: K-Wesel-Rudolf-Diesel-Straße",
+      "sollStd": 30,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "13:00-18:00",
+        "Di": "12:30-17:30",
+        "Mi": "11:30-16:30",
+        "Do": "11:00-16:00",
+        "Fr": "12:15-17:15",
+        "Sa": "14:15-19:15"
+      },
+      "wochensumme": 30
+    },
+    {
+      "id": "350604",
+      "name": "Herr Nguyen, The Hai",
+      "filiale": "402261: R-Hilden-Mittelstraße",
+      "sollStd": 30,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "06:00-11:00",
+        "Di": "06:00-11:00",
+        "Mi": "06:00-11:00",
+        "Do": "06:00-11:00",
+        "Fr": "06:00-11:00",
+        "Sa": "06:00-11:00"
+      },
+      "wochensumme": 30
+    },
+    {
+      "id": "350605",
+      "name": "Frau Park, Sumi",
+      "filiale": "402133: K-Köln-Thebäerstraße",
+      "sollStd": 25,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "08:00-12:15",
+        "Di": "07:00-11:00",
+        "Mi": "08:00-12:00",
+        "Do": "07:15-11:30",
+        "Fr": "08:00-12:15",
+        "Sa": "08:00-12:15"
+      },
+      "wochensumme": 25
+    },
+    {
+      "id": "360011",
+      "name": "Frau Nguyen, Thi Nuong",
+      "filiale": "402155: M-Nordhausen-Darrweg",
+      "sollStd": 30,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "07:15-12:15",
+        "Di": "08:00-13:00",
+        "Mi": "07:00-12:00",
+        "Do": "09:00-14:00",
+        "Fr": "08:30-13:30",
+        "Sa": "08:00-13:00"
+      },
+      "wochensumme": 30
+    },
+    {
+      "id": "360021",
+      "name": "Frau Pham, Thi Nga",
+      "filiale": "402155: M-Nordhausen-Darrweg",
+      "sollStd": 36,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "05:30-11:30",
+        "Di": "05:30-11:30",
+        "Mi": "05:30-11:30",
+        "Do": "05:30-11:30",
+        "Fr": "05:30-11:30",
+        "Sa": "05:30-11:30"
+      },
+      "wochensumme": 36
+    },
+    {
+      "id": "360053",
+      "name": "Frau Phung, Lan",
+      "filiale": "402297: MK-Einbeck-Altendorfer Tor",
+      "sollStd": 36,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "06:00-12:00",
+        "Di": "08:00-14:00",
+        "Mi": "08:00-14:00",
+        "Do": "07:30-13:30",
+        "Fr": "08:00-14:00",
+        "Sa": "08:00-14:00"
+      },
+      "wochensumme": 36
+    },
+    {
+      "id": "370116",
+      "name": "Frau Roth, Diem Thi Thanh",
+      "filiale": "401125: RA-Baunatal-Fuldastraße",
+      "sollStd": 24,
+      "arbeitstage": 4,
+      "tage": {
+        "Mo": "07:45-13:45",
+        "Di": "Frei",
+        "Mi": "Frei",
+        "Do": "07:45-13:45",
+        "Fr": "07:45-13:45",
+        "Sa": "07:45-13:45"
+      },
+      "wochensumme": 24
+    },
+    {
+      "id": "410001",
+      "name": "Herr Nguyen, Hai Thanh",
+      "filiale": "402146: T-Bad Hersfeld-Heinrich-von-Stephan-Straße",
+      "sollStd": 42,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "07:45-15:15",
+        "Di": "08:00-15:30",
+        "Mi": "07:30-15:00",
+        "Do": "07:30-15:00",
+        "Fr": "07:30-15:00",
+        "Sa": "07:45-15:15"
+      },
+      "wochensumme": 42
+    },
+    {
+      "id": "410013",
+      "name": "Herr Ngo, Van Chung",
+      "filiale": "402502: T-Göttingen-An-der-Lutter",
+      "sollStd": 36,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "06:15-12:15",
+        "Di": "08:00-14:00",
+        "Mi": "06:45-12:45",
+        "Do": "09:00-15:00",
+        "Fr": "08:00-14:00",
+        "Sa": "06:15-12:15"
+      },
+      "wochensumme": 36
+    },
+    {
+      "id": "470008",
+      "name": "Frau Kneipp, Hazel",
+      "filiale": "401125: RA-Baunatal-Fuldastraße",
+      "sollStd": 36,
+      "arbeitstage": 5,
+      "tage": {
+        "Mo": "10:15-18:15",
+        "Di": "08:45-16:15",
+        "Mi": "07:45-15:15",
+        "Do": "Frei",
+        "Fr": "08:15-16:15",
+        "Sa": "08:30-16:30"
+      },
+      "wochensumme": 36.5
+    },
+    {
+      "id": "470009",
+      "name": "Frau Abramowski, Bongkotchakon",
+      "filiale": "401125: RA-Baunatal-Fuldastraße",
+      "sollStd": 36,
+      "arbeitstage": 6,
+      "tage": {
+        "Mo": "06:45-12:45",
+        "Di": "07:00-13:00",
+        "Mi": "08:00-14:00",
+        "Do": "06:30-12:30",
+        "Fr": "07:00-13:00",
+        "Sa": "06:45-12:45"
+      },
+      "wochensumme": 36
+    }
+  ],
+  "uebersprungen": [
+    {
+      "id": "330722",
+      "name": "Frau Ton, Thi Thanh Huyen",
+      "filiale": "402257: E-Northeim-Robert-Schnabel-Str. - Schnabel",
+      "grund": "keine Schicht-Historie (ArbeitstageProWoche=0)"
+    },
+    {
+      "id": "341450",
+      "name": "Frau Purnomo, Paramita Dian",
+      "filiale": "402261: R-Hilden-Mittelstraße",
+      "grund": "keine Schicht-Historie (ArbeitstageProWoche=0)"
+    },
+    {
+      "id": "360135",
+      "name": "Frau Müller, Claudine Lucia Angeli",
+      "filiale": "401125: RA-Baunatal-Fuldastraße",
+      "grund": "keine Schicht-Historie (ArbeitstageProWoche=0)"
+    },
+    {
+      "id": "410012",
+      "name": "Frau Nguyen, Thi Viet",
+      "filiale": "402502: T-Göttingen-An-der-Lutter",
+      "grund": "keine Schicht-Historie (ArbeitstageProWoche=0)"
+    },
+    {
+      "id": "410018",
+      "name": "Frau Nguyen, Thi Viet",
+      "filiale": "402501: T-Göttingen-Weender Str.",
+      "grund": "keine Schicht-Historie (ArbeitstageProWoche=0)"
+    },
+    {
+      "id": "550042",
+      "name": "Herr Chu, Quoc Cuong",
+      "filiale": "402155: M-Nordhausen-Darrweg",
+      "grund": "keine Schicht-Historie (ArbeitstageProWoche=0)"
+    },
+    {
+      "id": "550078",
+      "name": "Herr Nguyen, Trong",
+      "filiale": "402523: K-Essen-Haedenkampstraße",
+      "grund": "keine Schicht-Historie (ArbeitstageProWoche=0)"
+    },
+    {
+      "id": "550152",
+      "name": "Herr Kieu, Van Khang",
+      "filiale": "402502: T-Göttingen-An-der-Lutter",
+      "grund": "keine Schicht-Historie (ArbeitstageProWoche=0)"
+    },
+    {
+      "id": "550198",
+      "name": "Herr Nguyen, Viet Hoang",
+      "filiale": "402414: E-Bergheim-Dansweilerstraße - Fischenich",
+      "grund": "keine Schicht-Historie (ArbeitstageProWoche=0)"
+    }
+  ]
+}

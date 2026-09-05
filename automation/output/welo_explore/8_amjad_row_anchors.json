@@ -1,0 +1,1178 @@
+[
+  {
+    "text": "Übersicht & Suche",
+    "href": "/ed50dec-51833f1/pf/index.html",
+    "onclick": null,
+    "outerHTML": "<a class=\"lnav\" href=\"/ed50dec-51833f1/pf/index.html\">Übersicht &amp; Suche</a>"
+  },
+  {
+    "text": "Neu anlegen",
+    "href": "/ed50dec-51833f1/pf/anlegen.html",
+    "onclick": null,
+    "outerHTML": "<a class=\"lnav\" href=\"/ed50dec-51833f1/pf/anlegen.html\">Neu anlegen</a>"
+  },
+  {
+    "text": "Mehrarbeitszeit-Liste",
+    "href": "/ed50dec-51833f1/mehr-150-std/index.html",
+    "onclick": null,
+    "outerHTML": "<a class=\"lnav\" href=\"/ed50dec-51833f1/mehr-150-std/index.html\">Mehrarbeitszeit-Liste</a>"
+  },
+  {
+    "text": "MA >8 Std./Tag",
+    "href": "/ed50dec-51833f1/mehr-8-std/index.html",
+    "onclick": null,
+    "outerHTML": "<a class=\"lnav\" href=\"/ed50dec-51833f1/mehr-8-std/index.html\">MA &gt;8 Std./Tag</a>"
+  },
+  {
+    "text": "SN Stunden>Sollzeit",
+    "href": "/ed50dec-51833f1/sn-std-sollzeit/index.html",
+    "onclick": null,
+    "outerHTML": "<a class=\"lnav\" href=\"/ed50dec-51833f1/sn-std-sollzeit/index.html\">SN Stunden&gt;Sollzeit</a>"
+  },
+  {
+    "text": "SN Stunden<Sollzeit",
+    "href": "/ed50dec-51833f1/sn-std-sollzeit-kleiner/index.html",
+    "onclick": null,
+    "outerHTML": "<a class=\"lnav\" href=\"/ed50dec-51833f1/sn-std-sollzeit-kleiner/index.html\">SN Stunden&lt;Sollzeit</a>"
+  },
+  {
+    "text": "Fehlerliste!",
+    "href": "/ed50dec-51833f1/pf/fehlerliste.html",
+    "onclick": null,
+    "outerHTML": "<a class=\"lnav\" href=\"/ed50dec-51833f1/pf/fehlerliste.html\">Fehlerliste!</a>"
+  },
+  {
+    "text": "Ruecklaufliste",
+    "href": "/ed50dec-51833f1/pf/ruecklauf-liste/index.html",
+    "onclick": null,
+    "outerHTML": "<a class=\"lnav\" href=\"/ed50dec-51833f1/pf/ruecklauf-liste/index.html\">Ruecklaufliste</a>"
+  },
+  {
+    "text": "Fristenliste!",
+    "href": "/ed50dec-51833f1/pf/fristenliste/index.html",
+    "onclick": null,
+    "outerHTML": "<a class=\"lnav\" href=\"/ed50dec-51833f1/pf/fristenliste/index.html\">Fristenliste!</a>"
+  },
+  {
+    "text": "Entgeltlisten",
+    "href": "/ed50dec-51833f1/pf/maerktliste.html",
+    "onclick": null,
+    "outerHTML": "<a class=\"lnav\" href=\"/ed50dec-51833f1/pf/maerktliste.html\">Entgeltlisten</a>"
+  },
+  {
+    "text": "Neueinstellungen",
+    "href": "/ed50dec-51833f1/pf/neupersonal.html",
+    "onclick": null,
+    "outerHTML": "<a class=\"lnav\" href=\"/ed50dec-51833f1/pf/neupersonal.html\">Neueinstellungen</a>"
+  },
+  {
+    "text": "Austritte",
+    "href": "/ed50dec-51833f1/pf/austritte/index.html",
+    "onclick": null,
+    "outerHTML": "<a class=\"lnav\" href=\"/ed50dec-51833f1/pf/austritte/index.html\">Austritte</a>"
+  },
+  {
+    "text": "Inaktives Pers.",
+    "href": "/ed50dec-51833f1/pf/inaktives-personal.html",
+    "onclick": null,
+    "outerHTML": "<a class=\"lnav\" href=\"/ed50dec-51833f1/pf/inaktives-personal.html\">Inaktives Pers.</a>"
+  },
+  {
+    "text": "FA Übersicht",
+    "href": "/ed50dec-51833f1/festangestellten/uebersicht.html",
+    "onclick": null,
+    "outerHTML": "<a class=\"lnav\" href=\"/ed50dec-51833f1/festangestellten/uebersicht.html\">FA Übersicht</a>"
+  },
+  {
+    "text": "U/K Liste",
+    "href": "/ed50dec-51833f1/urlaubsliste/index.html",
+    "onclick": null,
+    "outerHTML": "<a class=\"lnav\" href=\"/ed50dec-51833f1/urlaubsliste/index.html\">U/K Liste</a>"
+  },
+  {
+    "text": "Aktives Personal",
+    "href": "/ed50dec-51833f1/pf/aktives-personal/index.html",
+    "onclick": null,
+    "outerHTML": "<a class=\"lnav\" href=\"/ed50dec-51833f1/pf/aktives-personal/index.html\">Aktives Personal</a>"
+  },
+  {
+    "text": "Nächste Nachricht (4)",
+    "href": "/ed50dec-51833f1/post/weiter.html",
+    "onclick": null,
+    "outerHTML": "<a class=\"anav\" href=\"/ed50dec-51833f1/post/weiter.html\">Nächste Nachricht (4)</a>"
+  },
+  {
+    "text": "Seite drucken",
+    "href": "javascript:void(0);",
+    "onclick": "printPage('/ed50dec-51833f1/print/urlaubsliste/2026-fs-alle-v-01.html')",
+    "outerHTML": "<a style=\"font-size:11px; color:#808080; font-weight:bold\" href=\"javascript:void(0);\" onclick=\"printPage('/ed50dec-51833f1/print/urlaubsliste/2026-fs-alle-v-01.html')\"><img src=\"/images/printer.gif\" alt=\"printer\" border=\"0\" width=\"21\" height=\"17\"> <span style=\"width:77px\" id=\"druckwait\">Seite drucke"
+  },
+  {
+    "text": "",
+    "href": "javascript:void(0)",
+    "onclick": "return messenger('us518');",
+    "outerHTML": "<a href=\"javascript:void(0)\" onclick=\"return messenger('us518');\"><img src=\"/images/msg.gif\" border=\"0\" width=\"15\" height=\"11\" alt=\"\"></a>"
+  },
+  {
+    "text": "Laden",
+    "href": "/ed50dec-51833f1/export/csv-UqRXNSTd/urlaub_krank_liste.csv",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/export/csv-UqRXNSTd/urlaub_krank_liste.csv\">Laden</a>"
+  },
+  {
+    "text": "",
+    "href": "javascript:void(0)",
+    "onclick": "return messenger('us518','Hinweis zur Urlaubsliste',0);",
+    "outerHTML": "<a href=\"javascript:void(0)\" onclick=\"return messenger('us518','Hinweis zur Urlaubsliste',0);\"><img src=\"/images/msg.gif\" border=\"0\" width=\"15\" height=\"11\" alt=\"\"></a>"
+  },
+  {
+    "text": "",
+    "href": "javascript:void(0)",
+    "onclick": "return messenger('us518','Hinweis zum Urlaub',0);",
+    "outerHTML": "<a href=\"javascript:void(0)\" onclick=\"return messenger('us518','Hinweis zum Urlaub',0);\"><img src=\"/images/msg.gif\" border=\"0\" width=\"15\" height=\"11\" alt=\"\"></a>"
+  },
+  {
+    "text": "470009",
+    "href": "/ed50dec-51833f1/pf/info/470009.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/470009.html\">470009</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/470009-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/470009-2026.html\">#</a>"
+  },
+  {
+    "text": "611125-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/611125.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/611125.html\">611125-00</a>"
+  },
+  {
+    "text": "341384",
+    "href": "/ed50dec-51833f1/pf/info/341384.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/341384.html\">341384</a>"
+  },
+  {
+    "text": "+",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/341384-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/341384-2026.html\">+</a>"
+  },
+  {
+    "text": "402416-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402416.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402416.html\">402416-00</a>"
+  },
+  {
+    "text": "341392",
+    "href": "/ed50dec-51833f1/pf/info/341392.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/341392.html\">341392</a>"
+  },
+  {
+    "text": "+",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/341392-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/341392-2026.html\">+</a>"
+  },
+  {
+    "text": "402272-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402272.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402272.html\">402272-00</a>"
+  },
+  {
+    "text": "330254",
+    "href": "/ed50dec-51833f1/pf/info/330254.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/330254.html\">330254</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/330254-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/330254-2026.html\">#</a>"
+  },
+  {
+    "text": "402257-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402257.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402257.html\">402257-00</a>"
+  },
+  {
+    "text": "330158",
+    "href": "/ed50dec-51833f1/pf/info/330158.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/330158.html\">330158</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/330158-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/330158-2026.html\">#</a>"
+  },
+  {
+    "text": "402297-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402297.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402297.html\">402297-00</a>"
+  },
+  {
+    "text": "340913",
+    "href": "/ed50dec-51833f1/pf/info/340913.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/340913.html\">340913</a>"
+  },
+  {
+    "text": "+",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/340913-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/340913-2026.html\">+</a>"
+  },
+  {
+    "text": "402150-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402150.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402150.html\">402150-00</a>"
+  },
+  {
+    "text": "341443",
+    "href": "/ed50dec-51833f1/pf/info/341443.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/341443.html\">341443</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/341443-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/341443-2026.html\">#</a>"
+  },
+  {
+    "text": "402240-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402240.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402240.html\">402240-00</a>"
+  },
+  {
+    "text": "340444",
+    "href": "/ed50dec-51833f1/pf/info/340444.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/340444.html\">340444</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/340444-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/340444-2026.html\">#</a>"
+  },
+  {
+    "text": "402310-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402310.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402310.html\">402310-00</a>"
+  },
+  {
+    "text": "330685",
+    "href": "/ed50dec-51833f1/pf/info/330685.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/330685.html\">330685</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/330685-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/330685-2026.html\">#</a>"
+  },
+  {
+    "text": "401891-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/401891.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/401891.html\">401891-00</a>"
+  },
+  {
+    "text": "330478",
+    "href": "/ed50dec-51833f1/pf/info/330478.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/330478.html\">330478</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/330478-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/330478-2026.html\">#</a>"
+  },
+  {
+    "text": "402422-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402422.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402422.html\">402422-00</a>"
+  },
+  {
+    "text": "341497",
+    "href": "/ed50dec-51833f1/pf/info/341497.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/341497.html\">341497</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/341497-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/341497-2026.html\">#</a>"
+  },
+  {
+    "text": "402363-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402363.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402363.html\">402363-00</a>"
+  },
+  {
+    "text": "341421",
+    "href": "/ed50dec-51833f1/pf/info/341421.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/341421.html\">341421</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/341421-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/341421-2026.html\">#</a>"
+  },
+  {
+    "text": "401888-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/401888.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/401888.html\">401888-00</a>"
+  },
+  {
+    "text": "340473",
+    "href": "/ed50dec-51833f1/pf/info/340473.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/340473.html\">340473</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/340473-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/340473-2026.html\">#</a>"
+  },
+  {
+    "text": "402310-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402310.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402310.html\">402310-00</a>"
+  },
+  {
+    "text": "340944",
+    "href": "/ed50dec-51833f1/pf/info/340944.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/340944.html\">340944</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/340944-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/340944-2026.html\">#</a>"
+  },
+  {
+    "text": "402502-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402502.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402502.html\">402502-00</a>"
+  },
+  {
+    "text": "340259",
+    "href": "/ed50dec-51833f1/pf/info/340259.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/340259.html\">340259</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/340259-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/340259-2026.html\">#</a>"
+  },
+  {
+    "text": "402205-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402205.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402205.html\">402205-00</a>"
+  },
+  {
+    "text": "340312",
+    "href": "/ed50dec-51833f1/pf/info/340312.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/340312.html\">340312</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/340312-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/340312-2026.html\">#</a>"
+  },
+  {
+    "text": "402302-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402302.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402302.html\">402302-00</a>"
+  },
+  {
+    "text": "350598",
+    "href": "/ed50dec-51833f1/pf/info/350598.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/350598.html\">350598</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/350598-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/350598-2026.html\">#</a>"
+  },
+  {
+    "text": "402507-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402507.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402507.html\">402507-00</a>"
+  },
+  {
+    "text": "470008",
+    "href": "/ed50dec-51833f1/pf/info/470008.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/470008.html\">470008</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/470008-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/470008-2026.html\">#</a>"
+  },
+  {
+    "text": "611125-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/611125.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/611125.html\">611125-00</a>"
+  },
+  {
+    "text": "340301",
+    "href": "/ed50dec-51833f1/pf/info/340301.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/340301.html\">340301</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/340301-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/340301-2026.html\">#</a>"
+  },
+  {
+    "text": "402302-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402302.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402302.html\">402302-00</a>"
+  },
+  {
+    "text": "341495",
+    "href": "/ed50dec-51833f1/pf/info/341495.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/341495.html\">341495</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/341495-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/341495-2026.html\">#</a>"
+  },
+  {
+    "text": "402254-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402254.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402254.html\">402254-00</a>"
+  },
+  {
+    "text": "330337",
+    "href": "/ed50dec-51833f1/pf/info/330337.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/330337.html\">330337</a>"
+  },
+  {
+    "text": "+",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/330337-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/330337-2026.html\">+</a>"
+  },
+  {
+    "text": "402523-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402523.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402523.html\">402523-00</a>"
+  },
+  {
+    "text": "360135",
+    "href": "/ed50dec-51833f1/pf/info/360135.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/360135.html\">360135</a>"
+  },
+  {
+    "text": "+",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/360135-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/360135-2026.html\">+</a>"
+  },
+  {
+    "text": "611125-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/611125.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/611125.html\">611125-00</a>"
+  },
+  {
+    "text": "330480",
+    "href": "/ed50dec-51833f1/pf/info/330480.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/330480.html\">330480</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/330480-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/330480-2026.html\">#</a>"
+  },
+  {
+    "text": "402501-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402501.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402501.html\">402501-00</a>"
+  },
+  {
+    "text": "350596",
+    "href": "/ed50dec-51833f1/pf/info/350596.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/350596.html\">350596</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/350596-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/350596-2026.html\">#</a>"
+  },
+  {
+    "text": "402286-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402286.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402286.html\">402286-00</a>"
+  },
+  {
+    "text": "350553",
+    "href": "/ed50dec-51833f1/pf/info/350553.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/350553.html\">350553</a>"
+  },
+  {
+    "text": "+",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/350553-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/350553-2026.html\">+</a>"
+  },
+  {
+    "text": "402272-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402272.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402272.html\">402272-00</a>"
+  },
+  {
+    "text": "340910",
+    "href": "/ed50dec-51833f1/pf/info/340910.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/340910.html\">340910</a>"
+  },
+  {
+    "text": "+",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/340910-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/340910-2026.html\">+</a>"
+  },
+  {
+    "text": "402167-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402167.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402167.html\">402167-00</a>"
+  },
+  {
+    "text": "410001",
+    "href": "/ed50dec-51833f1/pf/info/410001.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/410001.html\">410001</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/410001-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/410001-2026.html\">#</a>"
+  },
+  {
+    "text": "402146-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402146.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402146.html\">402146-00</a>"
+  },
+  {
+    "text": "340955",
+    "href": "/ed50dec-51833f1/pf/info/340955.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/340955.html\">340955</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/340955-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/340955-2026.html\">#</a>"
+  },
+  {
+    "text": "402251-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402251.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402251.html\">402251-00</a>"
+  },
+  {
+    "text": "340322",
+    "href": "/ed50dec-51833f1/pf/info/340322.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/340322.html\">340322</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/340322-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/340322-2026.html\">#</a>"
+  },
+  {
+    "text": "402261-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402261.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402261.html\">402261-00</a>"
+  },
+  {
+    "text": "350529",
+    "href": "/ed50dec-51833f1/pf/info/350529.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/350529.html\">350529</a>"
+  },
+  {
+    "text": "+",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/350529-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/350529-2026.html\">+</a>"
+  },
+  {
+    "text": "402507-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402507.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402507.html\">402507-00</a>"
+  },
+  {
+    "text": "350604",
+    "href": "/ed50dec-51833f1/pf/info/350604.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/350604.html\">350604</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/350604-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/350604-2026.html\">#</a>"
+  },
+  {
+    "text": "402261-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402261.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402261.html\">402261-00</a>"
+  },
+  {
+    "text": "350561",
+    "href": "/ed50dec-51833f1/pf/info/350561.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/350561.html\">350561</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/350561-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/350561-2026.html\">#</a>"
+  },
+  {
+    "text": "402286-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402286.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402286.html\">402286-00</a>"
+  },
+  {
+    "text": "350445",
+    "href": "/ed50dec-51833f1/pf/info/350445.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/350445.html\">350445</a>"
+  },
+  {
+    "text": "+",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/350445-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/350445-2026.html\">+</a>"
+  },
+  {
+    "text": "402422-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402422.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402422.html\">402422-00</a>"
+  },
+  {
+    "text": "360011",
+    "href": "/ed50dec-51833f1/pf/info/360011.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/360011.html\">360011</a>"
+  },
+  {
+    "text": "+",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/360011-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/360011-2026.html\">+</a>"
+  },
+  {
+    "text": "402155-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402155.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402155.html\">402155-00</a>"
+  },
+  {
+    "text": "330460",
+    "href": "/ed50dec-51833f1/pf/info/330460.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/330460.html\">330460</a>"
+  },
+  {
+    "text": "+",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/330460-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/330460-2026.html\">+</a>"
+  },
+  {
+    "text": "402257-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402257.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402257.html\">402257-00</a>"
+  },
+  {
+    "text": "410012",
+    "href": "/ed50dec-51833f1/pf/info/410012.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/410012.html\">410012</a>"
+  },
+  {
+    "text": "+",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/410012-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/410012-2026.html\">+</a>"
+  },
+  {
+    "text": "402501-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402501.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402501.html\">402501-00</a>"
+  },
+  {
+    "text": "350605",
+    "href": "/ed50dec-51833f1/pf/info/350605.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/350605.html\">350605</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/350605-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/350605-2026.html\">#</a>"
+  },
+  {
+    "text": "402133-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402133.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402133.html\">402133-00</a>"
+  },
+  {
+    "text": "360053",
+    "href": "/ed50dec-51833f1/pf/info/360053.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/360053.html\">360053</a>"
+  },
+  {
+    "text": "+",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/360053-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/360053-2026.html\">+</a>"
+  },
+  {
+    "text": "402257-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402257.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402257.html\">402257-00</a>"
+  },
+  {
+    "text": "341041",
+    "href": "/ed50dec-51833f1/pf/info/341041.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/341041.html\">341041</a>"
+  },
+  {
+    "text": "+",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/341041-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/341041-2026.html\">+</a>"
+  },
+  {
+    "text": "401888-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/401888.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/401888.html\">401888-00</a>"
+  },
+  {
+    "text": "341450",
+    "href": "/ed50dec-51833f1/pf/info/341450.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/341450.html\">341450</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/341450-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/341450-2026.html\">#</a>"
+  },
+  {
+    "text": "402261-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402261.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402261.html\">402261-00</a>"
+  },
+  {
+    "text": "370116",
+    "href": "/ed50dec-51833f1/pf/info/370116.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/370116.html\">370116</a>"
+  },
+  {
+    "text": "+",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/370116-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/370116-2026.html\">+</a>"
+  },
+  {
+    "text": "401891-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/401891.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/401891.html\">401891-00</a>"
+  },
+  {
+    "text": "350152",
+    "href": "/ed50dec-51833f1/pf/info/350152.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/350152.html\">350152</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/350152-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/350152-2026.html\">#</a>"
+  },
+  {
+    "text": "402185-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402185.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402185.html\">402185-00</a>"
+  },
+  {
+    "text": "341424",
+    "href": "/ed50dec-51833f1/pf/info/341424.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/341424.html\">341424</a>"
+  },
+  {
+    "text": "+",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/341424-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/341424-2026.html\">+</a>"
+  },
+  {
+    "text": "402167-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402167.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402167.html\">402167-00</a>"
+  },
+  {
+    "text": "340370",
+    "href": "/ed50dec-51833f1/pf/info/340370.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/340370.html\">340370</a>"
+  },
+  {
+    "text": "+",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/340370-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/340370-2026.html\">+</a>"
+  },
+  {
+    "text": "402363-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402363.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402363.html\">402363-00</a>"
+  },
+  {
+    "text": "350544",
+    "href": "/ed50dec-51833f1/pf/info/350544.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/350544.html\">350544</a>"
+  },
+  {
+    "text": "+",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/350544-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/350544-2026.html\">+</a>"
+  },
+  {
+    "text": "402261-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402261.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402261.html\">402261-00</a>"
+  },
+  {
+    "text": "341476",
+    "href": "/ed50dec-51833f1/pf/info/341476.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/341476.html\">341476</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/341476-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/341476-2026.html\">#</a>"
+  },
+  {
+    "text": "402240-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402240.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402240.html\">402240-00</a>"
+  },
+  {
+    "text": "350527",
+    "href": "/ed50dec-51833f1/pf/info/350527.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/350527.html\">350527</a>"
+  },
+  {
+    "text": "+",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/350527-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/350527-2026.html\">+</a>"
+  },
+  {
+    "text": "402185-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402185.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402185.html\">402185-00</a>"
+  },
+  {
+    "text": "341454",
+    "href": "/ed50dec-51833f1/pf/info/341454.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/341454.html\">341454</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/341454-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/341454-2026.html\">#</a>"
+  },
+  {
+    "text": "402302-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402302.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402302.html\">402302-00</a>"
+  },
+  {
+    "text": "340877",
+    "href": "/ed50dec-51833f1/pf/info/340877.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/340877.html\">340877</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/340877-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/340877-2026.html\">#</a>"
+  },
+  {
+    "text": "402315-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402315.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402315.html\">402315-00</a>"
+  },
+  {
+    "text": "330697",
+    "href": "/ed50dec-51833f1/pf/info/330697.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/330697.html\">330697</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/330697-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/330697-2026.html\">#</a>"
+  },
+  {
+    "text": "402207-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402207.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402207.html\">402207-00</a>"
+  },
+  {
+    "text": "330485",
+    "href": "/ed50dec-51833f1/pf/info/330485.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/330485.html\">330485</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/330485-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/330485-2026.html\">#</a>"
+  },
+  {
+    "text": "402414-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402414.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402414.html\">402414-00</a>"
+  },
+  {
+    "text": "330314",
+    "href": "/ed50dec-51833f1/pf/info/330314.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/330314.html\">330314</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/330314-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/330314-2026.html\">#</a>"
+  },
+  {
+    "text": "402422-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402422.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402422.html\">402422-00</a>"
+  },
+  {
+    "text": "341411",
+    "href": "/ed50dec-51833f1/pf/info/341411.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/341411.html\">341411</a>"
+  },
+  {
+    "text": "+",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/341411-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/341411-2026.html\">+</a>"
+  },
+  {
+    "text": "402523-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402523.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402523.html\">402523-00</a>"
+  },
+  {
+    "text": "340361",
+    "href": "/ed50dec-51833f1/pf/info/340361.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/340361.html\">340361</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/340361-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/340361-2026.html\">#</a>"
+  },
+  {
+    "text": "402363-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402363.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402363.html\">402363-00</a>"
+  },
+  {
+    "text": "341475",
+    "href": "/ed50dec-51833f1/pf/info/341475.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/341475.html\">341475</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/341475-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/341475-2026.html\">#</a>"
+  },
+  {
+    "text": "402240-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402240.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402240.html\">402240-00</a>"
+  },
+  {
+    "text": "341377",
+    "href": "/ed50dec-51833f1/pf/info/341377.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/341377.html\">341377</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/341377-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/341377-2026.html\">#</a>"
+  },
+  {
+    "text": "402512-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402512.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402512.html\">402512-00</a>"
+  },
+  {
+    "text": "330384",
+    "href": "/ed50dec-51833f1/pf/info/330384.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/330384.html\">330384</a>"
+  },
+  {
+    "text": "#",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/330384-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/330384-2026.html\">#</a>"
+  },
+  {
+    "text": "402150-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402150.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402150.html\">402150-00</a>"
+  },
+  {
+    "text": "340918",
+    "href": "/ed50dec-51833f1/pf/info/340918.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/info/340918.html\">340918</a>"
+  },
+  {
+    "text": "+",
+    "href": "/ed50dec-51833f1/pf/jahresansicht/340918-2026.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/pf/jahresansicht/340918-2026.html\">+</a>"
+  },
+  {
+    "text": "402416-00",
+    "href": "/ed50dec-51833f1/marktpflege/info/402416.html",
+    "onclick": null,
+    "outerHTML": "<a href=\"/ed50dec-51833f1/marktpflege/info/402416.html\">402416-00</a>"
+  }
+]

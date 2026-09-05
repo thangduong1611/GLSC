@@ -24,7 +24,10 @@ const TRONG_ID = '550078';
 // Herr Nguyen, Viet Hoang ist Bereichsleiter einer ANDEREN Region (Auftrag
 // t.duong 04.09.2026) und wird komplett aus der West-Planung ausgenommen -
 // weder Dienstplan noch Urlaubsplan.
-const AUSGESCHLOSSEN = new Set(['550198']);
+// Frau Purnomo, Paramita Dian (341450) ist im Mutterschutz/Elternzeit und
+// mehrere Jahre nicht im Einsatz (Auftrag t.duong 05.09.2026) - bekommt
+// deshalb ueberhaupt keinen Urlaub verplant, bis das manuell wieder geaendert wird.
+const AUSGESCHLOSSEN = new Set(['550198', '341450']);
 const HEUTE = new Date('2026-09-04T00:00:00');
 const START = new Date('2026-09-14T00:00:00'); // heute + 10 Tage, fällt auf einen Montag
 const ENDE = new Date('2026-12-31T00:00:00');
@@ -92,6 +95,17 @@ async function main() {
     (existingByPerson[v.empId] = existingByPerson[v.empId] || []).push({ from: v.from, to: v.to, status: v.status });
   });
 
+  // Krankheitstage duerfen nicht mit neu geplantem Urlaub ueberschnitten werden
+  // (Auftrag t.duong 05.09.2026: "ngay le hoac om cung nhu vay").
+  console.log('Lade bestehende Krankmeldungen (krank) …');
+  const krankSnap = await db.collection('krank').get();
+  krankSnap.forEach((d) => {
+    const v = d.data();
+    if (!westIds.has(v.empId)) return;
+    if (!v.from || v.to < iso(new Date('2026-01-01'))) return;
+    (existingByPerson[v.empId] = existingByPerson[v.empId] || []).push({ from: v.from, to: v.to || v.from });
+  });
+
   // ---- Filialen-Pools bauen (branch -> Mitglieder, OHNE Trong) ----
   const pools = {}; // branchName -> [personId]
   people.forEach((p) => {
@@ -157,6 +171,11 @@ async function main() {
   function placeBlock(personId, len) {
     let cursor = new Date(START);
     while (cursor <= ENDE) {
+      // Start-Kandidat muss selbst ein echter Arbeitstag sein - sonst zeigt die
+      // gespeicherte Buchung faelschlich Sonntag/Feiertag als erstes Datum an,
+      // obwohl dieser Tag ohnehin nie angerechnet wird (Auftrag t.duong
+      // 05.09.2026, Mitarbeiter-Beschwerde "Urlaub auf Sonntag gelegt").
+      if (cursor.getDay() === 0 || FEIERTAGE.has(iso(cursor))) { cursor = addDays(cursor, 1); continue; }
       const end = endForChargedDays(cursor, len);
       if (end > ENDE) break;
       const f = iso(cursor), t = iso(end);
@@ -215,6 +234,7 @@ async function main() {
   function placeTrongBlock(len) {
     let cursor = new Date(START);
     while (cursor <= ENDE) {
+      if (cursor.getDay() === 0 || FEIERTAGE.has(iso(cursor))) { cursor = addDays(cursor, 1); continue; }
       const end = endForChargedDays(cursor, len);
       if (end > ENDE) break;
       const f = iso(cursor), t = iso(end);

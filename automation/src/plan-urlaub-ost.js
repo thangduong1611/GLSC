@@ -149,6 +149,17 @@ async function main() {
     (existingByPerson[v.empId] = existingByPerson[v.empId] || []).push({ from: v.from, to: v.to, status: v.status });
   });
 
+  // Krankheitstage duerfen nicht mit neu geplantem Urlaub ueberschnitten werden
+  // (Auftrag t.duong 05.09.2026: "ngay le hoac om cung nhu vay").
+  console.log('Lade bestehende Krankmeldungen (krank) …');
+  const krankSnap = await db.collection('krank').get();
+  krankSnap.forEach((d) => {
+    const v = d.data();
+    if (!ostIds.has(v.empId)) return;
+    if (!v.from || v.to < '2026-01-01') return;
+    (existingByPerson[v.empId] = existingByPerson[v.empId] || []).push({ from: v.from, to: v.to || v.from });
+  });
+
   // ---- Filialen-Pools bauen (kanonische Filiale -> Mitglieder, OHNE Khang) ----
   const pools = {};
   people.forEach((p) => {
@@ -208,6 +219,9 @@ async function main() {
   function placeBlock(personId, len, feiertage) {
     let cursor = new Date(START);
     while (cursor <= ENDE) {
+      // Start-Kandidat muss selbst ein echter Arbeitstag sein (Auftrag t.duong
+      // 05.09.2026, Mitarbeiter-Beschwerde "Urlaub auf Sonntag gelegt").
+      if (cursor.getDay() === 0 || feiertage.has(iso(cursor))) { cursor = addDays(cursor, 1); continue; }
       const end = endForChargedDays(cursor, len, feiertage);
       if (end > ENDE) break;
       const f = iso(cursor), t = iso(end);

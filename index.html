@@ -186,6 +186,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 .dp-table th:first-child{text-align:left;min-width:100px;padding-left:8px;}
 .dp-table td{border:1px solid var(--brd);padding:3px 4px;vertical-align:middle;}
 .dp-table td:first-child{font-size:12px;font-weight:600;padding:4px 8px;background:#FAFAF7;white-space:nowrap;max-width:100px;}
+.dp-table td.dp-wtot{text-align:center;font-size:12px;background:#FAFAF7;white-space:nowrap;min-width:56px;}
 .dp-shift{width:100%;border:none;background:transparent;font-size:11px;text-align:center;padding:3px 2px;font-family:inherit;outline:none;color:var(--txt);}
 .dp-shift:focus{background:#FFFBF0;border-radius:3px;}
 .dp-cell-frei{background:#F0EDE8;}.dp-cell-urlaub{background:#EAFAF1;}.dp-cell-krank{background:#FDEDEC;}
@@ -3344,13 +3345,15 @@ function dpInit(){
 // Dienstplan-Raster angezeigt, damit der Gebietsleiter beim Planen sieht, wer
 // noch Minusstunden ausgleichen muss (Auftrag t.duong 03.09.2026).
 var dpAzKontoCache=null;
+var dpSollStdCache=null; // PersonalNr -> Vertragsstunden/Woche (emp_welo.sollStd), fuer die Wochenstunden-Spalte
 function dpLoadAzKonto(){
   if(dpAzKontoCache || typeof fbReady==='undefined' || !fbReady || !fbDb) return;
   dpAzKontoCache={};
   fbDb.collection('emp_welo').get().then(function(snap){
-    var map={};
-    snap.forEach(function(doc){var v=doc.data(); if(v && v.azKonto!=null) map[doc.id]=v.azKonto;});
+    var map={}, sollMap={};
+    snap.forEach(function(doc){var v=doc.data(); if(v && v.azKonto!=null) map[doc.id]=v.azKonto; if(v && v.sollStd!=null) sollMap[doc.id]=v.sollStd;});
     dpAzKontoCache=map;
+    dpSollStdCache=sollMap;
     dpRenderWeeks();
   }).catch(function(e){ console.warn('emp_welo azKonto', e); });
 }
@@ -3451,6 +3454,19 @@ function dpCellChanged(inp){
   }
   td.className=cls;
   dpRenderCellBadge(td,eid,dt,val);
+  // Wochenstunden-Zelle dieser Zeile live nachrechnen, ohne die ganze Tabelle
+  // neu zu rendern (sonst springt der Fokus beim Tippen weg).
+  var row=inp.closest?inp.closest('tr'):null;
+  var wtot=row?row.querySelector('.dp-wtot'):null;
+  if(wtot){
+    var summe=0;
+    Array.prototype.forEach.call(row.querySelectorAll('.dp-shift'),function(otherInp){
+      var otherTd=otherInp.parentElement;
+      if(otherTd && /dp-cell-urlaub|dp-cell-krank/.test(otherTd.className)) return; // Abwesenheit zaehlt nicht als Arbeitszeit
+      summe+=dpNetHoursOf(otherInp.value);
+    });
+    wtot.innerHTML=dpWTotHtml(eid,summe);
+  }
 }
 function dpFmtClashToast(inp,clash){
   var row=inp.closest?inp.closest('tr'):null;
@@ -3591,8 +3607,9 @@ function dpRenderWeeks(){
   weeks.forEach(function(wk,wi){
     h+='<div class="card dp-kw-card"><div class="dp-kw-hdr"><span class="dp-kw-hdr-kw">KW: '+wk.kw+'</span><span class="dp-kw-hdr-pause">Pause &gt;6h: 30min · &gt;9h: 45min</span><span style="display:flex;align-items:center;gap:8px"><button class="btn btn-sm btn-grn dp-kw-pub" onclick="dpPublishWeek('+wi+')" title="Nur diese Woche für Mitarbeiter veröffentlichen">☁️ KW</button><span class="dp-kw-hdr-yr">'+dpParse(wk.dates[0]).getFullYear()+'</span></span></div><div class="dp-scroll"><table class="dp-table"><thead><tr><th>Mitarbeiter</th>';
     wk.dates.forEach(function(dt,di){var d=dpParse(dt),ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}),fn=hol[dt];h+='<th'+(fn?' class="dp-th-ft" title="'+fn+'"':'')+'>'+DAYS[di].substring(0,2)+'<br><small style="font-weight:400;font-size:10px">'+ds+'</small>'+(fn?'<br><small class="dp-fn">'+fn+'</small>':'')+'</th>';});
+    h+='<th title="Summe Netto-Stunden diese Woche (Pause bereits abgezogen)">Std.</th>';
     h+='</tr></thead><tbody>';
-    if(!dpEmployees.length){h+='<tr><td colspan="7" style="padding:12px 8px;text-align:center;font-size:12px;color:var(--mut)">Noch keine Mitarbeiter.</td></tr>';}
+    if(!dpEmployees.length){h+='<tr><td colspan="8" style="padding:12px 8px;text-align:center;font-size:12px;color:var(--mut)">Noch keine Mitarbeiter.</td></tr>';}
     else{
       var dpAbs=dpAbsenceFor(), dpPend=dpPendingFor();
       dpEmployees.forEach(function(emp){
@@ -3624,6 +3641,9 @@ function dpRenderWeeks(){
               +'</td>';
           }
         });
+        var wSumme=0;
+        wk.dates.forEach(function(dt){ if(!(dpAbs[eid]&&dpAbs[eid][dt])) wSumme+=dpNetHoursOf((dpShifts[ek]&&dpShifts[ek][dt])||''); });
+        h+='<td class="dp-wtot">'+dpWTotHtml(eid,wSumme)+'</td>';
         h+='</tr>';
       });
     }
@@ -3779,6 +3799,24 @@ function dpParseRange(v){
   var s=(+m[1])*60+(+m[2]), e=(+m[3])*60+(+m[4]);
   if(e<=s) e+=1440;                       // über Mitternacht
   return {s:s, e:e};
+}
+// Netto-Arbeitsstunden einer Schicht-Zelle (Bruttospanne minus gesetzlicher
+// Pause: >6 Std Netto -30 Min, >9 Std -45 Min, ArbZG §4) - fuer die
+// Wochenstunden-Spalte (Auftrag t.duong 05.09.2026).
+function dpNetHoursOf(v){
+  var r=dpParseRange(v); if(!r) return 0;
+  var brutto=(r.e-r.s)/60;
+  var netto=brutto>9.75?brutto-0.75:(brutto>6.5?brutto-0.5:brutto);
+  return netto;
+}
+// Formatiert die Wochenstunden-Zelle: rot+fett wenn unter Vertragsstunden
+// (emp_welo.sollStd, aus dpLoadAzKonto mitgeladen), sonst gruen.
+function dpWTotHtml(eid,summe){
+  var soll=dpSollStdCache&&dpSollStdCache[eid];
+  var txt=dpFmtStd(summe);
+  if(soll==null) return '<span style="font-weight:600">'+txt+'</span>';
+  var unter=summe<soll-0.01;
+  return '<span style="font-weight:700;color:'+(unter?'#C0392B':'#1E8449')+'" title="Soll: '+dpFmtStd(soll)+' Std./Woche">'+txt+(unter?' ⚠️':'')+'</span>';
 }
 function dpIsWorkValue(v){
   if(!v) return false;
@@ -5023,7 +5061,7 @@ function filialenSyncListener(){
 // Firestore-Docs -> Liste (testbar)
 function maMapPendingSnapshot(rawDocs){
   return rawDocs.map(function(d){ var v=d.data||{};
-    return {docId:d.id, ref:d.ref||null, empId:v.empId, name:v.name, filiale:v.filiale, from:v.from, to:v.to, status:v.status, created:v.created, updated:v.updated||''};
+    return {docId:d.id, ref:d.ref||null, empId:v.empId, name:v.name, filiale:v.filiale, from:v.from, to:v.to, status:v.status, created:v.created, updated:v.updated||'', note:v.note||''};
   }).sort(function(a,b){ return (a.created||'')<(b.created||'')?-1:1; });
 }
 var fbPendingUnsub=null;
@@ -5145,7 +5183,9 @@ function fbRenderPending(){
       var col=r.status==='approved'?'#1E8449':'#C0392B';
       var lbl=r.status==='approved'?'✓ genehmigt':'✗ abgelehnt';
       return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #E8E4E0;border-left:4px solid '+col+';border-radius:6px;margin-bottom:6px;flex-wrap:wrap">'
-        +'<div style="flex:1;min-width:150px"><strong>'+r.name+'</strong> · '+(r.filiale||'')+' · <span style="color:'+col+';font-weight:600">'+lbl+'</span><br><span style="font-size:13px;color:#6B6860">'+fmtDate(r.from)+' – '+fmtDate(r.to)+'</span></div>'
+        +'<div style="flex:1;min-width:150px"><strong>'+r.name+'</strong> · '+(r.filiale||'')+' · <span style="color:'+col+';font-weight:600">'+lbl+'</span><br><span style="font-size:13px;color:#6B6860">'+fmtDate(r.from)+' – '+fmtDate(r.to)+'</span>'
+        +(r.note?'<br><span style="font-size:12px;color:#8A5A00">📝 '+r.note+'</span>':'')+'</div>'
+        +(r.status==='approved'?'<button class="btn btn-sm" style="color:#C0392B;border-color:#C0392B" onclick="fbRejectConflict(\''+r.docId+'\')" title="Wegen Terminüberschneidung mit einer anderen Person ablehnen">⚠️ Wegen Überschneidung ablehnen</button>':'')
         +'<button class="btn btn-sm" onclick="fbRevert(\''+r.docId+'\')" title="zurück auf Wartend">↩</button>'
         +'<button class="btn btn-sm" style="color:#C0392B;border-color:#C0392B" onclick="fbDelete(\''+r.docId+'\',\''+(r.name||'').replace(/'/g,'')+'\')">🗑 Löschen</button>'
         +'</div>';
@@ -5165,6 +5205,19 @@ function fbReject(docId){
   if(!confirm('Antrag wirklich ablehnen?')) return;
   r.ref.update({status:'rejected', decidedAt:new Date().toISOString()})
     .then(function(){ toast('✗ Antrag abgelehnt'); }).catch(function(e){ alert('Fehler: '+e.message); });
+}
+// Eigener Ablehnen-Knopf für BEREITS GENEHMIGTE Urlaube, die sich nachträglich
+// mit jemand anderem überschneiden (Auftrag t.duong 05.09.2026: nicht einfach
+// stillschweigend löschen — der Grund muss sichtbar UND nachvollziehbar sein,
+// damit der Mitarbeiter nicht denkt, sein Antrag sei grundlos verschwunden).
+function fbRejectConflict(docId){
+  var r=fbFind(docId); if(!r||!r.ref) return;
+  var partner=prompt('Mit wem/welchem Zeitraum überschneidet sich dieser Urlaub? (wird als Ablehnungsgrund gespeichert)','');
+  if(partner===null) return;
+  if(!partner.trim()){ alert('Bitte angeben, mit wem die Überschneidung besteht.'); return; }
+  if(!confirm('Urlaub von '+(r.name||'?')+' ('+fmtDate(r.from)+' – '+fmtDate(r.to)+') wegen Terminüberschneidung ablehnen?')) return;
+  r.ref.update({status:'rejected', decidedAt:new Date().toISOString(), note:'Abgelehnt wegen Terminüberschneidung mit: '+partner.trim()})
+    .then(function(){ toast('✗ Wegen Überschneidung abgelehnt'); }).catch(function(e){ alert('Fehler: '+e.message); });
 }
 function fbDelete(docId, name){
   var r=fbFind(docId); if(!r||!r.ref) return;

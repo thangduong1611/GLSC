@@ -1,0 +1,2137 @@
+<div id="p-termine" aria-labelledby="ui-id-4" role="tabpanel" class="ui-tabs-panel ui-corner-bottom ui-widget-content" aria-hidden="false" style="">
+<div id="te-seite"><script type="text/javascript">
+	if (typeof firststart === 'undefined') {
+		firststart = false;
+	}
+	$(function () {
+		var pe_id = '330685';
+		var uiexturl = '/8c93cdf-5188ad0/export/uiext.json';
+		var tek = $('#termin-kalender');
+		var start = $("#te-seite");
+
+		start.on('change', '#szdate', function () {
+			aktualisiere_kalender();
+		});
+
+		tek.on("click", "table.tgl", function () {
+			var changes=editor_has_changes();
+			if(changes) {
+				var ok = confirm("Ihre Termineingaben wurden noch nicht gespeichert. Sind Sie sicher, dass Sie die Eingaben verwerfen möchten?");
+				$(this).prop("checked", ok);
+			}
+			if (changes === false || ok === true) {
+				editor_leeren();
+				var dat = $(this).find("div.showdat").html();
+				edittage(dat);
+			}
+		});
+
+		tek.on("click", "#terminliste tbody tr .lststorno", function () {
+			var ok = confirm("Möchten Sie diesen Datensatz stornieren?");
+			$(this).prop("checked", ok);
+			if (ok === true) {
+				// Storno speichern
+				var tmp=$(this).parent().parent().attr('id');
+				if (typeof tmp !== 'undefined' ) {
+					var sz_id = tmp.substr(3);
+					if (sz_id !== '0') {
+						var dat = $("#gertag").val();
+						jsonCmd(uiexturl, 'termin-stornieren',
+								{
+									pe_id: pe_id,
+									sz_id: sz_id,
+									gerdate: dat
+								}, '', false,
+								function (data) {
+									edit_return(dat, data);
+									editor_leeren();
+								}
+						);
+					}
+				}
+			}
+		});
+
+		tek.on("click", "#terminliste tbody tr .click", function () {
+			var tmp = $(this).parent().attr('id');
+			if (typeof tmp !== 'undefined' ) {
+				var id = tmp.substr(3);
+				if (id !== '0') {
+
+					var changes = editor_has_changes();
+					if (changes) {
+						var ok = confirm("Ihre Termineingaben wurden noch nicht gespeichert. Sind Sie sicher, dass Sie die Eingaben verwerfen möchten?");
+						$(this).prop("checked", ok);
+					}
+					if (changes === false || ok === true) {
+						$(this).parent().addClass('selected').siblings().removeClass('selected');
+						jsonCmd(uiexturl, 'termin_liste2edit',
+								{
+									pe_id: pe_id,
+									dbid: id
+								}, '', '',
+								function (data) {
+									$('#editgrund').val(data.grund);
+									if(data.von!='0:00' && data.bis!='23:59') {
+										$('#editvon').val(data.von);
+										$('#editbis').val(data.bis);
+									}
+									$('#dbid').val(id);
+									$('#err').html("");
+								}
+						);
+					}
+				}
+			}
+		});
+
+		start.on("click", "#speicherbut", function () {
+			if($('#editgrund').val()==='') {
+				alert("Bitte die Beschreibung des Termins eingeben!");
+			} else {
+				var dat = $("#gertag").val();
+				jsonCmd(uiexturl, 'termin-editor',
+						{
+							pe_id: pe_id,
+							gerdate: dat,
+							data: $("#frmterminedit").serializeArray()
+						}, '', false, function (data) {
+							edit_return(dat, data);
+							//editor_leeren();
+						}
+				);
+			}
+		});
+		tek.on("click", "#abbruchbut", function () {
+			$('#terminliste').find('tr').removeClass('selected');
+			editor_leeren();
+		});
+
+		var editor_has_changes = function () {
+			var grund=$('#editgrund').val();
+			var von=$('#editvon').val();
+			var bis=$('#editbis').val();
+			var dbid=$('#dbid').val();
+			var editstr='';
+			if(((von==='0:00'||von==='00:00') && bis==='23:59')
+			|| (grund.length>0 && von.length===0 && bis.length===0)) {
+				editstr = 'ganztägig' + grund;
+			} else {
+				if(von.length===4) {
+					von='0'+von;
+				}
+				if(bis.length===4) {
+					bis='0'+bis;
+				}
+				editstr = von + " - " + bis + grund;
+			}
+			//console.log("editstr:'"+editstr+"'");
+			if ((typeof grund === 'undefined'
+					|| typeof von === 'undefined'
+					|| typeof bis === 'undefined'
+					|| typeof dbid === 'undefined')
+					|| (editstr === ' - ' && (dbid === "0"||dbid === ""))) {
+				//console.log("1");
+				return false;
+			} else if(dbid === "") {
+				//console.log("Änderungen nicht gespeichert!");
+				return true;
+			} else {
+				// Prüfen ob Daten geändert:
+				var listenstr=$("#lst"+dbid).text();
+				//console.log("Listeneintrag von dbid "+dbid+":'"+listenstr+"'");
+				if(editstr===listenstr || listenstr==='') {
+					//console.log("2");
+					return false;
+				} else {
+					//console.log("3");
+					return true;
+				}
+			}
+		};
+
+		aktualisiere_kalender = function () {
+			//alert("aktualisiere Kalender");
+			jsonCmd(uiexturl, 'termin-kalender',
+					{
+						pe_id: pe_id,
+						szdate: $('#szdate').val()
+					}, '', false
+			);
+		};
+		aktualisiere_kalender();
+
+		var edittage = function (dat) {
+			$(".tgl").removeClass('tgh');
+
+			var datum = $("#gertag");
+			//datum.prop("disabled", true);
+			datum.val(dat);
+
+			var kaldat = $(".tgl[_r='" + dat + "']");
+			kaldat.addClass('tgh');
+			jsonCmd(uiexturl, 'termin-editor',
+					{
+						pe_id: pe_id,
+						gerdate: dat,
+						data: $("#frmterminedit").serializeArray()
+					}, '', false,
+					function (data) {
+						edit_return(dat, data);
+					}
+			);
+			return false;
+		};
+
+		var edit_return = function (dat, data) {
+			if (data) {
+				if (data.html) {
+					$('#termin-editor').html(data.html);
+				} else if (data.error) {
+					alert(data.error);
+				}
+
+				if (data.tag) {
+					var kaltable = $(".tgl[_r='" + dat + "']");
+					var kaldat = kaltable.find("span");
+					kaldat.html(data.tag);
+				}
+
+				if (typeof data.terminflag!=='undefined') {
+					var kalclass = kaltable.parent();
+					if (data.terminflag===true) {
+						kalclass.addClass("az_r");
+					} else {
+						kalclass.removeClass("az_r");
+					}
+				}
+				if (data.showtermine) {
+					var showtermine = kaltable.find(".content");
+					showtermine.html(data.showtermine);
+
+					kaldat.addClass('tgh');
+					var daten = kaltable.find("div.content").html();
+					var mydiv = $("#terminliste");
+					mydiv.html(daten)
+				}
+				if (data.dbid) {
+					$('#dbid').val(data.dbid);
+				}
+				if (typeof data.ok!=='undefined' && data.ok) {
+					editor_leeren();
+				}
+			}
+		};
+	});
+
+	editor_leeren = function () {
+		$('#editgrund').val("");
+		$('#editvon').val("");
+		$('#editbis').val("");
+		$('#dbid').val("");
+		$('#err').html("");
+	}
+</script>
+<div id="tecontent">
+	<form action="post">
+		<select id="szdate" name="szdate" class="wbs"><option value="20260501">Mai 2026</option>
+<option value="20260601">Juni 2026</option>
+<option value="20260701">Juli 2026</option>
+<option value="20260801">August 2026</option>
+<option value="20260901" selected="">September 2026</option>
+<option value="20261001">Oktober 2026</option>
+<option value="20261101">November 2026</option>
+<option value="20261201">Dezember 2026</option>
+<option value="20270101">Januar 2027</option>
+<option value="20270201">Februar 2027</option>
+<option value="20270301">März 2027</option>
+<option value="20270401">April 2027</option>
+<option value="20270501">Mai 2027</option>
+<option value="20270601">Juni 2027</option>
+<option value="20270701">Juli 2027</option>
+<option value="20270801">August 2027</option>
+</select>
+	</form>
+	<div id="termin-kalender"><style type="text/css">
+	TR TD .az_r { background-color: rgba(255, 0, 0, 0.47); text-align: center; }
+	TD .az_s { background-color:#E0E0E0; text-align: center; }
+	TD .az_f { background-color:#FFD0D0; text-align: center; }
+	TD .az_n { background-color:#F0F0F0; text-align: center; }
+	TD .az_g { background-color: rgba(0, 128, 0, 0.41); text-align: center; }
+
+	TD .az_nh { background-color:#E0E0E0; text-align: center; }
+	TD .az_sh { background-color:#D0D0D0; text-align: center; }
+	TD .az_fh { background-color:#F0C0C0; text-align: center; }
+
+	TD .az_hg { background-color: #f9f9f9; text-align: center; }
+	TD .az_p { background-color: #E0FFE0; text-align: center; }
+	TD .az_m { background-color: #FFFFFF; text-align: center; }
+
+	TD .az_ukf { background-color:#FFFFE0; text-align: center; }
+
+	TD .px9 { font-size:9px; vertical-align: middle; height:24px; }
+	TD .px10 { font-size:10px; }
+	div .today { font-weight:bold; }
+	table.tgl { border: 1px #E0E0E0 solid; }
+	table.tgh { border: 1px blue solid  !important; }
+	table.tgh_vorher { border: 1px #808080 solid  !important; }
+	table.tgo_vorher { border: 1px orange solid; }
+
+	input.tag { width: 80px;}
+	td.tagesfeld{ vertical-align: top; width: 400px;}
+
+	TD.bo { font-weight:bold; }
+	SPAN.wnum { ; }
+	SPAN.mnum { writing-mode: vertical-rl;
+		line-height: 150%;
+		white-space: pre;
+		transform: rotate(180deg);
+		width: 16px;}
+	TD .mtd  { background-color:#D0D0D0;}
+
+	.nurlesen { display:none }
+	.content { display:none }
+	.showdat { display:none }
+	.unsichtbar { visibility: hidden; }
+
+	table.wtk>tbody>tr>td { border: 1px solid white; }
+	td.top { vertical-align: top; }
+	input.vonbis {
+		text-align: right;
+		width: 40px;
+	}
+	.selected {
+		color: #a0a0a0;
+	}
+</style>
+<script type="text/javascript">
+	$(function () {
+		var pe_id = '330685';
+		var uiexturl = '/8c93cdf-5188ad0/export/uiext.json';
+		var anzeigetag = $("#gertag").val();
+		var kaltable = $(".tgl[_r='" + anzeigetag + "']");
+		var content = kaltable.find("div.content").html();
+		$("#terminliste").html(content);
+		$(".tgl").removeClass('tgh');
+		kaltable.addClass('tgh');
+		jsonCmd(uiexturl, 'termin-editor',
+				{
+					pe_id: pe_id,
+					gerdate: anzeigetag,
+					data: $("#frmterminedit").serializeArray()
+				}, '', false, function (data) {
+					if (data.html) {
+						$('#termin-editor').html(data.html);
+					} else if (data.error) {
+						alert(data.error);
+					}
+				}
+		);
+	});
+</script>
+<div id="scrolldiv">
+	<table cellpadding="0" cellspacing="2">
+		<tbody><tr>
+			<td style="text-align: right;">
+				<b style="font-size:14px;">01.09.2026 bis 30.11.2026</b> (13
+				Wochen)<br>
+			</td>
+			<td>
+			</td>
+		</tr>
+		<tr>
+			<td class="top">
+				<table class="wtk" border="0" cellpadding="2" cellspacing="0">
+					<tbody><tr>
+						<td></td>
+						<td></td>
+						<td class="az_nh ">
+							Mo
+						</td>
+						<td class="az_nh ">
+							Di
+						</td>
+						<td class="az_nh ">
+							Mi
+						</td>
+						<td class="az_nh ">
+							Do
+						</td>
+						<td class="az_nh ">
+							Fr
+						</td>
+						<td class="az_sh ">
+							Sa
+						</td>
+						<td class="az_fh ">
+							So
+						</td>
+					</tr>
+					
+					<tr class="az_n">
+						
+						<td class="mtd" rowspan="4">
+							<span class="mnum">09 / 26</span>
+						</td>
+						
+						
+						<td class="az_g">
+							<span class="wnum">KW<br>36</span>
+						</td>
+						
+						<td class=" b2122">
+							<table class="tgl" _r="31.08.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>31</div>
+										<div class="showdat">31.08.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 31.08.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 31.08.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_hg">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b2021">
+							<table class="tgl" _r="01.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>01</div>
+										<div class="showdat">01.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 01.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 01.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_hg">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b2020">
+							<table class="tgl" _r="02.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>02</div>
+										<div class="showdat">02.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 02.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 02.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_hg">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b2020">
+							<table class="tgl" _r="03.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>03</div>
+										<div class="showdat">03.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 03.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 03.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_hg">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b2020">
+							<table class="tgl" _r="04.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>04</div>
+										<div class="showdat">04.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 04.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 04.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_hg">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_s b2020">
+							<table class="tgl tgh" _r="05.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div class="today">05</div>
+										<div class="showdat">05.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 05.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 05.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_f b2220">
+							<table class="tgl" _r="06.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>06</div>
+										<div class="showdat">06.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 06.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 06.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						
+					</tr>
+					
+					<tr class="az_n">
+						
+						
+						<td class="az_g">
+							<span class="wnum">KW<br>37</span>
+						</td>
+						
+						<td class=" b1000">
+							<table class="tgl" _r="07.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>07</div>
+										<div class="showdat">07.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 07.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 07.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="08.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>08</div>
+										<div class="showdat">08.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 08.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 08.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="09.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>09</div>
+										<div class="showdat">09.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 09.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 09.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="10.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>10</div>
+										<div class="showdat">10.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 10.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 10.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="11.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>11</div>
+										<div class="showdat">11.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 11.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 11.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_s b0000">
+							<table class="tgl" _r="12.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>12</div>
+										<div class="showdat">12.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 12.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 12.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_f b0000">
+							<table class="tgl" _r="13.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>13</div>
+										<div class="showdat">13.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 13.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 13.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						
+					</tr>
+					
+					<tr class="az_n">
+						
+						
+						<td class="az_g">
+							<span class="wnum">KW<br>38</span>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="14.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>14</div>
+										<div class="showdat">14.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 14.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 14.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="15.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>15</div>
+										<div class="showdat">15.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 15.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 15.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="16.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>16</div>
+										<div class="showdat">16.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 16.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 16.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="17.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>17</div>
+										<div class="showdat">17.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 17.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 17.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="18.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>18</div>
+										<div class="showdat">18.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 18.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 18.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_s b0000">
+							<table class="tgl" _r="19.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>19</div>
+										<div class="showdat">19.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 19.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 19.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_f b0000">
+							<table class="tgl" _r="20.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>20</div>
+										<div class="showdat">20.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 20.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 20.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						
+					</tr>
+					
+					<tr class="az_n">
+						
+						
+						<td class="az_g">
+							<span class="wnum">KW<br>39</span>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="21.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>21</div>
+										<div class="showdat">21.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 21.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 21.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="22.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>22</div>
+										<div class="showdat">22.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 22.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 22.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="23.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>23</div>
+										<div class="showdat">23.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 23.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 23.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0010">
+							<table class="tgl" _r="24.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>24</div>
+										<div class="showdat">24.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 24.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 24.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0010">
+							<table class="tgl" _r="25.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>25</div>
+										<div class="showdat">25.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 25.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 25.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_s b0010">
+							<table class="tgl" _r="26.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>26</div>
+										<div class="showdat">26.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 26.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 26.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_f b0010">
+							<table class="tgl" _r="27.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>27</div>
+										<div class="showdat">27.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 27.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 27.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						
+					</tr>
+					
+					<tr class="az_n">
+						
+						<td class="mtd" rowspan="4">
+							<span class="mnum">10 / 26</span>
+						</td>
+						
+						
+						<td class="az_g">
+							<span class="wnum">KW<br>40</span>
+						</td>
+						
+						<td class=" b0010">
+							<table class="tgl" _r="28.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>28</div>
+										<div class="showdat">28.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 28.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 28.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0010">
+							<table class="tgl" _r="29.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>29</div>
+										<div class="showdat">29.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 29.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 29.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0110">
+							<table class="tgl" _r="30.09.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>30</div>
+										<div class="showdat">30.09.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 30.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 30.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b1001">
+							<table class="tgl" _r="01.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>01</div>
+										<div class="showdat">01.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 01.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 01.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b1000">
+							<table class="tgl" _r="02.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>02</div>
+										<div class="showdat">02.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 02.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 02.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_f b1000">
+							<table class="tgl" _r="03.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>03</div>
+										<div class="showdat">03.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 03.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 03.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_f b1000">
+							<table class="tgl" _r="04.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>04</div>
+										<div class="showdat">04.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 04.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 04.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						
+					</tr>
+					
+					<tr class="az_n">
+						
+						
+						<td class="az_g">
+							<span class="wnum">KW<br>41</span>
+						</td>
+						
+						<td class=" b1000">
+							<table class="tgl" _r="05.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>05</div>
+										<div class="showdat">05.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 05.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 05.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b1000">
+							<table class="tgl" _r="06.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>06</div>
+										<div class="showdat">06.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 06.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 06.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b1000">
+							<table class="tgl" _r="07.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>07</div>
+										<div class="showdat">07.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 07.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 07.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="08.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>08</div>
+										<div class="showdat">08.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 08.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 08.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="09.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>09</div>
+										<div class="showdat">09.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 09.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 09.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_s b0000">
+							<table class="tgl" _r="10.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>10</div>
+										<div class="showdat">10.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 10.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 10.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_f b0000">
+							<table class="tgl" _r="11.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>11</div>
+										<div class="showdat">11.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 11.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 11.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						
+					</tr>
+					
+					<tr class="az_n">
+						
+						
+						<td class="az_g">
+							<span class="wnum">KW<br>42</span>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="12.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>12</div>
+										<div class="showdat">12.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 12.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 12.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="13.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>13</div>
+										<div class="showdat">13.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 13.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 13.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="14.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>14</div>
+										<div class="showdat">14.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 14.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 14.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="15.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>15</div>
+										<div class="showdat">15.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 15.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 15.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="16.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>16</div>
+										<div class="showdat">16.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 16.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 16.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_s b0000">
+							<table class="tgl" _r="17.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>17</div>
+										<div class="showdat">17.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 17.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 17.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_f b0000">
+							<table class="tgl" _r="18.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>18</div>
+										<div class="showdat">18.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 18.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 18.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						
+					</tr>
+					
+					<tr class="az_n">
+						
+						
+						<td class="az_g">
+							<span class="wnum">KW<br>43</span>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="19.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>19</div>
+										<div class="showdat">19.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 19.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 19.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="20.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>20</div>
+										<div class="showdat">20.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 20.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 20.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="21.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>21</div>
+										<div class="showdat">21.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 21.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 21.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="22.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>22</div>
+										<div class="showdat">22.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 22.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 22.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="23.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>23</div>
+										<div class="showdat">23.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 23.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 23.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_s b0000">
+							<table class="tgl" _r="24.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>24</div>
+										<div class="showdat">24.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 24.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 24.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_f b0010">
+							<table class="tgl" _r="25.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>25</div>
+										<div class="showdat">25.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 25.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 25.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						
+					</tr>
+					
+					<tr class="az_n">
+						
+						<td class="mtd" rowspan="5">
+							<span class="mnum">11 / 26</span>
+						</td>
+						
+						
+						<td class="az_g">
+							<span class="wnum">KW<br>44</span>
+						</td>
+						
+						<td class=" b0010">
+							<table class="tgl" _r="26.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>26</div>
+										<div class="showdat">26.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 26.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 26.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0010">
+							<table class="tgl" _r="27.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>27</div>
+										<div class="showdat">27.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 27.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 27.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0010">
+							<table class="tgl" _r="28.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>28</div>
+										<div class="showdat">28.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 28.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 28.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0010">
+							<table class="tgl" _r="29.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>29</div>
+										<div class="showdat">29.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 29.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 29.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0010">
+							<table class="tgl" _r="30.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>30</div>
+										<div class="showdat">30.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 30.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 30.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_s b0110">
+							<table class="tgl" _r="31.10.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>31</div>
+										<div class="showdat">31.10.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 31.10.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 31.10.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_f b1001">
+							<table class="tgl" _r="01.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>01</div>
+										<div class="showdat">01.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 01.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 01.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						
+					</tr>
+					
+					<tr class="az_n">
+						
+						
+						<td class="az_g">
+							<span class="wnum">KW<br>45</span>
+						</td>
+						
+						<td class=" b1000">
+							<table class="tgl" _r="02.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>02</div>
+										<div class="showdat">02.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 02.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 02.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b1000">
+							<table class="tgl" _r="03.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>03</div>
+										<div class="showdat">03.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 03.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 03.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b1000">
+							<table class="tgl" _r="04.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>04</div>
+										<div class="showdat">04.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 04.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 04.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b1000">
+							<table class="tgl" _r="05.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>05</div>
+										<div class="showdat">05.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 05.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 05.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b1000">
+							<table class="tgl" _r="06.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>06</div>
+										<div class="showdat">06.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 06.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 06.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_s b1000">
+							<table class="tgl" _r="07.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>07</div>
+										<div class="showdat">07.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 07.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 07.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_f b0000">
+							<table class="tgl" _r="08.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>08</div>
+										<div class="showdat">08.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 08.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 08.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						
+					</tr>
+					
+					<tr class="az_n">
+						
+						
+						<td class="az_g">
+							<span class="wnum">KW<br>46</span>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="09.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>09</div>
+										<div class="showdat">09.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 09.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 09.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="10.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>10</div>
+										<div class="showdat">10.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 10.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 10.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="11.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>11</div>
+										<div class="showdat">11.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 11.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 11.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="12.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>12</div>
+										<div class="showdat">12.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 12.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 12.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="13.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>13</div>
+										<div class="showdat">13.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 13.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 13.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_s b0000">
+							<table class="tgl" _r="14.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>14</div>
+										<div class="showdat">14.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 14.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 14.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_f b0000">
+							<table class="tgl" _r="15.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>15</div>
+										<div class="showdat">15.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 15.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 15.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						
+					</tr>
+					
+					<tr class="az_n">
+						
+						
+						<td class="az_g">
+							<span class="wnum">KW<br>47</span>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="16.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>16</div>
+										<div class="showdat">16.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 16.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 16.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="17.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>17</div>
+										<div class="showdat">17.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 17.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 17.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="18.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>18</div>
+										<div class="showdat">18.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 18.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 18.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="19.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>19</div>
+										<div class="showdat">19.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 19.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 19.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="20.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>20</div>
+										<div class="showdat">20.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 20.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 20.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_s b0000">
+							<table class="tgl" _r="21.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>21</div>
+										<div class="showdat">21.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 21.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 21.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_f b0000">
+							<table class="tgl" _r="22.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>22</div>
+										<div class="showdat">22.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 22.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 22.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						
+					</tr>
+					
+					<tr class="az_n">
+						
+						
+						<td class="az_g">
+							<span class="wnum">KW<br>48</span>
+						</td>
+						
+						<td class=" b0000">
+							<table class="tgl" _r="23.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>23</div>
+										<div class="showdat">23.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 23.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 23.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0010">
+							<table class="tgl" _r="24.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>24</div>
+										<div class="showdat">24.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 24.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 24.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0010">
+							<table class="tgl" _r="25.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>25</div>
+										<div class="showdat">25.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 25.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 25.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0010">
+							<table class="tgl" _r="26.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>26</div>
+										<div class="showdat">26.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 26.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 26.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" b0010">
+							<table class="tgl" _r="27.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>27</div>
+										<div class="showdat">27.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 27.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 27.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_s b0010">
+							<table class="tgl" _r="28.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>28</div>
+										<div class="showdat">28.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 28.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 28.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						<td class=" az_f b0010">
+							<table class="tgl" _r="29.11.2026" border="0" cellpadding="1" cellspacing="1" width="55">
+								<tbody><tr>
+									<td class="px10"><div>29</div>
+										<div class="showdat">29.11.2026</div>
+										<div class="content"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 29.11.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 29.11.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+									</td>
+								</tr>
+								<tr class="az_m">
+									<td class="px9">
+										<span class="sperre">-</span>
+									</td>
+								</tr>
+							</tbody></table>
+						</td>
+						
+						
+					</tr>
+					
+					
+				</tbody></table>
+			</td>
+			<td class="tagesfeld">
+				<input type="hidden" id="gertag" class="wby tag" name="y" value="05.09.2026" disabled="" style="">
+				<div id="termin-editor"><style type="text/css">
+	input.max { width: 100%; }
+	input.vonbis { text-align: right; width: 40px; }
+	th.vonbis { width: 60px; }
+	td.wichtig { color: red; }
+	td.editor { font-size: 80% }
+	td.alttermin { font-size: 90%; color:#666 }
+</style>
+<script>
+
+</script>
+<div class="">
+	<table class="wl" width="100%" cellpadding="2" cellspacing="2">
+		<tbody><tr>
+			<th>
+				Termin am 05.09.2026 bearbeiten:
+			</th>
+		</tr>
+		<tr>
+			<td>
+				<form id="frmterminedit" class="isend" action="https://welo.sushi-circle.de/8c93cdf-5188ad0/export/uiext.json" method="post">
+				<table class="termin" style="width:100%">
+					<tbody><tr>
+						<td rowspan="2" class="t" width="16">
+							<div id="err"></div>
+						</td>
+						<td>
+						<input type="text" name="dbid" id="dbid" value="0" style="width: 50px; display: none;">
+			<!--Zwischen textarea und /textarea darf kein Umbruch stehen! -->
+						<textarea class="wbg" style="width: 99%;" id="editgrund" name="grund" cols="80" rows="3" placeholder="Beschreibung Ihres neuen Termins (mind. 10 Zeichen)"></textarea>
+						</td>
+					</tr>
+					<tr>
+						<td colspan="2">von <input class="vonbis wbg" type="text" name="von" id="editvon" value="" placeholder="00:00" style="">
+							bis <input class="vonbis wbg" type="text" name="bis" id="editbis" value="" placeholder="23:59" style="">
+							Uhr
+						</td>
+					</tr>
+					<tr>
+						<td class="t" colspan="2"></td>
+					</tr>
+				</tbody></table>
+				</form>
+				<input type="button" id="speicherbut" class="wbg" name="speichern" value="Speichern" style="">
+				<input type="button" id="abbruchbut" class="wbn" name="abbruch" value="Felder leeren" style="">
+			</td>
+		</tr>
+		
+		
+	</tbody></table>
+	<br>
+</div></div>
+				<div id="terminliste"><table class="wl" width="100%"><tbody><tr><th colspan="5">Termine am 05.09.2026:</th></tr><tr><td colspan="5">Keine Termine</td></tr></tbody></table><br><table class="wl" width="100%"><tbody><tr><th colspan="2">Planung am 05.09.2026:</th></tr><tr><td colspan="2">Keine Planung</td></tr></tbody></table>
+										</div>
+				
+				
+			</td>
+		</tr>
+	</tbody></table>
+</div>
+<style type="text/css">
+table.wtk>tbody>tr>td.b2122 { padding:0px; border-top: solid 2px orange; border-right: solid 1px #000000; border-bottom: solid 2px orange; border-left: solid 2px orange; }
+table.wtk>tbody>tr>td.b2021 { padding:0px; border-top: solid 2px orange; border-right: solid 1px #ffffff; border-bottom: solid 2px orange; border-left: solid 1px #000000; }
+table.wtk>tbody>tr>td.b2020 { padding:0px; border-top: solid 2px orange; border-right: solid 1px #ffffff; border-bottom: solid 2px orange; border-left: solid 1px #ffffff; }
+table.wtk>tbody>tr>td.b2220 { padding:0px; border-top: solid 2px orange; border-right: solid 2px orange; border-bottom: solid 2px orange; border-left: solid 1px #ffffff; }
+table.wtk>tbody>tr>td.b1000 { padding:0px; border-top: solid 1px #000000; border-right: solid 1px #ffffff; border-bottom: solid 1px #ffffff; border-left: solid 1px #ffffff; }
+table.wtk>tbody>tr>td.b0000 { padding:0px; border-top: solid 1px #ffffff; border-right: solid 1px #ffffff; border-bottom: solid 1px #ffffff; border-left: solid 1px #ffffff; }
+table.wtk>tbody>tr>td.b0010 { padding:0px; border-top: solid 1px #ffffff; border-right: solid 1px #ffffff; border-bottom: solid 1px #000000; border-left: solid 1px #ffffff; }
+table.wtk>tbody>tr>td.b0110 { padding:0px; border-top: solid 1px #ffffff; border-right: solid 1px #000000; border-bottom: solid 1px #000000; border-left: solid 1px #ffffff; }
+table.wtk>tbody>tr>td.b1001 { padding:0px; border-top: solid 1px #000000; border-right: solid 1px #ffffff; border-bottom: solid 1px #ffffff; border-left: solid 1px #000000; }
+</style></div>
+</div></div>
+</div>

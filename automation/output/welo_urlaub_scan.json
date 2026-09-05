@@ -1,0 +1,402 @@
+{
+  "330158": {
+    "name": "Frau Chu, Thi Thu HangSushi Shopleiterin",
+    "bloecke": [
+      {
+        "from": "2026-09-23",
+        "to": "2026-09-26",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-09-27",
+        "to": "2026-09-27",
+        "kategorie": "Unbezahlt"
+      },
+      {
+        "from": "2026-09-28",
+        "to": "2026-10-02",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-10-04",
+        "to": "2026-10-04",
+        "kategorie": "Unbezahlt"
+      },
+      {
+        "from": "2026-10-05",
+        "to": "2026-10-10",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-10-11",
+        "to": "2026-10-11",
+        "kategorie": "Unbezahlt"
+      },
+      {
+        "from": "2026-10-12",
+        "to": "2026-10-17",
+        "kategorie": "Urlaub"
+      }
+    ]
+  },
+  "330254": {
+    "name": "Frau Cao, Thi NhungSushi Shop MA",
+    "bloecke": [
+      {
+        "from": "2026-09-01",
+        "to": "2026-09-25",
+        "kategorie": "Krank"
+      }
+    ]
+  },
+  "330314": {
+    "name": "Frau Trinh, Thi Minh ChauSushi Shop MA",
+    "bloecke": [
+      {
+        "from": "2026-09-01",
+        "to": "2026-09-01",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-09-02",
+        "to": "2026-09-08",
+        "kategorie": "Unbezahlt"
+      }
+    ]
+  },
+  "340301": {
+    "name": "Herr Li, HongbiaoSushi Shop MA",
+    "bloecke": [
+      {
+        "from": "2026-10-19",
+        "to": "2026-10-24",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-10-25",
+        "to": "2026-10-25",
+        "kategorie": "Unbezahlt"
+      },
+      {
+        "from": "2026-10-26",
+        "to": "2026-10-31",
+        "kategorie": "Urlaub"
+      }
+    ]
+  },
+  "340312": {
+    "name": "Frau Kang, XiaoxiSushi Shop MA",
+    "bloecke": [
+      {
+        "from": "2026-09-01",
+        "to": "2026-09-05",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-09-06",
+        "to": "2026-09-06",
+        "kategorie": "Unbezahlt"
+      },
+      {
+        "from": "2026-09-07",
+        "to": "2026-09-08",
+        "kategorie": "Urlaub"
+      }
+    ]
+  },
+  "340322": {
+    "name": "Frau Nguyen, Kim MaiSushi Shop MA",
+    "bloecke": [
+      {
+        "from": "2026-09-07",
+        "to": "2026-09-12",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-09-13",
+        "to": "2026-09-13",
+        "kategorie": "Unbezahlt"
+      },
+      {
+        "from": "2026-09-14",
+        "to": "2026-09-19",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-09-20",
+        "to": "2026-09-20",
+        "kategorie": "Unbezahlt"
+      },
+      {
+        "from": "2026-09-21",
+        "to": "2026-09-26",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-09-27",
+        "to": "2026-09-27",
+        "kategorie": "Unbezahlt"
+      },
+      {
+        "from": "2026-09-28",
+        "to": "2026-10-02",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-10-04",
+        "to": "2026-10-04",
+        "kategorie": "Unbezahlt"
+      },
+      {
+        "from": "2026-10-05",
+        "to": "2026-10-10",
+        "kategorie": "Urlaub"
+      }
+    ]
+  },
+  "340361": {
+    "name": "Herr Unurbat, BayarmagnaiSushi Shop MA",
+    "bloecke": [
+      {
+        "from": "2026-09-01",
+        "to": "2026-09-02",
+        "kategorie": "Unbezahlt"
+      }
+    ]
+  },
+  "340370": {
+    "name": "Frau Sharma, Archna DhusiaSushi Shop MA",
+    "bloecke": [
+      {
+        "from": "2026-10-24",
+        "to": "2026-10-24",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-10-25",
+        "to": "2026-10-25",
+        "kategorie": "Unbezahlt"
+      },
+      {
+        "from": "2026-10-26",
+        "to": "2026-10-31",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-11-02",
+        "to": "2026-11-07",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-11-08",
+        "to": "2026-11-08",
+        "kategorie": "Unbezahlt"
+      },
+      {
+        "from": "2026-11-09",
+        "to": "2026-11-14",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-11-15",
+        "to": "2026-11-15",
+        "kategorie": "Unbezahlt"
+      },
+      {
+        "from": "2026-11-16",
+        "to": "2026-11-21",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-11-22",
+        "to": "2026-11-22",
+        "kategorie": "Unbezahlt"
+      },
+      {
+        "from": "2026-11-23",
+        "to": "2026-11-24",
+        "kategorie": "Urlaub"
+      }
+    ]
+  },
+  "340444": {
+    "name": "Herr Doan, Vu NguyenSushi Shop MA",
+    "bloecke": [
+      {
+        "from": "2026-09-05",
+        "to": "2026-09-05",
+        "kategorie": "Urlaub"
+      }
+    ]
+  },
+  "340473": {
+    "name": "Frau Heidel, My LinhSushi Shop MA",
+    "bloecke": [
+      {
+        "from": "2026-09-08",
+        "to": "2026-09-09",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-10-17",
+        "to": "2026-10-17",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-10-18",
+        "to": "2026-10-18",
+        "kategorie": "Unbezahlt"
+      },
+      {
+        "from": "2026-10-19",
+        "to": "2026-10-19",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-11-17",
+        "to": "2026-11-18",
+        "kategorie": "Urlaub"
+      }
+    ]
+  },
+  "340877": {
+    "name": "Frau Tran, Thi HoanSushi Shop MA",
+    "bloecke": [
+      {
+        "from": "2026-10-12",
+        "to": "2026-10-17",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-10-18",
+        "to": "2026-10-18",
+        "kategorie": "Unbezahlt"
+      },
+      {
+        "from": "2026-10-19",
+        "to": "2026-10-24",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-10-25",
+        "to": "2026-10-25",
+        "kategorie": "Unbezahlt"
+      },
+      {
+        "from": "2026-10-26",
+        "to": "2026-10-27",
+        "kategorie": "Urlaub"
+      }
+    ]
+  },
+  "340955": {
+    "name": "Herr Nguyen, Hong MinhSushi Shop MA",
+    "bloecke": [
+      {
+        "from": "2026-09-03",
+        "to": "2026-09-03",
+        "kategorie": "Urlaub"
+      }
+    ]
+  },
+  "341377": {
+    "name": "Herr Vu, Hong SonSushi Shop MA",
+    "bloecke": [
+      {
+        "from": "2026-09-07",
+        "to": "2026-09-08",
+        "kategorie": "Urlaub"
+      }
+    ]
+  },
+  "341450": {
+    "name": "Frau Purnomo, Paramita DianShop MA",
+    "bloecke": [
+      {
+        "from": "2026-09-01",
+        "to": "2026-12-31",
+        "kategorie": "Unbezahlt"
+      }
+    ]
+  },
+  "350527": {
+    "name": "Herr Ta, EricShop MA",
+    "bloecke": [
+      {
+        "from": "2026-10-05",
+        "to": "2026-10-10",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-10-11",
+        "to": "2026-10-11",
+        "kategorie": "Unbezahlt"
+      },
+      {
+        "from": "2026-10-12",
+        "to": "2026-10-17",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-10-18",
+        "to": "2026-10-18",
+        "kategorie": "Unbezahlt"
+      }
+    ]
+  },
+  "350529": {
+    "name": "Herr Nguyen, Ngoc Thanh NhaShop MA",
+    "bloecke": [
+      {
+        "from": "2026-09-01",
+        "to": "2026-09-05",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-09-06",
+        "to": "2026-09-06",
+        "kategorie": "Unbezahlt"
+      },
+      {
+        "from": "2026-09-07",
+        "to": "2026-09-12",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-09-13",
+        "to": "2026-09-13",
+        "kategorie": "Unbezahlt"
+      },
+      {
+        "from": "2026-09-14",
+        "to": "2026-09-15",
+        "kategorie": "Urlaub"
+      },
+      {
+        "from": "2026-09-16",
+        "to": "2026-09-26",
+        "kategorie": "Unbezahlt"
+      }
+    ]
+  },
+  "350544": {
+    "name": "Frau Silitonga, SusdaliaShop MA",
+    "bloecke": [
+      {
+        "from": "2026-10-26",
+        "to": "2026-10-31",
+        "kategorie": "Urlaub"
+      }
+    ]
+  },
+  "360135": {
+    "name": "Frau Müller, Claudine Lucia Angeli",
+    "bloecke": [
+      {
+        "from": "2026-09-01",
+        "to": "2026-12-23",
+        "kategorie": "Unbezahlt"
+      }
+    ]
+  }
+}
