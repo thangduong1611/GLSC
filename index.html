@@ -185,7 +185,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 .dp-table th{background:#F8F5F2;text-align:center;padding:6px 4px;border:1px solid var(--brd);font-size:11px;font-weight:600;white-space:nowrap;min-width:78px;}
 .dp-table th:first-child{text-align:left;min-width:100px;padding-left:8px;}
 .dp-table td{border:1px solid var(--brd);padding:3px 4px;vertical-align:middle;}
-.dp-table td:first-child{font-size:12px;font-weight:600;padding:4px 8px;background:#FAFAF7;white-space:nowrap;max-width:100px;}
+.dp-table td:first-child{font-size:12px;font-weight:600;padding:4px 8px;background:#FAFAF7;max-width:100px;overflow:hidden;}
 .dp-table td.dp-wtot{text-align:center;font-size:12px;background:#FAFAF7;white-space:nowrap;min-width:56px;}
 .dp-shift{width:100%;border:none;background:transparent;font-size:11px;text-align:center;padding:3px 2px;font-family:inherit;outline:none;color:var(--txt);}
 .dp-shift:focus{background:#FFFBF0;border-radius:3px;}
@@ -3616,8 +3616,12 @@ function dpRenderWeeks(){
         var ek=dpEmpKey(emp),eid=''+(emp.id||'');
         var zw=dpIsZweit(emp.id,dpGetFiliale());
         var az=dpAzKontoCache&&dpAzKontoCache[eid];
-        var azHtml=(az!=null&&az<0)?' <span style="color:#C0392B;font-weight:600;white-space:nowrap">(-'+dpFmtStd(az)+')</span>':'';
-        h+='<tr><td title="'+emp.name+(zw?' · Zweitfiliale':'')+(az!=null&&az<0?' · AZ-Konto Vormonat: -'+dpFmtStd(az)+' Std':'')+'">'+(zw?'🔄 ':'')+emp.name.substring(0,15)+(emp.name.length>15?'…':'')+azHtml+'</td>';
+        // Auf eigener Zeile UNTER dem Namen statt inline dahinter (Auftrag
+        // t.duong 05.09.2026: das Minusstunden-Badge lief bei laengeren
+        // Namen in die Montags-Spalte hinein, weil die Namensspalte nur
+        // max-width:100px ohne overflow:hidden hatte).
+        var azHtml=(az!=null&&az<0)?'<div style="color:#C0392B;font-weight:700;font-size:10px;white-space:nowrap">-'+dpFmtStd(az)+' Std</div>':'';
+        h+='<tr><td title="'+emp.name+(zw?' · Zweitfiliale':'')+(az!=null&&az<0?' · AZ-Konto Vormonat: -'+dpFmtStd(az)+' Std':'')+'"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(zw?'🔄 ':'')+emp.name.substring(0,15)+(emp.name.length>15?'…':'')+'</div>'+azHtml+'</td>';
         wk.dates.forEach(function(dt){
           var abs=dpAbs[eid]&&dpAbs[eid][dt];
           var stored=(dpShifts[ek]&&dpShifts[ek][dt])||'';
