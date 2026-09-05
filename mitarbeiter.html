@@ -3490,12 +3490,31 @@ function maReqFeedback(v){
     wrap.appendChild(b); fb.appendChild(wrap);
   }
 }
+// Laedt (einmalig, nicht live) die aktuellen Urlaub-Eintraege der eigenen
+// Zweitfiliale(n), damit ein neuer Antrag beim Absenden auch gegen Kollegen
+// dort geprueft wird (Auftrag t.duong 05.09.2026) — die 10-Tage-Vorlauf-Regel
+// und die Pruefung gegen die Stammfiliale bleiben dabei unveraendert bestehen,
+// diese Pruefung kommt nur ZUSAETZLICH dazu. Bewusst kein Live-Listener wie
+// bei der Stammfiliale (maStartFbUrlaub) — nur bei Bedarf abgefragt, um nicht
+// dauerhaft weitere Firestore-Abos je Zweitfiliale offen zu halten.
+function maReqLoadZweitUrlaub(sess){
+  var zweit=(sess.zweit||[]).filter(Boolean);
+  if(!fbReady||!fbDb||!zweit.length) return Promise.resolve([]);
+  return Promise.all(zweit.map(function(f){
+    return fbDb.collection('filialen').doc(fbSlug(f)).collection('urlaub').get()
+      .then(function(snap){
+        var raw=[]; snap.forEach(function(doc){ raw.push({id:doc.id, data:doc.data()}); });
+        return maMapUrlaubSnapshot(raw);
+      }).catch(function(e){ console.warn('maReqLoadZweitUrlaub', f, e); return []; });
+  })).then(function(lists){ return [].concat.apply([], lists); });
+}
 function maRequestUrlaub(){
   if(maReqBusy) return;
   var sess=maSession();if(!sess)return;
   var from=document.getElementById('ul-from').value,to=document.getElementById('ul-to').value;
   var fb=document.getElementById('ul-feedback');
-  var existing=maFilialeUrlaub(sess.filiale);
+  maReqLoadZweitUrlaub(sess).then(function(zweitEntries){
+  var existing=maFilialeUrlaub(sess.filiale).concat(zweitEntries);
   var v=maValidateUrlaub(from,to,existing,maTodayISO(),sess.id,maEditReq);
   if(!v.ok){ maReqFeedback(v); return; }
   if(fbReady&&fbDb){
@@ -3548,6 +3567,7 @@ function maRequestUrlaub(){
   var msg='🌴 *Urlaubsantrag*\n\nName: '+sess.name+'\nPersonalnr.: '+sess.id+'\nFiliale: '+sess.filiale+'\nZeitraum: '+maFmtDE(from)+' – '+maFmtDE(to)+'\n\nBitte um Freigabe.';
   if(wa)window.open('https://wa.me/'+wa+'?text='+encodeURIComponent(msg),'_blank');
   else prompt(t('wa_missing'),msg);
+  });
 }
 
 /* ════════════════════════════════════════════════

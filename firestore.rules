@@ -232,8 +232,12 @@ service cloud.firestore {
       allow get, list: if isManager();
       allow write: if false;
     }
+    // Live-Tagesumsatz: wird auch von der Mitarbeiter-App gelesen
+    // (maRenderZielInfo, Fortschrittsbalken zum Tagesziel), nicht nur vom
+    // Manager-Dashboard - deshalb isAuthed() wie bei tagesziel/emp_welo unten,
+    // nicht isManager() wie die uebrigen Filial-Radar-Collections hier.
     match /filiale_produktion/{docId} {
-      allow get, list: if isManager();
+      allow get, list: if isAuthed();
       allow write: if false;
     }
     match /filiale_bestellungen/{docId} {

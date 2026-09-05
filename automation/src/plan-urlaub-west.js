@@ -2,10 +2,10 @@
 // aktiven West-Mitarbeiter für den Rest von 2026, sodass jeder sein Resturlaub
 // (emp_welo.urlaubOffen, abzüglich bereits gebuchter Urlaub 2026) aufbraucht.
 //
-// Regeln (Auftrag t.duong 04.09.2026):
+// Regeln (Auftrag t.duong 04.09.2026, bestaetigt/praezisiert 05.09.2026):
 // - Innerhalb 1 Filiale keine überlappenden Urlaubstage.
 // - Auch keine Überlappung mit Kollegen, für die diese Filiale als Zweitfiliale
-//   eingetragen ist (gemeinsamer "Coverage-Pool" pro Filiale).
+//   eingetragen ist (gemeinsamer "Coverage-Pool" pro Filiale, Stamm ODER Zweit).
 // - Herr Nguyen, Trong (550078) ist unternehmensweiter Springer/Dulieu (Zweit
 //   für alle 11 West-Filialen) -> aus der Überlappungs-Regel ausgeschlossen
 //   (blockiert niemanden, wird von niemandem blockiert), bekommt aber trotzdem

@@ -1,0 +1,143 @@
+--- PAGE 1 ---
+HƯỚNG DẪN SỬ DỤNG
+ỨNG DỤNG NHÂN VIÊN
+Sushi Circle Gastronomie GmbH
+Phiên bản: Tiếng Việt
+Hướng dẫn từng bước, kèm hình ảnh minh họa có đánh số thứ tự bấm
+
+--- PAGE 2 ---
+MỤC LỤC
+1. Đăng nhập và chọn ngôn ngữ
+2. Menu chính của ứng dụng
+3. Xem lịch làm việc
+4. Xin nghỉ phép
+5. Báo ốm
+6. Ký hợp đồng khi có yêu cầu
+7. Gửi hóa đơn xin hoàn tiền
+8. Báo hàng nhận có vấn đề
+9. Báo chuyển hàng giữa các tiệm
+10. Xem thông báo và bật thông báo đẩy
+11. Kiểm kê kho (khi có đợt kiểm kê)
+12. Thêm ứng dụng vào màn hình chính điện thoại
+
+--- PAGE 3 ---
+1. Đăng nhập và chọn ngôn ngữ
+Mở ứng dụng trên điện thoại. Màn hình đầu tiên bạn thấy là màn hình đăng nhập.
+Bước 1. Chọn ngôn ngữ của bạn (ví dụ tiếng Việt) — bấm vào nút có cờ tương ứng.
+Bước 2. Nhập Mã số nhân viên của bạn vào ô trống (số này quản lý đã cung cấp cho
+bạn).
+Bước 3. Bấm nút Đăng nhập màu đỏ.
+Mẹo: Ứng dụng sẽ nhớ ngôn ngữ bạn chọn cho lần sau — bạn không cần chọn lại mỗi lần
+mở app.
+
+--- PAGE 4 ---
+2. Menu chính của ứng dụng
+Sau khi đăng nhập, bạn sẽ thấy Menu chính với các biểu tượng — mỗi biểu tượng là
+một chức năng. Chạm vào biểu tượng để mở chức năng đó. Các phần tiếp theo
+trong tài liệu này sẽ hướng dẫn chi tiết từng chức năng.
+
+--- PAGE 5 ---
+3. Xem lịch làm việc
+Xem ca làm việc của bạn trong tháng, và lịch làm của cả cửa hàng.
+Bước 1. Từ Menu chính, chạm vào biểu tượng Lịch làm.
+Bước 2. Màn hình hiện ra sẽ cho thấy ca làm việc của bạn theo từng ngày trong tháng.
+Bạn có thể đổi tháng ở ô "Tháng".
+
+--- PAGE 6 ---
+4. Xin nghỉ phép
+Lưu ý: phải gửi đơn trước ít nhất 10 ngày, và không được trùng ngày nghỉ với đồng
+nghiệp cùng cửa hàng.
+Bước 1. Từ Menu chính, chạm vào biểu tượng Nghỉ phép.
+
+--- PAGE 7 ---
+Bước 2. Xem lịch nghỉ phép của cả cửa hàng (màu xanh lá = đã duyệt, màu cam =
+đang chờ duyệt).
+Bước 3. Cuộn xuống phần "Đăng ký nghỉ phép": chọn Từ ngày (số 1), Đến ngày (số 2),
+rồi bấm Gửi đăng ký (số 3).
+Mẹo: Sau khi gửi, đơn sẽ hiện chữ "Chờ duyệt" — khi quản lý duyệt xong, trạng thái sẽ tự
+động đổi thành "Đã duyệt", bạn không cần làm gì thêm.
+
+--- PAGE 8 ---
+5. Báo ốm
+Khi bị ốm không thể đi làm, hãy báo ngay qua ứng dụng để quản lý biết sớm.
+Bước 1. Từ Menu chính, chạm vào biểu tượng Báo ốm.
+Bước 2. Chọn số 1 Ốm từ ngày, số 2 Dự kiến đến ngày nào, chụp số 3 ảnh giấy khám
+bệnh (nếu có), rồi bấm số 4 Gửi báo ốm.
+
+--- PAGE 9 ---
+6. Ký hợp đồng khi có yêu cầu
+Khi công ty có thay đổi cần bạn xác nhận (ví dụ thay đổi giờ làm), biểu tượng Hợp
+đồng sẽ hiện dấu chấm cam báo có việc cần làm.
+Bước 1. Từ Menu chính, chạm vào biểu tượng Hợp đồng.
+
+--- PAGE 10 ---
+Bước 2. Đọc kỹ nội dung. Ký tên bằng ngón tay vào ô số 1 chữ ký, rồi bấm số 2 Ký và
+gửi.
+Lưu ý: Không thể sửa thông tin trong màn hình này. Nếu thấy sai, đừng ký — hãy liên hệ
+trực tiếp quản lý khu vực.
+
+--- PAGE 11 ---
+7. Gửi hóa đơn xin hoàn tiền
+Nếu bạn tự bỏ tiền mua đồ cho cửa hàng, hãy gửi hóa đơn để được hoàn tiền lại.
+Bước 1. Từ Menu chính, chạm vào biểu tượng Báo cáo.
+
+--- PAGE 12 ---
+Bước 2. Nhập số 1 số tiền, chụp số 2 ảnh hóa đơn, rồi bấm số 3 Gửi hóa đơn.
+
+--- PAGE 13 ---
+8. Báo hàng nhận có vấn đề
+Khi hàng giao đến bị thiếu, hỏng, hoặc không tươi — báo ngay để quản lý khiếu nại
+với nhà cung cấp.
+Bước 1. Từ Menu chính, chạm vào biểu tượng Hàng nhận.
+
+--- PAGE 14 ---
+Bước 2. Chụp số 1 ảnh phiếu giao hàng và hàng bị lỗi, viết số 2 mô tả ngắn (ví dụ: "5
+quả bơ hỏng"), rồi bấm số 3 Gửi báo cáo nhanh.
+
+--- PAGE 15 ---
+9. Báo chuyển hàng giữa các tiệm
+Nếu bạn lấy tạm hàng từ cửa hàng khác, hãy báo lại để không bị quên khi tính sổ
+cuối tháng.
+Bước 1. Từ Menu chính, chạm vào biểu tượng Chuyển hàng.
+Bước 2. Chọn số 1 tiệm đã lấy hàng, sau đó tìm và chạm vào từng món hàng ở ô số 2
+tìm kiếm để thêm vào danh sách.
+
+--- PAGE 16 ---
+Bước 3. Kiểm tra lại danh sách đã chọn, rồi bấm số 1 Gửi báo cáo chuyển hàng.
+
+--- PAGE 17 ---
+10. Xem thông báo và bật thông báo đẩy
+Xem tin tức, thông báo từ quản lý khu vực gửi cho cả cửa hàng.
+Bước 1. Từ Menu chính, chạm vào biểu tượng Thông báo.
+Bước 2. Bấm nút số 1 Bật thông báo để điện thoại báo ngay cho bạn mỗi khi có tin mới
+— kể cả khi đã đóng ứng dụng.
+
+--- PAGE 18 ---
+11. Kiểm kê kho (khi có đợt kiểm kê)
+Biểu tượng Kiểm kê chỉ xuất hiện trong Menu chính khi HR đang mở một đợt kiểm
+kê kho.
+Bước 1. Chạm vào biểu tượng Kiểm kê, chọn danh mục hàng (ví dụ "Cá và Hải sản"),
+hoặc gõ tên món vào ô tìm kiếm.
+Bước 2. Đếm và nhập số lượng thực tế cho từng món. Số lượng được tự động lưu ngay
+trên máy — dù mất mạng ở dưới kho vẫn không bị mất dữ liệu.
+Bước 3. Khi đếm xong hết, cuộn xuống cuối và bấm nút xanh "Gửi cho HR". Nếu chưa
+đếm xong và muốn nghỉ giữa chừng, bấm "Lưu nháp" để lưu tạm.
+Mẹo: Bạn có thể tắt hẳn ứng dụng và làm lại sau — số liệu đã lưu sẽ không bị mất. Nhiều
+người có thể cùng đếm chung một lúc, mỗi người một khu vực khác nhau.
+
+--- PAGE 19 ---
+12. Thêm ứng dụng vào màn hình chính điện
+thoại
+Làm việc này một lần để có biểu tượng ứng dụng ngay trên màn hình chính, mở
+nhanh như các app khác — không cần mở trình duyệt và gõ lại địa chỉ mỗi lần.
+Với điện thoại iPhone:
+Bước 1. Mở trang này bằng trình duyệt Safari (nếu đang mở từ WhatsApp: bấm Chia sẻ
+rồi chọn "Mở bằng Safari").
+Bước 2. Bấm biểu tượng Chia sẻ ở phía dưới màn hình.
+Bước 3. Chọn "Thêm vào Màn hình chính".
+Với điện thoại Android:
+Bước 1. Mở trang này bằng trình duyệt Chrome.
+Bước 2. Bấm biểu tượng 3 chấm ở góc trên bên phải.
+Bước 3. Chọn "Thêm vào màn hình chính" (hoặc "Cài đặt ứng dụng").
+Mẹo: Sau khi làm xong, bạn sẽ thấy biểu tượng ứng dụng ngay trên màn hình chính điện
+thoại — chạm vào đó để mở ứng dụng như mọi app khác.
