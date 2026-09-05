@@ -313,13 +313,17 @@ window.onerror=function(msg,src,line){
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" id="updf-locked" style="display:none">
+      <div class="card-title" data-i18n="updf_title">📄 Urlaubsantrag (offizielles Formular)</div>
+      <p style="font-size:13px;color:var(--mut);line-height:1.5" data-i18n="updf_locked_msg"></p>
+    </div>
+    <div class="card" id="updf-card" style="display:none">
       <div class="card-title" data-i18n="updf_title">📄 Urlaubsantrag (offizielles Formular)</div>
       <p style="font-size:13px;color:var(--mut);margin-bottom:10px;line-height:1.5" data-i18n="updf_info"></p>
-      <div class="row2">
-        <div><label data-i18n="lbl_von">Von</label><input type="date" id="up-from"></div>
-        <div><label data-i18n="lbl_bis">Bis</label><input type="date" id="up-to"></div>
-      </div>
+      <label data-i18n="lbl_welcher_urlaub">Für welchen genehmigten Urlaub?</label>
+      <select id="up-pick" onchange="maUpPickChange()"></select>
+      <input type="hidden" id="up-from">
+      <input type="hidden" id="up-to">
       <div class="row2">
         <div><label data-i18n="lbl_einsatz">Wieder im Einsatz am</label><input type="date" id="up-einsatz"></div>
         <div><label data-i18n="lbl_ruf">Rufnummer</label><input type="tel" id="up-ruf" placeholder="z.B. 0151 123456"></div>
@@ -1980,6 +1984,8 @@ de:{_name:'Deutsch',
  edit_ok:'✓ Antrag geändert (🟧 wartet weiter auf Freigabe).',edit_fail:'✗ Änderung fehlgeschlagen: ',
  updf_title:'📄 Urlaubsantrag (offizielles Formular)',
  updf_info:'Wird auf das offizielle Sushi-Circle-Formular geschrieben. Ausfüllen, im Feld <strong>Arbeitnehmer</strong> unterschreiben, dann als PDF speichern oder an den Gebietsleiter senden. Die Unterschrift des Vorgesetzten ergänzt der Gebietsleiter.',
+ updf_locked_msg:'Erst verfügbar, sobald dein Urlaubsantrag genehmigt wurde. Stelle zuerst oben unter "Meinen Urlaub beantragen" deinen Antrag.',
+ lbl_welcher_urlaub:'Für welchen genehmigten Urlaub?',
  lbl_einsatz:'Wieder im Einsatz am',lbl_ruf:'Rufnummer',lbl_vorg:'Vorgesetzter (optional)',lbl_ort:'Ort (für Ort/Datum)',
  lbl_sig:'Unterschrift Arbeitnehmer/in (mit dem Finger zeichnen)',btn_clear_sig:'↺ Unterschrift löschen',btn_pdf:'💾 PDF speichern',btn_chef:'📨 An Chef senden',
  chef_hint:'„An Chef senden" schickt den Antrag mit deiner Unterschrift direkt an den Gebietsleiter. Er unterschreibt als Arbeitgeber und reicht das fertige PDF ein.',
@@ -2089,6 +2095,8 @@ vi:{_name:'Tiếng Việt',
  edit_ok:'✓ Đã sửa đơn (🟧 vẫn đang chờ duyệt).',edit_fail:'✗ Sửa không thành công: ',
  updf_title:'📄 Đơn nghỉ phép (mẫu chính thức)',
  updf_info:'Đơn được điền vào mẫu chính thức của Sushi Circle. Điền thông tin, ký vào ô <strong>Arbeitnehmer</strong>, sau đó lưu PDF hoặc gửi cho Gebietsleiter. Gebietsleiter sẽ ký phần Vorgesetzter.',
+ updf_locked_msg:'Chỉ dùng được sau khi đơn xin nghỉ phép của bạn được duyệt. Hãy gửi đăng ký ở mục "Đăng ký nghỉ phép" phía trên trước.',
+ lbl_welcher_urlaub:'Cho đợt nghỉ phép nào đã được duyệt?',
  lbl_einsatz:'Đi làm lại ngày',lbl_ruf:'Số điện thoại',lbl_vorg:'Cấp trên (tuỳ chọn)',lbl_ort:'Địa điểm (cho Ort/Datum)',
  lbl_sig:'Chữ ký nhân viên (vẽ bằng ngón tay)',btn_clear_sig:'↺ Xoá chữ ký',btn_pdf:'💾 Lưu PDF',btn_chef:'📨 Gửi cho sếp',
  chef_hint:'„Gửi cho sếp" gửi đơn kèm chữ ký của bạn thẳng đến Gebietsleiter. Anh ấy ký phần Arbeitgeber và nộp bản PDF hoàn chỉnh.',
@@ -2198,6 +2206,8 @@ en:{_name:'English',
  edit_ok:'✓ Request changed (🟧 still waiting for approval).',edit_fail:'✗ Change failed: ',
  updf_title:'📄 Vacation request (official form)',
  updf_info:'Written onto the official Sushi Circle form. Fill in, sign in the <strong>Arbeitnehmer</strong> field, then save as PDF or send to the area manager. The supervisor signature is added by the area manager.',
+ updf_locked_msg:'Only available once your vacation request has been approved. Submit your request above under "Request my vacation" first.',
+ lbl_welcher_urlaub:'For which approved vacation?',
  lbl_einsatz:'Back at work on',lbl_ruf:'Phone number',lbl_vorg:'Supervisor (optional)',lbl_ort:'Place (for place/date)',
  lbl_sig:'Employee signature (draw with your finger)',btn_clear_sig:'↺ Clear signature',btn_pdf:'💾 Save PDF',btn_chef:'📨 Send to manager',
  chef_hint:'"Send to manager" sends the request with your signature directly to the area manager. He countersigns and submits the final PDF.',
@@ -2307,6 +2317,8 @@ th:{_name:'ไทย',
  edit_ok:'✓ แก้ไขคำขอแล้ว (🟧 ยังรออนุมัติ)',edit_fail:'✗ แก้ไขไม่สำเร็จ: ',
  updf_title:'📄 ใบลาพักร้อน (แบบฟอร์มทางการ)',
  updf_info:'กรอกลงแบบฟอร์มทางการของ Sushi Circle กรอกข้อมูล เซ็นชื่อในช่อง <strong>Arbeitnehmer</strong> จากนั้นบันทึก PDF หรือส่งให้ผู้จัดการเขต ลายเซ็นหัวหน้าจะถูกเพิ่มโดยผู้จัดการเขต',
+ updf_locked_msg:'ใช้ได้หลังจากคำขอวันลาของคุณได้รับการอนุมัติแล้วเท่านั้น กรุณาส่งคำขอด้านบนที่ "ขอวันลาของฉัน" ก่อน',
+ lbl_welcher_urlaub:'สำหรับวันลาที่อนุมัติแล้วช่วงไหน?',
  lbl_einsatz:'กลับมาทำงานวันที่',lbl_ruf:'เบอร์โทร',lbl_vorg:'หัวหน้า (ไม่บังคับ)',lbl_ort:'สถานที่ (สำหรับ Ort/Datum)',
  lbl_sig:'ลายเซ็นพนักงาน (วาดด้วยนิ้ว)',btn_clear_sig:'↺ ลบลายเซ็น',btn_pdf:'💾 บันทึก PDF',btn_chef:'📨 ส่งให้ผู้จัดการ',
  chef_hint:'"ส่งให้ผู้จัดการ" ส่งคำขอพร้อมลายเซ็นของคุณตรงถึงผู้จัดการเขต เขาจะเซ็นส่วน Arbeitgeber และยื่น PDF ฉบับสมบูรณ์',
@@ -2416,6 +2428,8 @@ zh:{_name:'中文',
  edit_ok:'✓ 申请已修改（🟧 仍在等待审批）。',edit_fail:'✗ 修改失败：',
  updf_title:'📄 休假申请单（官方表格）',
  updf_info:'将填写到Sushi Circle官方表格中。请填写信息，在<strong>Arbeitnehmer</strong>（员工）栏签名，然后保存为PDF或发送给区域经理。主管签名部分由区域经理补充。',
+ updf_locked_msg:'仅在您的休假申请获批后才能使用。请先在上方"申请我的休假"提交申请。',
+ lbl_welcher_urlaub:'针对哪一段已批准的休假？',
  lbl_einsatz:'恢复工作日期',lbl_ruf:'电话号码',lbl_vorg:'上级（可选）',lbl_ort:'地点（用于地点/日期栏）',
  lbl_sig:'员工签名（用手指绘制）',btn_clear_sig:'↺ 清除签名',btn_pdf:'💾 保存PDF',btn_chef:'📨 发送给主管',
  chef_hint:'「发送给主管」会将带有您签名的申请直接发送给区域经理。他会以雇主身份签字并提交完整的PDF。',
@@ -3415,8 +3429,38 @@ function maRenderCal(){
   }
   grid.innerHTML=html;
 }
+// "Urlaubsantrag (offizielles Formular)" nur zeigen, wenn mind. 1 genehmigter,
+// noch nicht abgelaufener Urlaub existiert (Auftrag t.duong 05.09.2026: das
+// offizielle Formular soll erst NACH der Genehmigung kommen, nicht parallel
+// zur Antragstellung — sonst kann der Mitarbeiter beides gleichzeitig
+// ausfüllen, bevor überhaupt entschieden ist). Bindet die Datumsfelder fest an
+// die gewählte genehmigte Buchung (Dropdown), statt frei eintippbar zu sein.
+var maApprovedForForm=[];
+function maRenderOfficialFormGate(){
+  var sess=maSession(); var locked=document.getElementById('updf-locked'), card=document.getElementById('updf-card');
+  if(!locked||!card) return;
+  if(!sess){ locked.style.display='none'; card.style.display='none'; return; }
+  var today=maTodayISO();
+  maApprovedForForm=maFilialeUrlaub(sess.filiale).filter(function(u){
+    return u.status==='approved' && (''+u.id)===(''+sess.id) && u.to>=today;
+  }).sort(function(a,b){return (a.from<b.from)?-1:1;});
+  if(!maApprovedForForm.length){ locked.style.display='block'; card.style.display='none'; return; }
+  locked.style.display='none'; card.style.display='block';
+  var sel=document.getElementById('up-pick'); if(!sel) return;
+  var curIdx=sel.value;
+  sel.innerHTML=maApprovedForForm.map(function(u,i){ return '<option value="'+i+'">'+maFmtDE(u.from)+' – '+maFmtDE(u.to)+'</option>'; }).join('');
+  if(curIdx && +curIdx<maApprovedForForm.length) sel.value=curIdx;
+  maUpPickChange();
+}
+function maUpPickChange(){
+  var sel=document.getElementById('up-pick'); if(!sel) return;
+  var u=maApprovedForForm[+sel.value]; if(!u) return;
+  document.getElementById('up-from').value=u.from;
+  document.getElementById('up-to').value=u.to;
+}
 function maRenderUlList(){
   var sess=maSession();if(!sess)return;
+  maRenderOfficialFormGate();
   var ul=maFilialeUrlaub(sess.filiale).filter(function(u){
     var fy=maParseDate(u.from);return fy&&fy.getFullYear()===maCalY;
   });

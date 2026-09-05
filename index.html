@@ -5308,16 +5308,22 @@ function anRender(){
   var card=document.getElementById('an-live-card'), list=document.getElementById('an-live-list'), cnt=document.getElementById('an-live-count');
   if(!card||!list) return;
   card.style.display='block';
-  if(cnt) cnt.textContent=fbAntrag.length;
-  if(!fbAntrag.length){ list.innerHTML='<div style="color:#6B6860;font-size:13px;padding:6px 0">Keine offenen Anträge.</div>'; return; }
-  list.innerHTML=fbAntrag.map(function(a){
+  // Bereits uebernommene Antraege werden NICHT mehr angezeigt (Auftrag
+  // t.duong 05.09.2026: vorher blieben sie mit einem "✓ übernommen"-Vermerk
+  // dauerhaft in der Liste stehen, das fuehrte dazu, dass derselbe Antrag
+  // mehrfach angeschaut/bearbeitet wurde). Das Dokument selbst bleibt in
+  // Firestore erhalten (takenAt als Zeitstempel), nur die aktive
+  // Bearbeitungsliste blendet es aus.
+  var offen=fbAntrag.filter(function(a){ return !a.d.takenAt; });
+  if(cnt) cnt.textContent=offen.length;
+  if(!offen.length){ list.innerHTML='<div style="color:#6B6860;font-size:13px;padding:6px 0">Keine offenen Anträge.</div>'; return; }
+  list.innerHTML=offen.map(function(a){
     var d=a.d;
     var dt=d.created?new Date(d.created).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
     return '<div style="display:flex;gap:10px;align-items:center;padding:10px;border:1px solid #E8E4E0;border-left:4px solid #1A5276;border-radius:6px;margin-bottom:8px;flex-wrap:wrap">'
       +'<div style="flex:1;min-width:160px"><strong>'+(d.name||'?')+'</strong> · '+(d.filiale||'')+'<br>'
-      +'<span style="font-size:13px;color:#6B6860">'+fmtDate(d.von)+' – '+fmtDate(d.bis)+' · '+dt+'</span>'
-      +(d.takenAt?'<br><span style="font-size:11px;color:#1E8449;font-weight:700">✓ übernommen</span>':'')+'</div>'
-      +'<button class="btn btn-sm" style="background:#1A5276;color:#fff;border-color:#1A5276" onclick="anTake(\''+a.docId+'\')">✍️ Übernehmen</button>'
+      +'<span style="font-size:13px;color:#6B6860">'+fmtDate(d.von)+' – '+fmtDate(d.bis)+' · '+dt+'</span></div>'
+      +'<button class="btn btn-sm" style="background:#1A5276;color:#fff;border-color:#1A5276" onclick="anTake(\''+a.docId+'\')" title="Übernommen — verschwindet danach aus dieser Liste">✓ Erledigt (übernehmen)</button>'
       +'<button class="btn btn-sm" style="color:#C0392B;border-color:#C0392B" onclick="anDelete(\''+a.docId+'\')">🗑</button>'
       +'</div>';
   }).join('');
