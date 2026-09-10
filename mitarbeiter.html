@@ -1478,8 +1478,11 @@ function bzCoveringOnDate(planDoc,dateISO,excludeEmpIds){
   });
   return n;
 }
-/* entries: bereits geladene Urlaub-Docs derselben Filiale [{empId,from,to,status,docId}] */
-function bzCheck(filiale,fromISO,toISO,entries,selfEmpId,excludeDocId){
+/* entries: bereits geladene Urlaub-Docs derselben Filiale [{empId,from,to,status,docId}]
+   minStaff: aus regions/{region}.urlaubRules.minStaffRequired (Default 1) — wie
+   viele Personen an jedem Tag MINDESTENS zusätzlich zum Antragsteller da sein müssen. */
+function bzCheck(filiale,fromISO,toISO,entries,selfEmpId,excludeDocId,minStaff){
+  if(minStaff===undefined||minStaff===null) minStaff=1;
   var months=bzMonthList(fromISO,toISO);
   return Promise.all(months.map(function(m){ return bzGetPlanDoc(filiale,m).then(function(d){ return [m,d]; }); }))
     .then(function(pairs){
@@ -1494,18 +1497,18 @@ function bzCheck(filiale,fromISO,toISO,entries,selfEmpId,excludeDocId){
         var planDoc=byMonth[iso.slice(0,7)];
         var exclude=Object.assign({},offByDate[iso]||{}); exclude[selfEmpId]=1;
         var covering=bzCoveringOnDate(planDoc,iso,exclude);
-        return {date:iso,covering:covering,ok:covering===null?null:(covering>=1)};
+        return {date:iso,covering:covering,ok:covering===null?null:(covering>=minStaff)};
       });
       var known=days.filter(function(d){return d.covering!==null;});
-      return {days:days, allOk:known.length?known.every(function(d){return d.ok;}):null, anyUnknown:days.some(function(d){return d.covering===null;})};
+      return {days:days, minStaff:minStaff, allOk:known.length?known.every(function(d){return d.ok;}):null, anyUnknown:days.some(function(d){return d.covering===null;})};
     });
 }
 function bzBadgeHtml(res){
   if(!res) return '';
   var bad=res.days.filter(function(d){return d.ok===false;});
-  if(bad.length) return '<div style="font-size:12.5px;font-weight:600;color:#C0392B">'+(bad.length===1?t('bz_bad_1',{date:maFmtDE(bad[0].date)}):t('bz_bad_n',{n:bad.length}))+'</div>';
+  if(bad.length) return '<div style="font-size:12.5px;font-weight:600;color:#C0392B">'+(bad.length===1?t('bz_bad_1',{date:maFmtDE(bad[0].date),min:res.minStaff}):t('bz_bad_n',{n:bad.length,min:res.minStaff}))+'</div>';
   if(res.allOk===null) return '<div style="font-size:12.5px;color:#8a8378">'+t('bz_unknown')+'</div>';
-  return '<div style="font-size:12.5px;font-weight:600;color:#1E8449">'+t('bz_ok')+'</div>';
+  return '<div style="font-size:12.5px;font-weight:600;color:#1E8449">'+t('bz_ok',{min:res.minStaff})+'</div>';
 }
 function maCheckBesetzungPreview(){
   var box=document.getElementById('ul-besetzung'); if(!box) return;
@@ -1513,7 +1516,7 @@ function maCheckBesetzungPreview(){
   if(!sess||!sess.filiale||!from||!to||to<from||!fbReady||!fbDb){ box.innerHTML=''; return; }
   box.innerHTML='<div style="font-size:12.5px;color:#8a8378">'+t('bz_checking')+'</div>';
   var reqToken=(bzReqToken=(bzReqToken||0)+1);
-  bzCheck(sess.filiale, from, to, maFbUrlaub||[], sess.id, null).then(function(res){
+  bzCheck(sess.filiale, from, to, maFbUrlaub||[], sess.id, null, maUrlaubRules.minStaffRequired).then(function(res){
     if(reqToken!==bzReqToken) return; // eine neuere Abfrage läuft schon
     box.innerHTML=bzBadgeHtml(res);
   }).catch(function(){ if(reqToken===bzReqToken) box.innerHTML=''; });
@@ -2059,12 +2062,15 @@ de:{_name:'Deutsch',
  sent_off:'✓ Antrag gespeichert (🟧 wartet auf Freigabe). Bitte zur Bestätigung per WhatsApp an den Gebietsleiter senden.',
  send_fail:'✗ Senden fehlgeschlagen: ',
  v_pick:'Bitte Start- und Enddatum wählen.',v_invalid:'Ungültiges Datum.',v_endb4:'Das Enddatum liegt vor dem Startdatum.',
- v_min10:'Urlaub muss mindestens 10 Tage im Voraus beantragt werden (aktuell nur {n} Tage).',
+ v_min10:'Urlaub muss mindestens {min} Tage im Voraus beantragt werden (aktuell nur {n} Tage).',
+ v_maxdays:'Urlaub darf höchstens {n} Tage am Stück sein (aktuell {m} Tage).',
+ v_blackout:'In diesem Zeitraum sind keine Urlaubsanträge möglich: {label} ({range}).',
+ v_staff_block:'🔴 An {n} Tag(en) wären laut aktuellem Plan weniger als {min} Person(en) da — der Antrag kann so nicht gesendet werden. Bitte einen anderen Zeitraum wählen oder mit dem Gebietsleiter klären.',
  v_ov_self:'deinem bestehenden Urlaub',v_ov:'Überschneidung mit {who}. Bitte einen anderen Zeitraum wählen.',
  v_dup:'Diesen Zeitraum hast du bereits beantragt ({range}) — er wartet noch auf die Freigabe durch den Gebietsleiter.',
- bz_checking:'⏳ Besetzung wird geprüft…', bz_ok:'🟢 Besetzung ok — an jedem Tag bleibt mind. 1 Person da.',
- bz_bad_1:'🔴 Am {date} wärst du laut aktuellem Plan die einzige Person — bitte kurz mit dem Gebietsleiter klären.',
- bz_bad_n:'🔴 An {n} Tagen wärst du laut aktuellem Plan die einzige Person — bitte kurz mit dem Gebietsleiter klären.',
+ bz_checking:'⏳ Besetzung wird geprüft…', bz_ok:'🟢 Besetzung ok — an jedem Tag bleiben mind. {min} Person(en) da.',
+ bz_bad_1:'🔴 Am {date} wären laut aktuellem Plan weniger als {min} Person(en) da — bitte kurz mit dem Gebietsleiter klären.',
+ bz_bad_n:'🔴 An {n} Tagen wären laut aktuellem Plan weniger als {min} Person(en) da — bitte kurz mit dem Gebietsleiter klären.',
  bz_unknown:'❔ Für diesen Zeitraum liegt noch kein Dienstplan vor — Besetzung kann nicht geprüft werden.',
  welo_title:'📋 Meine Daten (Welo)', welo_soll:'Std./Woche (Soll)', welo_urlaub:'Urlaub offen / Anspruch', welo_krank:'Krank-Tage (Jahr)',
  welo_ziel:'🎯 Tagesziel {filiale}: {ziel} (Vorjahr: {vorjahr})',
@@ -2176,12 +2182,15 @@ vi:{_name:'Tiếng Việt',
  sent_off:'✓ Đã lưu đơn (🟧 chờ duyệt). Vui lòng gửi WhatsApp cho Gebietsleiter để xác nhận.',
  send_fail:'✗ Gửi thất bại: ',
  v_pick:'Vui lòng chọn ngày bắt đầu và kết thúc.',v_invalid:'Ngày không hợp lệ.',v_endb4:'Ngày kết thúc trước ngày bắt đầu.',
- v_min10:'Phải đăng ký trước ít nhất 10 ngày (hiện chỉ còn {n} ngày).',
+ v_min10:'Phải đăng ký trước ít nhất {min} ngày (hiện chỉ còn {n} ngày).',
+ v_maxdays:'Mỗi lần chỉ được đăng ký tối đa {n} ngày (hiện đang là {m} ngày).',
+ v_blackout:'Không thể đăng ký nghỉ trong khoảng thời gian này: {label} ({range}).',
+ v_staff_block:'🔴 Có {n} ngày theo lịch hiện tại sẽ có ít hơn {min} người trực — không thể gửi đơn. Vui lòng chọn khoảng thời gian khác hoặc trao đổi với Gebietsleiter.',
  v_ov_self:'lịch nghỉ hiện có của bạn',v_ov:'Trùng lịch với {who}. Vui lòng chọn thời gian khác.',
  v_dup:'Bạn đã gửi đơn cho thời gian này rồi ({range}) — đang chờ Gebietsleiter duyệt.',
- bz_checking:'⏳ Đang kiểm tra besetzung…', bz_ok:'🟢 Besetzung ổn — mỗi ngày vẫn còn ít nhất 1 người trực.',
- bz_bad_1:'🔴 Ngày {date} theo lịch hiện tại chỉ có mình bạn — nên trao đổi trước với Gebietsleiter.',
- bz_bad_n:'🔴 {n} ngày theo lịch hiện tại chỉ có mình bạn — nên trao đổi trước với Gebietsleiter.',
+ bz_checking:'⏳ Đang kiểm tra besetzung…', bz_ok:'🟢 Besetzung ổn — mỗi ngày vẫn còn ít nhất {min} người trực.',
+ bz_bad_1:'🔴 Ngày {date} theo lịch hiện tại sẽ có ít hơn {min} người trực — nên trao đổi trước với Gebietsleiter.',
+ bz_bad_n:'🔴 {n} ngày theo lịch hiện tại sẽ có ít hơn {min} người trực — nên trao đổi trước với Gebietsleiter.',
  bz_unknown:'❔ Chi nhánh chưa có lịch làm cho thời gian này — chưa kiểm tra được besetzung.',
  welo_title:'📋 Dữ liệu của tôi (Welo)', welo_soll:'Giờ/Tuần (Soll)', welo_urlaub:'Urlaub còn lại / Tổng', welo_krank:'Ngày ốm (năm nay)',
  welo_ziel:'🎯 Mục tiêu hôm nay {filiale}: {ziel} (Năm trước: {vorjahr})',
@@ -2293,12 +2302,15 @@ en:{_name:'English',
  sent_off:'✓ Request saved (🟧 pending). Please confirm via WhatsApp to the area manager.',
  send_fail:'✗ Sending failed: ',
  v_pick:'Please choose start and end date.',v_invalid:'Invalid date.',v_endb4:'End date is before start date.',
- v_min10:'Vacation must be requested at least 10 days in advance (currently only {n} days).',
+ v_min10:'Vacation must be requested at least {min} days in advance (currently only {n} days).',
+ v_maxdays:'Vacation can be at most {n} days in a row (currently {m} days).',
+ v_blackout:'Vacation requests are not possible in this period: {label} ({range}).',
+ v_staff_block:'🔴 On {n} day(s) fewer than {min} person(s) would be on the schedule — the request cannot be sent. Please choose a different period or check with the area manager.',
  v_ov_self:'your existing vacation',v_ov:'Overlap with {who}. Please choose another period.',
  v_dup:'You already requested this period ({range}) — it is still waiting for approval by the area manager.',
- bz_checking:'⏳ Checking staffing…', bz_ok:'🟢 Staffing ok — at least 1 person remains every day.',
- bz_bad_1:'🔴 On {date} you would be the only person on the current schedule — please check with the area manager first.',
- bz_bad_n:'🔴 On {n} day(s) you would be the only person on the current schedule — please check with the area manager first.',
+ bz_checking:'⏳ Checking staffing…', bz_ok:'🟢 Staffing ok — at least {min} person(s) remain every day.',
+ bz_bad_1:'🔴 On {date} fewer than {min} person(s) would be on the schedule — please check with the area manager first.',
+ bz_bad_n:'🔴 On {n} day(s) fewer than {min} person(s) would be on the schedule — please check with the area manager first.',
  bz_unknown:"❔ No schedule exists yet for this period — staffing can't be checked.",
  welo_title:'📋 My Data (Welo)', welo_soll:'Hrs/Week (Contract)', welo_urlaub:'Vacation left / Total', welo_krank:'Sick days (year)',
  welo_ziel:"🎯 Today's target {filiale}: {ziel} (Last year: {vorjahr})",
@@ -2410,12 +2422,15 @@ th:{_name:'ไทย',
  sent_off:'✓ บันทึกคำขอแล้ว (🟧 รออนุมัติ) กรุณาส่ง WhatsApp ถึงผู้จัดการเพื่อยืนยัน',
  send_fail:'✗ ส่งไม่สำเร็จ: ',
  v_pick:'กรุณาเลือกวันเริ่มและวันสิ้นสุด',v_invalid:'วันที่ไม่ถูกต้อง',v_endb4:'วันสิ้นสุดอยู่ก่อนวันเริ่ม',
- v_min10:'ต้องยื่นล่วงหน้าอย่างน้อย 10 วัน (ตอนนี้เหลือเพียง {n} วัน)',
+ v_min10:'ต้องยื่นล่วงหน้าอย่างน้อย {min} วัน (ตอนนี้เหลือเพียง {n} วัน)',
+ v_maxdays:'ลาได้ติดต่อกันไม่เกิน {n} วัน (ตอนนี้ {m} วัน)',
+ v_blackout:'ไม่สามารถยื่นขอลาในช่วงนี้ได้: {label} ({range})',
+ v_staff_block:'🔴 มี {n} วันที่จะเหลือน้อยกว่า {min} คนตามตาราง — ไม่สามารถส่งคำขอได้ กรุณาเลือกช่วงอื่นหรือคุยกับ Gebietsleiter',
  v_ov_self:'วันลาเดิมของคุณ',v_ov:'ซ้ำกับ {who} กรุณาเลือกช่วงอื่น',
  v_dup:'คุณยื่นคำขอช่วงนี้ไปแล้ว ({range}) — กำลังรอผู้จัดการเขตอนุมัติ',
- bz_checking:'⏳ กำลังตรวจสอบอัตรากำลัง…', bz_ok:'🟢 อัตรากำลังโอเค — ทุกวันยังมีอย่างน้อย 1 คนดูแล',
- bz_bad_1:'🔴 วันที่ {date} ตามตารางปัจจุบันจะเหลือคุณคนเดียว — กรุณาคุยกับ Gebietsleiter ก่อน',
- bz_bad_n:'🔴 มี {n} วันที่ตามตารางปัจจุบันจะเหลือคุณคนเดียว — กรุณาคุยกับ Gebietsleiter ก่อน',
+ bz_checking:'⏳ กำลังตรวจสอบอัตรากำลัง…', bz_ok:'🟢 อัตรากำลังโอเค — ทุกวันยังมีอย่างน้อย {min} คนดูแล',
+ bz_bad_1:'🔴 วันที่ {date} ตามตารางปัจจุบันจะเหลือน้อยกว่า {min} คน — กรุณาคุยกับ Gebietsleiter ก่อน',
+ bz_bad_n:'🔴 มี {n} วันที่ตามตารางปัจจุบันจะเหลือน้อยกว่า {min} คน — กรุณาคุยกับ Gebietsleiter ก่อน',
  bz_unknown:'❔ ยังไม่มีตารางงานสำหรับช่วงนี้ — ยังตรวจสอบอัตรากำลังไม่ได้',
  welo_title:'📋 ข้อมูลของฉัน (Welo)', welo_soll:'ชม./สัปดาห์ (ตามสัญญา)', welo_urlaub:'วันลาคงเหลือ / ทั้งหมด', welo_krank:'วันลาป่วย (ปีนี้)',
  welo_ziel:'🎯 เป้าหมายวันนี้ {filiale}: {ziel} (ปีที่แล้ว: {vorjahr})',
@@ -2527,12 +2542,15 @@ zh:{_name:'中文',
  sent_off:'✓ 申请已保存（🟧 等待批准）。请通过WhatsApp发送给区域经理以确认。',
  send_fail:'✗ 发送失败：',
  v_pick:'请选择开始日期和结束日期。',v_invalid:'日期无效。',v_endb4:'结束日期早于开始日期。',
- v_min10:'休假申请必须至少提前10天（目前只剩{n}天）。',
+ v_min10:'休假申请必须至少提前{min}天（目前只剩{n}天）。',
+ v_maxdays:'单次休假最多{n}天（当前为{m}天）。',
+ v_blackout:'此时间段内不可申请休假：{label}（{range}）。',
+ v_staff_block:'🔴 有{n}天按当前排班在岗人数将少于{min}人 — 无法发送申请。请选择其他时间段或与区域经理沟通。',
  v_ov_self:'您已有的休假',v_ov:'与{who}的休假时间重叠，请选择其他时间段。',
  v_dup:'您已经申请过这个时间段（{range}），正在等待区域经理审批。',
- bz_checking:'⏳ 正在检查人力配置…', bz_ok:'🟢 人力配置正常 — 每天至少还有1人在岗。',
- bz_bad_1:'🔴 {date} 按当前排班您将是唯一一人 — 请先与区域经理沟通。',
- bz_bad_n:'🔴 有{n}天按当前排班您将是唯一一人 — 请先与区域经理沟通。',
+ bz_checking:'⏳ 正在检查人力配置…', bz_ok:'🟢 人力配置正常 — 每天至少还有{min}人在岗。',
+ bz_bad_1:'🔴 {date} 按当前排班在岗人数将少于{min}人 — 请先与区域经理沟通。',
+ bz_bad_n:'🔴 有{n}天按当前排班在岗人数将少于{min}人 — 请先与区域经理沟通。',
  bz_unknown:'❔ 该时间段暂无排班表 — 无法检查人力配置。',
  welo_title:'📋 我的数据 (Welo)', welo_soll:'合同工时/周', welo_urlaub:'剩余/总休假天数', welo_krank:'病假天数（今年）',
  welo_ziel:'🎯 今日目标 {filiale}：{ziel}（去年：{vorjahr}）',
@@ -2730,13 +2748,20 @@ function maFilialeUrlaub(filiale){
 // "own" wird gesetzt, wenn die Ueberschneidung der eigene, noch nicht entschiedene Antrag
 // ist — dann bietet die Oberflaeche "aendern" an, statt einen zweiten Antrag zuzulassen.
 // skipDocId = der Antrag, der gerade geaendert wird (darf sich nicht selbst blockieren).
-function maValidateUrlaub(fromStr,toStr,existing,todayStr,selfId,skipDocId){
+function maValidateUrlaub(fromStr,toStr,existing,todayStr,selfId,skipDocId,rules){
+  rules=rules||URLAUB_RULES_DEFAULT;
   if(!fromStr||!toStr)return{ok:false,reason:t('v_pick')};
   var f=maParseDate(fromStr),tt=maParseDate(toStr);
   if(!f||!tt)return{ok:false,reason:t('v_invalid')};
   if(tt<f)return{ok:false,reason:t('v_endb4')};
   var ahead=maDaysAhead(fromStr,todayStr);
-  if(ahead<10)return{ok:false,reason:t('v_min10',{n:ahead})};
+  if(ahead<rules.minAdvanceDays)return{ok:false,reason:t('v_min10',{n:ahead,min:rules.minAdvanceDays})};
+  if(rules.maxDaysPerRequest){
+    var span=Math.round((tt-f)/86400000)+1;
+    if(span>rules.maxDaysPerRequest)return{ok:false,reason:t('v_maxdays',{n:rules.maxDaysPerRequest,m:span})};
+  }
+  var blackout=maBlackoutHit(fromStr,toStr,rules);
+  if(blackout)return{ok:false,reason:t('v_blackout',{label:blackout.label||(maFmtDE(blackout.from)+'–'+maFmtDE(blackout.to)),range:maFmtDE(blackout.from)+'–'+maFmtDE(blackout.to)})};
   for(var i=0;i<existing.length;i++){
     var e=existing[i];
     if(e.status==='rejected')continue;
@@ -2875,7 +2900,7 @@ function maShowApp(sess){
   // Firebase realtime (falls konfiguriert)
   if(fbEnabled()){
     var afterFbReady=function(){
-      maStartFbUrlaub(sess); maStartFbNews(); maRefreshProfile(); weloLoadSelf();
+      maStartFbUrlaub(sess); maStartFbNews(); maRefreshProfile(); weloLoadSelf(); maLoadUrlaubRules(sess);
       // WICHTIG: Nach erfolgreichem Firebase-Login die Ansichten EINMAL neu rendern.
       // Beim ersten maShowApp() war fbReady noch false → Dienstplan blieb auf
       // "noch nicht veröffentlicht" stehen, bis der Nutzer den Monat manuell wechselte.
@@ -3711,6 +3736,25 @@ function maReqFeedback(v){
 // diese Pruefung kommt nur ZUSAETZLICH dazu. Bewusst kein Live-Listener wie
 // bei der Stammfiliale (maStartFbUrlaub) — nur bei Bedarf abgefragt, um nicht
 // dauerhaft weitere Firestore-Abos je Zweitfiliale offen zu halten.
+// Urlaub-Regeln der eigenen Region (regions/{region}.urlaubRules, vom
+// Gebietsleiter in index.html gepflegt) — Defaults entsprechen exakt dem
+// alten, fest einprogrammierten Verhalten, damit eine Region ohne eigene
+// Konfiguration sich unverändert verhält (Auftrag t.duong 10.09.2026).
+var URLAUB_RULES_DEFAULT={minAdvanceDays:10,maxDaysPerRequest:null,zweitfilialeCountsForConflict:true,minStaffRequired:1,staffBlockMode:'warn',blackoutPeriods:[]};
+var maUrlaubRules=URLAUB_RULES_DEFAULT;
+function maLoadUrlaubRules(sess){
+  if(!fbReady||!fbDb||!sess||!sess.region){ maUrlaubRules=URLAUB_RULES_DEFAULT; return Promise.resolve(maUrlaubRules); }
+  return fbDb.collection('regions').doc(sess.region).get().then(function(doc){
+    var r=(doc.exists&&doc.data().urlaubRules)||{};
+    maUrlaubRules=Object.assign({}, URLAUB_RULES_DEFAULT, r);
+    return maUrlaubRules;
+  }).catch(function(e){ console.warn('maLoadUrlaubRules', e); maUrlaubRules=URLAUB_RULES_DEFAULT; return maUrlaubRules; });
+}
+function maBlackoutHit(fromStr,toStr,rules){
+  var list=(rules&&rules.blackoutPeriods)||[];
+  for(var i=0;i<list.length;i++){ if(maRangesOverlap(fromStr,toStr,list[i].from,list[i].to)) return list[i]; }
+  return null;
+}
 function maReqLoadZweitUrlaub(sess){
   var zweit=(sess.zweit||[]).filter(Boolean);
   if(!fbReady||!fbDb||!zweit.length) return Promise.resolve([]);
@@ -3740,10 +3784,29 @@ function maRequestUrlaub(){
   var trimmed=maTrimSonntag(document.getElementById('ul-from').value,document.getElementById('ul-to').value);
   var from=trimmed.from,to=trimmed.to;
   var fb=document.getElementById('ul-feedback');
-  maReqLoadZweitUrlaub(sess).then(function(zweitEntries){
+  var rules=maUrlaubRules;
+  // Zweitfiliale nur laden/prüfen, wenn die Region das so eingestellt hat —
+  // sonst unnötige Firestore-Reads UND unnötiger Konflikt, den der
+  // Gebietsleiter bewusst nicht (mehr) haben will.
+  var zweitPromise=rules.zweitfilialeCountsForConflict ? maReqLoadZweitUrlaub(sess) : Promise.resolve([]);
+  zweitPromise.then(function(zweitEntries){
   var existing=maFilialeUrlaub(sess.filiale).concat(zweitEntries);
-  var v=maValidateUrlaub(from,to,existing,maTodayISO(),sess.id,maEditReq);
+  var v=maValidateUrlaub(from,to,existing,maTodayISO(),sess.id,maEditReq,rules);
   if(!v.ok){ maReqFeedback(v); return; }
+  // Mindestbesetzung nur als HARTE Sperre prüfen, wenn die Region das so will
+  // (staffBlockMode==='block') — im Standardfall ('warn') bleibt es bei der
+  // reinen Anzeige in maCheckBesetzungPreview, hier wird nichts blockiert.
+  // Bei unbekanntem Dienstplan (allOk===null) NICHT blockieren — das wäre
+  // eine Sperre ohne belastbare Grundlage.
+  var staffPromise = rules.staffBlockMode==='block'
+    ? bzCheck(sess.filiale, from, to, maFbUrlaub||[], sess.id, maEditReq, rules.minStaffRequired).catch(function(){ return null; })
+    : Promise.resolve(null);
+  staffPromise.then(function(staffRes){
+  if(staffRes && staffRes.allOk===false){
+    var bad=staffRes.days.filter(function(d){return d.ok===false;});
+    maReqFeedback({ok:false, reason:t('v_staff_block',{n:bad.length,min:staffRes.minStaff})});
+    return;
+  }
   if(fbReady&&fbDb){
     var col=fbDb.collection('filialen').doc(fbSlug(sess.filiale||'')).collection('urlaub');
     var editing=maEditReq;
@@ -3794,6 +3857,7 @@ function maRequestUrlaub(){
   var msg='🌴 *Urlaubsantrag*\n\nName: '+sess.name+'\nPersonalnr.: '+sess.id+'\nFiliale: '+sess.filiale+'\nZeitraum: '+maFmtDE(from)+' – '+maFmtDE(to)+'\n\nBitte um Freigabe.';
   if(wa)window.open('https://wa.me/'+wa+'?text='+encodeURIComponent(msg),'_blank');
   else prompt(t('wa_missing'),msg);
+  });
   });
 }
 

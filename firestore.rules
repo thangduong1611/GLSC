@@ -65,8 +65,19 @@ service cloud.firestore {
     // eine neue Region künftig ohne Code-Änderung nutzbar ist: es reicht,
     // hier einen Doc + einen managers/{email}-Eintrag anzulegen.
     match /regions/{slug} {
-      allow get, list: if isManager();
-      allow write: if false;
+      // "get" auch für Mitarbeiter (isAuthed) — mitarbeiter.html liest hier
+      // die urlaubRules der eigenen Region direkt, um dieselben Regeln
+      // clientseitig zu prüfen wie der Gebietsleiter in index.html einträgt.
+      // "list" bleibt Manager-only (kein Anwendungsfall für Mitarbeiter, und
+      // verhindert das Durchzählen aller Regionen).
+      allow get: if isAuthed();
+      allow list: if isManager();
+      // Ein Manager darf nur urlaubRules seiner EIGENEN Region ändern — label/
+      // syncUrl bleiben admin-only (per Skript gesetzt, siehe regions/{slug}
+      // Kommentar weiter oben im Projekt).
+      allow update: if isManagerForRegion(slug)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['urlaubRules']);
+      allow create, delete: if false;
     }
 
     // ══════════════════════════════════════════════════════════

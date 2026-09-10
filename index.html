@@ -1050,6 +1050,47 @@ window.onerror=function(msg,src,line){
     <div id="fr-creds-stat" style="font-size:12px;margin-top:8px;font-weight:600"></div>
   </div>
   <div class="card">
+    <div class="card-title">🌴 Urlaub-Regeln <span class="badge badge-blu" id="ur-region-badge">—</span></div>
+    <div class="info">Gelten nur für Urlaubsanträge von Mitarbeitern in der aktuell gewählten Region — jede Region kann ihre eigenen Regeln haben.</div>
+    <div class="row2">
+      <div><label>Mindestens X Tage im Voraus beantragen</label><input type="number" id="ur-min-advance" min="0" step="1"></div>
+      <div><label>Höchstens X Tage am Stück (leer = kein Limit)</label><input type="number" id="ur-max-days" min="1" step="1" placeholder="kein Limit"></div>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;margin-top:12px;cursor:pointer">
+      <input type="checkbox" id="ur-zweit-conflict" style="width:16px;height:16px">
+      <span>Überschneidung mit der Zweitfiliale zählt auch als Konflikt</span>
+    </label>
+    <div style="margin-top:14px;padding:12px;background:var(--bg);border-radius:var(--rs);border:1px solid var(--brd)">
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px">Mindestbesetzung</div>
+      <div class="row2">
+        <div><label>Mind. X Personen müssen an jedem Tag noch da sein</label><input type="number" id="ur-min-staff" min="0" step="1"></div>
+        <div><label>Bei Unterschreitung</label>
+          <select id="ur-staff-mode">
+            <option value="warn">Nur warnen (Mitarbeiter kann trotzdem senden)</option>
+            <option value="block">Sperren (Antrag kann nicht gesendet werden)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:14px;padding:12px;background:var(--bg);border-radius:var(--rs);border:1px solid var(--brd)">
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px">Gesperrte Zeiträume (Sperrzeiten, z.B. Weihnachten)</div>
+      <div id="ur-blackout-list" style="margin-bottom:8px"></div>
+      <div class="row2">
+        <div><label>Von</label><input type="date" id="ur-bo-from"></div>
+        <div><label>Bis</label><input type="date" id="ur-bo-to"></div>
+      </div>
+      <label>Bezeichnung</label>
+      <input type="text" id="ur-bo-label" placeholder="z.B. Weihnachten/Silvester">
+      <div class="btn-row" style="margin-top:8px">
+        <button class="btn btn-sm" onclick="urBlackoutAdd()">+ Zeitraum hinzufügen</button>
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-grn" onclick="urRulesSave()" style="flex:1;justify-content:center">💾 Regeln speichern</button>
+    </div>
+    <div id="ur-rules-stat" style="font-size:12px;margin-top:8px;font-weight:600"></div>
+  </div>
+  <div class="card">
     <div class="card-title">📲 Mitarbeiter-App <span class="badge badge-grn">Cloud</span></div>
     <div class="info"><strong>Datenschutz-Modus:</strong> Daten werden direkt in die Cloud veröffentlicht — keine Datei mehr an Mitarbeiter senden. Mitarbeiter melden sich nur mit ihrer Personalnummer an und sehen ausschließlich die eigene Filiale.</div>
     <label>Manager-Login (Firebase)</label>
@@ -4746,14 +4787,84 @@ function fbInit(onReady){
 // (z.B. "hoang") — steuert, ob das Filial-Radar-Zugangsdaten-Formular in
 // Settings angezeigt wird (siehe regionRenderSwitcher()).
 var REGION_SYNC_URL={};
+// Urlaub-Regeln pro Region (regions/{slug}.urlaubRules) — Mitarbeiter lesen
+// dieselbe Collection direkt in mitarbeiter.html; Defaults hier entsprechen
+// genau dem alten, fest einprogrammierten Verhalten (10 Tage Vorlauf,
+// Zweitfiliale zählt als Konflikt, keine weiteren Grenzen), damit eine Region
+// ohne eigene Konfiguration sich exakt wie bisher verhält.
+var URLAUB_RULES_DEFAULT={minAdvanceDays:10,maxDaysPerRequest:null,zweitfilialeCountsForConflict:true,minStaffRequired:1,staffBlockMode:'warn',blackoutPeriods:[]};
+var REGION_URLAUB_RULES={};
+var urBlackoutDraft=[];
 function regionLoadLabels(){
   return fbDb.collection('regions').get().then(function(snap){
     snap.forEach(function(doc){
       var d=doc.data()||{};
       if(d.label) REGION_LABELS[doc.id]=d.label;
       if(d.syncUrl) REGION_SYNC_URL[doc.id]=d.syncUrl;
+      REGION_URLAUB_RULES[doc.id]=Object.assign({}, URLAUB_RULES_DEFAULT, d.urlaubRules||{});
     });
   }).catch(function(e){ console.warn('regions labels', e.message); });
+}
+function urRulesForRegion(region){ return REGION_URLAUB_RULES[region] || URLAUB_RULES_DEFAULT; }
+function urRenderBlackoutList(){
+  var box=document.getElementById('ur-blackout-list'); if(!box) return;
+  if(!urBlackoutDraft.length){ box.innerHTML='<div style="font-size:12px;color:var(--mut)">Keine Sperrzeiten.</div>'; return; }
+  box.innerHTML=urBlackoutDraft.map(function(b,i){
+    return '<div style="display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:0.5px solid var(--brd);font-size:13px">'
+      +'<span style="flex:1">'+fmtDate(b.from)+' – '+fmtDate(b.to)+(b.label?' · '+uglXmlEscape(b.label):'')+'</span>'
+      +'<button class="btn btn-sm" style="color:#C0392B;border-color:#C0392B" onclick="urBlackoutRemove('+i+')">🗑</button>'
+      +'</div>';
+  }).join('');
+}
+function urBlackoutAdd(){
+  var from=document.getElementById('ur-bo-from').value, to=document.getElementById('ur-bo-to').value;
+  var label=document.getElementById('ur-bo-label').value.trim();
+  if(!from||!to){ toast('Bitte Von und Bis wählen.',true); return; }
+  if(to<from){ toast('„Bis" liegt vor „Von".',true); return; }
+  urBlackoutDraft.push({from:from,to:to,label:label});
+  urBlackoutDraft.sort(function(a,b){return a.from<b.from?-1:1;});
+  document.getElementById('ur-bo-from').value=''; document.getElementById('ur-bo-to').value=''; document.getElementById('ur-bo-label').value='';
+  urRenderBlackoutList();
+}
+function urBlackoutRemove(i){ urBlackoutDraft.splice(i,1); urRenderBlackoutList(); }
+function urRulesRender(){
+  if(!activeRegion) return;
+  var badge=document.getElementById('ur-region-badge'); if(badge) badge.textContent=REGION_LABELS[activeRegion]||activeRegion;
+  var r=urRulesForRegion(activeRegion);
+  document.getElementById('ur-min-advance').value=r.minAdvanceDays;
+  document.getElementById('ur-max-days').value=r.maxDaysPerRequest||'';
+  document.getElementById('ur-zweit-conflict').checked=!!r.zweitfilialeCountsForConflict;
+  document.getElementById('ur-min-staff').value=r.minStaffRequired;
+  document.getElementById('ur-staff-mode').value=r.staffBlockMode;
+  urBlackoutDraft=(r.blackoutPeriods||[]).map(function(b){return {from:b.from,to:b.to,label:b.label||''};});
+  urRenderBlackoutList();
+}
+function urRulesSave(){
+  if(!fbReady||!fbDb||!fbManager||!activeRegion){ alert('Bitte zuerst als Manager anmelden.'); return; }
+  var minAdvance=parseInt(document.getElementById('ur-min-advance').value,10);
+  if(isNaN(minAdvance)||minAdvance<0){ toast('Bitte gültige Anzahl Tage (Vorlauf) angeben.',true); return; }
+  var maxDaysRaw=document.getElementById('ur-max-days').value.trim();
+  var maxDays=maxDaysRaw?parseInt(maxDaysRaw,10):null;
+  if(maxDaysRaw&&(isNaN(maxDays)||maxDays<1)){ toast('Höchstdauer muss eine positive Zahl sein (oder leer lassen).',true); return; }
+  var minStaff=parseInt(document.getElementById('ur-min-staff').value,10);
+  if(isNaN(minStaff)||minStaff<0){ toast('Bitte gültige Mindestbesetzung angeben.',true); return; }
+  var rules={
+    minAdvanceDays:minAdvance,
+    maxDaysPerRequest:maxDays,
+    zweitfilialeCountsForConflict:document.getElementById('ur-zweit-conflict').checked,
+    minStaffRequired:minStaff,
+    staffBlockMode:document.getElementById('ur-staff-mode').value,
+    blackoutPeriods:urBlackoutDraft.slice(),
+  };
+  var stat=document.getElementById('ur-rules-stat');
+  stat.textContent='⏳ Speichere…'; stat.style.color='#6B6860';
+  fbDb.collection('regions').doc(activeRegion).set({urlaubRules:rules},{merge:true})
+    .then(function(){
+      REGION_URLAUB_RULES[activeRegion]=Object.assign({}, URLAUB_RULES_DEFAULT, rules);
+      stat.textContent='✓ Gespeichert'; stat.style.color='#1E8449';
+      toast('✓ Urlaub-Regeln gespeichert');
+    })
+    .catch(function(e){ stat.textContent='Fehler: '+e.message; stat.style.color='#C0392B'; });
 }
 function regionResolve(regions, onReady){
   var saved=localStorage.getItem('sc_active_region');
@@ -4794,6 +4905,7 @@ function regionRenderSwitcher(){
   var kpiCard=document.getElementById('kpi-drafts-card');
   if(kpiCard){ kpiCard.style.display=(activeRegion==='ost'||activeRegion==='west')?'block':'none'; if(kpiCard.style.display==='block' && typeof kpiDraftsRender==='function') kpiDraftsRender(); }
   if(typeof weekWeloBindRegion==='function') weekWeloBindRegion();
+  if(typeof urRulesRender==='function') urRulesRender();
   var wrap=document.getElementById('region-switcher-wrap');
   var label=document.getElementById('region-switcher-label');
   if(!wrap||!label) return;
