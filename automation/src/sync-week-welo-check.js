@@ -1,18 +1,40 @@
 // Wöchentlicher Abgleich: wer hat DIESE Woche genehmigten Urlaub bzw. eine
-// Krankmeldung in der App — und ist das auch schon in Welo (U/K-Liste)
-// erfasst? Reine Leseaktion, schreibt NIE etwas auf Welo (Auftrag t.duong
-// 10.09.2026: "so sánh giữa những người có Urlaub được plan của tuần hiện
-// tại đã được buch trên Welo chưa, hoặc những ai nghỉ ốm tuần hiện tại đã
-// được buch chưa"). Ergebnis geht nach welo_week_check/{region} — ein Dok.
-// pro Region, bei jedem Lauf komplett überschrieben (kein Verlauf nötig,
-// die App zeigt immer nur den aktuellen Stand), analog zu
-// inventur_welo_preview (sync-inventur-diff.js).
+// Krankmeldung in der App — und ist das auch schon in Welo erfasst? Reine
+// Leseaktion, schreibt NIE etwas auf Welo (Auftrag t.duong 10.09.2026).
+// Ergebnis geht nach welo_week_check/{region} — 1 Dok. pro Region, bei
+// jedem Lauf komplett überschrieben.
 //
-// Wiederverwendet die U/K-Listen-Scraping-Logik aus scrape-welo-urlaub.js
-// (DOM-Struktur dort ausführlich dokumentiert), hier aber auf die aktuelle
-// Kalenderwoche statt eines festen Sep-Dez-Zeitraums umgestellt, und mit
-// "Krank" (rot) zusätzlich zu "Urlaub" (blau) abgeglichen — der Auftrag
-// nennt beides, das alte Skript hatte Krank nur mitgeloggt.
+// WICHTIG (Bugfix 10.09.2026, live mit Screenshot des Nutzers verifiziert):
+// die erste Version las die Welo "U/K-Liste" (/urlaubsliste/{jahr}-{typ}-
+// alle-v-01.html, typ=fs/mj/tmdm). Diese 3 Listen decken NICHT alle
+// Mitarbeiter ab — z.B. fehlen dort Mitarbeiter mit Anstellungsart
+// "Festang. mit Gehalt" (Monatsgehalt statt Stundenlohn) komplett (111
+// aktive Mitarbeiter in der App, aber nur 51 Zeilen über alle 3 Listen
+// zusammen). Ein fehlender Mitarbeiter in der Liste sah für den Abgleich
+// aus wie "kein Welo-Urlaub gefunden" — obwohl die Person auf ihrer
+// eigenen Jahresansicht-Seite ganz normal als Urlaub markiert war (siehe
+// Screenshot: Frau Tran, Thi Bich, Personal-Nr. 350153, grüne Markierung
+// 10.-12.09.2026, aber weder auf der fs- noch mj- noch tmdm-Liste zu finden).
+//
+// Fix: statt der 3 Sammel-Listen wird jetzt PRO betroffenem Mitarbeiter
+// direkt die eigene Jahresansicht-Seite gelesen (/pf/jahresansicht/
+// {PersonalNr}-{Jahr}.html — exakt die Seite, die auch ein Mensch im
+// Browser aufruft). Das deckt jede Anstellungsart ab (per-Mitarbeiter-Seite,
+// keine Typ-Filterung) und ist effizient, weil pro Lauf nur für die
+// Mitarbeiter mit einem App-Eintrag diese Woche 1-2 Seiten geladen werden
+// (nicht alle ~111 Mitarbeiter).
+//
+// DOM-Struktur (live verifiziert 10.09.2026): jeder Tag ist eine eigene
+// <table class="tgl"|"tgd" _r="YYYYMMDD">-Zelle ("tgl" = normaler Tag,
+// "tgd" = Tag mit besonderem Status wie Urlaub/Krank — reine Render-Klasse,
+// für den Inhalt irrelevant). Darin <img class="ma" src="/images/xN.gif">
+// zeigt die Tages-Kategorie über eine feste Icon-Nummer; am ERSTEN Tag
+// eines zusammenhängenden Blocks steht zusätzlich <span class="ur"> bzw.
+// <span class="kr"> davor (bestätigt über die eigene Legende der Seite:
+// a.ur{color:blue}=Urlaub, a.kr{color:red}=Krank). Icon-Zuordnung über 4
+// verschiedene Mitarbeiter/Anstellungsarten hinweg konsistent verifiziert:
+// x10.gif=Urlaub, x6.gif/x7.gif=Krank — nie widersprüchlich mit der
+// span-Klasse, wo eine vorhanden war.
 require('dotenv').config();
 const { chromium } = require('playwright');
 const { getDb, admin } = require('./firestore-client');
@@ -21,23 +43,18 @@ const BASE_URL = process.env.WELO_BASE_URL || 'https://welo.sushi-circle.de';
 const USER = process.env.WELO_USER;
 const PASSWORD = process.env.WELO_PASSWORD;
 
-const FARBE_ZU_KATEGORIE = {
-  blue: 'Urlaub',
-  red: 'Krank',
-  '#808': 'Sonderurlaub',
-  '#80d': 'Arbeitsunfall',
-  '#558': 'Unbezahlt',
+const ICON_KATEGORIE = {
+  'x10.gif': 'Urlaub',
+  'x6.gif': 'Krank',
+  'x7.gif': 'Krank',
 };
 
 function isoOf(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 function addDays(d, n) { const r = new Date(d); r.setDate(r.getDate() + n); return r; }
-// Datum in Berlin-Ortszeit statt Server-Zeitzone (Cloud Run läuft in UTC) —
-// über Mittag geparst, damit der max. 2h-Zeitzonenunterschied nie den
-// Kalendertag verschiebt (siehe unten in currentWeekRange).
 function todayBerlinISO() { return new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Berlin' }); }
 function currentWeekRange() {
   const d = new Date(todayBerlinISO() + 'T12:00:00');
-  const dow = d.getDay(); // 0=So, 1=Mo, ... 6=Sa
+  const dow = d.getDay();
   const diffToMonday = dow === 0 ? -6 : 1 - dow;
   const monday = addDays(d, diffToMonday);
   const sunday = addDays(monday, 6);
@@ -45,6 +62,7 @@ function currentWeekRange() {
 }
 function overlaps(a1, a2, b1, b2) { return a1 <= b2 && b1 <= a2; }
 function clip(from, to, lo, hi) { return { from: from < lo ? lo : from, to: to > hi ? hi : to }; }
+function rToIso(r) { return r.slice(0, 4) + '-' + r.slice(4, 6) + '-' + r.slice(6, 8); }
 
 async function login(page) {
   await page.goto(`${BASE_URL}/`);
@@ -57,80 +75,59 @@ async function login(page) {
   return m[1];
 }
 
-// Gruppiert eine sortierte Liste von {dateIso, kategorie} in zusammenhaengende
-// {from, to, kategorie}-Bloecke (aufeinanderfolgende Kalendertage, gleiche Kategorie).
-function gruppiereBloecke(tage) {
-  const bloecke = [];
-  let cur = null;
-  tage.forEach((t) => {
-    if (cur && cur.kategorie === t.kategorie && isoOf(addDays(new Date(cur.to + 'T00:00:00'), 1)) === t.dateIso) {
-      cur.to = t.dateIso;
-    } else {
-      if (cur) bloecke.push(cur);
-      cur = { from: t.dateIso, to: t.dateIso, kategorie: t.kategorie };
-    }
-  });
-  if (cur) bloecke.push(cur);
-  return bloecke;
-}
-
-async function scrapeTyp(page, sessionBase, year, typ) {
-  await page.goto(`${sessionBase}/urlaubsliste/${year}-${typ}-alle-v-01.html`);
-  return page.evaluate((y) => {
-    const rows = [];
-    document.querySelectorAll('tr.n').forEach((tr) => {
-      const idLink = tr.querySelector('td a[href*="/pf/info/"]');
-      if (!idLink) return;
-      const idMatch = idLink.getAttribute('href').match(/\/pf\/info\/(\d+)\.html/);
-      if (!idMatch) return;
-      const id = idMatch[1];
-      const nameCell = tr.querySelectorAll('td')[1];
-      const name = nameCell ? nameCell.textContent.trim().split('\n')[0] : '';
-      const piSpan = tr.querySelector('.pi');
-      const tage = [];
-      if (piSpan) {
-        piSpan.querySelectorAll('b, span').forEach((el) => {
-          const txt = el.textContent.trim();
-          const m = txt.match(/^(\d{2})\.(\d{2})$/);
-          if (!m) return;
-          const style = el.getAttribute('style') || '';
-          const colorMatch = style.match(/color:\s*([^;]+)/);
-          if (!colorMatch) return;
-          const color = colorMatch[1].trim().toLowerCase();
-          const dateIso = y + '-' + m[2] + '-' + m[1];
-          tage.push({ dateIso, color });
-        });
-      }
-      rows.push({ id, name, tage });
+// Liest die Jahresansicht eines Mitarbeiters, gibt {isoDatum: kategorie} für
+// alle Tage zurück, die ein bekanntes Icon (Urlaub/Krank) tragen.
+async function scrapeEmployeeYear(page, sessionBase, empId, year) {
+  await page.goto(`${sessionBase}/pf/jahresansicht/${empId}-${year}.html`);
+  const raw = await page.evaluate(() => {
+    const out = [];
+    document.querySelectorAll('table.tgd[_r], table.tgl[_r]').forEach((t) => {
+      const img = t.querySelector('img.ma');
+      if (!img) return;
+      const src = img.getAttribute('src') || '';
+      out.push({ r: t.getAttribute('_r'), icon: src.slice(src.lastIndexOf('/') + 1) });
     });
-    return rows;
-  }, year);
+    return out;
+  });
+  const map = {};
+  raw.forEach(({ r, icon }) => {
+    const kat = ICON_KATEGORIE[icon];
+    if (kat) map[rToIso(r)] = kat;
+  });
+  return map;
 }
 
-// Liest die U/K-Listen aller 3 Personalarten (fs/mj/tmdm), für jedes Jahr,
-// das die Woche berührt (nur relevant für die eine Woche im Jahr um Silvester),
-// und gruppiert pro Mitarbeiter in Bloecke, beschränkt auf [weekStart, weekEnd].
-async function scrapeWeekBloecke(page, sessionBase, weekStart, weekEnd) {
-  const years = Array.from(new Set([weekStart.slice(0, 4), weekEnd.slice(0, 4)]));
-  const merged = {}; // id -> {name, tage:[{dateIso,color}]}
-  for (const year of years) {
-    for (const typ of ['fs', 'mj', 'tmdm']) {
-      const rows = await scrapeTyp(page, sessionBase, year, typ);
-      rows.forEach((r) => {
-        if (!merged[r.id]) merged[r.id] = { name: r.name, tage: [] };
-        merged[r.id].tage.push(...r.tage);
-      });
-    }
+// Cache pro Mitarbeiter+Jahr, damit derselbe Mitarbeiter (z.B. bei mehreren
+// Zeiträumen) nicht zweimal geladen wird.
+function makeYearCache(page, sessionBase) {
+  const cache = new Map();
+  return async function getYear(empId, year) {
+    const key = empId + '-' + year;
+    if (!cache.has(key)) cache.set(key, await scrapeEmployeeYear(page, sessionBase, empId, year));
+    return cache.get(key);
+  };
+}
+
+// Prüft, ob JEDER Tag im Bereich [from,to] in Welo als "kategorie" markiert
+// ist — nicht nur eine Überlappung, sondern lückenlos, damit ein nur
+// teilweise eingetragener Zeitraum ebenfalls als "noch zu prüfen" auffällt.
+// Sonntage werden übersprungen (live verifiziert 10.09.2026, Mitarbeiter
+// 350153): innerhalb eines Urlaubsblocks markiert Welo den Sonntag mit einem
+// EIGENEN Icon (x8.gif statt x10.gif), nicht mit dem normalen
+// Urlaub-Icon — ohne diese Ausnahme würde jeder über einen Sonntag
+// laufende Urlaub fälschlich als "fehlt in Welo" gemeldet, obwohl Mo-Sa
+// korrekt eingetragen sind.
+async function weloDeckt(getYear, empId, kategorie, from, to) {
+  const years = Array.from(new Set([from.slice(0, 4), to.slice(0, 4)]));
+  const dayMap = {};
+  for (const year of years) Object.assign(dayMap, await getYear(empId, year));
+  let d = new Date(from + 'T00:00:00');
+  const end = new Date(to + 'T00:00:00');
+  while (d <= end) {
+    if (d.getDay() !== 0 && dayMap[isoOf(d)] !== kategorie) return false;
+    d = addDays(d, 1);
   }
-  const result = {};
-  Object.entries(merged).forEach(([id, v]) => {
-    const tage = v.tage
-      .filter((t) => t.dateIso >= weekStart && t.dateIso <= weekEnd)
-      .map((t) => ({ dateIso: t.dateIso, kategorie: FARBE_ZU_KATEGORIE[t.color] || ('unbekannt:' + t.color) }))
-      .sort((a, b) => a.dateIso.localeCompare(b.dateIso));
-    if (tage.length) result[id] = { name: v.name, bloecke: gruppiereBloecke(tage) };
-  });
-  return result;
+  return true;
 }
 
 async function main() {
@@ -138,17 +135,6 @@ async function main() {
   const db = getDb();
   const { weekStart, weekEnd } = currentWeekRange();
   console.log(`Prüfe Woche ${weekStart} – ${weekEnd} …`);
-
-  const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport: { width: 1400, height: 1200 } });
-  let weloScan;
-  try {
-    console.log('Login bei Welo …');
-    const sessionBase = await login(page);
-    weloScan = await scrapeWeekBloecke(page, sessionBase, weekStart, weekEnd);
-  } finally {
-    await browser.close();
-  }
 
   // App-Urlaub: nur genehmigt, überlappt diese Woche.
   const urlSnap = await db.collectionGroup('urlaub').get();
@@ -161,8 +147,8 @@ async function main() {
     appUrlaub.push({ empId: '' + v.empId, name: v.name || '', filiale: v.filiale || '', region: v.region || null, ...clip(v.from, v.to, weekStart, weekEnd) });
   });
 
-  // App-Krankmeldung: kein Status-Feld (reine Meldung) — offenes "bis" heißt
-  // "noch laufend", dafür wird zumindest bis Wochenende angenommen.
+  // App-Krankmeldung: kein Status-Feld — offenes "bis" heißt "noch laufend",
+  // dafür wird zumindest bis Wochenende angenommen.
   const krSnap = await db.collection('krank').get();
   const appKrank = [];
   krSnap.forEach((d) => {
@@ -173,14 +159,30 @@ async function main() {
     appKrank.push({ empId: '' + v.empId, name: v.name || '', filiale: v.filiale || '', region: v.region || null, ...clip(v.from, to, weekStart, weekEnd) });
   });
 
-  function fehltInWelo(entry, kategorie) {
-    const scan = weloScan[entry.empId];
-    if (!scan) return true;
-    return !scan.bloecke.some((b) => b.kategorie === kategorie && overlaps(b.from, b.to, entry.from, entry.to));
+  if (!appUrlaub.length && !appKrank.length) {
+    console.log('Diese Woche keine genehmigten Urlaube/Krankmeldungen in der App — nichts zu prüfen.');
   }
 
-  const urlaubMissing = appUrlaub.filter((e) => fehltInWelo(e, 'Urlaub'));
-  const krankMissing = appKrank.filter((e) => fehltInWelo(e, 'Krank'));
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 1400, height: 1200 } });
+  const urlaubMissing = [];
+  const krankMissing = [];
+  try {
+    console.log('Login bei Welo …');
+    const sessionBase = await login(page);
+    const getYear = makeYearCache(page, sessionBase);
+
+    for (const e of appUrlaub) {
+      const ok = await weloDeckt(getYear, e.empId, 'Urlaub', e.from, e.to);
+      if (!ok) urlaubMissing.push(e);
+    }
+    for (const e of appKrank) {
+      const ok = await weloDeckt(getYear, e.empId, 'Krank', e.from, e.to);
+      if (!ok) krankMissing.push(e);
+    }
+  } finally {
+    await browser.close();
+  }
 
   const now = admin.firestore.FieldValue.serverTimestamp();
   const byRegion = {};
