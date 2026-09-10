@@ -513,6 +513,27 @@ window.onerror=function(msg,src,line){
     <div id="an-wait-list"></div>
   </div>
 
+  <!-- Nur sichtbar für Regionen mit eigenem Cloud-Run-Konto (wie inv-welo-card
+       in Inventur) — Vergleich läuft serverseitig per Playwright, kann nicht
+       direkt im Browser laufen. -->
+  <div class="card" id="week-welo-card" style="display:none">
+    <div class="card-title">🔄 Welo-Abgleich (diese Woche) <span class="badge badge-amb" id="week-welo-badge" style="display:none">0</span></div>
+    <div class="info">Vergleicht genehmigten Urlaub und Krankmeldungen dieser Woche mit den Eintragungen in Welo — liest nur, schreibt nie etwas auf Welo.</div>
+    <div class="btn-row">
+      <button class="btn" onclick="weekWeloRun()" id="week-welo-run-btn" style="flex:1;justify-content:center">🔄 Vergleich neu laufen lassen</button>
+    </div>
+    <div id="week-welo-stat" style="font-size:12px;margin-top:8px;color:var(--mut)"></div>
+    <div id="week-welo-range" style="font-size:12px;color:var(--mut);margin-top:4px"></div>
+    <div style="margin-top:12px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">🌴 Urlaub nicht in Welo gefunden</div>
+      <div id="week-welo-urlaub-list"></div>
+    </div>
+    <div style="margin-top:14px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:6px">🏥 Krankmeldung nicht in Welo gefunden</div>
+      <div id="week-welo-krank-list"></div>
+    </div>
+  </div>
+
   <!-- Mode switcher -->
   <div style="display:flex;gap:8px;margin-bottom:14px">
     <button id="u-mode-btn-auto" class="btn btn-red" onclick="uSetMode('auto')" style="flex:1;justify-content:center">
@@ -4772,6 +4793,7 @@ function regionRenderSwitcher(){
   // in anderen Regionen (z.B. Hoàng) passen weder Filialnamen noch Zahlen.
   var kpiCard=document.getElementById('kpi-drafts-card');
   if(kpiCard){ kpiCard.style.display=(activeRegion==='ost'||activeRegion==='west')?'block':'none'; if(kpiCard.style.display==='block' && typeof kpiDraftsRender==='function') kpiDraftsRender(); }
+  if(typeof weekWeloBindRegion==='function') weekWeloBindRegion();
   var wrap=document.getElementById('region-switcher-wrap');
   var label=document.getElementById('region-switcher-label');
   if(!wrap||!label) return;
@@ -7369,6 +7391,62 @@ function invApproveWelo(previewId){
       if(!res.ok){ alert('Fehler: '+(res.d.error||'unbekannt')); return; }
       toast('✓ In Welo eingetragen — bitte dort prüfen und "Inventur abschließen" bestätigen.');
     }).catch(function(e){ alert('Fehler: '+e.message); });
+}
+
+// ── Wochen-Abgleich: Urlaub/Krankmeldung dieser Woche vs. Welo (nur lesen) ──
+// Siehe automation/src/sync-week-welo-check.js. 1 Dok/Region, wird komplett
+// überschrieben — kein "je Filiale freigeben" nötig, weil hier nie auf Welo
+// geschrieben wird (Auftrag t.duong 10.09.2026).
+var weekWeloUnsub=null, weekWeloData=null;
+function weekWeloBindRegion(){
+  var card=document.getElementById('week-welo-card');
+  if(card) card.style.display=(activeRegion && REGION_SYNC_URL[activeRegion])?'block':'none';
+  if(weekWeloUnsub){ try{weekWeloUnsub();}catch(e){} weekWeloUnsub=null; }
+  weekWeloData=null;
+  if(!fbReady||!fbDb||!activeRegion||!REGION_SYNC_URL[activeRegion]){ weekWeloRender(); return; }
+  weekWeloUnsub=fbDb.collection('welo_week_check').doc(activeRegion).onSnapshot(function(doc){
+    weekWeloData=doc.exists?doc.data():null;
+    weekWeloRender();
+  }, function(e){ console.warn('week welo check',e); });
+}
+function weekWeloRun(){
+  var syncUrl=REGION_SYNC_URL[activeRegion]; if(!syncUrl) return;
+  var btn=document.getElementById('week-welo-run-btn'), stat=document.getElementById('week-welo-stat');
+  btn.disabled=true; stat.textContent='⏳ Vergleiche mit Welo… (kann ein paar Minuten dauern)'; stat.style.color='#6B6860';
+  firebase.auth().currentUser.getIdToken().then(function(idToken){
+    return fetch(syncUrl+'/internal/week-welo-check', { method:'POST', headers:{ Authorization:'Bearer '+idToken } });
+  }).then(function(r){ return r.json().then(function(d){ return {ok:r.ok, d:d}; }); })
+    .then(function(res){
+      btn.disabled=false;
+      if(!res.ok){ stat.textContent='⚠️ Fehler: '+(res.d.error||'unbekannt'); stat.style.color='#C0392B'; return; }
+      stat.textContent='✓ Vergleich abgeschlossen.'; stat.style.color='#1E8449';
+    }).catch(function(e){ btn.disabled=false; stat.textContent='⚠️ Fehler: '+e.message; stat.style.color='#C0392B'; });
+}
+function weekWeloRenderList(elId, entries){
+  var box=document.getElementById(elId); if(!box) return;
+  if(!entries||!entries.length){ box.innerHTML='<div style="font-size:13px;color:var(--mut)">Keine offenen Einträge.</div>'; return; }
+  box.innerHTML=entries.map(function(e){
+    return '<div style="display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:0.5px solid var(--brd);font-size:13px;flex-wrap:wrap">'
+      +'<span style="flex:1;min-width:140px"><strong>'+uglXmlEscape(e.name||'?')+'</strong> · '+uglXmlEscape(e.filiale||'')+'</span>'
+      +'<span style="color:var(--mut)">'+fmtDate(e.from)+' – '+fmtDate(e.to)+'</span>'
+      +'</div>';
+  }).join('');
+}
+function weekWeloRender(){
+  var range=document.getElementById('week-welo-range'), badge=document.getElementById('week-welo-badge');
+  if(!weekWeloData){
+    if(range) range.textContent='Noch kein Vergleich gelaufen.';
+    weekWeloRenderList('week-welo-urlaub-list', []);
+    weekWeloRenderList('week-welo-krank-list', []);
+    if(badge) badge.style.display='none';
+    return;
+  }
+  var stand=weekWeloData.checkedAt&&weekWeloData.checkedAt.toDate?(' · geprüft '+weekWeloData.checkedAt.toDate().toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})):'';
+  if(range) range.textContent='Woche '+fmtDate(weekWeloData.weekStart)+' – '+fmtDate(weekWeloData.weekEnd)+stand;
+  var total=(weekWeloData.urlaubMissing||[]).length+(weekWeloData.krankMissing||[]).length;
+  if(badge){ badge.style.display=total?'inline-block':'none'; badge.textContent=total; }
+  weekWeloRenderList('week-welo-urlaub-list', weekWeloData.urlaubMissing);
+  weekWeloRenderList('week-welo-krank-list', weekWeloData.krankMissing);
 }
 
 function invSavePeriod(){

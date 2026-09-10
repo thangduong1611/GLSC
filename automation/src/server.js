@@ -224,6 +224,19 @@ app.post('/internal/inventur-apply', requireManager, async (req, res) => {
   }
 });
 
+// ── Wochen-Check: Urlaub/Krankmeldung dieser Woche vs. Welo (nur lesen) ───
+// Manuell aus index.html angestoßen ("🔄 Vergleich neu laufen lassen"),
+// NICHT Teil von runAll()/dem täglichen Zeitplan — läuft nur, wenn ein
+// Manager es explizit prüfen will (Auftrag t.duong 10.09.2026).
+app.post('/internal/week-welo-check', requireManager, async (req, res) => {
+  try {
+    const result = await runFile('sync-week-welo-check.js', 'Wochen-Check (Urlaub/Krank vs. Welo)', [], 10 * 60 * 1000);
+    res.status(result.ok ? 200 : 500).json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── Datenschutz: Krankmeldungs-Fotos automatisch nach 30 Tagen löschen ────
 // Region-unabhängig (gilt für alle Gebiete gleich, s. cleanup-krankmeldung.js)
 // — bewusst der gleiche Shared-Secret-Mechanismus wie die anderen

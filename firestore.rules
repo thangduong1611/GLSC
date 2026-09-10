@@ -279,6 +279,15 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Wochen-Abgleich Urlaub/Krankmeldung vs. Welo (sync-week-welo-check.js) —
+    // 1 Dok. pro Region (docId = Region), bei jedem Lauf komplett überschrieben.
+    // Nur Manager, nur per Admin-SDK beschrieben — gleiches Muster wie oben.
+    match /welo_week_check/{region} {
+      allow get: if isManagerForRegion(docRegion(resource.data));
+      allow list: if isManagerForRegion(resource.data.region);
+      allow write: if false;
+    }
+
     // Audit-Log für den Manager-Schnellzugriff "Als Mitarbeiter ansehen"
     // (server.js: /internal/impersonate-employee) — nur vom Server per Admin-SDK
     // geschrieben, Manager können ihre eigene Region einsehen.
