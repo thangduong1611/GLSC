@@ -382,6 +382,17 @@ window.onerror=function(msg,src,line){
 
 <!-- ===== WARENEINGANG-REKLAMATION ===== -->
 <div id="panel-we" class="panel">
+  <!-- Nur sichtbar für Regionen mit eigenem Cloud-Run-Konto (wie inv-welo-card/
+       week-welo-card) — der Abgleich läuft serverseitig per Playwright. -->
+  <div class="card" id="schwan-card" style="display:none">
+    <div class="card-title">📦 Schwan-Reklamation Assistent <span class="badge badge-amb" id="schwan-badge" style="display:none">0</span></div>
+    <div class="info">Bereitet für Wareneingang-Meldungen mit Lieferant "Schwan" automatisch den passenden Kunden/Auftrag auf <a href="https://cms.schwan-asiafood.de/complaints" target="_blank" rel="noopener">cms.schwan-asiafood.de</a> vor. Du prüfst Auftrag + Artikel + Grund und bestätigst — <strong>nichts wird ohne deine Freigabe eingereicht.</strong> Nur vollständig ausgefüllte Meldungen (kein "ganze Lieferung fehlt", keine Schnellmeldung) werden erkannt.</div>
+    <div class="btn-row">
+      <button class="btn" onclick="schwanRun()" id="schwan-run-btn" style="flex:1;justify-content:center">🔄 Vorschläge neu laden</button>
+    </div>
+    <div id="schwan-stat" style="font-size:12px;margin-top:8px;color:var(--mut)"></div>
+    <div id="schwan-list" style="margin-top:10px"></div>
+  </div>
   <div class="card">
     <div class="card-title">🚚 Wareneingang-Reklamationen <span class="badge badge-red" id="we-live-count">0</span></div>
     <div class="info">Mitarbeiter melden Probleme bei Lieferungen (fehlende/beschädigte/nicht frische Ware) hier statt per WhatsApp. Bei jeder Meldung: <strong>📋 Text kopieren</strong> + <strong>⬇️ Fotos</strong> herunterladen, dann bei <a href="https://cms.schwan-asiafood.de/complaints" target="_blank" rel="noopener">cms.schwan-asiafood.de/complaints</a> einfügen und selbst absenden.</div>
@@ -4906,6 +4917,7 @@ function regionRenderSwitcher(){
   if(kpiCard){ kpiCard.style.display=(activeRegion==='ost'||activeRegion==='west')?'block':'none'; if(kpiCard.style.display==='block' && typeof kpiDraftsRender==='function') kpiDraftsRender(); }
   if(typeof weekWeloBindRegion==='function') weekWeloBindRegion();
   if(typeof urRulesRender==='function') urRulesRender();
+  if(typeof schwanBindRegion==='function') schwanBindRegion();
   var wrap=document.getElementById('region-switcher-wrap');
   var label=document.getElementById('region-switcher-label');
   if(!wrap||!label) return;
@@ -6023,6 +6035,172 @@ function blSetStatus(id,status){
   b.ref.update(upd).then(function(){ toast('✓ Status aktualisiert'); }).catch(function(e){ alert('Fehler: '+e.message); });
 }
 
+// ════════ SCHWAN-REKLAMATION ASSISTENT (sync-schwan-lookup.js/-submit.js) ════════
+// Bereitet Wareneingang-Meldungen mit Lieferant "Schwan" automatisch für
+// cms.schwan-asiafood.de vor (Kunde/Auftrag/Artikel-Kandidaten) — der Manager
+// prüft Auftrag+Artikel+Grund und bestätigt PRO Meldung einzeln, bevor
+// irgendetwas bei Schwan wirklich erstellt wird (Auftrag t.duong 11.09.2026,
+// gleiche Vorsicht wie beim Inventur-Welo-Abgleich: nie automatisch über
+// Kontogrenzen/externe Systeme hinweg schreiben).
+var REKLAMATIONSGRUND_OPTIONS=['Frischeproblem','Fehlmenge','Falschartikel','Falscher Lieferort','Ware nicht zugestellt'];
+var FEHLERART_TO_GRUND={fehlmenge:'Fehlmenge', nicht_frisch:'Frischeproblem', falscher_artikel:'Falschartikel'};
+var schwanUnsub=null, schwanMatches=[];
+function schwanBindRegion(){
+  var card=document.getElementById('schwan-card');
+  if(card) card.style.display=(activeRegion && REGION_SYNC_URL[activeRegion])?'block':'none';
+  if(schwanUnsub){ try{schwanUnsub();}catch(e){} schwanUnsub=null; }
+  schwanMatches=[];
+  if(!fbReady||!fbDb||!activeRegion||!REGION_SYNC_URL[activeRegion]){ schwanRender(); return; }
+  schwanUnsub=fbDb.collection('schwan_matches').where('region','==',activeRegion).onSnapshot(function(snap){
+    var raw=[]; snap.forEach(function(doc){ raw.push({docId:doc.id, ref:doc.ref, d:doc.data()||{}}); });
+    schwanMatches=raw;
+    schwanRender();
+  }, function(e){ console.warn('schwan_matches', e); });
+}
+function schwanRun(){
+  var syncUrl=REGION_SYNC_URL[activeRegion]; if(!syncUrl) return;
+  var btn=document.getElementById('schwan-run-btn'), stat=document.getElementById('schwan-stat');
+  btn.disabled=true; stat.textContent='⏳ Suche & lade Vorschläge… (kann mehrere Minuten dauern)'; stat.style.color='#6B6860';
+  firebase.auth().currentUser.getIdToken().then(function(idToken){
+    return fetch(syncUrl+'/internal/schwan-lookup', { method:'POST', headers:{ Authorization:'Bearer '+idToken } });
+  }).then(function(r){ return r.json().then(function(d){ return {ok:r.ok, d:d}; }); })
+    .then(function(res){
+      btn.disabled=false;
+      if(!res.ok){ stat.textContent='⚠️ Fehler: '+(res.d.error||'unbekannt'); stat.style.color='#C0392B'; return; }
+      stat.textContent='✓ Vorschläge aktualisiert.'; stat.style.color='#1E8449';
+    }).catch(function(e){ btn.disabled=false; stat.textContent='⚠️ Fehler: '+e.message; stat.style.color='#C0392B'; });
+}
+// Einfacher Wort-Overlap-Score zwischen dem frei getippten App-Artikelnamen
+// und dem Schwan-Artikeltext — nur eine Vorauswahl-Hilfe, der Manager sieht
+// und bestätigt sie im Dropdown, nie automatisch übernommen.
+function schwanGuessArtikel(reportedName, options){
+  if(!reportedName) return null;
+  var words=reportedName.toLowerCase().split(/\s+/).filter(function(w){return w.length>3;});
+  var best=null, bestScore=0;
+  options.forEach(function(o){
+    var label=o.label.toLowerCase();
+    var score=words.filter(function(w){return label.indexOf(w)>=0;}).length;
+    if(score>bestScore){ bestScore=score; best=o; }
+  });
+  return bestScore>0?best:null;
+}
+function schwanRender(){
+  var box=document.getElementById('schwan-list'), badge=document.getElementById('schwan-badge');
+  if(!box) return;
+  // Meldungen, die inzwischen anderweitig (altes UI) erledigt wurden, nicht
+  // mehr als "offen" anzeigen — schwan_matches selbst kennt keinen eigenen
+  // "erledigt"-Status vom Client aus (Schreibrecht ist auf confirmedSelection
+  // beschränkt), daher hier gegen den Live-Status aus fbWareneingang geprüft.
+  var pending=schwanMatches.filter(function(m){
+    if(m.d.status!=='ready_for_review') return false;
+    var we=fbWareneingang.find(function(w){return w.docId===m.docId;});
+    return !we || we.d.status==='offen';
+  });
+  var errors=schwanMatches.filter(function(m){ return m.d.status==='lookup_error'||m.d.status==='submit_error'; });
+  if(badge){ badge.style.display=pending.length?'inline-block':'none'; badge.textContent=pending.length; }
+  if(!pending.length && !errors.length){ box.innerHTML='<div style="font-size:13px;color:var(--mut)">Keine offenen Schwan-Vorschläge — oben "Vorschläge neu laden" klicken.</div>'; return; }
+  box.innerHTML = errors.map(function(m){
+    return '<div style="padding:10px;border:1px solid #F5C6CB;background:#FDEDEE;border-radius:6px;margin-bottom:8px;font-size:13px">'
+      +'<strong>'+(m.d.filiale||'?')+'</strong> — Fehler: '+(m.d.lookupError||m.d.submitError||'unbekannt')
+      +'</div>';
+  }).join('') + pending.map(schwanRenderCard).join('');
+}
+function schwanRenderCard(m){
+  var d=m.d, id=m.docId;
+  var auftraege=d.auftragCandidates||[];
+  var artikelOpts=d.artikelOptions||[];
+  var empf=d.empfohlenerAuftrag;
+  var items=d.reportedItems||[];
+  var auftragSel='<select id="schwan-auftrag-'+id+'">'+auftraege.map(function(a){
+    var sel=empf&&a.auftragNr===empf.auftragNr?' selected':'';
+    return '<option value="'+a.auftragNr+'"'+sel+'>'+a.auftragNr+' · '+fmtDate(a.versanddatum)+'</option>';
+  }).join('')+'</select>';
+  var itemsHtml=items.map(function(it,i){
+    var guess=schwanGuessArtikel(it.artikel, artikelOpts);
+    var artikelSel='<select id="schwan-artikel-'+id+'-'+i+'">'
+      +'<option value="">— Artikel wählen —</option>'
+      +artikelOpts.map(function(a){ var sel=guess&&a.code===guess.code?' selected':''; return '<option value="'+a.code+'"'+sel+'>'+uglXmlEscape(a.raw)+'</option>'; }).join('')
+      +'</select>';
+    var grundGuess=FEHLERART_TO_GRUND[it.fehlerart]||'';
+    var grundSel='<select id="schwan-grund-'+id+'-'+i+'">'
+      +'<option value="">— Grund wählen —</option>'
+      +REKLAMATIONSGRUND_OPTIONS.map(function(g){ return '<option value="'+g+'"'+(g===grundGuess?' selected':'')+'>'+g+'</option>'; }).join('')
+      +'</select>';
+    var menge=(it.mengeBestellt!=null&&it.mengeErhalten!=null)?Math.max(1,it.mengeBestellt-it.mengeErhalten):1;
+    return '<div style="padding:8px;background:var(--bg);border-radius:6px;margin-bottom:8px">'
+      +'<div style="font-size:12px;color:var(--mut);margin-bottom:4px">Gemeldet: <strong>'+uglXmlEscape(it.artikel||'?')+'</strong> ('+weFehlerartLabel(it.fehlerart)+((it.mengeBestellt!=null||it.mengeErhalten!=null)?' · bestellt '+(it.mengeBestellt!=null?it.mengeBestellt:'—')+' / erhalten '+(it.mengeErhalten!=null?it.mengeErhalten:'—'):'')+')'+(it.beschreibung?'<br>'+uglXmlEscape(it.beschreibung):'')+'</div>'
+      +'<label style="font-size:11px">Schwan-Artikel</label>'+artikelSel
+      +'<div class="row2" style="margin-top:6px">'
+      +'<div><label style="font-size:11px">Anzahl</label><input type="number" min="1" id="schwan-anzahl-'+id+'-'+i+'" value="'+menge+'"></div>'
+      +'<div><label style="font-size:11px">Grund</label>'+grundSel+'</div>'
+      +'</div>'
+      +'<label style="font-size:11px">Notiz an Schwan (optional)</label><input type="text" id="schwan-notiz-'+id+'-'+i+'">'
+      +'</div>';
+  }).join('');
+  return '<div style="padding:12px;border:1px solid #E8E4E0;border-radius:6px;margin-bottom:10px">'
+    +'<div style="margin-bottom:6px"><strong>'+(d.empName||'?')+'</strong> · '+(d.filiale||'')+'<br>'
+    +'<span style="font-size:12px;color:var(--mut)">'+fmtDate(d.lieferdatum)+' · '+(d.lieferant||'')+(d.lieferscheinNr?' · '+d.lieferscheinNr:'')+'</span></div>'
+    +(auftraege.length ? ('<label style="font-size:11px">Schwan-Auftrag</label>'+auftragSel) : '<div style="color:#C0392B;font-size:12px">Kein Auftrag gefunden — bitte manuell bei Schwan prüfen.</div>')
+    +itemsHtml
+    +'<label style="font-size:11px">Beschreibung an Schwan</label><textarea id="schwan-beschreibung-'+id+'" rows="2">'+uglXmlEscape(items.map(function(it){return it.beschreibung||'';}).filter(Boolean).join(' / '))+'</textarea>'
+    +'<div class="btn-row" style="margin-top:8px">'
+    +'<button class="btn btn-grn" onclick="schwanSubmit(\''+id+'\')" style="flex:1;justify-content:center">✅ In Schwan Reklamation erstellen</button>'
+    +'</div>'
+    +'<div id="schwan-substat-'+id+'" style="font-size:12px;margin-top:6px;font-weight:600"></div>'
+    +'</div>';
+}
+function schwanSubmit(id){
+  var m=schwanMatches.find(function(x){return x.docId===id;}); if(!m) return;
+  var stat=document.getElementById('schwan-substat-'+id);
+  var items=(m.d.reportedItems||[]).map(function(it,i){
+    var code=(document.getElementById('schwan-artikel-'+id+'-'+i)||{}).value;
+    var anzahl=parseInt((document.getElementById('schwan-anzahl-'+id+'-'+i)||{}).value,10);
+    var grund=(document.getElementById('schwan-grund-'+id+'-'+i)||{}).value;
+    var notiz=(document.getElementById('schwan-notiz-'+id+'-'+i)||{}).value||'';
+    return {artikelCode:code, anzahl:anzahl, notiz:notiz, _grund:grund};
+  });
+  var auftragSel=document.getElementById('schwan-auftrag-'+id);
+  var auftragNr=auftragSel?auftragSel.value:null;
+  var beschreibung=(document.getElementById('schwan-beschreibung-'+id)||{}).value||'';
+
+  if(!auftragNr){ stat.textContent='⚠️ Kein Auftrag ausgewählt.'; stat.style.color='#C0392B'; return; }
+  for(var i=0;i<items.length;i++){
+    if(!items[i].artikelCode){ stat.textContent='⚠️ Bitte für jeden Artikel einen Schwan-Artikel wählen.'; stat.style.color='#C0392B'; return; }
+    if(!items[i].anzahl||items[i].anzahl<1){ stat.textContent='⚠️ Bitte gültige Anzahl angeben.'; stat.style.color='#C0392B'; return; }
+  }
+  // Schwan hat nur 1 Reklamationsgrund pro gesamter Reklamation, nicht pro Artikel.
+  var grunde=items.map(function(it){return it._grund;}).filter(Boolean);
+  var grund=grunde[0];
+  if(!grund || grunde.some(function(g){return g!==grund;})){
+    stat.textContent='⚠️ Bitte für alle Artikel denselben Reklamationsgrund wählen.'; stat.style.color='#C0392B'; return;
+  }
+
+  if(!confirm('Reklamation für "'+(m.d.filiale||'?')+'" jetzt wirklich bei Schwan erstellen?\n\nAuftrag: '+auftragNr+'\nArtikel: '+items.length+'\nGrund: '+grund)) return;
+
+  stat.textContent='⏳ Wird gespeichert und eingereicht… (kann eine Minute dauern)'; stat.style.color='#6B6860';
+  var confirmedSelection={
+    auftragNr: auftragNr,
+    items: items.map(function(it){ return {artikelCode:it.artikelCode, anzahl:it.anzahl, notiz:it.notiz}; }),
+    reklamationsgrund: grund,
+    beschreibung: beschreibung,
+    bilder: [m.d.lieferscheinImg].concat((m.d.reportedItems||[]).map(function(it){return it.img;})).filter(Boolean),
+  };
+  m.ref.update({confirmedSelection: confirmedSelection}).then(function(){
+    var syncUrl=REGION_SYNC_URL[activeRegion];
+    return firebase.auth().currentUser.getIdToken().then(function(idToken){
+      return fetch(syncUrl+'/internal/schwan-submit', {
+        method:'POST', headers:{'Content-Type':'application/json', Authorization:'Bearer '+idToken},
+        body: JSON.stringify({wareneingangId:id})
+      });
+    });
+  }).then(function(r){ return r.json().then(function(d){ return {ok:r.ok, d:d}; }); })
+    .then(function(res){
+      if(!res.ok){ stat.textContent='⚠️ Fehler: '+(res.d.error||'unbekannt'); stat.style.color='#C0392B'; return; }
+      stat.textContent='✓ Reklamation erstellt!'; stat.style.color='#1E8449';
+      toast('✓ Bei Schwan eingereicht');
+    }).catch(function(e){ stat.textContent='⚠️ Fehler: '+e.message; stat.style.color='#C0392B'; });
+}
+
 // ════════ WARENEINGANG-REKLAMATIONEN (Live aus Mitarbeiter-App) ════════
 var fbWareneingang=[];
 function weShowStatus(msg,color){
@@ -6039,6 +6217,7 @@ function weStartListener(){
     fbWareneingang=raw.sort(function(a,b){ return (a.d.createdAt||'')<(b.d.createdAt||'')?1:-1; });
     weShowStatus('','');
     wePopulateFilFilter();
+    if(typeof schwanRender==='function') schwanRender();
     if(document.getElementById('panel-we') && document.getElementById('panel-we').classList.contains('active')) weRenderAdmin();
   }, function(err){
     console.warn('FB wareneingang', err);

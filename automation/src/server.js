@@ -224,6 +224,33 @@ app.post('/internal/inventur-apply', requireManager, async (req, res) => {
   }
 });
 
+// ── Schwan-Reklamation: Vorschau anstoßen (liest nur), Freigabe abschicken ──
+// Zwei Stufen wie beim Inventur-Welo-Abgleich: sync-schwan-lookup.js liest
+// nur und schreibt eine Vorschau (kostenstellen-genau, per Auftrag/Artikel-
+// Kandidaten), sync-schwan-submit.js erstellt danach die ECHTE Reklamation
+// bei Schwan — aber NUR für genau die eine wareneingangId, deren Auswahl
+// der Manager im Assistenten (index.html, Panel Wareneingang) zuvor selbst
+// bestätigt hat (schwan_matches/{id}.confirmedSelection) — kein "alle
+// senden" (Auftrag t.duong 11.09.2026, gleiche Vorsicht wie bei Inventur).
+app.post('/internal/schwan-lookup', requireManager, async (req, res) => {
+  try {
+    const result = await runFile('sync-schwan-lookup.js', 'Schwan-Reklamation Vorschau', [], 10 * 60 * 1000);
+    res.status(result.ok ? 200 : 500).json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+app.post('/internal/schwan-submit', requireManager, async (req, res) => {
+  const wareneingangId = req.body && req.body.wareneingangId;
+  if (!wareneingangId) return res.status(400).json({ error: 'wareneingangId fehlt' });
+  try {
+    const result = await runFile('sync-schwan-submit.js', `Schwan-Reklamation einreichen (${wareneingangId})`, [wareneingangId], 5 * 60 * 1000);
+    res.status(result.ok ? 200 : 500).json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── Wochen-Check: Urlaub/Krankmeldung dieser Woche vs. Welo (nur lesen) ───
 // Manuell aus index.html angestoßen ("🔄 Vergleich neu laufen lassen"),
 // NICHT Teil von runAll()/dem täglichen Zeitplan — läuft nur, wenn ein

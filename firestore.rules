@@ -299,6 +299,20 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Wareneingang → Schwan-Reklamation-Assistent (sync-schwan-lookup.js /
+    // sync-schwan-submit.js). Der Manager darf NUR sein eigenes Auftrag/
+    // Artikel-Review als confirmedSelection eintragen — alles andere
+    // (Vorschau-Daten, Status) kommt ausschließlich per Admin-SDK von den
+    // Skripten, damit ein Feld-Tippfehler im Client nie versehentlich die
+    // Vorschau selbst verfälscht.
+    match /schwan_matches/{id} {
+      allow get: if isManagerForRegion(docRegion(resource.data));
+      allow list: if isManagerForRegion(resource.data.region);
+      allow update: if isManagerForRegion(docRegion(resource.data))
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['confirmedSelection']);
+      allow create, delete: if false;
+    }
+
     // Audit-Log für den Manager-Schnellzugriff "Als Mitarbeiter ansehen"
     // (server.js: /internal/impersonate-employee) — nur vom Server per Admin-SDK
     // geschrieben, Manager können ihre eigene Region einsehen.
