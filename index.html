@@ -386,7 +386,7 @@ window.onerror=function(msg,src,line){
        week-welo-card) — der Abgleich läuft serverseitig per Playwright. -->
   <div class="card" id="schwan-card" style="display:none">
     <div class="card-title">📦 Schwan-Reklamation Assistent <span class="badge badge-amb" id="schwan-badge" style="display:none">0</span></div>
-    <div class="info">Bereitet für Wareneingang-Meldungen mit Lieferant "Schwan" automatisch den passenden Kunden/Auftrag auf <a href="https://cms.schwan-asiafood.de/complaints" target="_blank" rel="noopener">cms.schwan-asiafood.de</a> vor. Du prüfst Auftrag + Artikel + Grund und bestätigst — <strong>nichts wird ohne deine Freigabe eingereicht.</strong> Nur vollständig ausgefüllte Meldungen (kein "ganze Lieferung fehlt", keine Schnellmeldung) werden erkannt.</div>
+    <div class="info">Bereitet für Wareneingang-Meldungen mit Lieferant "Schwan" automatisch den passenden Kunden/Auftrag auf <a href="https://cms.schwan-asiafood.de/complaints" target="_blank" rel="noopener">cms.schwan-asiafood.de</a> vor. Du prüfst Auftrag + Artikel + Grund und bestätigst — <strong>nichts wird ohne deine Freigabe eingereicht.</strong> Erkannt werden: vollständig ausgefüllte Meldungen, sowie Schnellmeldungen, deren Foto per KI als echter Schwan-Lieferschein erkannt wurde (🤖-Markierung). "Ganze Lieferung fehlt" und Schnellmeldungen ohne erkennbaren Lieferschein bleiben manuell.</div>
     <div class="btn-row">
       <button class="btn" onclick="schwanRun()" id="schwan-run-btn" style="flex:1;justify-content:center">🔄 Vorschläge neu laden</button>
     </div>
@@ -1481,6 +1481,34 @@ window.onerror=function(msg,src,line){
       <button class="btn" onclick="closeModal()">Abbrechen</button>
       <button class="btn btn-red" onclick="saveEmp()">Speichern</button>
     </div>
+  </div>
+</div>
+
+<!-- Schnellmeldung (nur Foto+Notiz) manuell zu einer vollständigen Wareneingang-
+     Meldung ergänzen — Alternative zur KI-Fotoerkennung (kostet API-Credits),
+     wenn der Admin die Angaben lieber selbst vom Foto abliest (Auftrag
+     t.duong 12.09.2026). Nach dem Speichern läuft die Meldung durch denselben
+     Schwan-Abgleich wie ein normal ausgefülltes Formular. -->
+<div class="modal-bg" id="we-quickedit-modal">
+  <div class="modal" style="width:min(560px,94vw)">
+    <button class="modal-close" onclick="weCloseQuickEdit()" title="Schließen">✕</button>
+    <h3>✏️ Schnellmeldung zu vollständiger Meldung ergänzen</h3>
+    <div class="info" style="margin-bottom:12px">Ursprüngliche Notiz vom Mitarbeiter: <strong id="we-qe-original-note">—</strong>. Bitte die Angaben unten anhand des Fotos (Lieferschein) selbst eintragen.</div>
+    <div class="row2">
+      <div><label>Lieferant</label><input type="text" id="we-qe-lieferant" value="Schwan Asia Food"></div>
+      <div><label>Lieferschein-/Auftragsnummer</label><input type="text" id="we-qe-lsnr" placeholder="z.B. HK-113801-001"></div>
+    </div>
+    <label>Lieferdatum</label>
+    <input type="date" id="we-qe-lsdatum">
+    <div id="we-qe-items" style="margin-top:12px"></div>
+    <div class="btn-row">
+      <button class="btn btn-sm" onclick="weQuickEditAddItem()">+ Artikel hinzufügen</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="weCloseQuickEdit()">Abbrechen</button>
+      <button class="btn btn-red" onclick="weQuickEditSave()">💾 Als vollständige Meldung speichern</button>
+    </div>
+    <div id="we-qe-stat" style="font-size:12px;margin-top:8px;font-weight:600"></div>
   </div>
 </div>
 
@@ -6137,9 +6165,13 @@ function schwanRenderCard(m){
       +'<label style="font-size:11px">Notiz an Schwan (optional)</label><input type="text" id="schwan-notiz-'+id+'-'+i+'">'
       +'</div>';
   }).join('');
+  var aiWarning = d.source==='ai_photo'
+    ? '<div style="font-size:12px;font-weight:600;color:#8A5A00;background:#FFF7E6;border:1px solid #F0C070;border-radius:6px;padding:6px 8px;margin-bottom:8px">🤖 Aus Foto per KI erkannt (Schnellmeldung, kein ausgefülltes Formular) — bitte Auftrag + Artikel besonders sorgfältig prüfen.</div>'
+    : '';
   return '<div style="padding:12px;border:1px solid #E8E4E0;border-radius:6px;margin-bottom:10px">'
     +'<div style="margin-bottom:6px"><strong>'+(d.empName||'?')+'</strong> · '+(d.filiale||'')+'<br>'
-    +'<span style="font-size:12px;color:var(--mut)">'+fmtDate(d.lieferdatum)+' · '+(d.lieferant||'')+(d.lieferscheinNr?' · '+d.lieferscheinNr:'')+'</span></div>'
+    +'<span style="font-size:12px;color:var(--mut)">'+fmtDate(d.lieferdatum)+' · '+(d.lieferant||(d.source==='ai_photo'?'Schwan Asia Food (Foto)':''))+(d.lieferscheinNr?' · '+d.lieferscheinNr:'')+'</span></div>'
+    +aiWarning
     +(auftraege.length ? ('<label style="font-size:11px">Schwan-Auftrag</label>'+auftragSel) : '<div style="color:#C0392B;font-size:12px">Kein Auftrag gefunden — bitte manuell bei Schwan prüfen.</div>')
     +itemsHtml
     +'<label style="font-size:11px">Beschreibung an Schwan</label><textarea id="schwan-beschreibung-'+id+'" rows="2">'+uglXmlEscape(items.map(function(it){return it.beschreibung||'';}).filter(Boolean).join(' / '))+'</textarea>'
@@ -6285,6 +6317,7 @@ function weRenderAdmin(){
       }).join('');
     }
     var actions='';
+    if(isQuick && d.status==='offen') actions+='<button class="btn btn-sm" style="background:#8A5A00;color:#fff;border-color:#8A5A00" onclick="weOpenQuickEdit(\''+w.docId+'\')">✏️ Zu vollständiger Meldung ergänzen</button>';
     if(d.status==='offen') actions+='<button class="btn btn-sm" style="background:#1A5276;color:#fff;border-color:#1A5276" onclick="weSetStatus(\''+w.docId+'\',\'gemeldet\')">✅ Als gemeldet markieren</button>';
     else if(d.status==='gemeldet') actions+='<button class="btn btn-sm" style="background:#1E8449;color:#fff;border-color:#1E8449" onclick="weSetStatus(\''+w.docId+'\',\'erledigt\')">✔️ Erledigt</button>';
     else actions+='<span style="font-size:11px;color:#1E8449;font-weight:700;text-align:center">✓ Abgeschlossen</span>';
@@ -6318,6 +6351,73 @@ function weDelete(id){
   var w=weFind(id); if(!w) return;
   if(!confirm('Wareneingang-Reklamation von '+(w.d.empName||'?')+' löschen?')) return;
   w.ref.delete().then(function(){ toast('🗑 Gelöscht'); }).catch(function(e){ alert('Fehler: '+e.message); });
+}
+
+// ── Schnellmeldung manuell zu vollständiger Meldung ergänzen ──
+// Alternative zur KI-Fotoerkennung (sync-schwan-lookup.js/claude-vision.js) —
+// der Admin liest Lieferant/Lieferschein-Nr/Artikel selbst vom Foto ab, statt
+// dafür API-Credits zu verbrauchen. Nach dem Speichern verliert die Meldung
+// ihr type:'quick' und wird beim nächsten "Vorschläge neu laden" im Schwan-
+// Assistenten genauso behandelt wie ein normal ausgefülltes Formular
+// (Auftrag t.duong 12.09.2026).
+var weQuickEditId=null, weQuickEditItems=[];
+function weQuickEditFehlerartOptions(sel){
+  var opts=[['fehlmenge','Fehlmenge'],['beschaedigt','Beschädigt'],['nicht_frisch','Nicht frisch'],['falscher_artikel','Falscher Artikel'],['sonstiges','Sonstiges']];
+  return '<option value="">— Fehlerart —</option>'+opts.map(function(o){ return '<option value="'+o[0]+'"'+(o[0]===sel?' selected':'')+'>'+o[1]+'</option>'; }).join('');
+}
+function weOpenQuickEdit(id){
+  var w=weFind(id); if(!w) return;
+  weQuickEditId=id;
+  document.getElementById('we-qe-original-note').textContent=w.d.note||'(keine Notiz)';
+  document.getElementById('we-qe-lieferant').value='Schwan Asia Food';
+  document.getElementById('we-qe-lsnr').value='';
+  document.getElementById('we-qe-lsdatum').value=w.d.createdAt?w.d.createdAt.slice(0,10):'';
+  weQuickEditItems=[{artikel:w.d.note||'',fehlerart:'',beschreibung:w.d.note||'',mengeBestellt:null,mengeErhalten:null}];
+  weQuickEditRenderItems();
+  document.getElementById('we-qe-stat').textContent='';
+  document.getElementById('we-quickedit-modal').classList.add('open');
+}
+function weCloseQuickEdit(){ document.getElementById('we-quickedit-modal').classList.remove('open'); weQuickEditId=null; }
+function weQuickEditAddItem(){ weQuickEditItems.push({artikel:'',fehlerart:'',beschreibung:'',mengeBestellt:null,mengeErhalten:null}); weQuickEditRenderItems(); }
+function weQuickEditRemoveItem(i){ weQuickEditItems.splice(i,1); weQuickEditRenderItems(); }
+function weQuickEditItemField(i,field,val){ weQuickEditItems[i][field]=val; }
+function weQuickEditRenderItems(){
+  var box=document.getElementById('we-qe-items'); if(!box) return;
+  box.innerHTML=weQuickEditItems.map(function(it,i){
+    return '<div style="padding:10px;background:var(--bg);border-radius:6px;margin-bottom:8px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><strong style="font-size:12px;color:var(--mut)">Artikel #'+(i+1)+'</strong>'
+      +(weQuickEditItems.length>1?'<button class="btn btn-sm" onclick="weQuickEditRemoveItem('+i+')">🗑</button>':'')+'</div>'
+      +'<label style="font-size:11px">Artikelbezeichnung</label><input type="text" value="'+uglXmlEscape(it.artikel||'')+'" oninput="weQuickEditItemField('+i+',\'artikel\',this.value)">'
+      +'<div class="row2" style="margin-top:6px">'
+      +'<div><label style="font-size:11px">Bestellt</label><input type="number" step="0.01" value="'+(it.mengeBestellt!=null?it.mengeBestellt:'')+'" oninput="weQuickEditItemField('+i+',\'mengeBestellt\',this.value?parseFloat(this.value):null)"></div>'
+      +'<div><label style="font-size:11px">Erhalten</label><input type="number" step="0.01" value="'+(it.mengeErhalten!=null?it.mengeErhalten:'')+'" oninput="weQuickEditItemField('+i+',\'mengeErhalten\',this.value?parseFloat(this.value):null)"></div>'
+      +'</div>'
+      +'<label style="font-size:11px">Fehlerart</label><select onchange="weQuickEditItemField('+i+',\'fehlerart\',this.value)">'+weQuickEditFehlerartOptions(it.fehlerart)+'</select>'
+      +'<label style="font-size:11px">Beschreibung</label><textarea rows="2" oninput="weQuickEditItemField('+i+',\'beschreibung\',this.value)">'+uglXmlEscape(it.beschreibung||'')+'</textarea>'
+      +'</div>';
+  }).join('');
+}
+function weQuickEditSave(){
+  var w=weFind(weQuickEditId); if(!w) return;
+  var lieferant=document.getElementById('we-qe-lieferant').value.trim();
+  var lsnr=document.getElementById('we-qe-lsnr').value.trim();
+  var lsdatum=document.getElementById('we-qe-lsdatum').value;
+  var stat=document.getElementById('we-qe-stat');
+  if(!lieferant){ stat.textContent='⚠️ Bitte Lieferant angeben.'; stat.style.color='#C0392B'; return; }
+  if(!lsnr){ stat.textContent='⚠️ Bitte Lieferschein-/Auftragsnummer angeben (vom Foto ablesen).'; stat.style.color='#C0392B'; return; }
+  if(!weQuickEditItems.length || weQuickEditItems.some(function(it){return !it.artikel.trim()||!it.fehlerart;})){
+    stat.textContent='⚠️ Bitte bei jedem Artikel Bezeichnung + Fehlerart angeben.'; stat.style.color='#C0392B'; return;
+  }
+  stat.textContent='⏳ Speichere…'; stat.style.color='#6B6860';
+  w.ref.update({
+    lieferant: lieferant, lieferscheinNr: lsnr, lieferdatum: lsdatum||null,
+    items: weQuickEditItems.map(function(it){ return {artikel:it.artikel.trim(),fehlerart:it.fehlerart,beschreibung:(it.beschreibung||'').trim(),mengeBestellt:it.mengeBestellt,mengeErhalten:it.mengeErhalten,img:null}; }),
+    ganzeLieferungFehlt: false,
+    type: firebase.firestore.FieldValue.delete(),
+  }).then(function(){
+    toast('✓ Als vollständige Meldung gespeichert — jetzt im Schwan-Assistenten "Vorschläge neu laden" klicken.');
+    weCloseQuickEdit();
+  }).catch(function(e){ stat.textContent='Fehler: '+e.message; stat.style.color='#C0392B'; });
 }
 function weOpenImg(src,label){
   var mod=document.getElementById('we-img-modal'); if(!mod) return;
