@@ -57,14 +57,31 @@ header .sub{font-size:12px;opacity:.85;white-space:nowrap;overflow:hidden;text-o
    eingefrorenes Standbild wirkt. */
 .update-progress-wrap{display:none;width:100%;max-width:380px;margin-top:2px;}
 .update-progress-wrap.show{display:block;}
-.update-progress-track{position:relative;height:7px;border-radius:5px;background:var(--brd);overflow:hidden;}
-.update-progress-fill{position:absolute;top:0;left:0;height:100%;width:0%;border-radius:5px;background:linear-gradient(90deg,var(--red),#E8735F);transition:width .5s cubic-bezier(.4,0,.2,1);overflow:hidden;}
+.update-progress-track{position:relative;height:7px;border-radius:5px;background:#DCDBD8;overflow:hidden;}
+.update-progress-fill{position:absolute;top:0;left:0;height:100%;width:0%;border-radius:5px;background:linear-gradient(90deg,var(--grn),#27AE60);transition:width .5s cubic-bezier(.4,0,.2,1);overflow:hidden;}
 .update-progress-fill.is-indeterminate{width:35%!important;background:linear-gradient(90deg,var(--amb),#C9A227);animation:updProgSlide 1.3s ease-in-out infinite;}
 .update-progress-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:updProgShimmer 1.4s linear infinite;}
 @keyframes updProgSlide{0%{left:-35%;}55%{left:65%;}100%{left:100%;}}
 @keyframes updProgShimmer{0%{transform:translateX(-100%);}100%{transform:translateX(100%);}}
 .update-progress-label{font-size:11px;color:var(--mut);margin-top:4px;}
 #dr-update-btn:disabled{opacity:.6;cursor:default;}
+/* Log der 4 Automation-Skripte — zeigt WELCHES Skript läuft/fehlgeschlagen
+   ist, statt nur eines generischen "läuft/fehlgeschlagen" (Auftrag t.duong
+   14.09.2026: auf dem Handy sah man nie, was eigentlich passiert ist, nur
+   am Ende oft "Anfrage fehlgeschlagen: Load failed"). Bleibt nach Abschluss
+   sichtbar (nicht wie die Progress-Bar), damit man auch beim späteren
+   Reinschauen noch sieht, was beim letzten Lauf schiefging. */
+.update-steps{display:none;flex-direction:column;gap:4px;margin-top:10px;max-width:380px;}
+.update-steps.show{display:flex;}
+.update-step-row{display:flex;align-items:center;gap:7px;font-size:12px;}
+.update-step-ico{flex:0 0 14px;text-align:center;}
+.update-step-lbl{color:var(--mut);}
+.update-step-row.is-done .update-step-lbl{color:var(--grn);}
+.update-step-row.is-running .update-step-lbl{color:var(--amb);font-weight:600;}
+.update-step-row.is-error .update-step-lbl{color:var(--red);font-weight:600;}
+.update-step-err{font-size:11px;color:var(--red);margin-left:21px;word-break:break-word;}
+.dr-spin-inline{display:inline-block;width:11px;height:11px;border-radius:50%;border:2px solid var(--amb-bg);border-top-color:var(--amb);animation:drSpin .7s linear infinite;vertical-align:-1.5px;}
+@keyframes drSpin{to{transform:rotate(360deg);}}
 
 .login-card{max-width:360px;margin:60px auto;}
 .login-card h2{font-size:16px;margin-bottom:14px;}
@@ -209,6 +226,7 @@ header .sub{font-size:12px;opacity:.85;white-space:nowrap;overflow:hidden;text-o
           <div class="update-progress-track"><div class="update-progress-fill" id="dr-update-progress-fill"></div></div>
           <div class="update-progress-label" id="dr-update-progress-label"></div>
         </div>
+        <div class="update-steps" id="dr-update-steps"></div>
       </div>
 
       <div class="card" id="dr-orders-card" style="display:none;">
@@ -530,17 +548,48 @@ function drFmtTime(d){
 
 function drRequestUpdate(){
   var btn = document.getElementById('dr-update-btn');
+  var statusEl = document.getElementById('dr-update-status');
   btn.disabled = true;
   var syncUrl = REGION_SYNC_URL[activeRegion];
   if(syncUrl){
     // Region mit eigenem Cloud-Run-Konto (z.B. "hoang") — direkt den Dienst
     // dieser Region anstoßen, kein lokaler Watcher/PC nötig. server.js
     // schreibt Fortschritt selbst nach sync_triggers/manual__<region>, der
-    // bestehende drUnsubTrigger-Listener zeigt den Status wie gewohnt an —
-    // hier NICHT auf die (bis zu ~20 Min. lange) Antwort warten.
+    // bestehende drUnsubTrigger-Listener zeigt den Status wie gewohnt an.
+    // Die Antwort auf /sync/all kommt aber erst, wenn ALLE vier Skripte
+    // fertig sind (bis zu ~20 Min. offene Verbindung, s. server.js) — auf
+    // dem Handy killt der Browser diese Verbindung sehr oft vorher
+    // (Bildschirm gesperrt, Netzwerkwechsel WLAN↔Mobilfunk), was hier NICHT
+    // bedeutet, dass der Sync selbst fehlgeschlagen ist (die Anfrage ist auf
+    // dem Server längst angekommen und läuft dort unabhängig weiter). Ein
+    // blockierendes alert() bei jedem Verbindungsabbruch (früher hier) hat
+    // genau deshalb wie ein Totalausfall ausgesehen UND nebenbei die
+    // komplette Seite (inkl. Progress-Bar-Animation) eingefroren, bis man es
+    // weggeklickt hat — deshalb jetzt nur noch ein nicht-blockierender
+    // Hinweis in der Statuszeile, echte Fortschritts-/Fehleranzeige läuft
+    // ausschließlich über den Firestore-Listener (drRenderUpdateStatus).
     firebase.auth().currentUser.getIdToken().then(function(idToken){
       return fetch(syncUrl+'/sync/all', { method:'POST', headers:{ Authorization:'Bearer '+idToken } });
-    }).catch(function(e){ alert('Anfrage fehlgeschlagen: '+e.message); btn.disabled = false; });
+    }).then(function(resp){
+      if(resp.ok) return; // Sync komplett durchgelaufen UND Verbindung stand die ganze Zeit — Listener zeigt bereits "fertig".
+      return resp.json().catch(function(){ return {}; }).then(function(body){
+        var msg = (body && body.error) || ('HTTP '+resp.status);
+        if(resp.status === 409){
+          // Läuft schon (Doppelklick o.ä.) — kein echter Fehler, Listener zeigt den laufenden Sync ohnehin an.
+          statusEl.className = 'update-status is-pending';
+          statusEl.textContent = '⏳ '+msg;
+        } else {
+          statusEl.className = 'update-status is-error';
+          statusEl.textContent = '❌ Anfrage abgelehnt: '+msg;
+          btn.disabled = false;
+        }
+      });
+    }).catch(function(e){
+      console.warn('sync/all fetch:', e.message);
+      statusEl.className = 'update-status is-pending';
+      statusEl.textContent = '⚠️ Verbindung unterbrochen ('+e.message+') — läuft evtl. im Hintergrund weiter, Status hier live.';
+      btn.disabled = false;
+    });
     return;
   }
   // Ost/West (kein syncUrl) — unverändertes bisheriges Verhalten: Trigger-Doc
@@ -550,7 +599,62 @@ function drRequestUpdate(){
     requestedAt: firebase.firestore.FieldValue.serverTimestamp(),
     requestedBy: firebase.auth().currentUser ? firebase.auth().currentUser.email : null,
     region: activeRegion,
-  }).catch(function(e){ alert('Anfrage fehlgeschlagen: '+e.message); btn.disabled = false; });
+  }).catch(function(e){
+    statusEl.className = 'update-status is-error';
+    statusEl.textContent = '❌ Anfrage fehlgeschlagen: '+e.message;
+    btn.disabled = false;
+  });
+}
+
+// Spiegelt SCRIPTS aus automation/src/sync-runner.js (key+label) — dashboard.html
+// ist eine eigenständige statische Datei ohne gemeinsames JS-Modul mit
+// automation/, daher hier dupliziert (gleiche Abwägung wie schon an anderen
+// Stellen in diesem Projekt). Reihenfolge/keys müssen mit sync-runner.js
+// übereinstimmen, sonst zeigt der Log die falschen Labels zu den Schritten.
+var DR_SYNC_STEPS = [
+  {key:'welo-personal', label:'Personal & Tagesziel (Welo)'},
+  {key:'umsatz', label:'Umsatz (Welo)'},
+  {key:'produktion', label:'Produktion (Axonity)'},
+  {key:'bestellungen', label:'Bestellungen (Axonity)'},
+];
+// Zeigt für jedes der 4 Automation-Skripte einzeln an: noch nicht dran (⚪),
+// läuft gerade (⏳ Spinner), fertig (✅) oder fehlgeschlagen (❌ + Fehlertext)
+// — damit auf dem Handy sichtbar ist, WAS läuft/fehlschlägt, statt nur
+// eines generischen "läuft" bzw. am Ende "Anfrage fehlgeschlagen: Load
+// failed" ohne jede Erklärung (Auftrag t.duong 14.09.2026). Bleibt bewusst
+// auch nach Abschluss sichtbar (anders als die Progress-Bar), damit man beim
+// späteren Draufschauen noch sieht, was beim letzten Lauf schiefging.
+function drRenderUpdateSteps(){
+  var wrap = document.getElementById('dr-update-steps');
+  var status = drTrigger && drTrigger.status;
+  if(!status){ wrap.classList.remove('show'); wrap.innerHTML=''; return; }
+  wrap.classList.add('show');
+  var results = drTrigger.results || null;
+  var html = DR_SYNC_STEPS.map(function(s, i){
+    var n = i+1;
+    var res = results && results.find(function(r){ return r.key===s.key; });
+    var cls, ico, err='';
+    if(res){
+      cls = res.ok ? 'is-done' : 'is-error';
+      ico = res.ok ? '✅' : '❌';
+      if(!res.ok && res.error) err = '<div class="update-step-err">'+drEsc(res.error.slice(0,200))+'</div>';
+    } else if(status==='running' && n===drTrigger.currentStep){
+      cls='is-running'; ico='<span class="dr-spin-inline"></span>';
+    } else if(status==='running' && n<drTrigger.currentStep){
+      cls='is-done'; ico='✅';
+    } else {
+      cls=''; ico='⚪';
+    }
+    return '<div class="update-step-row '+cls+'"><span class="update-step-ico">'+ico+'</span><span class="update-step-lbl">'+drEsc(s.label)+'</span></div>'+err;
+  }).join('');
+  // Kompletter Absturz vor dem ersten pro-Skript-Ergebnis (z.B. Container
+  // während des Laufs gekillt) — kein results-Array vorhanden, dafür ein
+  // Top-Level error-Feld direkt am Trigger-Dokument (s. server.js catch-
+  // Block). Zeigt den Fehler trotzdem an, statt still 4x "⚪" zu zeigen.
+  if(status==='error' && !results && drTrigger.error){
+    html += '<div class="update-step-err" style="margin-left:0;">❌ '+drEsc(String(drTrigger.error).slice(0,200))+'</div>';
+  }
+  wrap.innerHTML = html;
 }
 
 // mode: 'hidden' | 'indeterminate' (Dauer unbekannt, z.B. wartet auf den PC)
@@ -578,6 +682,7 @@ function drRenderUpdateStatus(){
   el.className = 'update-status';
 
   var status = drTrigger && drTrigger.status;
+  drRenderUpdateSteps();
   if(status === 'requested'){
     el.className = 'update-status is-pending';
     el.textContent = '⏳ Update angefordert — läuft, sobald der PC an ist und der Watcher läuft.';
