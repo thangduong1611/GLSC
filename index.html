@@ -4991,10 +4991,23 @@ function regionRebindListeners(){
 function regionAfterSwitchReset(){
   var dpSel=document.getElementById('dp-filiale');
   if(dpSel){ dpSel.value=''; if(typeof dpFilialeChange==='function') dpFilialeChange(); }
-  var activePanel=document.querySelector('.panel.active');
-  var activeBtn=document.querySelector('.app-ico.active');
-  if(activePanel && activeBtn){ sw(activePanel.id.replace('panel-',''), activeBtn); }
-  toast('📍 Region gewechselt: '+(REGION_LABELS[activeRegion]||activeRegion));
+  var switchedToRegion=activeRegion;
+  toast('📍 Wechsle zu '+(REGION_LABELS[activeRegion]||activeRegion)+' …');
+  // Die Live-Listener (regionRebindListeners, direkt vor diesem Aufruf) holen
+  // die ersten Daten der neuen Region erst per Netzwerk nach — live gemessen
+  // 14.09.2026: ~1s bis emps/wareneingang/etc. wirklich umgestellt sind. Ein
+  // SOFORTIGES sw() hier würde die gerade offene Karte noch mit den alten
+  // Daten der VORHERIGEN Region neu zeichnen, und nichts löst danach von
+  // selbst ein zweites Neuzeichnen aus — der Nutzer sah bis hierhin nur nach
+  // einem kompletten Neuladen der App aktuelle Daten. Kurze Verzögerung,
+  // damit das Neuzeichnen wirklich schon mit den frischen Daten passiert.
+  setTimeout(function(){
+    if(activeRegion!==switchedToRegion) return; // Nutzer hat währenddessen nochmal gewechselt
+    var activePanel=document.querySelector('.panel.active');
+    var activeBtn=document.querySelector('.app-ico.active');
+    if(activePanel && activeBtn){ sw(activePanel.id.replace('panel-',''), activeBtn); }
+    toast('✓ '+(REGION_LABELS[activeRegion]||activeRegion)+' geladen');
+  }, 1200);
 }
 
 // Sendet die selbst eingetragenen Axonity/Welo-Zugangsdaten an den
