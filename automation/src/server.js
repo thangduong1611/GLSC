@@ -14,7 +14,7 @@
 require('dotenv').config();
 const express = require('express');
 const { getDb, admin } = require('./firestore-client');
-const { runOne, runAll, runFile } = require('./sync-runner');
+const { runOne, runAll, runFile, SCRIPTS } = require('./sync-runner');
 const { setSecret } = require('./secrets-client');
 const { cleanupKrankmeldungFotos } = require('./cleanup-krankmeldung');
 const { cleanupDepartedEmployees } = require('./cleanup-departed-employees');
@@ -120,7 +120,7 @@ async function runAllAndTrackStatus(requestedBy, res) {
 
   const now = admin.firestore.FieldValue.serverTimestamp();
   await triggerRef.set(
-    { status: 'running', startedAt: now, requestedBy, region: REGION },
+    { status: 'running', startedAt: now, requestedBy, region: REGION, currentStep: 0, totalSteps: SCRIPTS.length, currentLabel: null },
     { merge: true }
   );
   // Bewusst NICHT vorab antworten und im Hintergrund weiterlaufen: Cloud Run
@@ -131,7 +131,10 @@ async function runAllAndTrackStatus(requestedBy, res) {
   // sondern verfolgen den Fortschritt separat über den Firestore-Listener.
   try {
     console.log(`[sync-all] Angefordert von ${requestedBy} — starte alle vier Sync-Skripte…`);
-    const results = await runAll();
+    // Echter Fortschritt statt nur "läuft" (Auftrag t.duong 14.09.2026).
+    const results = await runAll(function(progress) {
+      triggerRef.set({ currentStep: progress.step, totalSteps: progress.total, currentLabel: progress.label }, { merge: true }).catch(() => {});
+    });
     const allOk = results.every((r) => r.ok);
     await db.collection('sync_triggers').doc(TRIGGER_ID).set(
       { status: allOk ? 'done' : 'error', finishedAt: admin.firestore.FieldValue.serverTimestamp(), results, region: REGION },

@@ -11,7 +11,7 @@
 // der einzige Weg, wie "Jetzt aktualisieren" überhaupt funktioniert.
 require('dotenv').config();
 const { getDb, admin } = require('./firestore-client');
-const { runAll: runAllScripts, runOne } = require('./sync-runner');
+const { runAll: runAllScripts, runOne, SCRIPTS } = require('./sync-runner');
 
 // Ein zweites Automation-Konto (eigene REGION in seiner .env, z.B. eine
 // dritte Region mit eigenem Axonity/Welo-Login) braucht sein EIGENES
@@ -70,13 +70,20 @@ function pruefeZielRefresh() {
 
 async function runAll(db, requestedBy) {
   const now = admin.firestore.FieldValue.serverTimestamp();
-  await db.collection('sync_triggers').doc(TRIGGER_ID).set(
-    { status: 'running', startedAt: now, requestedBy: requestedBy || null, region: REGION },
+  const triggerRef = db.collection('sync_triggers').doc(TRIGGER_ID);
+  await triggerRef.set(
+    { status: 'running', startedAt: now, requestedBy: requestedBy || null, region: REGION, currentStep: 0, totalSteps: SCRIPTS.length, currentLabel: null },
     { merge: true }
   );
 
   console.log(`\n[${new Date().toLocaleString('de-DE')}] Update angefordert${requestedBy ? ' von ' + requestedBy : ''} — starte alle drei Sync-Skripte…`);
-  const results = await runAllScripts();
+  // Echter Fortschritt statt nur "läuft" (Auftrag t.duong 14.09.2026) — vor
+  // jedem der vier Skripte den Stand nach Firestore schreiben, damit das
+  // Dashboard einen Balken zeigen kann. Absichtlich awaited, aber ohne die
+  // Kette zu blockieren, wenn ein einzelnes Update mal fehlschlägt.
+  const results = await runAllScripts(function(progress) {
+    triggerRef.set({ currentStep: progress.step, totalSteps: progress.total, currentLabel: progress.label }, { merge: true }).catch(function() {});
+  });
 
   const allOk = results.every((r) => r.ok);
   await db.collection('sync_triggers').doc(TRIGGER_ID).set(

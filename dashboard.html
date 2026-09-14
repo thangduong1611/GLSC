@@ -49,6 +49,21 @@ header .sub{font-size:12px;opacity:.85;white-space:nowrap;overflow:hidden;text-o
 .update-status.is-pending{color:var(--amb);font-weight:600;}
 .update-status.is-error{color:var(--red);font-weight:600;}
 .update-status.is-done{color:var(--grn);font-weight:600;}
+/* Echter Fortschrittsbalken statt nur Text/Icon (Auftrag t.duong 14.09.2026):
+   "requested" (wartet auf den Watcher/PC, unbekannte Dauer) zeigt ein
+   wanderndes Segment (indeterminate); "running" (currentStep/totalSteps aus
+   sync_triggers bekannt) füllt sich echt proportional mit sanftem Übergang
+   zwischen den Schritten, plus Schimmer-Effekt, damit er nie wie ein
+   eingefrorenes Standbild wirkt. */
+.update-progress-wrap{display:none;width:100%;max-width:380px;margin-top:2px;}
+.update-progress-wrap.show{display:block;}
+.update-progress-track{position:relative;height:7px;border-radius:5px;background:var(--brd);overflow:hidden;}
+.update-progress-fill{position:absolute;top:0;left:0;height:100%;width:0%;border-radius:5px;background:linear-gradient(90deg,var(--red),#E8735F);transition:width .5s cubic-bezier(.4,0,.2,1);overflow:hidden;}
+.update-progress-fill.is-indeterminate{width:35%!important;background:linear-gradient(90deg,var(--amb),#C9A227);animation:updProgSlide 1.3s ease-in-out infinite;}
+.update-progress-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);animation:updProgShimmer 1.4s linear infinite;}
+@keyframes updProgSlide{0%{left:-35%;}55%{left:65%;}100%{left:100%;}}
+@keyframes updProgShimmer{0%{transform:translateX(-100%);}100%{transform:translateX(100%);}}
+.update-progress-label{font-size:11px;color:var(--mut);margin-top:4px;}
 #dr-update-btn:disabled{opacity:.6;cursor:default;}
 
 .login-card{max-width:360px;margin:60px auto;}
@@ -185,9 +200,15 @@ header .sub{font-size:12px;opacity:.85;white-space:nowrap;overflow:hidden;text-o
 
     <!-- ── Tab: Heute — alles, was sofortige Aufmerksamkeit braucht ── -->
     <div class="tab-panel is-active" id="tab-heute">
-      <div class="update-bar">
-        <button class="btn" id="dr-update-btn" onclick="drRequestUpdate()">🔄 Jetzt aktualisieren</button>
-        <span id="dr-update-status" class="update-status">—</span>
+      <div class="update-bar" style="align-items:flex-start;flex-direction:column;">
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;">
+          <button class="btn" id="dr-update-btn" onclick="drRequestUpdate()">🔄 Jetzt aktualisieren</button>
+          <span id="dr-update-status" class="update-status">—</span>
+        </div>
+        <div class="update-progress-wrap" id="dr-update-progress-wrap">
+          <div class="update-progress-track"><div class="update-progress-fill" id="dr-update-progress-fill"></div></div>
+          <div class="update-progress-label" id="dr-update-progress-label"></div>
+        </div>
       </div>
 
       <div class="card" id="dr-orders-card" style="display:none;">
@@ -532,6 +553,25 @@ function drRequestUpdate(){
   }).catch(function(e){ alert('Anfrage fehlgeschlagen: '+e.message); btn.disabled = false; });
 }
 
+// mode: 'hidden' | 'indeterminate' (Dauer unbekannt, z.B. wartet auf den PC)
+// | 'determinate' (echter step/total-Fortschritt aus sync_triggers).
+function drUpdateProgressBar(mode, opts){
+  var wrap = document.getElementById('dr-update-progress-wrap');
+  var fill = document.getElementById('dr-update-progress-fill');
+  var label = document.getElementById('dr-update-progress-label');
+  if(mode === 'hidden'){ wrap.classList.remove('show'); return; }
+  wrap.classList.add('show');
+  if(mode === 'indeterminate'){
+    fill.classList.add('is-indeterminate');
+    fill.style.width = '';
+    label.textContent = (opts && opts.label) || '';
+    return;
+  }
+  fill.classList.remove('is-indeterminate');
+  var pct = (opts.total>0) ? Math.max(4, Math.round(opts.step/opts.total*100)) : 4;
+  fill.style.width = pct+'%';
+  label.textContent = 'Schritt '+opts.step+'/'+opts.total+(opts.currentLabel?' — '+opts.currentLabel+' …':' …');
+}
 function drRenderUpdateStatus(){
   var el = document.getElementById('dr-update-status');
   var btn = document.getElementById('dr-update-btn');
@@ -542,16 +582,21 @@ function drRenderUpdateStatus(){
     el.className = 'update-status is-pending';
     el.textContent = '⏳ Update angefordert — läuft, sobald der PC an ist und der Watcher läuft.';
     btn.disabled = true;
+    drUpdateProgressBar('indeterminate', {label:'Wartet auf den PC/Watcher — Dauer unbekannt …'});
     return;
   }
   if(status === 'running'){
     el.className = 'update-status is-pending';
-    el.textContent = '⏳ Läuft gerade auf dem PC…';
+    var step = drTrigger.currentStep, total = drTrigger.totalSteps;
+    el.textContent = '⏳ Läuft gerade' + (step && total ? ' ('+step+'/'+total+')' : '') + '…';
     btn.disabled = true;
+    if(step>0 && total>0) drUpdateProgressBar('determinate', {step:step, total:total, currentLabel:drTrigger.currentLabel});
+    else drUpdateProgressBar('indeterminate', {label:'Startet …'});
     return;
   }
 
   btn.disabled = false;
+  drUpdateProgressBar('hidden');
   var max = drMaxUpdatedAt();
   if(status === 'error'){
     el.className = 'update-status is-error';

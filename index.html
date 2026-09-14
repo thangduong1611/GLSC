@@ -203,6 +203,10 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 .dp-emp-tag button{background:none;border:none;cursor:pointer;color:var(--mut);font-size:13px;padding:0 1px;line-height:1;}
 .dp-emp-tag.dp-emp-zw{background:var(--grn-bg,#E8F5E9);border-color:var(--grn,#2E7D32);color:var(--grn,#2E7D32);font-weight:600;}
 #setup-overlay.open{display:flex !important;}
+/* Echte drehende Animation für "lädt gerade"-Texte statt eines stehenden
+   Emojis (Auftrag t.duong 14.09.2026, siehe fbSpinStatus()). */
+.spin-inline{display:inline-block;width:12px;height:12px;border:2px solid rgba(0,0,0,.15);border-top-color:currentColor;border-radius:50%;animation:idxSpin .7s linear infinite;vertical-align:-2px;margin-right:5px;}
+@keyframes idxSpin{to{transform:rotate(360deg);}}
 
 </style>
 </head>
@@ -1572,6 +1576,18 @@ function toast(msg, warn) {
   const t=document.getElementById('toast'); t.textContent=msg||'✓ Kopiert!';
   t.classList.toggle('warn', !!warn);       // Warnungen nicht in Grün (Erfolgsfarbe) zeigen
   t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500);
+}
+// Wandelt "🔄 ..."-Meldungen in eine echte drehende Spinner-Anzeige um statt
+// nur das stehende Emoji zu zeigen (Auftrag t.duong 14.09.2026) — von allen
+// xxShowStatus()-Helfern der Live-Listener-Karten (Krankmeldung, Belege,
+// Anträge, Änderungsvereinbarung, Wareneingang, Umlagerung) gemeinsam
+// genutzt, damit "🔄 Verbinde…" nicht mehr wie ein Standbild wirkt.
+function fbSpinStatus(el, msg, color){
+  if(!el) return;
+  if(msg && msg.indexOf('🔄')===0){ el.innerHTML='<span class="spin-inline"></span>'+msg.slice(2).trim(); }
+  else { el.textContent=msg||''; }
+  el.style.color=color||'#6B6860';
+  el.style.display=msg?'block':'none';
 }
 function markDrop(p) {
   const f=document.getElementById(p+'-file').files[0];
@@ -3156,8 +3172,7 @@ function avSendToEmployee(){
 }
 var fbAV=[];
 function avShowStatus(msg,color){
-  var st=document.getElementById('av-live-status');
-  if(st){ st.textContent=msg||''; st.style.color=color||'#6B6860'; st.style.display=msg?'block':'none'; }
+  fbSpinStatus(document.getElementById('av-live-status'), msg, color);
 }
 var avUnsub=null;
 function avStartListener(){
@@ -4756,13 +4771,12 @@ function fbEnabled(){ return !!(FB_CONFIG && FB_CONFIG.apiKey && typeof firebase
 function fbPendingCardShow(msg, color){
   var card=document.getElementById('fb-pending-card');
   if(card) card.style.display='block';
-  var st=document.getElementById('fb-pending-status');
-  if(st){ st.textContent=msg||''; st.style.color=color||'#6B6860'; st.style.display=msg?'block':'none'; }
+  fbSpinStatus(document.getElementById('fb-pending-status'), msg, color);
   // #fb-pending-card liegt in panel-urlaub, also in #main-wrap — bis zum
   // Login bleibt das unsichtbar. Denselben Text zusätzlich aufs Login-Gate
   // spiegeln, damit Verbindungs-/Konfigurationsfehler dort sichtbar sind.
   var gs=document.getElementById('auth-gate-status');
-  if(gs){ gs.textContent=msg||''; gs.style.color=color||'#6B6860'; }
+  if(gs){ gs.innerHTML=(msg && msg.indexOf('🔄')===0) ? '<span class="spin-inline"></span>'+msg.slice(2).trim() : (msg||''); gs.style.color=color||'#6B6860'; }
 }
 // Blendet das Login-Gate ein/aus + zeigt/versteckt die eigentliche App
 // (#main-wrap) passend dazu — einziger Ort, der das tut.
@@ -5749,8 +5763,7 @@ function uManualAdd(){
 var fbAntrag=[];
 function anShowStatus(msg,color){
   var card=document.getElementById('an-live-card'); if(card) card.style.display='block';
-  var st=document.getElementById('an-live-status');
-  if(st){ st.textContent=msg||''; st.style.color=color||'#6B6860'; st.style.display=msg?'block':'none'; }
+  fbSpinStatus(document.getElementById('an-live-status'), msg, color);
 }
 var anUnsub=null;
 function anStartListener(){
@@ -5869,8 +5882,7 @@ function krToMail(docId){
 var fbKrank=[];
 function krShowStatus(msg,color){
   var card=document.getElementById('kr-live-card'); if(card) card.style.display='block';
-  var st=document.getElementById('kr-live-status');
-  if(st){ st.textContent=msg||''; st.style.color=color||'#6B6860'; st.style.display=msg?'block':'none'; }
+  fbSpinStatus(document.getElementById('kr-live-status'), msg, color);
 }
 var krUnsub=null, krOrphanUnsub=null, krMain=[], krOrphans=[];
 // Eine Krankmeldung ohne Region (region:'') faellt durch die regionsgefilterte Abfrage und
@@ -5948,8 +5960,7 @@ function krDelete(id){
 // ════════ BELEGE (Hóa đơn hoàn ứng, Live aus Mitarbeiter-App) ════════
 var fbBelege=[];
 function blShowStatus(msg,color){
-  var st=document.getElementById('bl-live-status');
-  if(st){ st.textContent=msg||''; st.style.color=color||'#6B6860'; st.style.display=msg?'block':'none'; }
+  fbSpinStatus(document.getElementById('bl-live-status'), msg, color);
 }
 var blUnsub=null;
 function blStartListener(){
@@ -6259,8 +6270,7 @@ function schwanSubmit(id){
 // ════════ WARENEINGANG-REKLAMATIONEN (Live aus Mitarbeiter-App) ════════
 var fbWareneingang=[];
 function weShowStatus(msg,color){
-  var st=document.getElementById('we-live-status');
-  if(st){ st.textContent=msg||''; st.style.color=color||'#6B6860'; st.style.display=msg?'block':'none'; }
+  fbSpinStatus(document.getElementById('we-live-status'), msg, color);
 }
 var weUnsub=null;
 function weStartListener(){
@@ -6536,8 +6546,7 @@ function weDownloadPhotos(id){
 var fbUmlagerung=[];
 var ugTab='log';
 function ugShowStatus(msg,color){
-  var st=document.getElementById('ug-live-status');
-  if(st){ st.textContent=msg||''; st.style.color=color||'#6B6860'; st.style.display=msg?'block':'none'; }
+  fbSpinStatus(document.getElementById('ug-live-status'), msg, color);
 }
 var ugUnsub=null;
 function ugStartListener(){

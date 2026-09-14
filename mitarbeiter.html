@@ -182,6 +182,15 @@ html{-webkit-text-size-adjust:100%;}
 body{padding-bottom:env(safe-area-inset-bottom);}
 header{padding-top:max(14px,env(safe-area-inset-top));}
 @media(max-width:520px){.row2{grid-template-columns:1fr;}}
+/* Wiederverwendbarer "wird verarbeitet"-Zustand für alles, was kurz dauert
+   (Foto komprimieren, auf Firebase warten) — ECHTE drehende Animation statt
+   nur ein stehendes Symbol (Auftrag t.duong 14.09.2026). Auf ein Element
+   legen (z.B. die Drop-Zone), maBusy()/maUnbusy() schalten die Klasse um. */
+.ma-busy{position:relative;pointer-events:none;}
+.ma-busy>*{opacity:.35;}
+.ma-busy::after{content:'';position:absolute;top:50%;left:50%;width:30px;height:30px;margin:-15px 0 0 -15px;border:3px solid rgba(0,0,0,.12);border-top-color:var(--red);border-radius:50%;animation:maSpin .7s linear infinite;z-index:2;}
+@keyframes maSpin{to{transform:rotate(360deg);}}
+.ma-spin-inline{display:inline-block;width:13px;height:13px;border:2px solid rgba(0,0,0,.15);border-top-color:currentColor;border-radius:50%;animation:maSpin .7s linear infinite;vertical-align:-2px;margin-right:5px;}
 </style>
 </head>
 <body>
@@ -2994,6 +3003,7 @@ function weToggleGanze(){
 }
 function weLieferscheinPhoto(ev){
   var f=ev.target.files[0]; if(!f) return;
+  maBusy('we-ls-drop');
   var r=new FileReader();
   r.onload=function(e){
     var img=new Image();
@@ -3005,6 +3015,7 @@ function weLieferscheinPhoto(ev){
       var data=cv.toDataURL('image/jpeg',0.75);
       if(data.length>900000) data=cv.toDataURL('image/jpeg',0.5);
       var otherTotal=0; weItems.forEach(function(it){ if(it.img) otherTotal+=it.img.length; });
+      maUnbusy('we-ls-drop');
       if(otherTotal+data.length>WE_PHOTO_BUDGET){
         toast(t('we_photo_too_big',{kb:Math.round((otherTotal+data.length)/1024),max:Math.round(WE_PHOTO_BUDGET/1024)}),true);
         ev.target.value='';
@@ -4033,6 +4044,7 @@ function maSendAntrag(){
 var maKrImg=null;
 function maKrPhoto(ev){
   var f=ev.target.files[0];if(!f)return;
+  maBusy('kr-drop');
   var r=new FileReader();
   r.onload=function(e){
     var img=new Image();
@@ -4047,6 +4059,7 @@ function maKrPhoto(ev){
       }
       var p=document.getElementById('kr-prev');p.src=maKrImg;p.style.display='block';
       document.getElementById('kr-drop').classList.add('ok');
+      maUnbusy('kr-drop');
       if(!fbReady)document.getElementById('kr-hint').style.display='block';
     };
     img.src=e.target.result;
@@ -4099,6 +4112,7 @@ function maSendKrank(){
 var blImg=null, blList=[], blUnsub=null;
 function blPhoto(ev){
   var f=ev.target.files[0];if(!f)return;
+  maBusy('bl-drop');
   var r=new FileReader();
   r.onload=function(e){
     var img=new Image();
@@ -4111,6 +4125,7 @@ function blPhoto(ev){
       if(blImg.length>900000){ blImg=cv.toDataURL('image/jpeg',0.5); }
       var p=document.getElementById('bl-prev');p.src=blImg;p.style.display='block';
       document.getElementById('bl-drop').classList.add('ok');
+      maUnbusy('bl-drop');
     };
     img.src=e.target.result;
   };
@@ -4347,6 +4362,11 @@ function ulhrSend(){
    UI HELPERS
    ════════════════════════════════════════════════ */
 function toast(msg,err){var t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(err?' err':'');setTimeout(function(){t.className='toast';},2800);}
+// Siehe .ma-busy in <style> — auf ein Element (i.d.R. die Drop-Zone) legen,
+// solange ein Foto komprimiert/hochgeladen wird, statt dass gar nichts
+// passiert bis das Ergebnis plötzlich erscheint.
+function maBusy(idOrEl){ var el=typeof idOrEl==='string'?document.getElementById(idOrEl):idOrEl; if(el) el.classList.add('ma-busy'); }
+function maUnbusy(idOrEl){ var el=typeof idOrEl==='string'?document.getElementById(idOrEl):idOrEl; if(el) el.classList.remove('ma-busy'); }
 document.getElementById('import-modal').addEventListener('click',function(e){if(e.target===this)maCloseImport();});
 document.getElementById('login-pid').addEventListener('keydown',function(e){if(e.key==='Enter')maDoLogin();});
 document.getElementById('login-pin').addEventListener('keydown',function(e){if(e.key==='Enter')maDoLogin();});

@@ -66,9 +66,16 @@ async function runOne(key) {
   return runScript(script);
 }
 
-async function runAll() {
+// onProgress(optional): wird VOR jedem Skript mit {step, total, label, key}
+// aufgerufen (step ist 1-basiert) — damit das Dashboard einen echten
+// Fortschrittsbalken zeigen kann statt nur "läuft gerade" (Auftrag t.duong
+// 14.09.2026), statt erst nach ALLEN vier Skripten irgendeine Rückmeldung
+// zu bekommen.
+async function runAll(onProgress) {
   const results = [];
-  for (const script of SCRIPTS) {
+  for (let i = 0; i < SCRIPTS.length; i++) {
+    const script = SCRIPTS[i];
+    if (onProgress) { try { onProgress({ step: i + 1, total: SCRIPTS.length, label: script.label, key: script.key }); } catch (e) { /* Fortschritts-Callback darf den Lauf nie abbrechen */ } }
     results.push(await runScript(script));
   }
   return results;
