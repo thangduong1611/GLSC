@@ -335,7 +335,7 @@ window.onerror=function(msg,src,line){
 
     <div class="card">
       <div class="card-title" data-i18n="req_title">✏️ Meinen Urlaub beantragen</div>
-      <div class="warnbox" data-i18n="rules"></div>
+      <div class="warnbox" id="ul-rules-box"></div>
       <div class="row2">
         <div><label data-i18n="lbl_von">Von</label><input type="date" id="ul-from" onchange="maCheckBesetzungPreview()"></div>
         <div><label data-i18n="lbl_bis">Bis</label><input type="date" id="ul-to" onchange="maCheckBesetzungPreview()"></div>
@@ -1545,10 +1545,25 @@ function bzBadgeHtml(res){
   if(res.allOk===null) return '<div style="font-size:12.5px;color:#8a8378">'+t('bz_unknown')+'</div>';
   return '<div style="font-size:12.5px;font-weight:600;color:#1E8449">'+t('bz_ok',{min:res.minStaff})+'</div>';
 }
+// Sofort-Prüfung beim Datumswechsel (Auftrag t.duong 14.09.2026: "lập tức có
+// cảnh báo" — der Mitarbeiter soll SOFORT sehen, wenn er gegen eine
+// Urlaub-Regel verstößt, statt es erst nach dem Absenden zu erfahren). Läuft
+// synchron gegen die bereits lokal geladene Stammfiliale (maFilialeUrlaub) —
+// bewusst OHNE die Zweitfiliale-Kollegen (die brauchen einen eigenen
+// Firestore-Read, s. maReqLoadZweitUrlaub) und ohne den Besetzungs-Block, das
+// bleibt wie bisher eine zusätzliche Prüfung beim tatsächlichen Absenden in
+// maRequestUrlaub() — hier geht es nur um die sofort sichtbaren Basisregeln
+// (Vorlauf, Höchstdauer, Sperrzeit, Überschneidung mit der eigenen Filiale).
 function maCheckBesetzungPreview(){
   var box=document.getElementById('ul-besetzung'); if(!box) return;
   var sess=maSession(); var from=(document.getElementById('ul-from')||{}).value, to=(document.getElementById('ul-to')||{}).value;
-  if(!sess||!sess.filiale||!from||!to||to<from||!fbReady||!fbDb){ box.innerHTML=''; return; }
+  var fb=document.getElementById('ul-feedback');
+  if(!sess||!sess.filiale||!from||!to||to<from){ box.innerHTML=''; if(fb) fb.style.display='none'; return; }
+  var trimmed=maTrimSonntag(from,to);
+  var v=maValidateUrlaub(trimmed.from,trimmed.to,maFilialeUrlaub(sess.filiale),maTodayISO(),sess.id,maEditReq,maUrlaubRules);
+  if(!v.ok){ maReqFeedback(v); box.innerHTML=''; return; }
+  if(fb){ fb.style.display='none'; fb.textContent=''; }
+  if(!fbReady||!fbDb){ box.innerHTML=''; return; }
   box.innerHTML='<div style="font-size:12.5px;color:#8a8378">'+t('bz_checking')+'</div>';
   var reqToken=(bzReqToken=(bzReqToken||0)+1);
   bzCheck(sess.filiale, from, to, maFbUrlaub||[], sess.id, null, maUrlaubRules.minStaffRequired).then(function(res){
@@ -2092,7 +2107,14 @@ de:{_name:'Deutsch',
  update_avail:'Neue Version verfügbar.',update_btn:'Jetzt aktualisieren',
  ul_year:'📋 Urlaub dieses Jahr',ul_none:'Noch kein Urlaub für {y} eingetragen.',
  req_title:'✏️ Meinen Urlaub beantragen',
- rules:'Regeln: mindestens <strong>10 Tage im Voraus</strong> · <strong>keine Überschneidung</strong> mit Kollegen der Filiale. Nach dem Absenden wartet der Antrag auf Freigabe durch den Gebietsleiter (🟧).',
+ rules_advance:'Mindestens <strong>{min} Tage</strong> im Voraus beantragen.',
+ rules_maxdays:'Höchstens <strong>{n} Tage</strong> am Stück.',
+ rules_overlap:'Keine <strong>Überschneidung</strong> mit Kollegen der Filiale.',
+ rules_overlap_zweit:'Keine <strong>Überschneidung</strong> mit Kollegen der Filiale (auch Zweitfiliale).',
+ rules_staff_block:'Mindestens <strong>{min} Person(en)</strong> müssen in der Filiale bleiben — sonst wird der Antrag blockiert.',
+ rules_staff_warn:'Mindestens <strong>{min} Person(en)</strong> sollten in der Filiale bleiben.',
+ rules_blackout_item:'🚫 {label} ({range})',
+ rules_pending:'Nach dem Absenden wartet der Antrag auf Freigabe durch den Gebietsleiter (🟧).',
  lbl_von:'Von',lbl_bis:'Bis',btn_req:'🌴 Urlaub beantragen',
  sent_fb:'✓ Antrag gesendet (🟧 wartet auf Freigabe). Der Gebietsleiter sieht ihn sofort – die Freigabe erscheint hier automatisch.',
  sent_off:'✓ Antrag gespeichert (🟧 wartet auf Freigabe). Bitte zur Bestätigung per WhatsApp an den Gebietsleiter senden.',
@@ -2213,7 +2235,14 @@ vi:{_name:'Tiếng Việt',
  update_avail:'Có phiên bản mới.',update_btn:'Cập nhật ngay',
  ul_year:'📋 Nghỉ phép năm nay',ul_none:'Chưa có nghỉ phép nào trong năm {y}.',
  req_title:'✏️ Đăng ký nghỉ phép',
- rules:'Quy định: đăng ký trước <strong>ít nhất 10 ngày</strong> · <strong>không trùng lịch</strong> với đồng nghiệp cùng cửa hàng. Sau khi gửi, đơn chờ Gebietsleiter duyệt (🟧).',
+ rules_advance:'Đăng ký trước <strong>ít nhất {min} ngày</strong>.',
+ rules_maxdays:'Tối đa <strong>{n} ngày</strong> liên tục.',
+ rules_overlap:'<strong>Không trùng lịch</strong> với đồng nghiệp cùng cửa hàng.',
+ rules_overlap_zweit:'<strong>Không trùng lịch</strong> với đồng nghiệp cùng cửa hàng (kể cả cửa hàng phụ).',
+ rules_staff_block:'Cửa hàng phải còn ít nhất <strong>{min} người</strong> — nếu không đơn sẽ bị chặn.',
+ rules_staff_warn:'Cửa hàng nên còn ít nhất <strong>{min} người</strong>.',
+ rules_blackout_item:'🚫 {label} ({range})',
+ rules_pending:'Sau khi gửi, đơn chờ Gebietsleiter duyệt (🟧).',
  lbl_von:'Từ ngày',lbl_bis:'Đến ngày',btn_req:'🌴 Gửi đăng ký',
  sent_fb:'✓ Đã gửi đơn (🟧 chờ duyệt). Gebietsleiter thấy ngay – kết quả sẽ tự hiện ở đây.',
  sent_off:'✓ Đã lưu đơn (🟧 chờ duyệt). Vui lòng gửi WhatsApp cho Gebietsleiter để xác nhận.',
@@ -2334,7 +2363,14 @@ en:{_name:'English',
  update_avail:'A new version is available.',update_btn:'Update now',
  ul_year:'📋 Vacation this year',ul_none:'No vacation entered for {y} yet.',
  req_title:'✏️ Request my vacation',
- rules:'Rules: at least <strong>10 days in advance</strong> · <strong>no overlap</strong> with colleagues of your store. After sending, the request waits for approval by the area manager (🟧).',
+ rules_advance:'Apply at least <strong>{min} days</strong> in advance.',
+ rules_maxdays:'At most <strong>{n} days</strong> in a row.',
+ rules_overlap:'No <strong>overlap</strong> with colleagues of your store.',
+ rules_overlap_zweit:'No <strong>overlap</strong> with colleagues of your store (incl. secondary store).',
+ rules_staff_block:'At least <strong>{min} people</strong> must stay in the store — otherwise the request is blocked.',
+ rules_staff_warn:'At least <strong>{min} people</strong> should stay in the store.',
+ rules_blackout_item:'🚫 {label} ({range})',
+ rules_pending:'After sending, the request waits for approval by the area manager (🟧).',
  lbl_von:'From',lbl_bis:'To',btn_req:'🌴 Request vacation',
  sent_fb:'✓ Request sent (🟧 pending). The area manager sees it instantly – the decision appears here automatically.',
  sent_off:'✓ Request saved (🟧 pending). Please confirm via WhatsApp to the area manager.',
@@ -2455,7 +2491,14 @@ th:{_name:'ไทย',
  update_avail:'มีเวอร์ชันใหม่',update_btn:'อัปเดตตอนนี้',
  ul_year:'📋 วันลาปีนี้',ul_none:'ยังไม่มีวันลาสำหรับปี {y}',
  req_title:'✏️ ยื่นขอวันลา',
- rules:'กฎ: ยื่นล่วงหน้า<strong>อย่างน้อย 10 วัน</strong> · <strong>ห้ามซ้ำ</strong>กับเพื่อนร่วมสาขา หลังส่ง คำขอจะรอผู้จัดการเขตอนุมัติ (🟧)',
+ rules_advance:'ยื่นล่วงหน้า<strong>อย่างน้อย {min} วัน</strong>',
+ rules_maxdays:'ลาต่อเนื่องได้ไม่เกิน <strong>{n} วัน</strong>',
+ rules_overlap:'<strong>ห้ามซ้ำ</strong>กับเพื่อนร่วมสาขา',
+ rules_overlap_zweit:'<strong>ห้ามซ้ำ</strong>กับเพื่อนร่วมสาขา (รวมสาขาที่สอง)',
+ rules_staff_block:'ต้องมีพนักงานเหลืออย่างน้อย <strong>{min} คน</strong> ในสาขา — ไม่เช่นนั้นคำขอจะถูกบล็อก',
+ rules_staff_warn:'ควรมีพนักงานเหลืออย่างน้อย <strong>{min} คน</strong> ในสาขา',
+ rules_blackout_item:'🚫 {label} ({range})',
+ rules_pending:'หลังส่ง คำขอจะรอผู้จัดการเขตอนุมัติ (🟧)',
  lbl_von:'ตั้งแต่',lbl_bis:'ถึง',btn_req:'🌴 ส่งคำขอ',
  sent_fb:'✓ ส่งคำขอแล้ว (🟧 รออนุมัติ) ผู้จัดการเห็นทันที ผลจะแสดงที่นี่อัตโนมัติ',
  sent_off:'✓ บันทึกคำขอแล้ว (🟧 รออนุมัติ) กรุณาส่ง WhatsApp ถึงผู้จัดการเพื่อยืนยัน',
@@ -2576,7 +2619,14 @@ zh:{_name:'中文',
  update_avail:'有新版本可用。',update_btn:'立即更新',
  ul_year:'📋 今年的休假',ul_none:'{y}年还没有休假记录。',
  req_title:'✏️ 申请我的休假',
- rules:'规定：至少<strong>提前10天</strong>申请 · <strong>不得与</strong>同门店同事的休假时间重叠。发送后，申请将等待区域经理批准 (🟧)。',
+ rules_advance:'至少<strong>提前{min}天</strong>申请。',
+ rules_maxdays:'连续休假最多 <strong>{n} 天</strong>。',
+ rules_overlap:'不得与<strong>同门店</strong>同事的休假时间重叠。',
+ rules_overlap_zweit:'不得与<strong>同门店</strong>同事的休假时间重叠（含第二门店）。',
+ rules_staff_block:'门店至少需保留 <strong>{min} 人</strong> — 否则申请将被阻止。',
+ rules_staff_warn:'门店建议保留至少 <strong>{min} 人</strong>。',
+ rules_blackout_item:'🚫 {label}（{range}）',
+ rules_pending:'发送后，申请将等待区域经理批准 (🟧)。',
  lbl_von:'开始日期',lbl_bis:'结束日期',btn_req:'🌴 申请休假',
  sent_fb:'✓ 申请已发送（🟧 等待批准）。区域经理会立即看到——批准结果会自动显示在这里。',
  sent_off:'✓ 申请已保存（🟧 等待批准）。请通过WhatsApp发送给区域经理以确认。',
@@ -2685,6 +2735,7 @@ function applyLang(){
     maRenderDP(); maRenderCal(); maRenderUlList();
     if(typeof maReqRenderMode==='function') maReqRenderMode();
     if(typeof maRenderNews==='function') maRenderNews();
+    if(typeof maRenderUlRulesBox==='function') maRenderUlRulesBox();
     if(typeof ivRender==='function' && document.getElementById('p-iv') && document.getElementById('p-iv').classList.contains('active')) ivRender();
   }
 }
@@ -3784,13 +3835,38 @@ function maReqFeedback(v){
 // Konfiguration sich unverändert verhält (Auftrag t.duong 10.09.2026).
 var URLAUB_RULES_DEFAULT={minAdvanceDays:10,maxDaysPerRequest:null,zweitfilialeCountsForConflict:true,minStaffRequired:1,staffBlockMode:'warn',blackoutPeriods:[]};
 var maUrlaubRules=URLAUB_RULES_DEFAULT;
+var maUrlaubRulesUnsub=null;
+// Live statt einmaligem .get() (Auftrag t.duong 14.09.2026: wenn der
+// Gebietsleiter die Regeln ändert, während ein Mitarbeiter die Seite bereits
+// offen hat, soll die Anzeige UND die Prüfung beim Absenden sofort die neuen
+// Regeln verwenden, ohne dass sich der Mitarbeiter neu einloggen muss).
 function maLoadUrlaubRules(sess){
-  if(!fbReady||!fbDb||!sess||!sess.region){ maUrlaubRules=URLAUB_RULES_DEFAULT; return Promise.resolve(maUrlaubRules); }
-  return fbDb.collection('regions').doc(sess.region).get().then(function(doc){
+  if(maUrlaubRulesUnsub){ try{maUrlaubRulesUnsub();}catch(e){} maUrlaubRulesUnsub=null; }
+  if(!fbReady||!fbDb||!sess||!sess.region){ maUrlaubRules=URLAUB_RULES_DEFAULT; maRenderUlRulesBox(); return; }
+  maUrlaubRulesUnsub=fbDb.collection('regions').doc(sess.region).onSnapshot(function(doc){
     var r=(doc.exists&&doc.data().urlaubRules)||{};
     maUrlaubRules=Object.assign({}, URLAUB_RULES_DEFAULT, r);
-    return maUrlaubRules;
-  }).catch(function(e){ console.warn('maLoadUrlaubRules', e); maUrlaubRules=URLAUB_RULES_DEFAULT; return maUrlaubRules; });
+    maRenderUlRulesBox();
+  }, function(e){ console.warn('maLoadUrlaubRules', e); maUrlaubRules=URLAUB_RULES_DEFAULT; maRenderUlRulesBox(); });
+}
+// Baut die Regel-Anzeige (Warnbox über "Meinen Urlaub beantragen") live aus
+// maUrlaubRules statt eines festen Textes — vorher stand dort IMMER derselbe
+// hartkodierte "mindestens 10 Tage"-Satz, egal was der Gebietsleiter in
+// index.html tatsächlich eingestellt hatte (der eigentliche Bug hinter der
+// Beschwerde "bei mir sieht man keine Änderung").
+function maRenderUlRulesBox(){
+  var box=document.getElementById('ul-rules-box'); if(!box) return;
+  var r=maUrlaubRules;
+  var lines=[];
+  lines.push(t('rules_advance',{min:r.minAdvanceDays}));
+  if(r.maxDaysPerRequest) lines.push(t('rules_maxdays',{n:r.maxDaysPerRequest}));
+  lines.push(t(r.zweitfilialeCountsForConflict ? 'rules_overlap_zweit' : 'rules_overlap'));
+  if(r.minStaffRequired>0) lines.push(t(r.staffBlockMode==='block' ? 'rules_staff_block' : 'rules_staff_warn',{min:r.minStaffRequired}));
+  (r.blackoutPeriods||[]).forEach(function(b){
+    lines.push(t('rules_blackout_item',{label:b.label||'', range:maFmtDE(b.from)+'–'+maFmtDE(b.to)}));
+  });
+  lines.push(t('rules_pending'));
+  box.innerHTML=lines.map(function(l){ return '<div>'+l+'</div>'; }).join('');
 }
 function maBlackoutHit(fromStr,toStr,rules){
   var list=(rules&&rules.blackoutPeriods)||[];
