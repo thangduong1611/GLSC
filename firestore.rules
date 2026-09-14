@@ -131,7 +131,14 @@ service cloud.firestore {
     // und ausser from/to/updated darf kein Feld angefasst werden.
     match /filialen/{f}/urlaub/{u} {
       allow read: if isAuthed();
-      allow create: if isOwnEmp(request.resource.data.empId);
+      // Bug gefunden 14.09.2026: bisher durfte NUR der Mitarbeiter selbst
+      // einen Urlaub anlegen (isOwnEmp) — der Gebietsleiter konnte über
+      // "Urlaub manuell eintragen" (uManualAdd in index.html, schreibt
+      // status:'approved' direkt) nie einen NEUEN Eintrag erstellen, nur
+      // bestehende ändern/löschen. War schon vor dieser Session so, nie
+      // aufgefallen weil die Funktion selten genutzt wird.
+      allow create: if isOwnEmp(request.resource.data.empId)
+        || isManagerForRegion(request.resource.data.region);
       allow update: if isManagerForRegion(docRegion(resource.data))
         || (isOwnEmp(resource.data.empId)
             && resource.data.status == 'pending'
@@ -249,7 +256,12 @@ service cloud.firestore {
     // UMLAGERUNG
     // ══════════════════════════════════════════════════════════
     match /umlagerung/{u} {
-      allow create: if isOwnEmp(request.resource.data.empId);
+      // Bug gefunden 14.09.2026 (derselbe Fehler wie bei filialen/urlaub): der
+      // Gebietsleiter hat mit ugmSubmit() in index.html (empId:'HR') schon
+      // immer versucht, direkt eine Umlagerung einzutragen — isOwnEmp() greift
+      // dafür nie, weil ein Manager-Login keinen pid-Claim hat.
+      allow create: if isOwnEmp(request.resource.data.empId)
+        || isManagerForRegion(request.resource.data.region);
       allow get: if isManagerForRegion(docRegion(resource.data));
       allow list: if isManagerForRegion(resource.data.region);
       allow update, delete: if isManagerForRegion(docRegion(resource.data));
