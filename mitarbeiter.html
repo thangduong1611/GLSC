@@ -251,7 +251,10 @@ window.onerror=function(msg,src,line){
   </div>
 </header>
 
-<div id="viewas-banner" style="display:none;background:#FFF3CD;border-bottom:1px solid #FFE58F;padding:9px 14px;font-size:13px;color:#8A6D00;text-align:center;font-weight:600">🔍 Ansicht als Mitarbeiter — nur zur Prüfung, kein eigener Login. Schließen genügt, es wird nichts gespeichert.</div>
+<div id="viewas-banner" style="display:none;background:#FFF3CD;border-bottom:1px solid #FFE58F;padding:9px 14px;font-size:13px;color:#8A6D00;text-align:center;font-weight:600">
+  🔍 Ansicht als Mitarbeiter — nur zur Prüfung, kein eigener Login, es wird nichts gespeichert.
+  <button onclick="maViewAsClose()" style="margin-left:8px;background:#8A6D00;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12.5px;font-weight:700;cursor:pointer;vertical-align:middle">✕ Schließen</button>
+</div>
 
 <div id="update-box" style="display:none;background:var(--blu-bg);border-bottom:1px solid #AED6F1;padding:10px 14px;align-items:center;gap:10px;justify-content:space-between;flex-wrap:wrap">
   <span style="font-size:13.5px;color:var(--blu)">🔄 <span data-i18n="update_avail">Neue Version verfügbar.</span></span>
@@ -2973,6 +2976,22 @@ function maLogout(){
     if(fbEnabled()){ try{ firebase.auth().signOut(); }catch(e){} }
     maShowLogin();
   }
+}
+// "✕ Schließen" im viewas-banner — Manager sollen aus der "Als Mitarbeiter
+// ansehen"-Ansicht zurück zur Verwaltung kommen, ohne die ganze App neu
+// starten zu müssen (Auftrag t.duong 16.09.2026: v.a. auf dem iPhone als
+// installierte PWA gibt es keinen Zurück-Knopf/Browser-Chrome — bisher blieb
+// nur Kompletter Neustart der App). window.open() öffnete diese Seite; falls
+// window.close() das (Sicherheits-)OK bekommt, verschwindet dieses Fenster
+// einfach. Klappt das nicht (z.B. weil die PWA in Wirklichkeit im selben
+// Fenster navigiert hat statt einen echten neuen Tab zu öffnen — dort tut
+// window.close() nichts, ohne Fehler zu werfen), zurücknavigieren statt
+// tatenlos hier stehen zu bleiben.
+function maViewAsClose(){
+  try{ window.close(); }catch(e){}
+  setTimeout(function(){
+    if(history.length>1){ history.back(); } else { location.href='index.html'; }
+  }, 250);
 }
 function maShowApp(sess){
   document.getElementById('login-screen').style.display='none';

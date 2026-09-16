@@ -25,6 +25,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 header{background:var(--red);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,.15);position:sticky;top:0;z-index:20;}
 header .logo{font-size:19px;font-weight:700;letter-spacing:-.5px;white-space:nowrap;}
 header .sub{font-size:12px;opacity:.85;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* Als installierte PWA (v.a. iPhone "Zum Home-Bildschirm") gibt es keinerlei
+   Browser-Chrome/Zurück-Pfeil — ohne diesen Link musste man die ganze App
+   schließen und neu öffnen, nur um von Filial Radar zurück zur Verwaltung zu
+   kommen (Auftrag t.duong 16.09.2026). */
+header .hdr-back{color:#fff;font-size:22px;line-height:1;text-decoration:none;padding:4px 6px;margin:-4px 0;border-radius:8px;flex:0 0 auto;}
+header .hdr-back:active{background:rgba(255,255,255,.18);}
 .wrap{max-width:1120px;margin:0 auto;padding:14px 12px 60px;width:100%;}
 
 /* ── Tab bar: turns the old "one giant scrolling page" into switchable
@@ -175,6 +181,7 @@ header .sub{font-size:12px;opacity:.85;white-space:nowrap;overflow:hidden;text-o
 <body>
 
 <header>
+  <a href="index.html" class="hdr-back" title="Zurück zur Verwaltung">←</a>
   <div class="logo">🍣 Filial Radar</div>
   <div class="sub">Umsatz &amp; Produktion — dein Gebiet</div>
 </header>
