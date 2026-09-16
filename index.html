@@ -5496,6 +5496,13 @@ function empsSyncListener(){
     if(typeof renderEmpTable==='function') renderEmpTable();
     if(typeof fvPopulate==='function') fvPopulate();
     if(typeof dpPopulateFiliale==='function') dpPopulateFiliale();
+    // Fehlte bisher (Auftrag t.duong 16.09.2026): populateDropdowns() füllt
+    // die Mitarbeiter-Dropdowns in Krankmeldung/Urlaub/Stundennachweis/
+    // Änderungsvertrag (k-emp/u-emp/up-emp/s-emp/av-emp) — ohne diesen Aufruf
+    // blieben sie nach einem Regionswechsel auf der Liste der VORHERIGEN
+    // Region stehen, obwohl Mitarbeitertabelle/Fahrtplan/Dienstplan-Filiale
+    // schon korrekt umgeschaltet waren.
+    if(typeof populateDropdowns==='function') populateDropdowns();
   }, function(err){ console.warn('FB emps sync', err); });
 }
 var filialenSyncUnsub=null;
