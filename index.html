@@ -54,15 +54,23 @@ header .sub{font-size:12px;opacity:.85;}
 .ul-month-tabs::-webkit-scrollbar{display:none;}
 .ul-month-tab{flex:0 0 auto;padding:6px 13px;font-size:12.5px;font-weight:600;color:var(--mut);background:var(--bg);border:1px solid var(--brd);border-radius:100px;cursor:pointer;white-space:nowrap;}
 .ul-month-tab.active{background:var(--grn);border-color:var(--grn);color:#fff;}
+/* min-width:0 auf Zelle+Namens-Chip ist der eigentliche Fix (Bug-Meldung
+   16.09.2026, Screenshot zeigte den Kalender weit über den Kartenrand
+   hinausragend): Grid-Items haben per Spezifikation ein implizites
+   min-width:auto — ein langer, nicht umbrechender Name (z.B.
+   "Bongkotchakon") in einer 1fr-Spalte zwang dadurch die GANZE Spalte (und
+   damit den ganzen Kalender) breiter als die Karte, statt dass nur der
+   Chip-Text abgeschnitten wird. */
 .ul-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:12px;}
 .ul-cal-hd{text-align:center;font-size:10.5px;font-weight:700;color:var(--mut);padding:4px 0;}
-.ul-cal-cell{min-height:52px;border:1px solid var(--brd);border-radius:6px;padding:3px;font-size:10.5px;background:var(--surf);}
+.ul-cal-cell{min-width:0;min-height:52px;border:1px solid var(--brd);border-radius:6px;padding:3px;font-size:10.5px;background:var(--surf);overflow:hidden;}
 .ul-cal-cell.out{background:#FBFAF8;opacity:.4;}
 .ul-cal-cell .dn{font-weight:700;font-size:11px;color:var(--mut);}
 .ul-cal-cell.today{border-color:var(--red);}
 .ul-cal-cell.today .dn{color:var(--red);}
-.ul-cal-uv{display:block;border-radius:4px;padding:1px 3px;margin-top:2px;font-size:9.5px;font-weight:700;color:#fff;background:var(--grn);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ul-cal-uv{display:block;min-width:0;border-radius:4px;padding:1px 3px;margin-top:2px;font-size:9.5px;font-weight:700;color:#fff;background:var(--grn);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .ul-cal-uv.more{background:#8A8378;}
+.ul-details-toggle{font-size:12.5px;font-weight:600;color:var(--grn);cursor:pointer;padding:6px 2px;user-select:none;}
 .badge-red{background:var(--red-l);color:var(--red-d);}
 .badge-gray{background:#F0EDE8;color:#6B6860;}
 .csv-stat{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
@@ -525,7 +533,8 @@ window.onerror=function(msg,src,line){
     <div class="card-title">✅ Genehmigter Urlaub</div>
     <div class="ul-month-tabs" id="fb-appr-tabs"></div>
     <div class="ul-cal-grid" id="fb-appr-cal"></div>
-    <div id="fb-appr-list"></div>
+    <div class="ul-details-toggle" id="fb-appr-toggle" onclick="fbApprToggleList()">▸ Details anzeigen</div>
+    <div id="fb-appr-list" style="display:none"></div>
   </div>
 
   <div class="card" id="fb-rejected-card" style="display:none">
@@ -5721,6 +5730,7 @@ function fbRenderApprTabs(){
 }
 function fbApprSelectMonth(ym){
   fbApprSelMonth=ym;
+  fbApprListOpen=false; // beim Monatswechsel wieder einklappen — sonst bleibt eine lange Liste vom vorigen Monat offen stehen
   fbRenderApprTabs();
   fbRenderApprCal();
   fbRenderApprList();
@@ -5750,10 +5760,23 @@ function fbRenderApprCal(){
   }
   grid.innerHTML=html;
 }
+// Eingeklappt per Default (Auftrag t.duong 16.09.2026): der Kalender oben
+// gibt bereits den Überblick, die Detail-Liste mit den Aktions-Buttons war
+// bei vielen genehmigten Anträgen pro Monat sehr lang und musste vorher immer
+// mitgescrollt werden, obwohl man sie meist gar nicht braucht.
+var fbApprListOpen=false;
+function fbApprToggleList(){
+  fbApprListOpen=!fbApprListOpen;
+  fbRenderApprList();
+}
 function fbRenderApprList(){
-  var box=document.getElementById('fb-appr-list'); if(!box||!fbApprSelMonth) return;
+  var box=document.getElementById('fb-appr-list'); var toggle=document.getElementById('fb-appr-toggle');
+  if(!box||!fbApprSelMonth) return;
   var items=fbDecided.filter(function(r){return r.status==='approved' && r.from && r.from.slice(0,7)===fbApprSelMonth;})
     .sort(function(a,b){return (a.from||'')<(b.from||'')?-1:1;});
+  if(toggle) toggle.textContent=(fbApprListOpen?'▾':'▸')+' Details anzeigen ('+items.length+')';
+  box.style.display=fbApprListOpen?'block':'none';
+  if(!fbApprListOpen) return;
   if(!items.length){ box.innerHTML='<div style="color:#6B6860;font-size:13px;padding:6px 0">Kein genehmigter Urlaub in diesem Monat.</div>'; return; }
   box.innerHTML=items.map(function(r){
     return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #E8E4E0;border-left:4px solid #1E8449;border-radius:6px;margin-bottom:6px;flex-wrap:wrap">'
