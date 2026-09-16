@@ -47,6 +47,22 @@ header .sub{font-size:12px;opacity:.85;}
 .badge-grn{background:var(--grn-bg);color:var(--grn);}
 .badge-blu{background:var(--blu-bg);color:var(--blu);}
 .badge-amb{background:var(--amb-bg);color:var(--amb);}
+
+/* Genehmigter Urlaub: Monats-Tabs + Kalender (Auftrag t.duong 16.09.2026 —
+   statt einer einzigen langen, endlos scrollenden Liste über alle Monate). */
+.ul-month-tabs{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:6px;margin-bottom:12px;}
+.ul-month-tabs::-webkit-scrollbar{display:none;}
+.ul-month-tab{flex:0 0 auto;padding:6px 13px;font-size:12.5px;font-weight:600;color:var(--mut);background:var(--bg);border:1px solid var(--brd);border-radius:100px;cursor:pointer;white-space:nowrap;}
+.ul-month-tab.active{background:var(--grn);border-color:var(--grn);color:#fff;}
+.ul-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:12px;}
+.ul-cal-hd{text-align:center;font-size:10.5px;font-weight:700;color:var(--mut);padding:4px 0;}
+.ul-cal-cell{min-height:52px;border:1px solid var(--brd);border-radius:6px;padding:3px;font-size:10.5px;background:var(--surf);}
+.ul-cal-cell.out{background:#FBFAF8;opacity:.4;}
+.ul-cal-cell .dn{font-weight:700;font-size:11px;color:var(--mut);}
+.ul-cal-cell.today{border-color:var(--red);}
+.ul-cal-cell.today .dn{color:var(--red);}
+.ul-cal-uv{display:block;border-radius:4px;padding:1px 3px;margin-top:2px;font-size:9.5px;font-weight:700;color:#fff;background:var(--grn);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ul-cal-uv.more{background:#8A8378;}
 .badge-red{background:var(--red-l);color:var(--red-d);}
 .badge-gray{background:#F0EDE8;color:#6B6860;}
 .csv-stat{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;}
@@ -503,6 +519,18 @@ window.onerror=function(msg,src,line){
     <div class="info">Neue Anträge aus der Mitarbeiter-App erscheinen hier automatisch. Genehmigen/Ablehnen → der Mitarbeiter sieht die Entscheidung sofort (grün/rot).</div>
     <div id="fb-pending-status" style="font-size:13px;margin-bottom:8px;font-weight:600;display:none"></div>
     <div id="fb-pending-list"></div>
+  </div>
+
+  <div class="card" id="fb-approved-card" style="display:none">
+    <div class="card-title">✅ Genehmigter Urlaub</div>
+    <div class="ul-month-tabs" id="fb-appr-tabs"></div>
+    <div class="ul-cal-grid" id="fb-appr-cal"></div>
+    <div id="fb-appr-list"></div>
+  </div>
+
+  <div class="card" id="fb-rejected-card" style="display:none">
+    <div class="card-title">✗ Abgelehnte Anträge</div>
+    <div id="fb-rejected-list"></div>
   </div>
 
   <div class="card" id="u-manual-card">
@@ -5655,25 +5683,108 @@ function fbRenderPending(){
       +'<button class="btn btn-sm" style="background:#C0392B;color:#fff;border-color:#C0392B" onclick="fbReject(\''+r.docId+'\')">✗ Ablehnen</button>'
       +'</div>';
   }).join('');
-  // Entschiedene Anträge (genehmigt/abgelehnt) – löschbar
-  if(fbDecided.length){
-    var now=new Date(); now.setHours(0,0,0,0);
-    var items=fbDecided.slice().sort(function(a,b){ return (a.from||'')<(b.from||'')?-1:1; });
-    html+='<div style="font-size:13px;font-weight:700;margin:14px 0 6px;color:#6B6860">Entschiedene Anträge</div>';
-    html+=items.map(function(r){
-      var col=r.status==='approved'?'#1E8449':'#C0392B';
-      var lbl=r.status==='approved'?'✓ genehmigt':'✗ abgelehnt';
-      return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #E8E4E0;border-left:4px solid '+col+';border-radius:6px;margin-bottom:6px;flex-wrap:wrap">'
-        +'<div style="flex:1;min-width:150px"><strong>'+r.name+'</strong> · '+(r.filiale||'')+' · <span style="color:'+col+';font-weight:600">'+lbl+'</span><br><span style="font-size:13px;color:#6B6860">'+fmtDate(r.from)+' – '+fmtDate(r.to)+'</span>'
-        +(r.note?'<br><span style="font-size:12px;color:#8A5A00">📝 '+r.note+'</span>':'')+'</div>'
-        +(r.status==='approved'?'<button class="btn btn-sm" style="color:#C0392B;border-color:#C0392B" onclick="fbRejectConflict(\''+r.docId+'\')" title="Wegen Terminüberschneidung mit einer anderen Person ablehnen">⚠️ Wegen Überschneidung ablehnen</button>':'')
-        +'<button class="btn btn-sm" onclick="fbRevert(\''+r.docId+'\')" title="zurück auf Wartend">↩</button>'
-        +'<button class="btn btn-sm" style="color:#C0392B;border-color:#C0392B" onclick="fbDelete(\''+r.docId+'\',\''+(r.name||'').replace(/'/g,'')+'\')">🗑 Löschen</button>'
-        +'</div>';
-    }).join('');
-  }
   list.innerHTML=html;
   fbRunBesetzungChecks();
+  fbRenderApproved();
+  fbRenderRejected();
+}
+
+// ── Genehmigter Urlaub: Monats-Tabs + Kalender ───────────────────────────
+// (Auftrag t.duong 16.09.2026: die frühere flache Liste über ALLE Monate war
+// bei mehr als ein paar Wochen schnell unübersichtlich lang. Jetzt: Tabs pro
+// Monat + ein Kalender-Überblick übers ganze Gebiet, im selben Stil wie
+// mitarbeiter.html ihn für die eigene Filiale schon zeigt.)
+var fbApprSelMonth=null; // 'YYYY-MM' — null = noch nicht gewählt, Default beim ersten Rendern
+function fbApprMonths(){
+  var set={};
+  var now=new Date();
+  set[now.getFullYear()+'-'+('0'+(now.getMonth()+1)).slice(-2)]=true; // aktueller Monat immer als Tab, auch ohne Einträge
+  fbDecided.filter(function(r){return r.status==='approved';}).forEach(function(r){
+    if(r.from) set[r.from.slice(0,7)]=true;
+  });
+  return Object.keys(set).sort();
+}
+function fbApprMonthLabel(ym){
+  var p=ym.split('-'); var d=new Date(+p[0], +p[1]-1, 1);
+  return d.toLocaleDateString('de-DE',{month:'short',year:'numeric'});
+}
+function fbRenderApprTabs(){
+  var months=fbApprMonths();
+  if(!fbApprSelMonth || months.indexOf(fbApprSelMonth)===-1){
+    var now=new Date(), curYm=now.getFullYear()+'-'+('0'+(now.getMonth()+1)).slice(-2);
+    fbApprSelMonth = months.indexOf(curYm)!==-1 ? curYm : months[months.length-1];
+  }
+  var box=document.getElementById('fb-appr-tabs'); if(!box) return;
+  box.innerHTML=months.map(function(ym){
+    return '<div class="ul-month-tab'+(ym===fbApprSelMonth?' active':'')+'" onclick="fbApprSelectMonth(\''+ym+'\')">'+fbApprMonthLabel(ym)+'</div>';
+  }).join('');
+}
+function fbApprSelectMonth(ym){
+  fbApprSelMonth=ym;
+  fbRenderApprTabs();
+  fbRenderApprCal();
+  fbRenderApprList();
+}
+function fbRenderApprCal(){
+  var grid=document.getElementById('fb-appr-cal'); if(!grid||!fbApprSelMonth) return;
+  var p=fbApprSelMonth.split('-'), y=+p[0], m=+p[1]-1;
+  var approved=fbDecided.filter(function(r){return r.status==='approved';});
+  var wd=['Mo','Di','Mi','Do','Fr','Sa','So'];
+  var html=wd.map(function(d){return '<div class="ul-cal-hd">'+d+'</div>';}).join('');
+  var first=new Date(y,m,1);
+  var startWd=(first.getDay()+6)%7; // Montag=0
+  var dim=new Date(y,m+1,0).getDate();
+  var today=new Date(); var todayISO=today.getFullYear()+'-'+('0'+(today.getMonth()+1)).slice(-2)+'-'+('0'+today.getDate()).slice(-2);
+  for(var i=0;i<startWd;i++) html+='<div class="ul-cal-cell out"></div>';
+  for(var d=1; d<=dim; d++){
+    var iso=y+'-'+('0'+(m+1)).slice(-2)+'-'+('0'+d).slice(-2);
+    var entries=approved.filter(function(u){ return u.from<=iso && iso<=u.to; });
+    var cell='<div class="ul-cal-cell'+(iso===todayISO?' today':'')+'"><span class="dn">'+d+'</span>';
+    entries.slice(0,3).forEach(function(e){
+      var nm=(e.name||'').split(' ')[0];
+      cell+='<span class="ul-cal-uv" title="'+(e.name||'')+' · '+(e.filiale||'')+'">'+nm+'</span>';
+    });
+    if(entries.length>3) cell+='<span class="ul-cal-uv more">+'+(entries.length-3)+'</span>';
+    cell+='</div>';
+    html+=cell;
+  }
+  grid.innerHTML=html;
+}
+function fbRenderApprList(){
+  var box=document.getElementById('fb-appr-list'); if(!box||!fbApprSelMonth) return;
+  var items=fbDecided.filter(function(r){return r.status==='approved' && r.from && r.from.slice(0,7)===fbApprSelMonth;})
+    .sort(function(a,b){return (a.from||'')<(b.from||'')?-1:1;});
+  if(!items.length){ box.innerHTML='<div style="color:#6B6860;font-size:13px;padding:6px 0">Kein genehmigter Urlaub in diesem Monat.</div>'; return; }
+  box.innerHTML=items.map(function(r){
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #E8E4E0;border-left:4px solid #1E8449;border-radius:6px;margin-bottom:6px;flex-wrap:wrap">'
+      +'<div style="flex:1;min-width:150px"><strong>'+r.name+'</strong> · '+(r.filiale||'')+'<br><span style="font-size:13px;color:#6B6860">'+fmtDate(r.from)+' – '+fmtDate(r.to)+'</span>'
+      +(r.note?'<br><span style="font-size:12px;color:#8A5A00">📝 '+r.note+'</span>':'')+'</div>'
+      +'<button class="btn btn-sm" style="color:#C0392B;border-color:#C0392B" onclick="fbRejectConflict(\''+r.docId+'\')" title="Wegen Terminüberschneidung mit einer anderen Person ablehnen">⚠️ Wegen Überschneidung ablehnen</button>'
+      +'<button class="btn btn-sm" onclick="fbRevert(\''+r.docId+'\')" title="zurück auf Wartend">↩</button>'
+      +'<button class="btn btn-sm" style="color:#C0392B;border-color:#C0392B" onclick="fbDelete(\''+r.docId+'\',\''+(r.name||'').replace(/'/g,'')+'\')">🗑 Löschen</button>'
+      +'</div>';
+  }).join('');
+}
+function fbRenderApproved(){
+  var card=document.getElementById('fb-approved-card'); if(!card) return;
+  card.style.display='block';
+  fbRenderApprTabs();
+  fbRenderApprCal();
+  fbRenderApprList();
+}
+function fbRenderRejected(){
+  var card=document.getElementById('fb-rejected-card');
+  var box=document.getElementById('fb-rejected-list'); if(!card||!box) return;
+  var items=fbDecided.filter(function(r){return r.status==='rejected';}).sort(function(a,b){return (a.from||'')<(b.from||'')?-1:1;});
+  card.style.display = items.length ? 'block' : 'none';
+  box.innerHTML=items.map(function(r){
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #E8E4E0;border-left:4px solid #C0392B;border-radius:6px;margin-bottom:6px;flex-wrap:wrap">'
+      +'<div style="flex:1;min-width:150px"><strong>'+r.name+'</strong> · '+(r.filiale||'')+'<br><span style="font-size:13px;color:#6B6860">'+fmtDate(r.from)+' – '+fmtDate(r.to)+'</span>'
+      +(r.note?'<br><span style="font-size:12px;color:#8A5A00">📝 '+r.note+'</span>':'')+'</div>'
+      +'<button class="btn btn-sm" onclick="fbRevert(\''+r.docId+'\')" title="zurück auf Wartend">↩</button>'
+      +'<button class="btn btn-sm" style="color:#C0392B;border-color:#C0392B" onclick="fbDelete(\''+r.docId+'\',\''+(r.name||'').replace(/'/g,'')+'\')">🗑 Löschen</button>'
+      +'</div>';
+  }).join('');
 }
 function fbFind(docId){ return fbPending.concat(fbDecided).find(function(r){return r.docId===docId;}); }
 function fbApprove(docId){
