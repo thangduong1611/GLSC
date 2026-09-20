@@ -221,9 +221,14 @@ window.onerror=function(msg,src,line){
       <div id="install-ios" style="display:none;font-size:13px;line-height:1.7" data-i18n="inst_ios"></div>
     </div>
     <label data-i18n="lbl_pid">Personalnummer</label>
-    <input type="tel" id="login-pid" inputmode="numeric" placeholder="z.B. 1042" autocomplete="off">
+    <input type="tel" id="login-pid" inputmode="numeric" placeholder="z.B. 1042" autocomplete="off" oninput="maLoginLeaveSetup()">
     <label data-i18n="lbl_pin" style="margin-top:10px">PIN (4-6 Ziffern)</label>
     <input type="password" id="login-pin" inputmode="numeric" maxlength="6" placeholder="••••" autocomplete="off">
+    <div id="login-pin2-wrap" style="display:none">
+      <div style="font-size:12.5px;color:#8A5A00;background:#FFF7E6;border:1px solid #F0C070;border-radius:8px;padding:8px 10px;margin-top:10px;line-height:1.5" data-i18n="pin_setup_prompt"></div>
+      <label data-i18n="lbl_pin2" style="margin-top:10px">PIN wiederholen</label>
+      <input type="password" id="login-pin2" inputmode="numeric" maxlength="6" placeholder="••••" autocomplete="off">
+    </div>
     <div id="login-pin-hint" style="font-size:11.5px;color:var(--mut);margin-top:4px" data-i18n="pin_hint">Erster Login: du legst deinen PIN hier selbst fest — merk ihn dir gut.</div>
     <div style="margin-top:16px"><button class="btn btn-red" onclick="maDoLogin()" data-i18n="btn_login">Anmelden</button></div>
     <div class="login-err" id="login-err"></div>
@@ -2096,7 +2101,8 @@ de:{_name:'Deutsch',
  lbl_pin:'PIN (4-6 Ziffern)',pin_hint:'Erster Login: du legst deinen PIN hier selbst fest — am einfachsten denselben PIN wie für die Zeiterfassung (Time-PIN), dann musst du dir nichts Neues merken.',pin_created:'✓ PIN festgelegt — merk ihn dir für den nächsten Login.',
  err_pid:'Bitte Personalnummer eingeben.',err_notfound:'Personalnummer nicht gefunden. Bitte prüfen.',err_nodata:'Keine Daten geladen. Bitte zuerst Daten laden.',err_conn:'Verbindungsfehler: ',err_inactive:'Dieser Zugang ist nicht mehr aktiv. Bitte an den Vorgesetzten wenden.',
  err_relogin:'🔒 Sicherheitsupdate: bitte einmal neu mit Personalnummer + PIN anmelden.',
- err_pin_format:'PIN muss 4-6 Ziffern haben.',err_pin_wrong:'Falscher PIN. Bitte erneut versuchen.',err_pin_locked:'Zu viele Fehlversuche — bitte in 15 Minuten erneut versuchen oder den Gebietsleiter um Zurücksetzen bitten.',
+ err_pin_format:'PIN muss 4-6 Ziffern haben.',err_pin_wrong:'Falscher PIN. Bitte erneut versuchen.',err_pin_locked:'Zu viele Fehlversuche — bitte in {min} Minuten erneut versuchen oder den Gebietsleiter um Zurücksetzen bitten.',
+ lbl_pin2:'PIN wiederholen',pin_setup_prompt:'Das ist dein erster Login — gib deinen PIN zur Bestätigung bitte noch einmal ein (und merk ihn dir für das nächste Mal).',err_pin_mismatch:'Die beiden PINs stimmen nicht überein. Bitte erneut eingeben.',err_pin_wrong_left:'Falscher PIN — noch {n} Versuch(e), danach wird der Login kurz gesperrt.',
  btn_logout:'Abmelden',q_logout:'Abmelden?',no_fil:'keine Filiale',
  dp_title:'📅 Mein Dienstplan',lbl_month:'Monat',fil:'Filiale',alloc_main:'Stammfiliale',alloc_backup:'Bei Bedarf Einsatz in',
  st_gestern_ok:'✅ Gestern ({d}): genau wie geplant gearbeitet.', st_gestern_mehr:'🟡 Gestern ({d}): {n} Std. mehr als geplant.',
@@ -2224,7 +2230,8 @@ vi:{_name:'Tiếng Việt',
  lbl_pin:'Mã PIN (4-6 số)',pin_hint:'Lần đăng nhập đầu tiên: bạn tự đặt mã PIN ở đây — dễ nhất là dùng luôn mã PIN chấm công (Time-PIN) đang có, để khỏi phải nhớ thêm số mới.',pin_created:'✓ Đã đặt mã PIN — hãy nhớ để lần sau đăng nhập.',
  err_pid:'Vui lòng nhập mã số nhân viên.',err_notfound:'Không tìm thấy mã số. Vui lòng kiểm tra lại.',err_nodata:'Chưa có dữ liệu. Vui lòng tải dữ liệu trước.',err_conn:'Lỗi kết nối: ',err_inactive:'Tài khoản này không còn hoạt động. Vui lòng liên hệ quản lý.',
  err_relogin:'🔒 Cập nhật bảo mật: vui lòng đăng nhập lại 1 lần bằng mã số nhân viên + mã PIN.',
- err_pin_format:'Mã PIN phải có 4-6 chữ số.',err_pin_wrong:'Sai mã PIN. Vui lòng thử lại.',err_pin_locked:'Sai quá nhiều lần — vui lòng thử lại sau 15 phút hoặc nhờ Gebietsleiter đặt lại mã PIN.',
+ err_pin_format:'Mã PIN phải có 4-6 chữ số.',err_pin_wrong:'Sai mã PIN. Vui lòng thử lại.',err_pin_locked:'Sai quá nhiều lần — vui lòng thử lại sau {min} phút hoặc nhờ Gebietsleiter đặt lại mã PIN.',
+ lbl_pin2:'Nhập lại mã PIN',pin_setup_prompt:'Đây là lần đăng nhập đầu tiên — hãy nhập lại mã PIN một lần nữa để xác nhận (và nhớ kỹ mã này cho lần sau).',err_pin_mismatch:'Hai mã PIN không giống nhau. Vui lòng nhập lại.',err_pin_wrong_left:'Sai mã PIN — còn {n} lần thử, sau đó đăng nhập sẽ bị khóa tạm thời.',
  btn_logout:'Đăng xuất',q_logout:'Đăng xuất?',no_fil:'chưa có cửa hàng',
  dp_title:'📅 Lịch làm của tôi',lbl_month:'Tháng',fil:'Cửa hàng',alloc_main:'Cửa hàng chính',alloc_backup:'Hỗ trợ khi cần tại',
  st_gestern_ok:'✅ Hôm qua ({d}): làm đúng số giờ theo kế hoạch.', st_gestern_mehr:'🟡 Hôm qua ({d}): làm dư {n} giờ so với kế hoạch.',
@@ -2352,7 +2359,8 @@ en:{_name:'English',
  lbl_pin:'PIN (4-6 digits)',pin_hint:'First login: choose your own PIN here — easiest is to reuse your existing time-clock PIN (Time-PIN), so you don\'t need to remember a new number.',pin_created:'✓ PIN set — remember it for your next login.',
  err_pid:'Please enter your employee number.',err_notfound:'Employee number not found. Please check.',err_nodata:'No data loaded. Please load data first.',err_conn:'Connection error: ',err_inactive:'This account is no longer active. Please contact your manager.',
  err_relogin:'🔒 Security update: please sign in again once with your employee number + PIN.',
- err_pin_format:'PIN must be 4-6 digits.',err_pin_wrong:'Wrong PIN. Please try again.',err_pin_locked:'Too many wrong attempts — please try again in 15 minutes or ask your manager to reset your PIN.',
+ err_pin_format:'PIN must be 4-6 digits.',err_pin_wrong:'Wrong PIN. Please try again.',err_pin_locked:'Too many wrong attempts — please try again in {min} minutes or ask your manager to reset your PIN.',
+ lbl_pin2:'Repeat PIN',pin_setup_prompt:'This is your first login — please enter your PIN a second time to confirm it (and remember it for next time).',err_pin_mismatch:'The two PINs don\'t match. Please enter them again.',err_pin_wrong_left:'Wrong PIN — {n} attempt(s) left, then login is locked for a short time.',
  btn_logout:'Log out',q_logout:'Log out?',no_fil:'no store',
  dp_title:'📅 My schedule',lbl_month:'Month',fil:'Store',alloc_main:'Main store',alloc_backup:'Backup duty at',
  st_gestern_ok:'✅ Yesterday ({d}): worked exactly as planned.', st_gestern_mehr:'🟡 Yesterday ({d}): {n} hrs more than planned.',
@@ -2480,7 +2488,8 @@ th:{_name:'ไทย',
  lbl_pin:'รหัส PIN (4-6 หลัก)',pin_hint:'เข้าสู่ระบบครั้งแรก: กำหนดรหัส PIN ของคุณเองที่นี่ — ง่ายที่สุดคือใช้รหัส Time-PIN (บันทึกเวลาทำงาน) เดิมที่มีอยู่แล้ว จะได้ไม่ต้องจำเลขใหม่',pin_created:'✓ ตั้งรหัส PIN แล้ว — จำไว้สำหรับการเข้าสู่ระบบครั้งถัดไป',
  err_pid:'กรุณากรอกรหัสพนักงาน',err_notfound:'ไม่พบรหัสพนักงาน กรุณาตรวจสอบ',err_nodata:'ยังไม่มีข้อมูล กรุณาโหลดข้อมูลก่อน',err_conn:'การเชื่อมต่อล้มเหลว: ',err_inactive:'บัญชีนี้ไม่ได้ใช้งานแล้ว กรุณาติดต่อผู้จัดการ',
  err_relogin:'🔒 อัปเดตความปลอดภัย: กรุณาเข้าสู่ระบบใหม่อีกครั้งด้วยรหัสพนักงาน + PIN',
- err_pin_format:'รหัส PIN ต้องมี 4-6 หลัก',err_pin_wrong:'รหัส PIN ไม่ถูกต้อง กรุณาลองใหม่',err_pin_locked:'ลองผิดหลายครั้งเกินไป — กรุณาลองใหม่ใน 15 นาที หรือขอให้ผู้จัดการรีเซ็ตรหัส PIN',
+ err_pin_format:'รหัส PIN ต้องมี 4-6 หลัก',err_pin_wrong:'รหัส PIN ไม่ถูกต้อง กรุณาลองใหม่',err_pin_locked:'ลองผิดหลายครั้งเกินไป — กรุณาลองใหม่ใน {min} นาที หรือขอให้ผู้จัดการรีเซ็ตรหัส PIN',
+ lbl_pin2:'ยืนยันรหัส PIN อีกครั้ง',pin_setup_prompt:'นี่คือการเข้าสู่ระบบครั้งแรก — กรุณากรอกรหัส PIN อีกครั้งเพื่อยืนยัน (และจำไว้สำหรับครั้งต่อไป)',err_pin_mismatch:'รหัส PIN ทั้งสองไม่ตรงกัน กรุณากรอกใหม่',err_pin_wrong_left:'รหัส PIN ไม่ถูกต้อง — เหลืออีก {n} ครั้ง หลังจากนั้นระบบจะล็อกชั่วคราว',
  btn_logout:'ออกจากระบบ',q_logout:'ออกจากระบบ?',no_fil:'ไม่มีสาขา',
  dp_title:'📅 ตารางงานของฉัน',lbl_month:'เดือน',fil:'สาขา',alloc_main:'สาขาหลัก',alloc_backup:'ช่วยงานเมื่อจำเป็นที่',
  st_gestern_ok:'✅ เมื่อวาน ({d}): ทำงานตรงตามแผนพอดี', st_gestern_mehr:'🟡 เมื่อวาน ({d}): ทำงานเกินแผน {n} ชม.',
@@ -2608,7 +2617,8 @@ zh:{_name:'中文',
  lbl_pin:'PIN 码（4-6位数字）',pin_hint:'首次登录：请在此自行设置您的 PIN 码 — 最简单的方法是直接使用您现有的考勤 PIN 码（Time-PIN），这样就不用记新的号码了。',pin_created:'✓ PIN 码已设置 — 请记住，下次登录需要用到。',
  err_pid:'请输入员工编号。',err_notfound:'未找到该员工编号，请检查。',err_nodata:'尚未加载数据，请先加载数据。',err_conn:'连接错误：',err_inactive:'此账号已不再激活，请联系您的主管。',
  err_relogin:'🔒 安全更新：请用员工编号 + PIN 重新登录一次。',
- err_pin_format:'PIN 码必须为 4-6 位数字。',err_pin_wrong:'PIN 码错误，请重试。',err_pin_locked:'错误次数过多 — 请15分钟后重试，或联系主管重置 PIN 码。',
+ err_pin_format:'PIN 码必须为 4-6 位数字。',err_pin_wrong:'PIN 码错误，请重试。',err_pin_locked:'错误次数过多 — 请 {min} 分钟后重试，或联系主管重置 PIN 码。',
+ lbl_pin2:'再次输入 PIN 码',pin_setup_prompt:'这是您首次登录 — 请再输入一次 PIN 码以确认（并记住它，下次登录要用）。',err_pin_mismatch:'两次输入的 PIN 码不一致，请重新输入。',err_pin_wrong_left:'PIN 码错误 — 还剩 {n} 次机会，之后登录将被暂时锁定。',
  btn_logout:'退出登录',q_logout:'确定要退出登录吗？',no_fil:'暂无门店',
  dp_title:'📅 我的排班表',lbl_month:'月份',fil:'门店',alloc_main:'主要门店',alloc_backup:'需要时支援',
  st_gestern_ok:'✅ 昨天（{d}）：工时与排班一致。', st_gestern_mehr:'🟡 昨天（{d}）：比排班多做了{n}小时。',
@@ -2919,6 +2929,25 @@ function maShowLogin(){
   document.getElementById('login-nodata').style.display=(fbEnabled()||maLoadBundle())?'none':'block';
 }
 var maLoginBusy=false;
+// Ersteinrichtung des PIN (Auftrag t.duong 20.09.2026): Meldet der Server
+// 'pin_setup_required' (für diese Personalnummer gibt es noch keinen PIN),
+// erscheint ein zweites PIN-Feld — der PIN wird erst gespeichert, wenn beide
+// Eingaben übereinstimmen. Vorher wurde jede Eingabe beim ersten Login sofort
+// zum gültigen PIN, ein Tippfehler war später nicht mehr zu erkennen.
+var maLoginSetup=false;
+function maLoginEnterSetup(){
+  maLoginSetup=true;
+  document.getElementById('login-pin2-wrap').style.display='block';
+  document.getElementById('login-pin-hint').style.display='none';
+  var p2=document.getElementById('login-pin2'); p2.value=''; p2.focus();
+}
+function maLoginLeaveSetup(){
+  if(!maLoginSetup) return;
+  maLoginSetup=false;
+  document.getElementById('login-pin2-wrap').style.display='none';
+  document.getElementById('login-pin-hint').style.display='';
+  document.getElementById('login-pin2').value='';
+}
 function maDoLogin(){
   var pid=document.getElementById('login-pid').value.trim();
   var err=document.getElementById('login-err');
@@ -2926,15 +2955,24 @@ function maDoLogin(){
   if(fbEnabled()){
     var pin=(document.getElementById('login-pin').value||'').trim();
     if(!/^\d{4,6}$/.test(pin)){err.textContent=t('err_pin_format');err.style.display='block';return;}
+    var body={pid:pid,pin:pin,v:2};
+    if(maLoginSetup){
+      var pin2=(document.getElementById('login-pin2').value||'').trim();
+      if(pin2!==pin){err.textContent=t('err_pin_mismatch');err.style.display='block';return;}
+      body.pinConfirm=pin2;
+    }
     if(maLoginBusy) return;
     maLoginBusy=true;
     err.textContent='';err.style.display='none';
     var btnErr=function(msg){err.textContent=msg;err.style.display='block';maLoginBusy=false;};
     fbEnsureApp();
     fetch(EMPLOYEE_AUTH_URL+'/employee/login',{
-      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({pid:pid,pin:pin})
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
     }).then(function(r){
-      return r.json().then(function(j){ if(!r.ok) throw new Error(j.error||('HTTP '+r.status)); return j; });
+      return r.json().then(function(j){
+        if(!r.ok){ var er=new Error(j.error||('HTTP '+r.status)); er.attemptsLeft=j.attemptsLeft; er.retryAfterMin=j.retryAfterMin; throw er; }
+        return j;
+      });
     }).then(function(j){
       return firebase.auth().signInWithCustomToken(j.token).then(function(){
         fbReady=true;
@@ -2945,6 +2983,7 @@ function maDoLogin(){
           var sess={id:pid,name:d.name||'',filiale:d.filiale||'',zweit:d.zweit||[],region:d.region||''};
           maSetSession(sess);
           maLoginBusy=false;
+          maLoginLeaveSetup();
           fbDb.collection('meta').doc('config').get().then(function(cfg){
             if(cfg.exists && cfg.data().managerWa) localStorage.setItem('ma_wa', cfg.data().managerWa);
           }).catch(function(){});
@@ -2953,7 +2992,9 @@ function maDoLogin(){
         });
       });
     }).catch(function(e){
-      var map={not_found:t('err_notfound'), inactive:t('err_inactive'), wrong_pin:t('err_pin_wrong'), locked:t('err_pin_locked'), pin_format:t('err_pin_format')};
+      if(e.message==='pin_setup_required'){ maLoginBusy=false; maLoginEnterSetup(); return; }
+      var wrongTxt=(typeof e.attemptsLeft==='number')?t('err_pin_wrong_left',{n:e.attemptsLeft}):t('err_pin_wrong');
+      var map={not_found:t('err_notfound'), inactive:t('err_inactive'), wrong_pin:wrongTxt, locked:t('err_pin_locked',{min:e.retryAfterMin||5}), pin_format:t('err_pin_format'), pin_mismatch:t('err_pin_mismatch')};
       btnErr(map[e.message]||(t('err_conn')+e.message));
     });
     return;
@@ -2973,6 +3014,7 @@ function maLogout(){
     maSetSession(null);
     document.getElementById('login-pid').value='';
     var pinEl=document.getElementById('login-pin'); if(pinEl) pinEl.value='';
+    maLoginLeaveSetup();
     if(fbEnabled()){ try{ firebase.auth().signOut(); }catch(e){} }
     maShowLogin();
   }
@@ -4465,6 +4507,7 @@ function maUnbusy(idOrEl){ var el=typeof idOrEl==='string'?document.getElementBy
 document.getElementById('import-modal').addEventListener('click',function(e){if(e.target===this)maCloseImport();});
 document.getElementById('login-pid').addEventListener('keydown',function(e){if(e.key==='Enter')maDoLogin();});
 document.getElementById('login-pin').addEventListener('keydown',function(e){if(e.key==='Enter')maDoLogin();});
+document.getElementById('login-pin2').addEventListener('keydown',function(e){if(e.key==='Enter')maDoLogin();});
 
 /* ── PWA: Installieren ── */
 var instPrompt=null;

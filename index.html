@@ -880,6 +880,11 @@ window.onerror=function(msg,src,line){
 
 <!-- ===== MITARBEITER ===== -->
 <div id="panel-emp" class="panel">
+  <div class="card" id="pin-locks-card" style="display:none">
+    <div class="card-title">🔒 Gesperrte Anmeldungen <span class="badge badge-red" id="pin-locks-count">0</span></div>
+    <div class="info">Diese Mitarbeiter haben ihren PIN zu oft falsch eingegeben. Die Sperre endet von selbst (5, dann 15, dann 30 Min.). Hat jemand den PIN vergessen, hier zurücksetzen — beim nächsten Login legt die Person einen neuen fest.</div>
+    <div id="pin-locks-list"></div>
+  </div>
   <div class="card">
     <div class="card-title">🏪 Filial-Verteilung <span class="badge badge-blu">Haupt + Zweitfilialen</span></div>
     <div class="info">Pro Mitarbeiter festlegen, in welchen Filialen er/sie <strong>bei Bedarf</strong> einspringt (Krankheit/Urlaub). Die Stammfiliale kommt aus der CSV. Nach Änderungen „Veröffentlichen" nicht vergessen — Mitarbeiter sehen die Zuteilung im Dienstplan-Tab.</div>
@@ -2204,11 +2209,7 @@ function mResetPin(){
   if(!confirm('PIN für Personalnummer '+id+' wirklich zurücksetzen? Die Person muss sich beim nächsten Login einen neuen PIN vergeben.')) return;
   const btn=document.getElementById('m-pin-reset-btn');
   btn.disabled=true; btn.textContent='⏳ …';
-  fbDb.collection('emps').doc(id).update({
-    pinHash: firebase.firestore.FieldValue.delete(),
-    pinFailCount: firebase.firestore.FieldValue.delete(),
-    pinLockedUntil: firebase.firestore.FieldValue.delete(),
-  }).then(function(){
+  pinResetFields(id).then(function(){
     toast('✓ PIN zurückgesetzt');
     btn.disabled=false; btn.textContent='🔑 PIN zurücksetzen';
   }).catch(function(e){
@@ -2216,6 +2217,44 @@ function mResetPin(){
     btn.disabled=false; btn.textContent='🔑 PIN zurücksetzen';
   });
 }
+function pinResetFields(id){
+  var del=firebase.firestore.FieldValue.delete();
+  return fbDb.collection('emps').doc(id).update({ pinHash:del, pinFailCount:del, pinLockedUntil:del, pinLockCount:del });
+}
+
+// Liste der aktuell gesperrten Mitarbeiter-Anmeldungen (Auftrag t.duong
+// 20.09.2026) — gespeist aus demselben Live-Listener wie die Mitarbeiterliste
+// (empsSyncListener), also ohne zusätzliche Firestore-Abfrage. Eintrag
+// verschwindet von selbst, sobald die Sperre abgelaufen ist (Timer unten) oder
+// der PIN zurückgesetzt wurde.
+var empPinLocks={};
+function pinLocksRender(){
+  var card=document.getElementById('pin-locks-card'), list=document.getElementById('pin-locks-list'), cnt=document.getElementById('pin-locks-count');
+  if(!card||!list) return;
+  var now=Date.now();
+  var ids=Object.keys(empPinLocks).filter(function(id){ return empPinLocks[id].until>now; })
+    .sort(function(a,b){ return (empPinLocks[a].name||'').localeCompare(empPinLocks[b].name||''); });
+  card.style.display=ids.length?'block':'none';
+  if(cnt) cnt.textContent=ids.length;
+  list.innerHTML=ids.map(function(id){
+    var l=empPinLocks[id], min=Math.max(1,Math.ceil((l.until-now)/60000));
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #E8E4E0;border-left:4px solid #C0392B;border-radius:6px;margin-bottom:6px;flex-wrap:wrap">'
+      +'<div style="flex:1;min-width:150px"><strong>'+uglXmlEscape(l.name||'?')+'</strong> · '+uglXmlEscape(id)+(l.filiale?' · '+uglXmlEscape(l.filiale):'')
+      +'<br><span style="font-size:12.5px;color:#6B6860">noch ca. '+min+' Min. gesperrt</span></div>'
+      +'<button class="btn btn-sm" onclick="pinResetById(this.getAttribute(\'data-id\'))" data-id="'+uglXmlEscape(id)+'">🔑 PIN zurücksetzen</button>'
+      +'</div>';
+  }).join('');
+}
+function pinResetById(id){
+  if(!id||!fbReady||!fbDb) return;
+  var l=empPinLocks[id]||{};
+  if(!confirm('PIN für '+(l.name||id)+' ('+id+') wirklich zurücksetzen? Die Person legt beim nächsten Login einen neuen PIN fest.')) return;
+  pinResetFields(id).then(function(){
+    delete empPinLocks[id]; pinLocksRender();
+    toast('✓ PIN zurückgesetzt');
+  }).catch(function(e){ alert('Fehler: '+e.message); });
+}
+setInterval(pinLocksRender, 30000);
 
 function closeModal() { document.getElementById('emp-modal').classList.remove('open'); }
 
@@ -5522,14 +5561,17 @@ function empsSyncListener(){
   if(!fbReady||!fbDb||!activeRegion) return;
   if(empsSyncUnsub){ try{empsSyncUnsub();}catch(e){} }
   empsSyncUnsub=fbDb.collection('emps').where('region','==',activeRegion).onSnapshot(function(snap){
-    var arr=[];
+    var arr=[], locks={}, nowMs=Date.now();
     snap.forEach(function(doc){
       var d=doc.data()||{};
+      var lockMs=d.pinLockedUntil&&d.pinLockedUntil.toMillis?d.pinLockedUntil.toMillis():0;
+      if(lockMs>nowMs && d.active!==false) locks[doc.id]={name:d.name||'', filiale:d.filiale||'', until:lockMs};
       arr.push({id:doc.id, name:d.name||'', filiale:d.filiale||'', filialeNr:d.filialeNr||'',
         active:d.active!==false, eintritt:d.eintritt||'', austritt:d.austritt||'',
         zweit:d.zweit||[], shopleiter:!!d.shopleiter, vize:!!d.vize, region:d.region||''});
     });
     saveEmps(arr);
+    empPinLocks=locks; pinLocksRender();
     if(typeof renderEmpTable==='function') renderEmpTable();
     if(typeof fvPopulate==='function') fvPopulate();
     if(typeof dpPopulateFiliale==='function') dpPopulateFiliale();

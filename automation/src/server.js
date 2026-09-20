@@ -294,13 +294,19 @@ app.post('/employee/login', async (req, res) => {
   const b = req.body || {};
   const pid = typeof b.pid === 'string' ? b.pid.trim().slice(0, 40) : '';
   const pin = typeof b.pin === 'string' ? b.pin.trim() : '';
+  // v>=2 + pinConfirm: neuer Client mit "PIN zweimal eingeben" beim ersten Login
+  // (siehe employee-auth.js) — alte Clients senden beides nicht.
+  const opts = {
+    v: Number(b.v) || 1,
+    pinConfirm: typeof b.pinConfirm === 'string' ? b.pinConfirm.trim() : undefined,
+  };
   try {
-    const result = await employeeLogin(pid, pin);
+    const result = await employeeLogin(pid, pin, opts);
     res.status(200).json(result);
   } catch (err) {
     const status = err.status || 500;
     if (status === 500) console.error('[employee-login] Fehlgeschlagen:', err.message);
-    res.status(status).json({ error: err.message, attemptsLeft: err.attemptsLeft });
+    res.status(status).json({ error: err.message, attemptsLeft: err.attemptsLeft, retryAfterMin: err.retryAfterMin });
   }
 });
 
