@@ -395,13 +395,17 @@ window.onerror=function(msg,src,line){
 </div>
 
 <!-- Beleg-Foto Viewer -->
-<div id="bl-img-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:100000;flex-direction:column;align-items:center;justify-content:center;padding:16px">
-  <button type="button" onclick="blCloseImgModal()" aria-label="Schließen"
+<!-- Gemeinsamer Foto-Viewer (Belege + Krankmeldung): Schließen-Knopf, Herunterladen,
+     Tippen außerhalb schließt. Ohne diesen Viewer öffnete Krankmeldung das Foto per
+     window.open() in einem leeren Tab — in der iPhone-App (PWA) gibt es dort weder
+     Zurück- noch Schließen-Knopf, man musste die ganze App neu starten. -->
+<div id="img-viewer-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:100000;flex-direction:column;align-items:center;justify-content:center;padding:16px">
+  <button type="button" onclick="imgViewerClose()" aria-label="Schließen"
     style="position:absolute;top:14px;right:14px;width:46px;height:46px;border-radius:50%;background:#fff;color:#1A1A18;border:none;font-size:22px;line-height:46px;text-align:center;cursor:pointer;font-weight:700;z-index:2;padding:0">✕</button>
-  <img id="bl-img-modal-img" onclick="event.stopPropagation()" style="max-width:100%;max-height:68vh;border-radius:8px;object-fit:contain;position:relative;z-index:1">
+  <img id="img-viewer-img" onclick="event.stopPropagation()" style="max-width:100%;max-height:68vh;border-radius:8px;object-fit:contain;position:relative;z-index:1">
   <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;justify-content:center;position:relative;z-index:2">
-    <button type="button" class="btn btn-grn" onclick="blDownloadCurrent()">💾 Herunterladen</button>
-    <button type="button" class="btn" onclick="blCloseImgModal()">✕ Schließen</button>
+    <button type="button" class="btn btn-grn" onclick="imgViewerDownload()">💾 Herunterladen</button>
+    <button type="button" class="btn" onclick="imgViewerClose()">✕ Schließen</button>
   </div>
   <div style="color:#fff;font-size:12.5px;margin-top:12px;text-align:center;max-width:340px;opacity:.85;position:relative;z-index:2">
     Am Handy: Bild <strong>gedrückt halten</strong> → „Zu Fotos hinzufügen".<br>Zum Schließen auch außerhalb des Bildes tippen.
@@ -6120,23 +6124,23 @@ function krRender(){
       +'<div style="display:flex;flex-direction:column;gap:6px">'
       +'<button class="btn btn-sm" style="background:#1A5276;color:#fff;border-color:#1A5276" onclick="krToMail(\''+k.docId+'\')">📋 In E-Mail übernehmen</button>'
       +(d.sentAt?'<span style="font-size:11px;color:#1E8449;font-weight:700;text-align:center">✓ übernommen</span>':'')
+      +(d.img?'<button class="btn btn-sm" onclick="krOpenImg(\''+k.docId+'\')">🖼 Foto ansehen</button>':'')
       +(d.img?'<button class="btn btn-sm" onclick="krDownload(\''+k.docId+'\')">💾 Foto</button>':'')
       +'<button class="btn btn-sm" style="color:#C0392B;border-color:#C0392B" onclick="krDelete(\''+k.docId+'\')">🗑 Erledigt</button>'
       +'</div></div>';
   }).join('');
 }
 function krFind(id){ return fbKrank.find(function(x){return x.docId===id;}); }
+function krImgFilename(k){
+  return 'Krankschreibung_'+((k.d.name||'x').replace(/\s+/g,'_'))+'_'+(k.d.from||'')+'.jpg';
+}
 function krOpenImg(id){
   var k=krFind(id); if(!k||!k.d.img) return;
-  var w=window.open('','_blank');
-  if(w){ w.document.write('<title>Krankschreibung '+(k.d.name||'')+'</title><img src="'+k.d.img+'" style="max-width:100%">'); }
+  imgViewerOpen(k.d.img, krImgFilename(k));
 }
 function krDownload(id){
   var k=krFind(id); if(!k||!k.d.img) return;
-  var a=document.createElement('a');
-  a.href=k.d.img;
-  a.download='Krankschreibung_'+((k.d.name||'x').replace(/\s+/g,'_'))+'_'+(k.d.from||'')+'.jpg';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  imgDownload(k.d.img, krImgFilename(k));
 }
 function krDelete(id){
   var k=krFind(id); if(!k) return;
@@ -6247,34 +6251,42 @@ function blCopyFallback(txt, cb){
   try{ document.execCommand('copy'); cb&&cb(); }catch(e){ alert(txt); }
   document.body.removeChild(ta);
 }
-var blCurImgId=null;
-function blOpenImg(id){
-  var b=blFind(id); if(!b||!b.d.img) return;
-  blCurImgId=id;
-  var mod=document.getElementById('bl-img-modal');
+// ── Gemeinsamer Foto-Viewer (Belege + Krankmeldung), HTML: #img-viewer-modal ──
+var imgViewerCur=null; // {src, filename} des gerade angezeigten Fotos
+function imgViewerOpen(src, filename){
+  if(!src) return;
+  imgViewerCur={src:src, filename:filename||'Foto.jpg'};
+  var mod=document.getElementById('img-viewer-modal');
   // Modal direkt an <body> haengen -> unabhaengig von Panels/Stacking-Kontexten
   if(mod.parentNode!==document.body) document.body.appendChild(mod);
-  document.getElementById('bl-img-modal-img').src=b.d.img;
+  document.getElementById('img-viewer-img').src=src;
   mod.style.display='flex';
   // Schliessen per Klick auf den Hintergrund
-  mod.onclick=function(ev){ if(ev.target===mod) blCloseImgModal(); };
-  document.addEventListener('keydown', blImgEsc);
+  mod.onclick=function(ev){ if(ev.target===mod) imgViewerClose(); };
+  document.addEventListener('keydown', imgViewerEsc);
 }
-function blImgEsc(ev){ if(ev.key==='Escape') blCloseImgModal(); }
-function blCloseImgModal(){
-  var mod=document.getElementById('bl-img-modal');
+function imgViewerEsc(ev){ if(ev.key==='Escape') imgViewerClose(); }
+function imgViewerClose(){
+  var mod=document.getElementById('img-viewer-modal');
   if(mod){ mod.style.display='none'; mod.onclick=null; }
-  var im=document.getElementById('bl-img-modal-img'); if(im) im.src='';
-  blCurImgId=null;
-  document.removeEventListener('keydown', blImgEsc);
+  var im=document.getElementById('img-viewer-img'); if(im) im.src='';
+  imgViewerCur=null;
+  document.removeEventListener('keydown', imgViewerEsc);
 }
-function blDownloadCurrent(){
-  if(!blCurImgId) return;
-  var b=blFind(blCurImgId); if(!b||!b.d.img) return;
+function imgDownload(src, filename){
   var a=document.createElement('a');
-  a.href=b.d.img;
-  a.download='Beleg_'+((b.d.empName||'MA').replace(/\s+/g,'_'))+'_'+((b.d.createdAt||'').slice(0,10))+'.jpg';
+  a.href=src; a.download=filename||'Foto.jpg';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+function imgViewerDownload(){
+  if(imgViewerCur) imgDownload(imgViewerCur.src, imgViewerCur.filename);
+}
+function blImgFilename(b){
+  return 'Beleg_'+((b.d.empName||'MA').replace(/\s+/g,'_'))+'_'+((b.d.createdAt||'').slice(0,10))+'.jpg';
+}
+function blOpenImg(id){
+  var b=blFind(id); if(!b||!b.d.img) return;
+  imgViewerOpen(b.d.img, blImgFilename(b));
 }
 function blSetStatus(id,status){
   var b=blFind(id); if(!b) return;
