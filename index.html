@@ -2217,6 +2217,10 @@ function mResetPin(){
     btn.disabled=false; btn.textContent='🔑 PIN zurücksetzen';
   });
 }
+// emps.pinHash ist seit 20.09.2026 nur noch der Marker "PIN gesetzt" — der echte
+// Hash liegt in emp_pins (für Clients gesperrt, s. employee-auth.js). Marker
+// löschen genügt zum Zurücksetzen; ein alter Hash in emp_pins wird nie mehr
+// benutzt und beim nächsten Festlegen überschrieben.
 function pinResetFields(id){
   var del=firebase.firestore.FieldValue.delete();
   return fbDb.collection('emps').doc(id).update({ pinHash:del, pinFailCount:del, pinLockedUntil:del, pinLockCount:del });

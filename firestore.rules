@@ -107,6 +107,15 @@ service cloud.firestore {
       allow delete: if isManagerForRegion(docRegion(resource.data));
     }
 
+    // PIN-Hashes der Mitarbeiter-App — ausschließlich Cloud Run (Admin SDK,
+    // automation/src/employee-auth.js). Bewusst auch für Manager gesperrt: die
+    // emps-Dokumente sind für jede Mitarbeiter-Sitzung lesbar, ein dort
+    // liegender Hash eines nur 4-6-stelligen PINs wäre offline sofort zu
+    // knacken. Zurücksetzen läuft weiter über das Marker-Feld emps.pinHash.
+    match /emp_pins/{pid} {
+      allow read, write: if false;
+    }
+
     // ══════════════════════════════════════════════════════════
     // DIENSTPLAN — unchanged, already scoped per-Filiale by doc ID
     // ══════════════════════════════════════════════════════════

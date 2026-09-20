@@ -10,9 +10,22 @@
 // Cloud-Run-Route hier) — die eigentliche Prüfung passiert in diesem Skript.
 // Erste Anmeldung eines Mitarbeiters legt den PIN fest (Self-Service, kein
 // Admin muss PINs verteilen) — jede weitere Anmeldung muss ihn bestätigen.
+//
+// WO DER PIN-HASH LIEGT (Änderung 20.09.2026): emps/{pid} ist für JEDE
+// angemeldete Mitarbeiter-Sitzung lesbar (firestore.rules) — dort liegende
+// bcrypt-Hashes von nur 4-6-stelligen PINs wären offline in Minuten zu knacken.
+// Der Hash liegt deshalb in emp_pins/{pid} (nur Admin SDK, für Clients komplett
+// gesperrt). In emps/{pid}.pinHash steht nur noch der Marker PIN_MARKER = "es
+// gibt einen PIN". Bewusst unter dem alten Feldnamen: das "PIN zurücksetzen"
+// in index.html löscht genau dieses Feld — so wirkt auch eine noch nicht
+// aktualisierte, alte index.html weiter (Marker weg = kein PIN, ein veralteter
+// Hash in emp_pins wird beim nächsten Festlegen überschrieben und nie benutzt).
+// Fehlversuchs-Zähler und Sperre bleiben in emps (keine Geheimnisse, und die
+// Sperr-Liste in index.html liest sie dort live).
 const bcrypt = require('bcryptjs');
 const { getDb, admin } = require('./firestore-client');
 
+const PIN_MARKER = '@emp_pins';
 const PIN_REGEX = /^\d{4,6}$/;
 // Sperr-Regeln (Änderung 20.09.2026, nach vielen Meldungen "Zu viele
 // Fehlversuche"): früher 5 Versuche → immer 15 Min. Sperre — für Mitarbeiter,
@@ -24,6 +37,23 @@ const PIN_REGEX = /^\d{4,6}$/;
 // (früher 20/Stunde — also nicht schwächer als vorher).
 const MAX_VERSUCHE = 8;
 const SPERR_STUFEN_MIN = [5, 15, 30];
+
+// Liefert den gespeicherten Hash oder null, wenn (noch) kein PIN gesetzt ist.
+// Jeder andere Zustand — Marker gesetzt, aber emp_pins leer, oder ein echter
+// Hash direkt in emps — ist kaputt und darf NICHT als "kein PIN" durchgehen
+// (jeder, der die Personalnummer kennt, könnte sonst einen eigenen PIN
+// festlegen): hart abbrechen, der Gebietsleiter setzt den PIN dann per Reset
+// zurück. (Der Altbestand mit Hash in emps wurde am 20.09.2026 per
+// migrate-pin-hashes.js vollständig umgezogen.)
+async function readPinHash(db, pid, d) {
+  if (!d.pinHash) return null;
+  const invalid = () => { const e = new Error('pin_state_invalid'); e.status = 500; return e; };
+  if (d.pinHash !== PIN_MARKER) throw invalid();
+  const p = await db.collection('emp_pins').doc(pid).get();
+  const hash = p.exists ? (p.data() || {}).pinHash : null;
+  if (!hash) throw invalid();
+  return { hash };
+}
 
 // opts.v >= 2: neuer Client (mitarbeiter.html vom 20.09.2026) — beim ersten
 // Login MUSS der PIN zweimal eingegeben werden (opts.pinConfirm), damit ein
@@ -50,8 +80,9 @@ async function employeeLogin(pid, pin, opts) {
     throw e;
   }
 
+  const stored = await readPinHash(db, pid, d);
   let isNewPin = false;
-  if (!d.pinHash) {
+  if (!stored) {
     // Erste Anmeldung überhaupt (oder Admin hat den PIN zurückgesetzt) — der
     // gerade eingegebene PIN wird als der neue, gültige PIN übernommen.
     if (opts.v >= 2) {
@@ -60,13 +91,18 @@ async function employeeLogin(pid, pin, opts) {
     }
     isNewPin = true;
     const hash = await bcrypt.hash(pin, 10);
-    await ref.update({
+    // Reihenfolge wichtig: erst den Hash ablegen, dann den Marker setzen — so
+    // zeigt der Marker nie auf einen (noch) fehlenden Hash.
+    await db.collection('emp_pins').doc(pid).set({
       pinHash: hash, pinSetAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    await ref.update({
+      pinHash: PIN_MARKER, pinSetAt: admin.firestore.FieldValue.delete(),
       pinFailCount: 0, pinLockedUntil: admin.firestore.FieldValue.delete(),
       pinLockCount: admin.firestore.FieldValue.delete(),
     });
   } else {
-    const ok = await bcrypt.compare(pin, d.pinHash);
+    const ok = await bcrypt.compare(pin, stored.hash);
     if (!ok) {
       const failCount = (d.pinFailCount || 0) + 1;
       if (failCount >= MAX_VERSUCHE) {
@@ -98,4 +134,4 @@ async function employeeLogin(pid, pin, opts) {
   return { token, isNewPin };
 }
 
-module.exports = { employeeLogin, MAX_VERSUCHE, SPERR_STUFEN_MIN };
+module.exports = { employeeLogin, MAX_VERSUCHE, SPERR_STUFEN_MIN, PIN_MARKER };
