@@ -1069,8 +1069,14 @@ window.onerror=function(msg,src,line){
     <div class="drop" id="nw-drop" onclick="document.getElementById('nw-img').click()" style="padding:14px">📷 Foto auswählen</div>
     <input type="file" id="nw-img" accept="image/*" style="display:none" onchange="nwPickImg(event)">
     <img id="nw-prev" style="display:none;max-width:100%;max-height:180px;border-radius:6px;border:1px solid var(--brd);margin-top:8px">
-    <div class="btn-row">
-      <button class="btn" onclick="nwClearImg()" style="flex:0 0 auto">↺ Foto entfernen</button>
+    <button class="btn" onclick="nwClearImg()" style="margin-top:6px">↺ Foto entfernen</button>
+    <label style="margin-top:12px">PDF (optional)</label>
+    <div class="info" style="margin-top:2px">Wird in der App direkt angezeigt, kein Download nötig. Nur echte, digital erzeugte PDFs (z.B. aus Word/Excel exportiert) — ein eingescanntes/fotografiertes PDF ist oft 10x größer und passt dann nicht. Grenze: ca. 650 KB.</div>
+    <div class="drop" id="nw-pdf-drop" onclick="document.getElementById('nw-pdf').click()" style="padding:14px">📄 PDF auswählen</div>
+    <input type="file" id="nw-pdf" accept="application/pdf" style="display:none" onchange="nwPickPdf(event)">
+    <div id="nw-pdf-prev" style="display:none;margin-top:8px;padding:8px 10px;border:1px solid var(--brd);border-radius:6px;font-size:13px">📄 <span id="nw-pdf-name"></span> <span id="nw-pdf-size" style="color:#6B6860"></span></div>
+    <button class="btn" onclick="nwClearPdf()" style="margin-top:6px">↺ PDF entfernen</button>
+    <div class="btn-row" style="margin-top:10px">
       <button class="btn btn-grn" onclick="nwSend()" style="flex:1;justify-content:center">📤 Senden</button>
     </div>
   </div>
@@ -7433,14 +7439,45 @@ function nwPickImg(ev){
   ev.target.value='';
 }
 function nwClearImg(){ nwImgData=null; var p=document.getElementById('nw-prev'); p.style.display='none'; document.getElementById('nw-drop').classList.remove('ok'); }
+// PDF-Anhang für Mitteilungen (Auftrag t.duong 25.09.2026): als data:-URL direkt
+// im news-Dokument gespeichert, genau wie Fotos — kein separates Storage nötig,
+// bleibt konsistent mit dem Rest der App. WICHTIG: Firestore erlaubt maximal
+// 1 MiB pro Dokument, base64 macht die Datei dabei selbst ~33% größer. Bei
+// 650.000 Zeichen base64 (~485 KB Originaldatei) bleibt genug Platz für Text/
+// Foto im selben Dokument übrig — deutlich strenger als beim Foto-Limit weiter
+// oben (900.000 Zeichen), weil ein PDF zusätzlich zum Foto im selben Dokument
+// landen kann.
+var nwPdfData=null, nwPdfName=null;
+var NW_PDF_MAX_CHARS=650000;
+function nwPickPdf(ev){
+  var f=ev.target.files[0]; if(!f) return;
+  ev.target.value='';
+  if(f.type && f.type!=='application/pdf' && !/\.pdf$/i.test(f.name)){ alert('Bitte eine PDF-Datei wählen.'); return; }
+  var r=new FileReader();
+  r.onload=function(e){
+    var data=e.target.result;
+    if(data.length>NW_PDF_MAX_CHARS){
+      var kb=Math.round(f.size/1024), maxKb=Math.round(NW_PDF_MAX_CHARS*0.73/1024);
+      alert('PDF ist zu groß ('+kb+' KB, erlaubt sind ca. '+maxKb+' KB).\n\nTipp: Als reines Text-PDF neu exportieren (z.B. aus Word „Als PDF speichern"), nicht scannen/fotografieren — das ist meist 10x kleiner. Oder online verkleinern (z.B. „PDF komprimieren").');
+      return;
+    }
+    nwPdfData=data; nwPdfName=f.name;
+    document.getElementById('nw-pdf-name').textContent=f.name;
+    document.getElementById('nw-pdf-size').textContent='('+Math.round(f.size/1024)+' KB)';
+    document.getElementById('nw-pdf-prev').style.display='block';
+    document.getElementById('nw-pdf-drop').classList.add('ok');
+  };
+  r.readAsDataURL(f);
+}
+function nwClearPdf(){ nwPdfData=null; nwPdfName=null; document.getElementById('nw-pdf-prev').style.display='none'; document.getElementById('nw-pdf-drop').classList.remove('ok'); }
 function nwSend(){
   if(!fbReady||!fbDb||!fbManager){ alert('Bitte zuerst als Manager anmelden (Einstellungen).'); return; }
   var txt=document.getElementById('nw-text').value.trim();
-  if(!txt && !nwImgData){ alert('Bitte Text eingeben.'); return; }
+  if(!txt && !nwImgData && !nwPdfData){ alert('Bitte Text eingeben.'); return; }
   var filSel=document.getElementById('nw-filiale');
   var filiale=filSel?filSel.value.trim():'';
-  fbDb.collection('news').add({text:txt, img:(nwImgData||null), filiale:(filiale||null), region:activeRegion||null, created:new Date().toISOString()})
-    .then(function(){ toast(filiale?('📤 An '+filiale+' gesendet'):'📤 An alle gesendet'); document.getElementById('nw-text').value=''; nwClearImg(); if(filSel) filSel.value=''; })
+  fbDb.collection('news').add({text:txt, img:(nwImgData||null), pdf:(nwPdfData||null), pdfName:(nwPdfName||null), filiale:(filiale||null), region:activeRegion||null, created:new Date().toISOString()})
+    .then(function(){ toast(filiale?('📤 An '+filiale+' gesendet'):'📤 An alle gesendet'); document.getElementById('nw-text').value=''; nwClearImg(); nwClearPdf(); if(filSel) filSel.value=''; })
     .catch(function(e){ alert('Senden fehlgeschlagen: '+e.message); });
 }
 // ── KPI-Auswertung Q3 (Jun-Aug 2026) — Entwürfe je Filiale ─────────────────
@@ -7601,7 +7638,7 @@ function nwRender(){
       readHtml='<div style="margin-top:6px;font-size:12px;color:#9a968e">Noch niemand hat als gelesen bestätigt.</div>';
     }
     return '<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid #E8E4E0;border-radius:6px;margin-bottom:6px">'
-      +'<div style="flex:1"><span style="color:#6B6860;font-size:12px">'+dt+(d.filiale?' · <span style="color:#1A5276">📍 '+(''+d.filiale).replace(/</g,'&lt;')+'</span>':' · <span style="color:#6B6860">📢 Alle</span>')+'</span><br>'+(d.text||'').replace(/</g,'&lt;').replace(/\n/g,'<br>')+(d.img?'<br><span style="font-size:12px">📷 mit Foto</span>':'')+readHtml+'</div>'
+      +'<div style="flex:1"><span style="color:#6B6860;font-size:12px">'+dt+(d.filiale?' · <span style="color:#1A5276">📍 '+(''+d.filiale).replace(/</g,'&lt;')+'</span>':' · <span style="color:#6B6860">📢 Alle</span>')+'</span><br>'+(d.text||'').replace(/</g,'&lt;').replace(/\n/g,'<br>')+(d.img?'<br><span style="font-size:12px">📷 mit Foto</span>':'')+(d.pdf?'<br><span style="font-size:12px">📄 mit PDF ('+(''+(d.pdfName||'Datei')).replace(/</g,'&lt;')+')</span>':'')+readHtml+'</div>'
       +'<button class="btn btn-sm" style="color:#C0392B;border-color:#C0392B" onclick="nwDelete(\''+n.docId+'\')">🗑</button>'
       +'</div>';
   }).join('');
