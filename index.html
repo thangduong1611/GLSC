@@ -377,7 +377,7 @@ window.onerror=function(msg,src,line){
 <div id="panel-belege" class="panel">
   <div class="card">
     <div class="card-title">🧾 Belege der Mitarbeiter <span class="badge badge-red" id="bl-live-count">0</span></div>
-    <div class="info">Mitarbeiter laden Kassenbons hier hoch. Workflow: <strong>Eingereicht</strong> → <strong>In Skovik hochgeladen</strong> (Rückerstattung beantragt) → <strong>Überwiesen</strong> (an Mitarbeiter bezahlt). Der Mitarbeiter bestätigt den Erhalt selbst; der Beleg bleibt hier zur Dokumentation sichtbar.</div>
+    <div class="info">Mitarbeiter laden Kassenbons hier hoch. Workflow: <strong>Eingereicht</strong> → <strong>In Skovik hochgeladen</strong> (Rückerstattung beantragt) → <strong>Überwiesen</strong> (an Mitarbeiter bezahlt). Der Mitarbeiter bestätigt den Erhalt selbst; der Beleg bleibt hier zur Dokumentation sichtbar. Vor der Überweisung kann ein Beleg mit Grund <strong>abgelehnt</strong> werden (z.B. Frist abgelaufen) — der Grund wird dem Mitarbeiter direkt in der App angezeigt.</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
       <select id="bl-filter-fil" onchange="blRenderAdmin()" style="flex:1;min-width:160px"><option value="">Alle Filialen</option></select>
       <select id="bl-filter-status" onchange="blRenderAdmin()" style="flex:1;min-width:160px">
@@ -386,6 +386,7 @@ window.onerror=function(msg,src,line){
         <option value="skovik">In Skovik hochgeladen</option>
         <option value="paid">Überwiesen</option>
         <option value="confirmed">Bestätigt</option>
+        <option value="rejected">Abgelehnt</option>
       </select>
     </div>
     <div id="bl-live-status" style="font-size:13px;margin-bottom:8px;font-weight:600;display:none"></div>
@@ -6182,6 +6183,7 @@ function blStatusMeta(st){
   if(st==='skovik') return {c:'#1A5276',bg:'#EAF2F8',txt:'In Skovik hochgeladen'};
   if(st==='paid') return {c:'#1E8449',bg:'#EAFAF1',txt:'Überwiesen'};
   if(st==='confirmed') return {c:'#6B6860',bg:'#F5F3F0',txt:'Bestätigt vom Mitarbeiter'};
+  if(st==='rejected') return {c:'#C0392B',bg:'#FBEAE7',txt:'Abgelehnt'};
   return {c:'#6B6860',bg:'#F5F3F0',txt:st};
 }
 function blRenderAdmin(){
@@ -6205,18 +6207,26 @@ function blRenderAdmin(){
     var d=b.d, m=blStatusMeta(d.status);
     var dt=d.createdAt?new Date(d.createdAt).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
     var actions='';
-    if(d.status==='new') actions+='<button class="btn btn-sm" style="background:#1A5276;color:#fff;border-color:#1A5276" onclick="blSetStatus(\''+b.docId+'\',\'skovik\')">✅ In Skovik hochgeladen</button>';
-    else if(d.status==='skovik') actions+='<button class="btn btn-sm" style="background:#1E8449;color:#fff;border-color:#1E8449" onclick="blSetStatus(\''+b.docId+'\',\'paid\')">💸 Überwiesen</button>';
+    if(d.status==='new'){
+      actions+='<button class="btn btn-sm" style="background:#1A5276;color:#fff;border-color:#1A5276" onclick="blSetStatus(\''+b.docId+'\',\'skovik\')">✅ In Skovik hochgeladen</button>';
+      actions+='<button class="btn btn-sm" style="color:#C0392B;border-color:#C0392B" onclick="blReject(\''+b.docId+'\')">❌ Ablehnen</button>';
+    } else if(d.status==='skovik'){
+      actions+='<button class="btn btn-sm" style="background:#1E8449;color:#fff;border-color:#1E8449" onclick="blSetStatus(\''+b.docId+'\',\'paid\')">💸 Überwiesen</button>';
+      actions+='<button class="btn btn-sm" style="color:#C0392B;border-color:#C0392B" onclick="blReject(\''+b.docId+'\')">❌ Ablehnen</button>';
+    }
     else if(d.status==='paid') actions+='<span style="font-size:11px;color:#1E8449;font-weight:700;text-align:center">Warte auf Bestätigung MA</span>';
     else if(d.status==='confirmed') actions+='<span style="font-size:11px;color:#1E8449;font-weight:700;text-align:center">✓ Abgeschlossen</span>';
+    else if(d.status==='rejected') actions+='<button class="btn btn-sm" onclick="blRevertReject(\''+b.docId+'\')" title="zurück auf Eingereicht">↩ Zurücksetzen</button>';
     actions+=(d.img?'<button class="btn btn-sm" onclick="blOpenImg(\''+b.docId+'\')">🖼 Foto ansehen</button>':'');
+    var rejectNote=(d.status==='rejected'&&d.rejectReason)?('<div style="margin-top:4px;font-size:12px;color:#C0392B">📝 '+uglXmlEscape(d.rejectReason)+'</div>'):'';
     return '<div style="display:flex;gap:12px;align-items:flex-start;padding:10px;border:1px solid #E8E4E0;border-left:4px solid '+m.c+';border-radius:6px;margin-bottom:8px;flex-wrap:wrap">'
       +(d.img?'<img src="'+d.img+'" style="width:84px;height:84px;object-fit:cover;border-radius:6px;border:1px solid #E8E4E0;cursor:pointer" onclick="blOpenImg(\''+b.docId+'\')" title="Foto ansehen">':'<div style="width:84px;height:84px;display:flex;align-items:center;justify-content:center;background:#F5F3F0;border-radius:6px;font-size:11px;color:#6B6860;text-align:center">kein<br>Foto</div>')
       +'<div style="flex:1;min-width:170px"><strong>'+(d.empName||'?')+'</strong> · '+(d.filiale||'')+'<br>'
       +'<span style="font-size:14px;font-weight:700">'+(d.amount?d.amount.toFixed(2)+' €':'—')+'</span> <span style="font-size:13px;color:#6B6860">'+(d.note||'')+'</span><br>'
       +blPayRow(d)
       +'<span style="font-size:12px;color:#6B6860">'+dt+'</span><br>'
-      +'<span style="display:inline-block;margin-top:4px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:'+m.bg+';color:'+m.c+'">'+m.txt+'</span></div>'
+      +'<span style="display:inline-block;margin-top:4px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:'+m.bg+';color:'+m.c+'">'+m.txt+'</span>'
+      +rejectNote+'</div>'
       +'<div style="display:flex;flex-direction:column;gap:6px;min-width:150px">'+actions+'</div></div>';
   }).join('');
 }
@@ -6323,6 +6333,23 @@ function blSetStatus(id,status){
   if(status==='skovik') upd.skovikAt=new Date().toISOString();
   if(status==='paid') upd.paidAt=new Date().toISOString();
   b.ref.update(upd).then(function(){ toast('✓ Status aktualisiert'); }).catch(function(e){ alert('Fehler: '+e.message); });
+}
+// Auftrag t.duong 25.09.2026: Beleg ablehnen (z.B. Frist abgelaufen oder anderer
+// Grund) — der Grund wird frei eingetippt und dem Mitarbeiter direkt in der App
+// angezeigt (blRender()/blStatusMeta() in mitarbeiter.html), nicht per WhatsApp.
+function blReject(id){
+  var b=blFind(id); if(!b) return;
+  var reason=prompt('Grund für die Ablehnung (wird dem Mitarbeiter angezeigt):','');
+  if(reason===null) return; // Abbrechen gedrückt
+  if(!reason.trim()){ alert('Bitte einen Grund angeben.'); return; }
+  b.ref.update({status:'rejected', rejectReason:reason.trim(), rejectedAt:new Date().toISOString()})
+    .then(function(){ toast('❌ Beleg abgelehnt'); }).catch(function(e){ alert('Fehler: '+e.message); });
+}
+function blRevertReject(id){
+  var b=blFind(id); if(!b) return;
+  var del=firebase.firestore.FieldValue.delete();
+  b.ref.update({status:'new', rejectReason:del, rejectedAt:del})
+    .then(function(){ toast('↩ Zurückgesetzt'); }).catch(function(e){ alert('Fehler: '+e.message); });
 }
 
 // ════════ SCHWAN-REKLAMATION ASSISTENT (sync-schwan-lookup.js/-submit.js) ════════
