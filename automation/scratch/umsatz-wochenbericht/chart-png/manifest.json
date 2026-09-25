@@ -1,0 +1,34 @@
+{
+  "402146": {
+    "marktNr": "402146",
+    "w": 620,
+    "daily": {
+      "file": "C:\\Users\\Public\\GLSC\\automation\\scratch\\umsatz-wochenbericht\\chart-png\\daily_402146.png",
+      "h": 230
+    }
+  },
+  "402240": {
+    "marktNr": "402240",
+    "w": 620,
+    "monthly": {
+      "file": "C:\\Users\\Public\\GLSC\\automation\\scratch\\umsatz-wochenbericht\\chart-png\\monthly_402240.png",
+      "h": 220
+    },
+    "daily": {
+      "file": "C:\\Users\\Public\\GLSC\\automation\\scratch\\umsatz-wochenbericht\\chart-png\\daily_402240.png",
+      "h": 230
+    }
+  },
+  "402286": {
+    "marktNr": "402286",
+    "w": 620,
+    "monthly": {
+      "file": "C:\\Users\\Public\\GLSC\\automation\\scratch\\umsatz-wochenbericht\\chart-png\\monthly_402286.png",
+      "h": 220
+    },
+    "daily": {
+      "file": "C:\\Users\\Public\\GLSC\\automation\\scratch\\umsatz-wochenbericht\\chart-png\\daily_402286.png",
+      "h": 230
+    }
+  }
+}

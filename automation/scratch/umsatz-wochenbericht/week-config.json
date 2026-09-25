@@ -1,0 +1,42 @@
+{
+  "title": "Umsatz-Maßnahmenbericht",
+  "subtitle": "Kalenderwoche 39 · Dienstag, 22. September 2026",
+  "region": "Gebiet Ost",
+  "author": "Thang Duc Duong",
+  "created": "22.09.2026",
+  "screenshot": "screenshot_umsatzziel_mitarbeiter.png",
+  "systemChange": {
+    "intro": "Seit dieser Woche berechnet das System für jede Filiale in Echtzeit ein Tagesziel und zeigt es direkt in der Mitarbeiter-App — nicht mehr nur dem Gebietsleiter. Jede Schicht sieht damit selbst, wo der Tag gerade steht, ohne beim Gebietsleiter nachfragen zu müssen.",
+    "outro": "Die Funktion läuft bereits produktiv für alle Filialen im Gebiet Ost. Die Rückmeldung aus den drei Fokus-Filialen dieser Woche steht unten bei den Tagesziel-Charts."
+  },
+  "storesIntro": "Diese Woche im Fokus: drei Filialen mit jeweils eigener Maßnahme zur Umsatzverbesserung. Die Charts zeigen echte Zahlen aus Firestore — Monatsumsatz aus dem Welo-Export sowie Ist-Umsatz gegen das neue Tagesziel aus Axonity (letzte Wochen).",
+  "stores": [
+    {
+      "marktNr": "402240",
+      "name": "Heilbad Heiligenstadt",
+      "measure": "Testbetrieb Nachmittagsproduktion ab Anfang Oktober. Keine Neueinstellung — die bestehende Mannschaft wird in Schichten aufgeteilt, um auch nachmittags frisch produzieren zu können.",
+      "measureShort": "Testbetrieb Nachmittagsproduktion ab Oktober (Schichtumverteilung, keine Neueinstellung)",
+      "analysis": "Der Monatsumsatz ist von Juni auf August leicht gesunken (33.830 € → 31.464 €, -7,0 %). Gleichzeitig wurden die Personalkosten deutlich reduziert (-24,3 %), wodurch der Ertrag trotz geringerem Umsatz um 3,1 % gestiegen ist — die Produktivität kletterte von 63,4 auf 72,8. Beim neuen Tagesziel liegt die Filiale an Werktagen im September im Schnitt bei 88,5 % Zielerreichung, an einzelnen Tagen (u. a. 05., 11., 12. und 19.09.) deutlich darunter. Die ab Oktober geplante Nachmittagsproduktion soll genau diese schwächeren Tageszeiten abdecken."
+    },
+    {
+      "marktNr": "402286",
+      "name": "Göttingen Kaufpark",
+      "measure": "Verkostungsaktionen (Probieraktionen) im Markt. Wegen der aktuell hohen Zahl an Urlauben im Team laufen diese durchgehend im gesamten Oktober weiter — die dafür nötigen Mitarbeiter sind bereits eingeteilt.",
+      "measureShort": "Laufende Verkostungsaktionen, im Oktober fortgesetzt (Personal bereits eingeteilt)",
+      "analysis": "Nach einem deutlichen Einbruch im Juli (9.297 €, -32,6 % gegenüber Juni — vermutlich urlaubsbedingt) hat sich der Umsatz im August auf 14.540 € erholt und liegt damit sogar 5,3 % über dem Juni-Wert; der Ertrag stieg im selben Zeitraum um 21,4 %. Beim neuen Tagesziel ist Göttingen Kaufpark die stärkste der drei Fokus-Filialen: im September wurde das Tagesziel an 13 von 17 Werktagen erreicht oder übertroffen, im Schnitt 116,2 % Zielerreichung. Die laufenden Verkostungsaktionen — trotz urlaubsbedingt dünner Personaldecke im Oktober durchgehend fortgesetzt — dürften an diesem positiven Trend einen wesentlichen Anteil haben."
+    },
+    {
+      "marktNr": "402146",
+      "name": "Bad Hersfeld",
+      "measure": "Für die Filiale wird eine Ersatzkraft gesucht: die aktuelle Kraft erfüllt ihre Verantwortung nicht zuverlässig, der Umsatz war dadurch nicht gesichert. An mehreren Tagen sprang bereits ein Springer ein — an diesen Tagen ist der Umsatz laut Team gestiegen.",
+      "measureShort": "Ersatzkraft gesucht; Springer-Einsätze zeigen bereits höhere Umsätze",
+      "analysis": "Für diese Filiale fehlt aktuell eine monatliche Umsatz-Historie im Welo-Export (siehe Datenlücke oben); die vorliegenden zwei Wochen zeigen eine Ø Tagesziel-Erreichung von 85 % (Werktage), an 2 von 11 Tagen wurde das Ziel erreicht. Am 21.09. war die reguläre Kraft krankgemeldet — der Tagesumsatz lag mit 728,78 € dennoch im üblichen Bereich der Filiale (ca. 78 % Zielerreichung), was für eine funktionierende Vertretung an diesem Tag spricht. Die gemeldeten Springer-Einsätze passen zu diesem Bild; für eine belastbare Vorher-Nachher-Auswertung fehlt bislang eine tagesgenaue Zuordnung, welche Tage konkret vom Springer abgedeckt wurden."
+    }
+  ],
+  "nextSteps": [
+    "Kostenstelle 402146 (Bad Hersfeld) für den Welo-Statistik-Export nachtragen, damit ab dem nächsten Bericht eine volle Monatshistorie vorliegt.",
+    "Einstellungsprozess für die Ersatzkraft in Bad Hersfeld weiterverfolgen; Springer-Einsätze möglichst mit Datum dokumentieren, um die Wirkung im nächsten Bericht belegen zu können.",
+    "Nachmittagsproduktion Heilbad Heiligenstadt ab Anfang Oktober starten und nach 2–3 Wochen gegen die aktuell schwächeren Tage (siehe Tagesziel-Chart) auswerten.",
+    "Verkostungsaktionen Göttingen Kaufpark im Oktober wie geplant fortführen; positive Entwicklung im nächsten Bericht erneut prüfen."
+  ]
+}

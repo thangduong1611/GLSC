@@ -1,0 +1,955 @@
+{
+  "402146": {
+    "marktNr": "402146",
+    "name": "402146: T-Bad Hersfeld-Heinrich-von-Stephan-Straße",
+    "ort": "Bad Hersfeld",
+    "monthly": [],
+    "tagesziel": [
+      {
+        "datum": "2026-09-02",
+        "ziel": 7.86,
+        "umsatzVorjahr": 6.29
+      },
+      {
+        "datum": "2026-09-03",
+        "ziel": 611.98,
+        "produktionsziel": 815.97,
+        "umsatzVorjahr": 489.59,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-04",
+        "ziel": 607,
+        "produktionsziel": 809.33,
+        "umsatzVorjahr": 485.6,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-05",
+        "ziel": 600.2,
+        "produktionsziel": 800.27,
+        "umsatzVorjahr": 480.16,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-06",
+        "ziel": 561.86,
+        "produktionsziel": 749.15,
+        "umsatzVorjahr": 449.49,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-07",
+        "ziel": null,
+        "produktionsziel": null,
+        "umsatzVorjahr": null,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-08",
+        "ziel": 514.78,
+        "produktionsziel": 686.37,
+        "umsatzVorjahr": 411.83,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-09",
+        "ziel": 565.54,
+        "produktionsziel": 754.05,
+        "umsatzVorjahr": 452.43,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-10",
+        "ziel": 584.78,
+        "produktionsziel": 779.71,
+        "umsatzVorjahr": 467.82,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-11",
+        "ziel": 613.93,
+        "produktionsziel": 818.57,
+        "umsatzVorjahr": 491.15,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-12",
+        "ziel": 582.21,
+        "produktionsziel": 776.28,
+        "umsatzVorjahr": 465.77,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-13",
+        "ziel": 602.92,
+        "produktionsziel": 803.89,
+        "umsatzVorjahr": 482.34,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-14",
+        "ziel": 410.16,
+        "produktionsziel": 546.88,
+        "umsatzVorjahr": 328.13,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-15",
+        "ziel": 537.27,
+        "produktionsziel": 716.36,
+        "umsatzVorjahr": 429.82,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-16",
+        "ziel": 564.2,
+        "produktionsziel": 752.27,
+        "umsatzVorjahr": 451.36,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-17",
+        "ziel": 623.26,
+        "produktionsziel": 831.01,
+        "umsatzVorjahr": 498.61,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-18",
+        "ziel": 622.77,
+        "produktionsziel": 830.36,
+        "umsatzVorjahr": 498.22,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-19",
+        "ziel": 582.21,
+        "produktionsziel": 776.28,
+        "umsatzVorjahr": 465.77,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-20",
+        "ziel": 614.02,
+        "produktionsziel": 818.69,
+        "umsatzVorjahr": 491.22,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-21",
+        "ziel": 697.93,
+        "produktionsziel": 930.57,
+        "umsatzVorjahr": 558.34,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-22",
+        "ziel": 550.49,
+        "produktionsziel": 733.99,
+        "umsatzVorjahr": 440.39,
+        "effektiverFaktor": 1.25
+      }
+    ],
+    "produktion": [
+      {
+        "datum": "2026-09-09",
+        "umsatzHeute": 611.71,
+        "umsatz30Tage": 14146.79
+      },
+      {
+        "datum": "2026-09-10",
+        "umsatzHeute": 603.05,
+        "umsatz30Tage": 14190.26
+      },
+      {
+        "datum": "2026-09-11",
+        "umsatzHeute": 591.58,
+        "umsatz30Tage": 14234.19
+      },
+      {
+        "datum": "2026-09-12",
+        "umsatzHeute": 616.57,
+        "umsatz30Tage": 14318.02
+      },
+      {
+        "datum": "2026-09-13",
+        "umsatzHeute": 0,
+        "umsatz30Tage": 14432.68
+      },
+      {
+        "datum": "2026-09-14",
+        "umsatzHeute": 604.4,
+        "umsatz30Tage": 13873.56
+      },
+      {
+        "datum": "2026-09-15",
+        "umsatzHeute": 461.02,
+        "umsatz30Tage": 13924.06
+      },
+      {
+        "datum": "2026-09-16",
+        "umsatzHeute": 671.56,
+        "umsatz30Tage": 14391.07
+      },
+      {
+        "datum": "2026-09-17",
+        "umsatzHeute": 683.64,
+        "umsatz30Tage": 14486.31
+      },
+      {
+        "datum": "2026-09-18",
+        "umsatzHeute": 728.86,
+        "umsatz30Tage": 14707.01
+      },
+      {
+        "datum": "2026-09-19",
+        "umsatzHeute": 872.11,
+        "umsatz30Tage": 14890.43
+      },
+      {
+        "datum": "2026-09-20",
+        "umsatzHeute": 0,
+        "umsatz30Tage": 15102.95
+      },
+      {
+        "datum": "2026-09-21",
+        "umsatzHeute": 728.78,
+        "umsatz30Tage": 14587.05
+      },
+      {
+        "datum": "2026-09-22",
+        "umsatzHeute": 19.96,
+        "umsatz30Tage": 14723.37
+      }
+    ]
+  },
+  "402240": {
+    "marktNr": "402240",
+    "name": "402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme",
+    "ort": "Heilbad Heiligenstadt",
+    "monthly": [
+      {
+        "periode": "2025-09",
+        "umsatz": 31901.42,
+        "ertrag": 22419.06,
+        "personalkosten": 9482.36,
+        "produktivitaet": 61.91
+      },
+      {
+        "periode": "2025-10",
+        "umsatz": 31555.97,
+        "ertrag": 22855.27,
+        "personalkosten": 8700.7,
+        "produktivitaet": 62.47
+      },
+      {
+        "periode": "2025-11",
+        "umsatz": 33351.29,
+        "ertrag": 21629.28,
+        "personalkosten": 11722.01,
+        "produktivitaet": 51.22
+      },
+      {
+        "periode": "2025-12",
+        "umsatz": 31601.48,
+        "ertrag": 20023.86,
+        "personalkosten": 11577.62,
+        "produktivitaet": 58.35
+      },
+      {
+        "periode": "2026-01",
+        "umsatz": 34555.24,
+        "ertrag": 20337.17,
+        "personalkosten": 14218.07,
+        "produktivitaet": 56.8
+      },
+      {
+        "periode": "2026-02",
+        "umsatz": 33843.66,
+        "ertrag": 22921.22,
+        "personalkosten": 10922.44,
+        "produktivitaet": 57.74
+      },
+      {
+        "periode": "2026-03",
+        "umsatz": 31544.28,
+        "ertrag": 21447.91,
+        "personalkosten": 10096.38,
+        "produktivitaet": 57.95
+      },
+      {
+        "periode": "2026-04",
+        "umsatz": 24672.8,
+        "ertrag": 12956.79,
+        "personalkosten": 11716.01,
+        "produktivitaet": 51.16
+      },
+      {
+        "periode": "2026-05",
+        "umsatz": 32009.82,
+        "ertrag": 20062.73,
+        "personalkosten": 11947.09,
+        "produktivitaet": 59.47
+      },
+      {
+        "periode": "2026-06",
+        "umsatz": 33829.54,
+        "ertrag": 21323.89,
+        "personalkosten": 12505.65,
+        "produktivitaet": 63.36
+      },
+      {
+        "periode": "2026-07",
+        "umsatz": 33484.2,
+        "ertrag": 23380.38,
+        "personalkosten": 10103.83,
+        "produktivitaet": 94.9
+      },
+      {
+        "periode": "2026-08",
+        "umsatz": 31464.48,
+        "ertrag": 21993.84,
+        "personalkosten": 9470.64,
+        "produktivitaet": 72.77
+      }
+    ],
+    "tagesziel": [
+      {
+        "datum": "2026-09-02",
+        "ziel": 1125.85,
+        "umsatzVorjahr": 900.68
+      },
+      {
+        "datum": "2026-09-03",
+        "ziel": 1328.22,
+        "produktionsziel": 1770.96,
+        "umsatzVorjahr": 1062.58,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-04",
+        "ziel": 1475.42,
+        "produktionsziel": 1967.23,
+        "umsatzVorjahr": 1180.33,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-05",
+        "ziel": 1640.19,
+        "produktionsziel": 2186.92,
+        "umsatzVorjahr": 1312.15,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-06",
+        "ziel": 1085.87,
+        "produktionsziel": 1447.83,
+        "umsatzVorjahr": 868.7,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-07",
+        "ziel": 900.49,
+        "produktionsziel": 1200.65,
+        "umsatzVorjahr": 720.4,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-08",
+        "ziel": 1380.52,
+        "produktionsziel": 1840.69,
+        "umsatzVorjahr": 1104.42,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-09",
+        "ziel": 1235.76,
+        "produktionsziel": 1647.68,
+        "umsatzVorjahr": 988.61,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-10",
+        "ziel": 1362.28,
+        "produktionsziel": 1816.37,
+        "umsatzVorjahr": 1089.82,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-11",
+        "ziel": 1456.32,
+        "produktionsziel": 1941.76,
+        "umsatzVorjahr": 1165.05,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-12",
+        "ziel": 1603.54,
+        "produktionsziel": 2138.05,
+        "umsatzVorjahr": 1282.83,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-13",
+        "ziel": 1132.77,
+        "produktionsziel": 1510.36,
+        "umsatzVorjahr": 906.22,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-14",
+        "ziel": 1071.97,
+        "produktionsziel": 1429.29,
+        "umsatzVorjahr": 857.58,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-15",
+        "ziel": 1396.64,
+        "produktionsziel": 1862.19,
+        "umsatzVorjahr": 1117.31,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-16",
+        "ziel": 1218.19,
+        "produktionsziel": 1624.25,
+        "umsatzVorjahr": 974.55,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-17",
+        "ziel": 1353.64,
+        "produktionsziel": 1804.85,
+        "umsatzVorjahr": 1082.91,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-18",
+        "ziel": 1432.94,
+        "produktionsziel": 1910.59,
+        "umsatzVorjahr": 1146.35,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-19",
+        "ziel": 1490.98,
+        "produktionsziel": 1987.97,
+        "umsatzVorjahr": 1192.78,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-20",
+        "ziel": 1224.13,
+        "produktionsziel": 1632.17,
+        "umsatzVorjahr": 979.3,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-21",
+        "ziel": 1050.78,
+        "produktionsziel": 1401.04,
+        "umsatzVorjahr": 840.62,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-22",
+        "ziel": 1339.23,
+        "produktionsziel": 1785.64,
+        "umsatzVorjahr": 1071.38,
+        "effektiverFaktor": 1.25
+      }
+    ],
+    "produktion": [
+      {
+        "datum": "2026-08-22",
+        "umsatz30Tage": 35193.79
+      },
+      {
+        "datum": "2026-08-23",
+        "umsatzHeute": 0,
+        "umsatz30Tage": 33892.79
+      },
+      {
+        "datum": "2026-08-24",
+        "umsatzHeute": 1424.24,
+        "umsatz30Tage": 34002.05
+      },
+      {
+        "datum": "2026-08-25",
+        "umsatzHeute": 1348.33,
+        "umsatz30Tage": 34222.32
+      },
+      {
+        "datum": "2026-09-02",
+        "umsatzHeute": 1472.68,
+        "umsatz30Tage": 36212.07
+      },
+      {
+        "datum": "2026-09-03",
+        "umsatzHeute": 1483.8,
+        "umsatz30Tage": 36476.17
+      },
+      {
+        "datum": "2026-09-04",
+        "umsatzHeute": 1909.42,
+        "umsatz30Tage": 36844.07
+      },
+      {
+        "datum": "2026-09-05",
+        "umsatzHeute": 1396.17,
+        "umsatz30Tage": 37352.53
+      },
+      {
+        "datum": "2026-09-06",
+        "umsatzHeute": 0,
+        "umsatz30Tage": 37476.27
+      },
+      {
+        "datum": "2026-09-07",
+        "umsatzHeute": 1504.38,
+        "umsatz30Tage": 35873.19
+      },
+      {
+        "datum": "2026-09-08",
+        "umsatzHeute": 1362.71,
+        "umsatz30Tage": 36173.07
+      },
+      {
+        "datum": "2026-09-09",
+        "umsatzHeute": 1361.72,
+        "umsatz30Tage": 37535.78
+      },
+      {
+        "datum": "2026-09-10",
+        "umsatzHeute": 1505.13,
+        "umsatz30Tage": 37690.57
+      },
+      {
+        "datum": "2026-09-11",
+        "umsatzHeute": 1346.22,
+        "umsatz30Tage": 37827.32
+      },
+      {
+        "datum": "2026-09-12",
+        "umsatzHeute": 1204.71,
+        "umsatz30Tage": 38081.05
+      },
+      {
+        "datum": "2026-09-13",
+        "umsatzHeute": 0,
+        "umsatz30Tage": 38084.14
+      },
+      {
+        "datum": "2026-09-14",
+        "umsatzHeute": 1515.18,
+        "umsatz30Tage": 36576.75
+      },
+      {
+        "datum": "2026-09-15",
+        "umsatzHeute": 1480.92,
+        "umsatz30Tage": 36824.41
+      },
+      {
+        "datum": "2026-09-16",
+        "umsatzHeute": 1502.42,
+        "umsatz30Tage": 38377.74
+      },
+      {
+        "datum": "2026-09-17",
+        "umsatzHeute": 1609.08,
+        "umsatz30Tage": 38679.2
+      },
+      {
+        "datum": "2026-09-18",
+        "umsatzHeute": 1810.14,
+        "umsatz30Tage": 38880.86
+      },
+      {
+        "datum": "2026-09-19",
+        "umsatzHeute": 1301.8,
+        "umsatz30Tage": 39055.38
+      },
+      {
+        "datum": "2026-09-20",
+        "umsatzHeute": 0,
+        "umsatz30Tage": 38862.26
+      },
+      {
+        "datum": "2026-09-21",
+        "umsatzHeute": 1550.19,
+        "umsatz30Tage": 37142.84
+      },
+      {
+        "datum": "2026-09-22",
+        "umsatzHeute": 85.6,
+        "umsatz30Tage": 37332.05
+      }
+    ]
+  },
+  "402286": {
+    "marktNr": "402286",
+    "name": "402286: K-Göttingen-Am Kauf Park",
+    "ort": "Göttingen",
+    "monthly": [
+      {
+        "periode": "2025-09",
+        "umsatz": 13621.68,
+        "ertrag": 9188.13,
+        "personalkosten": 4433.55,
+        "produktivitaet": 48
+      },
+      {
+        "periode": "2025-10",
+        "umsatz": 14729.96,
+        "ertrag": 11552.64,
+        "personalkosten": 3177.32,
+        "produktivitaet": 123.11
+      },
+      {
+        "periode": "2025-11",
+        "umsatz": 14476.96,
+        "ertrag": 11273.48,
+        "personalkosten": 3203.48,
+        "produktivitaet": 115.33
+      },
+      {
+        "periode": "2025-12",
+        "umsatz": 12495.12,
+        "ertrag": 8466.36,
+        "personalkosten": 4028.76,
+        "produktivitaet": 71.75
+      },
+      {
+        "periode": "2026-01",
+        "umsatz": 12416.71,
+        "ertrag": 6888.61,
+        "personalkosten": 5528.1,
+        "produktivitaet": 45.94
+      },
+      {
+        "periode": "2026-02",
+        "umsatz": 11887.54,
+        "ertrag": 6929.23,
+        "personalkosten": 4958.31,
+        "produktivitaet": 43.4
+      },
+      {
+        "periode": "2026-03",
+        "umsatz": 11297.85,
+        "ertrag": 6262.9,
+        "personalkosten": 5034.95,
+        "produktivitaet": 41.98
+      },
+      {
+        "periode": "2026-04",
+        "umsatz": 10782.79,
+        "ertrag": 5051.89,
+        "personalkosten": 5730.9,
+        "produktivitaet": 36.62
+      },
+      {
+        "periode": "2026-05",
+        "umsatz": 12981.59,
+        "ertrag": 7250.69,
+        "personalkosten": 5730.9,
+        "produktivitaet": 49.01
+      },
+      {
+        "periode": "2026-06",
+        "umsatz": 13802.69,
+        "ertrag": 8071.79,
+        "personalkosten": 5730.9,
+        "produktivitaet": 42.57
+      },
+      {
+        "periode": "2026-07",
+        "umsatz": 9297.21,
+        "ertrag": 2537.52,
+        "personalkosten": 6759.69,
+        "produktivitaet": 27.89
+      },
+      {
+        "periode": "2026-08",
+        "umsatz": 14540.49,
+        "ertrag": 9800,
+        "personalkosten": 4740.49,
+        "produktivitaet": 56
+      }
+    ],
+    "tagesziel": [
+      {
+        "datum": "2026-09-02",
+        "ziel": 397.04,
+        "umsatzVorjahr": 317.63
+      },
+      {
+        "datum": "2026-09-03",
+        "ziel": 485.32,
+        "produktionsziel": 647.09,
+        "umsatzVorjahr": 388.26,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-04",
+        "ziel": 521.64,
+        "produktionsziel": 695.52,
+        "umsatzVorjahr": 417.31,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-05",
+        "ziel": 708.56,
+        "produktionsziel": 944.75,
+        "umsatzVorjahr": 566.85,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-06",
+        "ziel": 704.16,
+        "produktionsziel": 938.88,
+        "umsatzVorjahr": 563.33,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-07",
+        "ziel": 738.47,
+        "produktionsziel": 984.63,
+        "umsatzVorjahr": 590.77,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-08",
+        "ziel": 462.21,
+        "produktionsziel": 616.28,
+        "umsatzVorjahr": 369.77,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-09",
+        "ziel": 479.53,
+        "produktionsziel": 639.37,
+        "umsatzVorjahr": 383.62,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-10",
+        "ziel": 467.38,
+        "produktionsziel": 623.17,
+        "umsatzVorjahr": 373.9,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-11",
+        "ziel": 479.79,
+        "produktionsziel": 639.72,
+        "umsatzVorjahr": 383.83,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-12",
+        "ziel": 718.74,
+        "produktionsziel": 958.32,
+        "umsatzVorjahr": 574.99,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-13",
+        "ziel": 761.72,
+        "produktionsziel": 1015.63,
+        "umsatzVorjahr": 609.37,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-14",
+        "ziel": 783.03,
+        "produktionsziel": 1044.04,
+        "umsatzVorjahr": 626.42,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-15",
+        "ziel": 489.23,
+        "produktionsziel": 652.31,
+        "umsatzVorjahr": 391.38,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-16",
+        "ziel": 474.91,
+        "produktionsziel": 633.21,
+        "umsatzVorjahr": 379.92,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-17",
+        "ziel": 487.04,
+        "produktionsziel": 649.39,
+        "umsatzVorjahr": 389.63,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-18",
+        "ziel": 523.33,
+        "produktionsziel": 697.77,
+        "umsatzVorjahr": 418.66,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-19",
+        "ziel": 712.08,
+        "produktionsziel": 949.44,
+        "umsatzVorjahr": 569.66,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-20",
+        "ziel": 809.27,
+        "produktionsziel": 1079.03,
+        "umsatzVorjahr": 647.42,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-21",
+        "ziel": 812.87,
+        "produktionsziel": 1083.83,
+        "umsatzVorjahr": 650.3,
+        "effektiverFaktor": 1.25
+      },
+      {
+        "datum": "2026-09-22",
+        "ziel": 482.95,
+        "produktionsziel": 643.93,
+        "umsatzVorjahr": 386.36,
+        "effektiverFaktor": 1.25
+      }
+    ],
+    "produktion": [
+      {
+        "datum": "2026-08-22",
+        "umsatz30Tage": 21700.66
+      },
+      {
+        "datum": "2026-08-23",
+        "umsatzHeute": 0,
+        "umsatz30Tage": 20713.08
+      },
+      {
+        "datum": "2026-08-24",
+        "umsatzHeute": 1015.05,
+        "umsatz30Tage": 20568.33
+      },
+      {
+        "datum": "2026-08-25",
+        "umsatzHeute": 943.44,
+        "umsatz30Tage": 20748.93
+      },
+      {
+        "datum": "2026-09-02",
+        "umsatzHeute": 859.36,
+        "umsatz30Tage": 23081.67
+      },
+      {
+        "datum": "2026-09-03",
+        "umsatzHeute": 801.78,
+        "umsatz30Tage": 23225.87
+      },
+      {
+        "datum": "2026-09-04",
+        "umsatzHeute": 1079.34,
+        "umsatz30Tage": 23277.37
+      },
+      {
+        "datum": "2026-09-05",
+        "umsatzHeute": 1110.25,
+        "umsatz30Tage": 23614.92
+      },
+      {
+        "datum": "2026-09-06",
+        "umsatzHeute": 0,
+        "umsatz30Tage": 24026.05
+      },
+      {
+        "datum": "2026-09-07",
+        "umsatzHeute": 1038.31,
+        "umsatz30Tage": 23293.6
+      },
+      {
+        "datum": "2026-09-08",
+        "umsatzHeute": 1034.64,
+        "umsatz30Tage": 23674.42
+      },
+      {
+        "datum": "2026-09-09",
+        "umsatzHeute": 960.87,
+        "umsatz30Tage": 24709.06
+      },
+      {
+        "datum": "2026-09-10",
+        "umsatzHeute": 1043.81,
+        "umsatz30Tage": 24678.06
+      },
+      {
+        "datum": "2026-09-11",
+        "umsatzHeute": 840.67,
+        "umsatz30Tage": 24821.94
+      },
+      {
+        "datum": "2026-09-12",
+        "umsatzHeute": 828.7,
+        "umsatz30Tage": 24737.9
+      },
+      {
+        "datum": "2026-09-13",
+        "umsatzHeute": 0,
+        "umsatz30Tage": 24493.42
+      },
+      {
+        "datum": "2026-09-14",
+        "umsatzHeute": 799.66,
+        "umsatz30Tage": 23512.49
+      },
+      {
+        "datum": "2026-09-15",
+        "umsatzHeute": 721.92,
+        "umsatz30Tage": 23267.71
+      },
+      {
+        "datum": "2026-09-16",
+        "umsatzHeute": 782.65,
+        "umsatz30Tage": 23989.63
+      },
+      {
+        "datum": "2026-09-17",
+        "umsatzHeute": 792.9,
+        "umsatz30Tage": 23989.66
+      },
+      {
+        "datum": "2026-09-18",
+        "umsatzHeute": 844.28,
+        "umsatz30Tage": 24030.44
+      },
+      {
+        "datum": "2026-09-19",
+        "umsatzHeute": 824.95,
+        "umsatz30Tage": 24105.83
+      },
+      {
+        "datum": "2026-09-20",
+        "umsatzHeute": 0,
+        "umsatz30Tage": 24178.01
+      },
+      {
+        "datum": "2026-09-21",
+        "umsatzHeute": 760.61,
+        "umsatz30Tage": 23423.39
+      },
+      {
+        "datum": "2026-09-22",
+        "umsatzHeute": 221.87,
+        "umsatz30Tage": 23450.77
+      }
+    ]
+  }
+}

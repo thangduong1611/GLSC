@@ -404,11 +404,11 @@ window.onerror=function(msg,src,line){
     style="position:absolute;top:14px;right:14px;width:46px;height:46px;border-radius:50%;background:#fff;color:#1A1A18;border:none;font-size:22px;line-height:46px;text-align:center;cursor:pointer;font-weight:700;z-index:2;padding:0">✕</button>
   <img id="img-viewer-img" onclick="event.stopPropagation()" style="max-width:100%;max-height:68vh;border-radius:8px;object-fit:contain;position:relative;z-index:1">
   <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;justify-content:center;position:relative;z-index:2">
-    <button type="button" class="btn btn-grn" onclick="imgViewerDownload()">💾 Herunterladen</button>
+    <button type="button" class="btn btn-grn" onclick="imgViewerDownload()">💾 Speichern</button>
     <button type="button" class="btn" onclick="imgViewerClose()">✕ Schließen</button>
   </div>
   <div style="color:#fff;font-size:12.5px;margin-top:12px;text-align:center;max-width:340px;opacity:.85;position:relative;z-index:2">
-    Am Handy: Bild <strong>gedrückt halten</strong> → „Zu Fotos hinzufügen".<br>Zum Schließen auch außerhalb des Bildes tippen.
+    Am Handy: oben auf <strong>„Speichern"</strong> tippen → im Teilen-Dialog „Bild sichern" wählen.<br>Zum Schließen auch außerhalb des Bildes tippen.
   </div>
 </div>
 
@@ -6273,10 +6273,39 @@ function imgViewerClose(){
   imgViewerCur=null;
   document.removeEventListener('keydown', imgViewerEsc);
 }
-function imgDownload(src, filename){
+// Auftrag t.duong 25.09.2026: auf dem iPhone tat weder "Herunterladen" noch
+// Antippen-und-Halten etwas. Ursache: Safari (auch als installierte PWA)
+// unterstützt das HTML-Attribut download="" für data:-URLs (genau das Format,
+// in dem Fotos hier gespeichert sind) NICHT zuverlässig — der Klick tat
+// buchstäblich nichts. Antippen-und-Halten ist in einer installierten
+// Home-Bildschirm-App zusätzlich oft grundsätzlich deaktiviert (bekannte
+// iOS-Einschränkung für WKWebView-Apps), unabhängig vom Bildformat.
+// Fix: zuerst den nativen "Teilen"-Dialog versuchen (Web Share API mit
+// Datei-Anhang) — DER funktioniert in Safari zuverlässig und bietet dort
+// direkt "Bild sichern" an, auch in installierten Apps. Nur wenn das nicht
+// unterstützt wird (z.B. Desktop-Browser), auf einen echten Download über
+// eine blob:-URL zurückfallen (klappt in Safari öfter als data:, aber nicht
+// garantiert — Teilen bleibt deshalb immer die erste Wahl).
+async function imgDownload(src, filename){
+  filename = filename || 'Foto.jpg';
+  var blob = null;
+  try{ blob = await (await fetch(src)).blob(); }catch(e){ blob = null; }
+  if(blob && navigator.canShare){
+    try{
+      var file = new File([blob], filename, {type: blob.type || 'image/jpeg'});
+      if(navigator.canShare({files:[file]})){
+        await navigator.share({files:[file]});
+        return; // Teilen-Dialog erledigt (oder vom Nutzer selbst abgebrochen) — fertig
+      }
+    }catch(e){
+      if(e && e.name==='AbortError') return; // Nutzer hat den Dialog selbst zugemacht, kein Fallback nötig
+    }
+  }
+  var url = blob ? URL.createObjectURL(blob) : src;
   var a=document.createElement('a');
-  a.href=src; a.download=filename||'Foto.jpg';
+  a.href=url; a.download=filename;
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  if(blob) setTimeout(function(){ URL.revokeObjectURL(url); }, 30000);
 }
 function imgViewerDownload(){
   if(imgViewerCur) imgDownload(imgViewerCur.src, imgViewerCur.filename);
