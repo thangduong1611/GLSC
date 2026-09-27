@@ -267,6 +267,28 @@ app.post('/internal/week-welo-check', requireManager, async (req, res) => {
   }
 });
 
+// ── Dienstplan: Urlaub-Vorschläge aus Welo für die aktuelle Filiale/Team ──
+// Manuell aus index.html angestoßen ("📡 Urlaub aus Welo aktualisieren"),
+// bewusst auf genau die im Dienstplan gerade sichtbaren Mitarbeiter begrenzt
+// (nicht alle ~111) — hält die Laufzeit klein und macht keine Welo-Logins für
+// Mitarbeiter nötig, die gar nicht gerade verplant werden.
+app.post('/internal/welo-urlaub-suggest', requireManager, async (req, res) => {
+  if (!REGION || !req.managerRegions.includes(REGION)) {
+    return res.status(403).json({ error: 'not authorized for this region' });
+  }
+  const year = req.body && req.body.year;
+  const empIds = req.body && req.body.empIds;
+  if (!year || !Array.isArray(empIds) || !empIds.length) {
+    return res.status(400).json({ error: 'year/empIds fehlen' });
+  }
+  try {
+    const result = await runFile('sync-welo-urlaub-suggest.js', `Urlaub-Vorschläge aus Welo (${empIds.length} MA)`, [String(year), empIds.join(',')], 10 * 60 * 1000);
+    res.status(result.ok ? 200 : 500).json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── Datenschutz: Krankmeldungs-Fotos automatisch nach 30 Tagen löschen ────
 // Region-unabhängig (gilt für alle Gebiete gleich, s. cleanup-krankmeldung.js)
 // — bewusst der gleiche Shared-Secret-Mechanismus wie die anderen

@@ -38,18 +38,8 @@
 require('dotenv').config();
 const { chromium } = require('playwright');
 const { getDb, admin } = require('./firestore-client');
+const { login, scrapeEmployeeYear, makeYearCache, isoOf } = require('./welo-jahresansicht');
 
-const BASE_URL = process.env.WELO_BASE_URL || 'https://welo.sushi-circle.de';
-const USER = process.env.WELO_USER;
-const PASSWORD = process.env.WELO_PASSWORD;
-
-const ICON_KATEGORIE = {
-  'x10.gif': 'Urlaub',
-  'x6.gif': 'Krank',
-  'x7.gif': 'Krank',
-};
-
-function isoOf(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
 function addDays(d, n) { const r = new Date(d); r.setDate(r.getDate() + n); return r; }
 function todayBerlinISO() { return new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Berlin' }); }
 function currentWeekRange() {
@@ -62,51 +52,6 @@ function currentWeekRange() {
 }
 function overlaps(a1, a2, b1, b2) { return a1 <= b2 && b1 <= a2; }
 function clip(from, to, lo, hi) { return { from: from < lo ? lo : from, to: to > hi ? hi : to }; }
-function rToIso(r) { return r.slice(0, 4) + '-' + r.slice(4, 6) + '-' + r.slice(6, 8); }
-
-async function login(page) {
-  await page.goto(`${BASE_URL}/`);
-  await page.locator('input[name="authuser"]').fill(USER);
-  await page.locator('input[name="authpass"]').fill(PASSWORD);
-  await page.locator('input[name="login"]').click();
-  await page.waitForURL((url) => /^\/[A-Za-z0-9]+-[A-Za-z0-9]+\/index\.html/.test(url.pathname), { timeout: 15000 });
-  const m = page.url().match(/^(https:\/\/[^/]+\/[A-Za-z0-9]+-[A-Za-z0-9]+)\//);
-  if (!m) throw new Error('Session-Präfix nach Login nicht gefunden: ' + page.url());
-  return m[1];
-}
-
-// Liest die Jahresansicht eines Mitarbeiters, gibt {isoDatum: kategorie} für
-// alle Tage zurück, die ein bekanntes Icon (Urlaub/Krank) tragen.
-async function scrapeEmployeeYear(page, sessionBase, empId, year) {
-  await page.goto(`${sessionBase}/pf/jahresansicht/${empId}-${year}.html`);
-  const raw = await page.evaluate(() => {
-    const out = [];
-    document.querySelectorAll('table.tgd[_r], table.tgl[_r]').forEach((t) => {
-      const img = t.querySelector('img.ma');
-      if (!img) return;
-      const src = img.getAttribute('src') || '';
-      out.push({ r: t.getAttribute('_r'), icon: src.slice(src.lastIndexOf('/') + 1) });
-    });
-    return out;
-  });
-  const map = {};
-  raw.forEach(({ r, icon }) => {
-    const kat = ICON_KATEGORIE[icon];
-    if (kat) map[rToIso(r)] = kat;
-  });
-  return map;
-}
-
-// Cache pro Mitarbeiter+Jahr, damit derselbe Mitarbeiter (z.B. bei mehreren
-// Zeiträumen) nicht zweimal geladen wird.
-function makeYearCache(page, sessionBase) {
-  const cache = new Map();
-  return async function getYear(empId, year) {
-    const key = empId + '-' + year;
-    if (!cache.has(key)) cache.set(key, await scrapeEmployeeYear(page, sessionBase, empId, year));
-    return cache.get(key);
-  };
-}
 
 // Prüft, ob JEDER Tag im Bereich [from,to] in Welo als "kategorie" markiert
 // ist — nicht nur eine Überlappung, sondern lückenlos, damit ein nur
@@ -131,7 +76,7 @@ async function weloDeckt(getYear, empId, kategorie, from, to) {
 }
 
 async function main() {
-  if (!USER || !PASSWORD) throw new Error('WELO_USER/WELO_PASSWORD fehlen.');
+  if (!process.env.WELO_USER || !process.env.WELO_PASSWORD) throw new Error('WELO_USER/WELO_PASSWORD fehlen.');
   const db = getDb();
   const { weekStart, weekEnd } = currentWeekRange();
   console.log(`Prüfe Woche ${weekStart} – ${weekEnd} …`);

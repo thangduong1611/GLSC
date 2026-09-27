@@ -320,6 +320,18 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Dienstplan: Urlaub-Vorschläge aus Welo (sync-welo-urlaub-suggest.js) —
+    // 1 Dok. pro Mitarbeiter+Jahr (docId = "{empId}-{jahr}"), bei jedem Lauf
+    // komplett überschrieben. Nur Manager, nur per Admin-SDK beschrieben —
+    // gleiches Muster wie welo_week_check oben. Reine Anzeige-/Vorschlagsquelle,
+    // niemals die Quelle für gesperrte Dienstplan-Zellen (das bleibt dpAbsenceFor()
+    // in index.html, ausschließlich App-genehmigter Urlaub/Krank).
+    match /welo_urlaub_suggest/{docId} {
+      allow get: if isManagerForRegion(docRegion(resource.data));
+      allow list: if isManagerForRegion(resource.data.region);
+      allow write: if false;
+    }
+
     // Wareneingang → Schwan-Reklamation-Assistent (sync-schwan-lookup.js /
     // sync-schwan-submit.js). Der Manager darf NUR sein eigenes Auftrag/
     // Artikel-Review als confirmedSelection eintragen — alles andere

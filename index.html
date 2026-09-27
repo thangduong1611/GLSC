@@ -219,6 +219,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 .dp-cell-clash{box-shadow:inset 0 0 0 2px #C0392B;}
 .dp-other-badge{display:block;font-size:8.5px;font-weight:600;color:#6B6860;line-height:1.15;text-align:center;margin-top:1px;}
 .dp-other-badge.clash{color:#C0392B;font-weight:700;}
+.dp-welo-badge{display:block;font-size:8.5px;font-weight:700;color:#6C3483;line-height:1.1;text-align:center;margin-top:1px;}
 .dp-th-ft{background:#FCF3E0 !important;color:#8a5a00;}
 .dp-fn{display:block;font-weight:600;font-size:8px;color:#a06600;line-height:1.1;margin-top:1px;}
 .dp-cell-ft{box-shadow:inset 0 0 0 1px #f0d9a8;}
@@ -1450,9 +1451,11 @@ window.onerror=function(msg,src,line){
       <datalist id="dp-presets"><option value="Frei"><option value="Urlaub"><option value="Krank"><option value="05:30-11:30"><option value="07:00-13:00"><option value="07:00-14:00"><option value="09:00-15:00"><option value="12:00-18:00"><option value="16:00-19:00"><option value="08:00-14:00"></datalist>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
         <button class="btn btn-sm" onclick="dpSuggest()" style="background:#185FA5;color:#fff;border-color:#185FA5">💡 Vorschlag aus Vormonat</button>
+        <button class="btn btn-sm" onclick="dpWeloRefresh()" style="background:#6C3483;color:#fff;border-color:#6C3483">📡 Urlaub aus Welo aktualisieren</button>
         <button class="btn btn-sm" onclick="dpCheckConflicts(false)">🔍 Doppelbelegung prüfen</button>
       </div>
       <p id="dp-sug-status" style="font-size:12.5px;line-height:1.5;margin:0 0 8px;display:none"></p>
+      <p id="dp-welo-status" style="font-size:12.5px;line-height:1.5;margin:0 0 8px;display:none"></p>
       <div id="dp-conflict-box" style="display:none;background:#FFF7E6;border:1px solid #F0C070;color:#8A5A00;border-radius:8px;padding:10px 12px;font-size:12.5px;line-height:1.5;margin-bottom:10px"></div>
       <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--mut);margin-bottom:8px">
         <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#EAFAF1;border:1px solid #1E8449"></span>🌴 Urlaub genehmigt</span>
@@ -3660,6 +3663,7 @@ function dpKey(){return 'sc_dp_'+dpGetFiliale().replace(/\s+/g,'_').toLowerCase(
 function dpLoadLS(k){try{return JSON.parse(localStorage.getItem(k)||'null');}catch(e){return null;}}
 function dpStoreLS(k,d){localStorage.setItem(k,JSON.stringify(d));}
 var dpEmployees=[],dpShifts={};
+var dpWeloCache={}; // {empId:{dateISO:true}} — Urlaub-Vorschläge aus Welo, nur Anzeige/Vorschlag, siehe dpApplyWeloSuggest()
 var dpCloudUnsub=null, dpDirty=false, dpCloudKey=null;
 function dpEmpKey(e){return (e.id||'x')+'-'+e.name;}
 // Ist dieser Mitarbeiter in der aktuell gewählten Filiale nur "Bei Bedarf" (Zweitfiliale)?
@@ -3689,6 +3693,7 @@ function dpInit(){
   dpBindCloud(f,m);
   dpLoadElsewhere();
   dpLoadAzKonto();
+  dpLoadWeloSuggest(f,m);
 }
 // AZ-Konto (Über-/Unterstunden-Saldo Vormonat, nur Monatslohn-Verträge) je
 // Mitarbeiter-ID — einmalig geladen (ändert sich nur 1x täglich per Cron,
@@ -3992,11 +3997,13 @@ function dpRenderWeeks(){
             if(pend&&!cls)cls='dp-cell-pend';
             var clash=dpClashAt(eid,dt,val);
             if(clash.length) cls=(cls?cls+' ':'')+'dp-cell-clash';
+            var weloSug=!!(dpWeloCache[eid]&&dpWeloCache[eid][dt]&&val==='Urlaub');
             var tip=pend?'Urlaubsantrag offen (noch nicht entschieden): '+pend
-                  :(clash.length?'Doppelbelegung: arbeitet am selben Tag auch in '+clash.map(function(o){return o.filiale+' ('+o.val+')';}).join(', '):'');
+                  :(clash.length?'Doppelbelegung: arbeitet am selben Tag auch in '+clash.map(function(o){return o.filiale+' ('+o.val+')';}).join(', ')
+                  :(weloSug?'Vorschlag aus Welo — kann geändert werden':''));
             h+='<td class="'+cls+(isF?' dp-cell-ft':'')+'"'+(tip?' title="'+tip+'"':'')
               +'><input class="dp-shift dp-inp" list="dp-presets" value="'+val+'" data-emp="'+ek+'" data-date="'+dt+'" data-eid="'+eid+'" oninput="dpCellChanged(this)">'
-              +(pend?'<span class="dp-pend-badge">🌴 beantragt</span>':'')
+              +(pend?'<span class="dp-pend-badge">🌴 beantragt</span>':(weloSug?'<span class="dp-welo-badge">📡 aus Welo</span>':''))
               +dpCellBadgeHtml(eid,dt,val)
               +'</td>';
           }
@@ -4227,6 +4234,79 @@ function dpPrevMonth(m){
 function dpSugStatus(html,color){
   var el=document.getElementById('dp-sug-status'); if(!el) return;
   el.innerHTML=html||''; el.style.color=color||'var(--mut)'; el.style.display=html?'block':'none';
+}
+
+// ════════ Urlaub-Vorschläge aus Welo (sync-welo-urlaub-suggest.js) ════════
+// dpWeloCache wird pro Filiale/Monat aus dem Firestore-Cache geladen (schnell,
+// kein Welo-Login) und füllt einmalig leere Zellen — genau wie dpSuggest(),
+// aber als Quelle die Welo-Jahresansicht statt dem Vormonats-Muster. Läuft NUR
+// beim Laden (dpInit) bzw. direkt nach einer erfolgreichen Aktualisierung, NIE
+// innerhalb von dpRenderWeeks() selbst — sonst würde ein gelöschtes/geändertes
+// Feld beim nächsten Render sofort wieder aus Welo nachgefüllt werden.
+function dpWeloStatus(html,color){
+  var el=document.getElementById('dp-welo-status'); if(!el) return;
+  el.innerHTML=html||''; el.style.color=color||'var(--mut)'; el.style.display=html?'block':'none';
+}
+function dpLoadWeloSuggest(f,m){
+  if(!fbReady||!fbDb||!dpEmployees.length||!m){ dpWeloCache={}; dpApplyWeloSuggest(); return; }
+  var year=m.slice(0,4);
+  var ids=dpEmployees.map(function(e){return ''+(e.id||'');}).filter(Boolean);
+  if(!ids.length){ dpWeloCache={}; dpApplyWeloSuggest(); return; }
+  Promise.all(ids.map(function(id){
+    return fbDb.collection('welo_urlaub_suggest').doc(id+'-'+year).get().catch(function(){ return null; });
+  })).then(function(docs){
+    var cache={};
+    docs.forEach(function(doc){
+      if(!doc||!doc.exists) return;
+      var d=doc.data();
+      cache[d.empId]={};
+      (d.days||[]).forEach(function(iso){ cache[d.empId][iso]=true; });
+    });
+    dpWeloCache=cache;
+    dpApplyWeloSuggest();
+  });
+}
+function dpApplyWeloSuggest(){
+  var m=document.getElementById('dp-month').value; if(!m) return;
+  dpSaveFromDOM();
+  var abs=dpAbsenceFor();
+  var weeks=dpGetWeeks(m);
+  dpEmployees.forEach(function(emp){
+    var ek=dpEmpKey(emp), eid=''+(emp.id||'');
+    var days=dpWeloCache[eid]; if(!days) return;
+    weeks.forEach(function(wk){
+      wk.dates.forEach(function(dt){
+        if(dt.slice(0,7)!==m) return;
+        if(!days[dt]) return;
+        if(abs[eid]&&abs[eid][dt]) return;           // App-genehmigter Urlaub/Krank hat Vorrang
+        var cur=(dpShifts[ek]&&dpShifts[ek][dt])||'';
+        if(cur.trim()!=='') return;                   // nichts Bestehendes/Manuelles überschreiben
+        if(!dpShifts[ek]) dpShifts[ek]={};
+        dpShifts[ek][dt]='Urlaub';
+      });
+    });
+  });
+  dpRenderWeeks();
+}
+function dpWeloRefresh(){
+  var syncUrl=REGION_SYNC_URL[activeRegion];
+  if(!syncUrl){ dpWeloStatus('Für diese Region ist kein Cloud-Run-Backend hinterlegt — nicht verfügbar.','#C0392B'); return; }
+  var f=dpGetFiliale(), m=document.getElementById('dp-month').value;
+  if(!f||!m){ dpWeloStatus('Bitte zuerst Filiale und Monat wählen.','#C0392B'); return; }
+  if(!dpEmployees.length){ dpWeloStatus('Keine Mitarbeiter in dieser Filiale.','#C0392B'); return; }
+  var ids=dpEmployees.map(function(e){return ''+(e.id||'');}).filter(Boolean);
+  dpWeloStatus('⏳ Lade Urlaubsdaten aus Welo… (kann 1-2 Minuten dauern)','#6B6860');
+  firebase.auth().currentUser.getIdToken().then(function(idToken){
+    return fetch(syncUrl+'/internal/welo-urlaub-suggest', {
+      method:'POST', headers:{'Content-Type':'application/json', Authorization:'Bearer '+idToken},
+      body: JSON.stringify({ year: m.slice(0,4), empIds: ids })
+    });
+  }).then(function(r){ return r.json().then(function(d){ return {ok:r.ok, d:d}; }); })
+    .then(function(res){
+      if(!res.ok){ dpWeloStatus('⚠️ Fehler: '+(res.d.error||'unbekannt'),'#C0392B'); return; }
+      dpWeloStatus('✓ Aktualisiert.','var(--grn)');
+      dpLoadWeloSuggest(f,m);
+    }).catch(function(e){ dpWeloStatus('⚠️ Fehler: '+e.message,'#C0392B'); });
 }
 // "07:00-13:00" -> {s:Minuten, e:Minuten}; sonst null
 function dpParseRange(v){
