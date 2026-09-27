@@ -204,6 +204,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 .dp-kw-hdr-kw{font-size:13px;font-weight:700;}
 .dp-kw-hdr-pause{font-size:11px;color:var(--mut);}
 .dp-kw-hdr-yr{font-size:12px;font-weight:600;}
+.dp-sl-badge{font-size:11px;font-weight:700;color:#8A5A00;background:#FFF3D6;border:1px solid #F0C070;border-radius:6px;padding:2px 7px;white-space:nowrap;}
 .dp-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;}
 .dp-table{border-collapse:collapse;width:100%;min-width:540px;font-size:12px;}
 .dp-table th{background:#F8F5F2;text-align:center;padding:6px 4px;border:1px solid var(--brd);font-size:11px;font-weight:600;white-space:nowrap;min-width:78px;}
@@ -3664,6 +3665,7 @@ function dpLoadLS(k){try{return JSON.parse(localStorage.getItem(k)||'null');}cat
 function dpStoreLS(k,d){localStorage.setItem(k,JSON.stringify(d));}
 var dpEmployees=[],dpShifts={};
 var dpWeloCache={}; // {empId:{dateISO:true}} — Urlaub-Vorschläge aus Welo, nur Anzeige/Vorschlag, siehe dpApplyWeloSuggest()
+var dpWeekMeta={}; // {montagISO: {source:'shopleiter'|'gebietsleiter', by, at}} — wer hat diese KW zuletzt veröffentlicht (aus plan/{...}.weekMeta)
 var dpCloudUnsub=null, dpDirty=false, dpCloudKey=null;
 function dpEmpKey(e){return (e.id||'x')+'-'+e.name;}
 // Ist dieser Mitarbeiter in der aktuell gewählten Filiale nur "Bei Bedarf" (Zweitfiliale)?
@@ -3681,6 +3683,7 @@ function dpPopulateFiliale(){
 function dpFilialeChange(){document.getElementById('dp-custom-wrap').style.display=document.getElementById('dp-filiale').value==='_custom'?'block':'none';dpEmployees=[];dpShifts={};dpInit();}
 function dpInit(){
   dpCopiedWeek=null; // Filiale/Monat gewechselt -> Zwischenablage bezog sich auf den vorigen Kontext
+  dpWeekMeta={}; // wird gleich von dpBindCloud() aus der Cloud nachgeladen
   var f=dpGetFiliale(),m=document.getElementById('dp-month').value;
   if(!f||!m){document.getElementById('dp-editor').style.display='none';return;}
   document.getElementById('dp-editor').style.display='block';
@@ -3737,6 +3740,7 @@ function dpBindCloud(f,m){
     var d=doc.data()||{};
     dpEmployees=(d.employees||dpEmployees).slice();
     dpShifts=d.shifts||{};
+    dpWeekMeta=d.weekMeta||{};
     dpStoreLS(dpKey(),{employees:dpEmployees,shifts:dpShifts});
     dpRenderEmpTags();dpRenderWeeks();
     var st=document.getElementById('dp-status'); if(st) st.textContent='☁️ Aktueller Stand aus der Cloud geladen.';
@@ -3955,6 +3959,19 @@ function dpRenderCellBadge(td,eid,dt,val){
   var html=dpCellBadgeHtml(eid,dt,val);
   if(html) td.insertAdjacentHTML('beforeend', html);
 }
+// Warnhinweis im KW-Kopf, wenn diese Woche zuletzt vom Shopleiter (nicht vom
+// Gebietsleiter) veröffentlicht wurde — aus plan/{...}.weekMeta (dpBindCloud()).
+// Bewusst nur für source==='shopleiter': GL-eigene Bearbeitungen brauchen keine
+// Warnung vor sich selbst (Auftrag t.duong: vor versehentlichem Überschreiben
+// von Shopleiter-Plänen warnen, nicht jede Bearbeitung protokollieren).
+function dpWeekMetaBadge(wk){
+  var wm=dpWeekMeta[wk.dates[0]];
+  if(!wm||wm.source!=='shopleiter') return '';
+  var dt=wm.at?new Date(wm.at):null;
+  var ds=(dt&&!isNaN(dt))?dt.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+' '+dt.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}):'';
+  var who=uglXmlEscape(wm.by||'Shopleiter');
+  return '<span class="dp-sl-badge" title="Zuletzt vom Shopleiter bearbeitet'+(ds?' am '+ds:'')+' — beim Veröffentlichen dieser KW wird das überschrieben.">🧑‍💼 '+who+'</span>';
+}
 function dpRenderWeeks(){
   var m=document.getElementById('dp-month').value;if(!m)return;
   dpAutofillFeiertage();
@@ -3966,7 +3983,7 @@ function dpRenderWeeks(){
     var cpHtml='<button class="btn btn-sm" onclick="dpCopyWeek('+wi+')" title="Diese Woche kopieren">📋</button>'
       +(isCopySrc?'<span style="font-size:10.5px;color:#1A5276;font-weight:600">kopiert</span>'
         :(dpCopiedWeek?'<button class="btn btn-sm" style="background:#1A5276;color:#fff;border-color:#1A5276" onclick="dpPasteWeek('+wi+')" title="Kopierte KW '+dpCopiedWeek.kw+' hier einfügen (überschreibt diese Woche)">📥</button>':''));
-    h+='<div class="card dp-kw-card"><div class="dp-kw-hdr"><span class="dp-kw-hdr-kw">KW: '+wk.kw+'</span><span class="dp-kw-hdr-pause">Pause &gt;6h: 30min · &gt;9h: 45min</span><span style="display:flex;align-items:center;gap:6px">'+cpHtml+'<button class="btn btn-sm btn-grn dp-kw-pub" onclick="dpPublishWeek('+wi+')" title="Nur diese Woche für Mitarbeiter veröffentlichen">☁️ KW</button><span class="dp-kw-hdr-yr">'+dpParse(wk.dates[0]).getFullYear()+'</span></span></div><div class="dp-scroll"><table class="dp-table"><thead><tr><th>Mitarbeiter</th>';
+    h+='<div class="card dp-kw-card"><div class="dp-kw-hdr"><span class="dp-kw-hdr-kw">KW: '+wk.kw+'</span>'+dpWeekMetaBadge(wk)+'<span class="dp-kw-hdr-pause">Pause &gt;6h: 30min · &gt;9h: 45min</span><span style="display:flex;align-items:center;gap:6px">'+cpHtml+'<button class="btn btn-sm btn-grn dp-kw-pub" onclick="dpPublishWeek('+wi+')" title="Nur diese Woche für Mitarbeiter veröffentlichen">☁️ KW</button><span class="dp-kw-hdr-yr">'+dpParse(wk.dates[0]).getFullYear()+'</span></span></div><div class="dp-scroll"><table class="dp-table"><thead><tr><th>Mitarbeiter</th>';
     wk.dates.forEach(function(dt,di){var d=dpParse(dt),ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}),fn=hol[dt];h+='<th'+(fn?' class="dp-th-ft" title="'+fn+'"':'')+'>'+DAYS[di].substring(0,2)+'<br><small style="font-weight:400;font-size:10px">'+ds+'</small>'+(fn?'<br><small class="dp-fn">'+fn+'</small>':'')+'</th>';});
     h+='<th title="Summe Netto-Stunden diese Woche (Pause bereits abgezogen)">Std.</th>';
     h+='</tr></thead><tbody>';
@@ -4121,7 +4138,13 @@ function dpPublishMonth(){
   if(!f||!m){alert('Bitte Filiale und Monat wählen.');return;}
   dpSaveFromDOM();dpStoreLS(dpKey(),{employees:dpEmployees,shifts:dpShifts});
   var st=document.getElementById('dp-status');if(st)st.textContent='⏳ '+f+' · '+m+' wird veröffentlicht…';
-  var jobs=[fbDb.collection('plan').doc(fbSlug(f)+'__'+m).set({employees:dpEmployees,shifts:dpShifts})];
+  // Ganzer Monat wird ersetzt -> jede KW gilt ab jetzt als "zuletzt vom Gebietsleiter" (überschreibt
+  // damit auch etwaige Shopleiter-Markierungen, korrekt so: der Monat wurde ja komplett neu geschrieben).
+  var email=(firebase.auth().currentUser&&firebase.auth().currentUser.email)||'?';
+  var nowIso=new Date().toISOString();
+  var newMeta={};
+  dpGetWeeks(m).forEach(function(w){ newMeta[w.dates[0]]={source:'gebietsleiter',by:email,at:nowIso}; });
+  var jobs=[fbDb.collection('plan').doc(fbSlug(f)+'__'+m).set({employees:dpEmployees,shifts:dpShifts,weekMeta:newMeta})];
   dpEmployees.forEach(function(e){var p=dpEmpMasterPayload(e,f);if(p)jobs.push(fbDb.collection('emps').doc(''+e.id).set(p,{merge:true}));});
   Promise.all(jobs).then(function(){dpDirty=false;if(st)st.textContent='✓ Veröffentlicht: '+f+' · '+fmtMonth(m);toast('☁️ '+f+' veröffentlicht');})
     .catch(function(e){if(st)st.textContent='⚠️ '+e.message;alert('Fehler: '+e.message);});
@@ -4140,6 +4163,7 @@ function dpPublishWeek(wi){
   // weil Firestore merge:true nur auf oberster Ebene arbeitet (shifts wird als Ganzes ersetzt).
   ref.get().then(function(doc){
     var existingShifts=(doc.exists&&doc.data().shifts)||{};
+    var existingMeta=(doc.exists&&doc.data().weekMeta)||{};
     // Alle bisherigen Schichten übernehmen
     var merged={};
     Object.keys(existingShifts).forEach(function(ek){ merged[ek]=Object.assign({},existingShifts[ek]); });
@@ -4149,7 +4173,12 @@ function dpPublishWeek(wi){
       if(!merged[ek]) merged[ek]={};
       wk.dates.forEach(function(dt){ merged[ek][dt]=(dpShifts[ek]&&dpShifts[ek][dt])||''; });
     });
-    var jobs=[ref.set({employees:dpEmployees,shifts:merged})];
+    // Markiert NUR diese eine KW als "zuletzt vom Gebietsleiter" — andere Wochen (z.B. vom
+    // Shopleiter) bleiben unangetastet, damit deren Markierung erhalten bleibt.
+    var email=(firebase.auth().currentUser&&firebase.auth().currentUser.email)||'?';
+    var newMeta=Object.assign({},existingMeta);
+    newMeta[wk.dates[0]]={source:'gebietsleiter',by:email,at:new Date().toISOString()};
+    var jobs=[ref.set({employees:dpEmployees,shifts:merged,weekMeta:newMeta})];
     dpEmployees.forEach(function(e){var p=dpEmpMasterPayload(e,f);if(p)jobs.push(fbDb.collection('emps').doc(''+e.id).set(p,{merge:true}));});
     return Promise.all(jobs);
   }).then(function(){dpDirty=false;if(st)st.textContent='✓ KW '+wk.kw+' veröffentlicht ('+f+')';toast('☁️ KW '+wk.kw+' veröffentlicht');})
