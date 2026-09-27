@@ -1451,6 +1451,7 @@ window.onerror=function(msg,src,line){
       </div>
       <datalist id="dp-presets"><option value="Frei"><option value="Urlaub"><option value="Krank"><option value="05:30-11:30"><option value="07:00-13:00"><option value="07:00-14:00"><option value="09:00-15:00"><option value="12:00-18:00"><option value="16:00-19:00"><option value="08:00-14:00"></datalist>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <button class="btn btn-sm" onclick="dpRefreshView()" title="Lädt Urlaub/Krank, Belegung anderer Filialen usw. neu, ohne die Seite neu zu laden — deine ungespeicherten Eingaben bleiben erhalten">🔄 Aktualisieren</button>
         <button class="btn btn-sm" onclick="dpSuggest()" style="background:#185FA5;color:#fff;border-color:#185FA5">💡 Vorschlag aus Vormonat</button>
         <button class="btn btn-sm" onclick="dpWeloRefresh()" style="background:#6C3483;color:#fff;border-color:#6C3483">📡 Urlaub aus Welo aktualisieren</button>
         <button class="btn btn-sm" onclick="dpCheckConflicts(false)">🔍 Doppelbelegung prüfen</button>
@@ -4263,6 +4264,24 @@ function dpPrevMonth(m){
 function dpSugStatus(html,color){
   var el=document.getElementById('dp-sug-status'); if(!el) return;
   el.innerHTML=html||''; el.style.color=color||'var(--mut)'; el.style.display=html?'block':'none';
+}
+// "🔄 Aktualisieren"-Knopf: die zugrunde liegenden Daten (Urlaub/Krank via
+// fbDecided/fbKrank, Belegung anderer Filialen, AZ-Konto, Welo-Vorschläge)
+// laufen zwar schon live über eigene Firestore-Listener — nur dpRenderWeeks()
+// selbst wird nach so einer Änderung NICHT automatisch neu aufgerufen (z.B.
+// wenn im Panel Urlaub ein Antrag storniert wird, während der Manager gerade
+// im Dienstplan ist). Ein automatisches Neu-Rendern bei jeder Fremdänderung
+// würde riskieren, gerade getippte, noch ungespeicherte Werte zu verlieren —
+// deshalb bewusst ein manueller Knopf statt automatischem Live-Update
+// (Auftrag t.duong: Refresh-Knopf statt App neu starten müssen).
+function dpRefreshView(){
+  dpSaveFromDOM();                                          // laufende Eingaben zuerst sichern
+  dpRenderWeeks();                                          // Urlaub/Krank-Sperre sofort mit aktuellem Stand neu zeichnen
+  dpAzKontoCache=null; dpLoadAzKonto();                      // Cache erzwingen neu laden (sonst dauerhaft gecacht)
+  dpLoadElsewhere(true);                                    // Belegung anderer Filialen erzwungen neu laden
+  dpLoadWeloSuggest(dpGetFiliale(), document.getElementById('dp-month').value);
+  dpCheckConflicts(true);                                   // Doppelbelegung still im Hintergrund neu prüfen
+  toast('🔄 Aktualisiert');
 }
 
 // ════════ Urlaub-Vorschläge aus Welo (sync-welo-urlaub-suggest.js) ════════
