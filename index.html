@@ -1461,6 +1461,7 @@ window.onerror=function(msg,src,line){
         <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#FCF3E0;border:1px solid #f0d9a8"></span>Feiertag</span>
         <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#fff;box-shadow:inset 0 0 0 2px #C0392B"></span>⚠️ Doppelbelegung · 🏪 = arbeitet an dem Tag auch woanders</span>
       </div>
+      <div id="dp-copy-status" style="display:none;background:#EBF5FB;border:1px solid #AED6F1;color:#1A5276;border-radius:8px;padding:10px 12px;font-size:12.5px;line-height:1.5;margin-bottom:10px;align-items:center;gap:10px;flex-wrap:wrap"></div>
       <div id="dp-weeks-wrap"></div>
       <div id="dp-sig-opt" style="margin-bottom:10px"><label style="display:flex;align-items:center;gap:9px;cursor:pointer;padding:9px 12px;background:var(--bg);border:1px solid var(--brd);border-radius:var(--rs)"><input type="checkbox" id="dp-sig-check" style="width:16px;height:16px;accent-color:var(--red)"><span style="font-size:13px">✍️ <strong>Unterschrift des Gebietsleiters</strong> auf PDF anfügen</span></label></div>      <div class="btn-row">
         <button class="btn btn-red" onclick="dpExportPDF()" style="flex:1;justify-content:center">⬇ PDF herunterladen</button>
@@ -3675,6 +3676,7 @@ function dpPopulateFiliale(){
 }
 function dpFilialeChange(){document.getElementById('dp-custom-wrap').style.display=document.getElementById('dp-filiale').value==='_custom'?'block':'none';dpEmployees=[];dpShifts={};dpInit();}
 function dpInit(){
+  dpCopiedWeek=null; // Filiale/Monat gewechselt -> Zwischenablage bezog sich auf den vorigen Kontext
   var f=dpGetFiliale(),m=document.getElementById('dp-month').value;
   if(!f||!m){document.getElementById('dp-editor').style.display='none';return;}
   document.getElementById('dp-editor').style.display='block';
@@ -3953,8 +3955,13 @@ function dpRenderWeeks(){
   dpAutofillFeiertage();
   var hol=dpMonthHolidays();
   var weeks=dpGetWeeks(m),DAYS=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'],h='';
+  dpRenderCopyStatus(weeks.length);
   weeks.forEach(function(wk,wi){
-    h+='<div class="card dp-kw-card"><div class="dp-kw-hdr"><span class="dp-kw-hdr-kw">KW: '+wk.kw+'</span><span class="dp-kw-hdr-pause">Pause &gt;6h: 30min · &gt;9h: 45min</span><span style="display:flex;align-items:center;gap:8px"><button class="btn btn-sm btn-grn dp-kw-pub" onclick="dpPublishWeek('+wi+')" title="Nur diese Woche für Mitarbeiter veröffentlichen">☁️ KW</button><span class="dp-kw-hdr-yr">'+dpParse(wk.dates[0]).getFullYear()+'</span></span></div><div class="dp-scroll"><table class="dp-table"><thead><tr><th>Mitarbeiter</th>';
+    var isCopySrc=dpCopiedWeek&&dpCopiedWeek.srcIndex===wi;
+    var cpHtml='<button class="btn btn-sm" onclick="dpCopyWeek('+wi+')" title="Diese Woche kopieren">📋</button>'
+      +(isCopySrc?'<span style="font-size:10.5px;color:#1A5276;font-weight:600">kopiert</span>'
+        :(dpCopiedWeek?'<button class="btn btn-sm" style="background:#1A5276;color:#fff;border-color:#1A5276" onclick="dpPasteWeek('+wi+')" title="Kopierte KW '+dpCopiedWeek.kw+' hier einfügen (überschreibt diese Woche)">📥</button>':''));
+    h+='<div class="card dp-kw-card"><div class="dp-kw-hdr"><span class="dp-kw-hdr-kw">KW: '+wk.kw+'</span><span class="dp-kw-hdr-pause">Pause &gt;6h: 30min · &gt;9h: 45min</span><span style="display:flex;align-items:center;gap:6px">'+cpHtml+'<button class="btn btn-sm btn-grn dp-kw-pub" onclick="dpPublishWeek('+wi+')" title="Nur diese Woche für Mitarbeiter veröffentlichen">☁️ KW</button><span class="dp-kw-hdr-yr">'+dpParse(wk.dates[0]).getFullYear()+'</span></span></div><div class="dp-scroll"><table class="dp-table"><thead><tr><th>Mitarbeiter</th>';
     wk.dates.forEach(function(dt,di){var d=dpParse(dt),ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}),fn=hol[dt];h+='<th'+(fn?' class="dp-th-ft" title="'+fn+'"':'')+'>'+DAYS[di].substring(0,2)+'<br><small style="font-weight:400;font-size:10px">'+ds+'</small>'+(fn?'<br><small class="dp-fn">'+fn+'</small>':'')+'</th>';});
     h+='<th title="Summe Netto-Stunden diese Woche (Pause bereits abgezogen)">Std.</th>';
     h+='</tr></thead><tbody>';
@@ -4003,6 +4010,82 @@ function dpRenderWeeks(){
     h+='</tbody></table></div></div>';
   });
   document.getElementById('dp-weeks-wrap').innerHTML=h;
+}
+
+// ── Woche kopieren/einfügen (Auftrag t.duong 27.09.2026): eine fertige Woche
+// als Muster für die übrigen Wochen desselben Monats übernehmen, statt jede
+// Woche einzeln von Hand nachzutippen. Kopiert wird NACH WOCHENTAG (Montag der
+// Quellwoche → Montag der Zielwoche usw.), nicht nach Datum — genau das macht
+// "gleiche Woche" über unterschiedliche Kalenderwochen hinweg möglich.
+var dpCopiedWeek=null; // {kw, srcIndex, pattern:{empKey:[Mo..Sa]}}
+function dpCopyWeek(wi){
+  var m=document.getElementById('dp-month').value; if(!m) return;
+  dpSaveFromDOM();
+  var wk=dpGetWeeks(m)[wi]; if(!wk) return;
+  var pattern={};
+  dpEmployees.forEach(function(emp){
+    var ek=dpEmpKey(emp);
+    pattern[ek]=wk.dates.map(function(dt){ return (dpShifts[ek]&&dpShifts[ek][dt])||''; });
+  });
+  dpCopiedWeek={kw:wk.kw, srcIndex:wi, pattern:pattern};
+  dpRenderWeeks();
+  toast('📋 KW '+wk.kw+' kopiert — bei einer anderen Woche „📥" antippen, oder unten „In alle einfügen"');
+}
+function dpClearCopiedWeek(){ dpCopiedWeek=null; dpRenderWeeks(); }
+// Kernlogik einer einzelnen Einfügung — von dpPasteWeek() (1 Woche) und
+// dpPasteAllWeeks() (alle übrigen) gemeinsam genutzt. Überschreibt bewusst
+// ALLES in der Zielwoche (anders als "💡 Vorschlag aus Vormonat", das nur
+// leere Zellen füllt) — der Nutzer will ja genau "diese Woche = jene Woche".
+// Einzige Ausnahme: Tage mit genehmigtem Urlaub/Krankmeldung werden nie
+// überschrieben (die Anzeige würde die Eingabe ohnehin überdecken, s.
+// dpRenderWeeks() oben — aber so bleibt dpShifts sauber statt einen toten,
+// nie sichtbaren Wert stehen zu haben).
+function dpApplyPasteToWeek(wk,abs){
+  var filled=0, skipped=0;
+  dpEmployees.forEach(function(emp){
+    var ek=dpEmpKey(emp), eid=''+(emp.id||'');
+    var pat=dpCopiedWeek.pattern[ek]; if(!pat) return;
+    if(!dpShifts[ek]) dpShifts[ek]={};
+    wk.dates.forEach(function(dt,di){
+      if(abs[eid]&&abs[eid][dt]){ skipped++; return; }
+      dpShifts[ek][dt]=pat[di]||'';
+      filled++;
+    });
+  });
+  return {filled:filled, skipped:skipped};
+}
+function dpPasteWeek(wi){
+  if(!dpCopiedWeek) return;
+  var m=document.getElementById('dp-month').value; if(!m) return;
+  dpSaveFromDOM();
+  var wk=dpGetWeeks(m)[wi]; if(!wk) return;
+  var r=dpApplyPasteToWeek(wk, dpAbsenceFor());
+  dpDirty=true;
+  dpRenderWeeks();
+  toast('📥 KW '+dpCopiedWeek.kw+' → KW '+wk.kw+' eingefügt ('+r.filled+' Zellen'+(r.skipped?', '+r.skipped+'× Urlaub/Krank übersprungen':'')+') — nicht vergessen zu speichern/veröffentlichen');
+}
+function dpPasteAllWeeks(){
+  if(!dpCopiedWeek) return;
+  var m=document.getElementById('dp-month').value; if(!m) return;
+  var weeks=dpGetWeeks(m);
+  var targets=weeks.map(function(w,i){return i;}).filter(function(i){return i!==dpCopiedWeek.srcIndex;});
+  if(!targets.length) return;
+  if(!confirm('KW '+dpCopiedWeek.kw+' in die '+targets.length+' übrigen Wochen dieses Monats einfügen?\n\nBestehende Einträge in diesen Wochen werden überschrieben (Urlaub/Krank bleibt unangetastet).')) return;
+  dpSaveFromDOM();
+  var abs=dpAbsenceFor(), totalFilled=0, totalSkipped=0;
+  targets.forEach(function(i){ var r=dpApplyPasteToWeek(weeks[i], abs); totalFilled+=r.filled; totalSkipped+=r.skipped; });
+  dpDirty=true;
+  dpRenderWeeks();
+  toast('📥 KW '+dpCopiedWeek.kw+' in '+targets.length+' Wochen eingefügt ('+totalFilled+' Zellen'+(totalSkipped?', '+totalSkipped+'× Urlaub/Krank übersprungen':'')+') — nicht vergessen zu speichern/veröffentlichen');
+}
+function dpRenderCopyStatus(weekCount){
+  var box=document.getElementById('dp-copy-status'); if(!box) return;
+  if(!dpCopiedWeek){ box.style.display='none'; return; }
+  box.style.display='flex';
+  var otherCount=Math.max(0, weekCount-1);
+  box.innerHTML='📋 <strong>KW '+dpCopiedWeek.kw+'</strong> kopiert'
+    +(otherCount?' <button class="btn btn-sm" style="background:#1A5276;color:#fff;border-color:#1A5276" onclick="dpPasteAllWeeks()">📥 In alle '+otherCount+' anderen Wochen einfügen</button>':'')
+    +' <button class="btn btn-sm" onclick="dpClearCopiedWeek()">✕ Verwerfen</button>';
 }
 function dpSave(){dpSaveFromDOM();dpDirty=false;dpStoreLS(dpKey(),{employees:dpEmployees,shifts:dpShifts});toast('✓ Dienstplan gespeichert!');}
 function dpBLChange(){
