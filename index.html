@@ -4290,23 +4290,32 @@ function dpApplyWeloSuggest(){
 }
 function dpWeloRefresh(){
   var syncUrl=REGION_SYNC_URL[activeRegion];
-  if(!syncUrl){ dpWeloStatus('Für diese Region ist kein Cloud-Run-Backend hinterlegt — nicht verfügbar.','#C0392B'); return; }
+  if(!syncUrl||typeof syncUrl!=='string'){ dpWeloStatus('Für diese Region ist kein Cloud-Run-Backend hinterlegt — nicht verfügbar.','#C0392B'); return; }
   var f=dpGetFiliale(), m=document.getElementById('dp-month').value;
   if(!f||!m){ dpWeloStatus('Bitte zuerst Filiale und Monat wählen.','#C0392B'); return; }
   if(!dpEmployees.length){ dpWeloStatus('Keine Mitarbeiter in dieser Filiale.','#C0392B'); return; }
   var ids=dpEmployees.map(function(e){return ''+(e.id||'');}).filter(Boolean);
+  if(!ids.length){ dpWeloStatus('Keine gültigen Personalnummern in dieser Filiale gefunden.','#C0392B'); return; }
+  var year=m.slice(0,4);
+  var reqUrl;
+  try{ reqUrl=new URL(syncUrl.replace(/\/+$/,'')+'/internal/welo-urlaub-suggest').toString(); }
+  catch(e){ dpWeloStatus('⚠️ Ungültige Cloud-Run-Adresse für diese Region: '+e.message,'#C0392B'); return; }
   dpWeloStatus('⏳ Lade Urlaubsdaten aus Welo… (kann 1-2 Minuten dauern)','#6B6860');
   firebase.auth().currentUser.getIdToken().then(function(idToken){
-    return fetch(syncUrl+'/internal/welo-urlaub-suggest', {
-      method:'POST', headers:{'Content-Type':'application/json', Authorization:'Bearer '+idToken},
-      body: JSON.stringify({ year: m.slice(0,4), empIds: ids })
+    if(!idToken||typeof idToken!=='string'){ throw new Error('Kein gültiges Login-Token erhalten — bitte neu einloggen.'); }
+    var opts={ method:'POST', headers:{'Content-Type':'application/json', Authorization:'Bearer '+idToken}, body: JSON.stringify({ year: year, empIds: ids }) };
+    try{ return fetch(reqUrl, opts); }
+    catch(e){ throw new Error('Anfrage konnte nicht aufgebaut werden: '+e.message); }
+  }).then(function(r){
+    return r.text().then(function(txt){
+      var d=null; try{ d=JSON.parse(txt); }catch(e){ throw new Error('Ungültige Antwort vom Server (HTTP '+r.status+'): '+txt.slice(0,120)); }
+      return {ok:r.ok, status:r.status, d:d};
     });
-  }).then(function(r){ return r.json().then(function(d){ return {ok:r.ok, d:d}; }); })
-    .then(function(res){
-      if(!res.ok){ dpWeloStatus('⚠️ Fehler: '+(res.d.error||'unbekannt'),'#C0392B'); return; }
-      dpWeloStatus('✓ Aktualisiert.','var(--grn)');
-      dpLoadWeloSuggest(f,m);
-    }).catch(function(e){ dpWeloStatus('⚠️ Fehler: '+e.message,'#C0392B'); });
+  }).then(function(res){
+    if(!res.ok){ dpWeloStatus('⚠️ Fehler (HTTP '+res.status+'): '+((res.d&&res.d.error)||'unbekannt'),'#C0392B'); return; }
+    dpWeloStatus('✓ Aktualisiert.','var(--grn)');
+    dpLoadWeloSuggest(f,m);
+  }).catch(function(e){ dpWeloStatus('⚠️ Fehler: '+e.message,'#C0392B'); });
 }
 // "07:00-13:00" -> {s:Minuten, e:Minuten}; sonst null
 function dpParseRange(v){
