@@ -271,11 +271,12 @@ app.post('/internal/week-welo-check', requireManager, async (req, res) => {
 // Manuell aus index.html angestoßen ("📡 Urlaub aus Welo aktualisieren"),
 // bewusst auf genau die im Dienstplan gerade sichtbaren Mitarbeiter begrenzt
 // (nicht alle ~111) — hält die Laufzeit klein und macht keine Welo-Logins für
-// Mitarbeiter nötig, die gar nicht gerade verplant werden.
+// Mitarbeiter nötig, die gar nicht gerade verplant werden. Bewusst OHNE
+// REGION-Abgleich (anders als /internal/inventur-apply): dieser Dienst läuft
+// auf dem geteilten Ost/West-Service ohne eigene REGION-Env, genau wie
+// /internal/schwan-lookup und /internal/week-welo-check — requireManager
+// (echter eingeloggter Manager) ist hier der Schutz, wie bei jenen Routen.
 app.post('/internal/welo-urlaub-suggest', requireManager, async (req, res) => {
-  if (!REGION || !req.managerRegions.includes(REGION)) {
-    return res.status(403).json({ error: 'not authorized for this region' });
-  }
   const year = req.body && req.body.year;
   const empIds = req.body && req.body.empIds;
   if (!year || !Array.isArray(empIds) || !empIds.length) {

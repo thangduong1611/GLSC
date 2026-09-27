@@ -103,6 +103,7 @@ table.dp-grid thead th.nm{z-index:4;background:#F2EEE9;}
    Screenreader) weiter erreichbar. */
 .nm-scroll{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:7px 8px;}
 .dp-store-badge{display:inline-block;font-size:11px;font-weight:600;color:var(--grn);background:var(--grn-bg);border-radius:6px;padding:1px 6px;margin-left:4px;vertical-align:middle;white-space:normal;overflow-wrap:break-word;}
+.d-net{display:block;font-size:11px;font-weight:500;color:var(--mut);margin-top:1px;}
 table.dp-grid tbody tr:nth-child(even) td:not(.nm){background:#FBFAF8;}
 table.dp-grid tr.me td{background:#FEF6E7;}
 table.dp-grid tr.me td.nm{background:#FDEFCB;}
@@ -289,6 +290,7 @@ window.onerror=function(msg,src,line){
   <div class="panel active" id="p-dp">
     <div class="card">
       <div class="card-title" data-i18n="dp_title">📅 Mein Dienstplan</div>
+      <div class="info" data-i18n="dp_pause_notice" style="margin-bottom:8px"></div>
       <div class="info" id="dp-filiale-info">—</div>
       <div class="info" id="dp-stunden-info" style="margin-top:8px"></div>
       <label data-i18n="lbl_month">Monat</label>
@@ -2122,6 +2124,7 @@ de:{_name:'Deutsch',
  lbl_pin2:'PIN wiederholen',pin_setup_prompt:'Das ist dein erster Login — gib deinen PIN zur Bestätigung bitte noch einmal ein (und merk ihn dir für das nächste Mal).',err_pin_mismatch:'Die beiden PINs stimmen nicht überein. Bitte erneut eingeben.',err_pin_wrong_left:'Falscher PIN — noch {n} Versuch(e), danach wird der Login kurz gesperrt.',
  btn_logout:'Abmelden',q_logout:'Abmelden?',no_fil:'keine Filiale',
  dp_title:'📅 Mein Dienstplan',lbl_month:'Monat',fil:'Filiale',alloc_main:'Stammfiliale',alloc_backup:'Bei Bedarf Einsatz in',
+ dp_pause_notice:'ℹ️ Bei mehr als 6 Std. Arbeit werden automatisch 30 Min Pause abgezogen, bei mehr als 9 Std. 45 Min (gesetzliche Pause).',unit_std:'Std.',
  st_gestern_ok:'✅ Gestern ({d}): genau wie geplant gearbeitet.', st_gestern_mehr:'🟡 Gestern ({d}): {n} Std. mehr als geplant.',
  st_gestern_weniger:'🔴 Gestern ({d}): {n} Std. weniger als geplant.', st_monat:'⏱ Diesen Monat gearbeitet: {n} Std.',
  st_monat_minus:'⚠️ Aktuell {n} Std. unter Plan diesen Monat.',
@@ -2253,6 +2256,7 @@ vi:{_name:'Tiếng Việt',
  lbl_pin2:'Nhập lại mã PIN',pin_setup_prompt:'Đây là lần đăng nhập đầu tiên — hãy nhập lại mã PIN một lần nữa để xác nhận (và nhớ kỹ mã này cho lần sau).',err_pin_mismatch:'Hai mã PIN không giống nhau. Vui lòng nhập lại.',err_pin_wrong_left:'Sai mã PIN — còn {n} lần thử, sau đó đăng nhập sẽ bị khóa tạm thời.',
  btn_logout:'Đăng xuất',q_logout:'Đăng xuất?',no_fil:'chưa có cửa hàng',
  dp_title:'📅 Lịch làm của tôi',lbl_month:'Tháng',fil:'Cửa hàng',alloc_main:'Cửa hàng chính',alloc_backup:'Hỗ trợ khi cần tại',
+ dp_pause_notice:'ℹ️ Nếu làm trên 6 tiếng, hệ thống sẽ tự động trừ 30 phút nghỉ; trên 9 tiếng trừ 45 phút (quy định nghỉ giải lao bắt buộc theo luật).',unit_std:'giờ',
  st_gestern_ok:'✅ Hôm qua ({d}): làm đúng số giờ theo kế hoạch.', st_gestern_mehr:'🟡 Hôm qua ({d}): làm dư {n} giờ so với kế hoạch.',
  st_gestern_weniger:'🔴 Hôm qua ({d}): làm ít hơn {n} giờ so với kế hoạch.', st_monat:'⏱ Đã làm trong tháng này: {n} giờ.',
  st_monat_minus:'⚠️ Hiện đang thiếu {n} giờ so với kế hoạch tháng này.',
@@ -2384,6 +2388,7 @@ en:{_name:'English',
  lbl_pin2:'Repeat PIN',pin_setup_prompt:'This is your first login — please enter your PIN a second time to confirm it (and remember it for next time).',err_pin_mismatch:'The two PINs don\'t match. Please enter them again.',err_pin_wrong_left:'Wrong PIN — {n} attempt(s) left, then login is locked for a short time.',
  btn_logout:'Log out',q_logout:'Log out?',no_fil:'no store',
  dp_title:'📅 My schedule',lbl_month:'Month',fil:'Store',alloc_main:'Main store',alloc_backup:'Backup duty at',
+ dp_pause_notice:'ℹ️ Shifts over 6 hrs automatically deduct a 30-minute break; over 9 hrs, 45 minutes (statutory break rule).',unit_std:'hrs',
  st_gestern_ok:'✅ Yesterday ({d}): worked exactly as planned.', st_gestern_mehr:'🟡 Yesterday ({d}): {n} hrs more than planned.',
  st_gestern_weniger:'🔴 Yesterday ({d}): {n} hrs less than planned.', st_monat:'⏱ Worked this month: {n} hrs.',
  st_monat_minus:'⚠️ Currently {n} hrs behind plan this month.',
@@ -2515,6 +2520,7 @@ th:{_name:'ไทย',
  lbl_pin2:'ยืนยันรหัส PIN อีกครั้ง',pin_setup_prompt:'นี่คือการเข้าสู่ระบบครั้งแรก — กรุณากรอกรหัส PIN อีกครั้งเพื่อยืนยัน (และจำไว้สำหรับครั้งต่อไป)',err_pin_mismatch:'รหัส PIN ทั้งสองไม่ตรงกัน กรุณากรอกใหม่',err_pin_wrong_left:'รหัส PIN ไม่ถูกต้อง — เหลืออีก {n} ครั้ง หลังจากนั้นระบบจะล็อกชั่วคราว',
  btn_logout:'ออกจากระบบ',q_logout:'ออกจากระบบ?',no_fil:'ไม่มีสาขา',
  dp_title:'📅 ตารางงานของฉัน',lbl_month:'เดือน',fil:'สาขา',alloc_main:'สาขาหลัก',alloc_backup:'ช่วยงานเมื่อจำเป็นที่',
+ dp_pause_notice:'ℹ️ หากทำงานเกิน 6 ชม. ระบบจะหักเวลาพักอัตโนมัติ 30 นาที และหากเกิน 9 ชม. จะหัก 45 นาที (ตามกฎหมายเวลาพักงาน)',unit_std:'ชม.',
  st_gestern_ok:'✅ เมื่อวาน ({d}): ทำงานตรงตามแผนพอดี', st_gestern_mehr:'🟡 เมื่อวาน ({d}): ทำงานเกินแผน {n} ชม.',
  st_gestern_weniger:'🔴 เมื่อวาน ({d}): ทำงานน้อยกว่าแผน {n} ชม.', st_monat:'⏱ ทำงานเดือนนี้แล้ว: {n} ชม.',
  st_monat_minus:'⚠️ ขณะนี้ขาดอยู่ {n} ชม. เทียบกับแผนเดือนนี้',
@@ -2646,6 +2652,7 @@ zh:{_name:'中文',
  lbl_pin2:'再次输入 PIN 码',pin_setup_prompt:'这是您首次登录 — 请再输入一次 PIN 码以确认（并记住它，下次登录要用）。',err_pin_mismatch:'两次输入的 PIN 码不一致，请重新输入。',err_pin_wrong_left:'PIN 码错误 — 还剩 {n} 次机会，之后登录将被暂时锁定。',
  btn_logout:'退出登录',q_logout:'确定要退出登录吗？',no_fil:'暂无门店',
  dp_title:'📅 我的排班表',lbl_month:'月份',fil:'门店',alloc_main:'主要门店',alloc_backup:'需要时支援',
+ dp_pause_notice:'ℹ️ 工作超过6小时将自动扣除30分钟休息时间,超过9小时扣除45分钟(法定休息规定)。',unit_std:'小时',
  st_gestern_ok:'✅ 昨天（{d}）：工时与排班一致。', st_gestern_mehr:'🟡 昨天（{d}）：比排班多做了{n}小时。',
  st_gestern_weniger:'🔴 昨天（{d}）：比排班少做了{n}小时。', st_monat:'⏱ 本月已工作：{n}小时。',
  st_monat_minus:'⚠️ 本月目前比计划少{n}小时。',
@@ -3637,6 +3644,24 @@ function maMyShiftIn(plan,sess){
 }
 function maIsAbsence(v){ return v==='Frei'||v==='Urlaub'||v==='Krank'; }
 function maValDisp(v){ return v==='Frei'?t('v_frei'):v==='Urlaub'?t('v_url'):v==='Krank'?t('v_krank'):v; }
+// Netto-Arbeitsstunden einer Schicht (Bruttospanne minus gesetzlicher Pause:
+// >6 Std Netto -30 Min, >9 Std -45 Min, ArbZG §4) — exakt dieselbe Formel wie
+// dpNetHoursOf() in index.html, damit Mitarbeiter- und Admin-Ansicht nie
+// auseinanderlaufen (Auftrag t.duong: Mitarbeiter sollen den Pausenabzug
+// konkret sehen, nicht nur als abstrakte Regel).
+function maParseShiftRange(v){
+  var m=(''+v).match(/(\d{1,2})[:.](\d{2})\s*[-–—]\s*(\d{1,2})[:.](\d{2})/);
+  if(!m) return null;
+  var s=(+m[1])*60+(+m[2]), e=(+m[3])*60+(+m[4]);
+  if(e<=s) e+=1440;
+  return {s:s, e:e};
+}
+function maNetHoursOf(v){
+  var r=maParseShiftRange(v); if(!r) return null;
+  var brutto=(r.e-r.s)/60;
+  return brutto>9.75?brutto-0.75:(brutto>6.5?brutto-0.5:brutto);
+}
+function maFmtStd(n){ var r=Math.round(n*10)/10; return (''+r).replace('.',',')+' '+t('unit_std'); }
 
 function maRenderDP(){
   var sess=maSession();if(!sess)return;
@@ -3694,7 +3719,9 @@ function maRenderDP(){
     var cls=allAbsence?(show[0].val==='Frei'?'frei':show[0].val==='Urlaub'?'urlaub':show[0].val==='Krank'?'krank':''):'';
     var valHtml=show.map(function(e){
       var badge=(multi && fbSlug(e.store)!==fbSlug(sess.filiale)) ? '<span class="dp-store-badge">📍 '+e.store+'</span>' : '';
-      return maValDisp(e.val)+badge;
+      var net=maIsAbsence(e.val)?null:maNetHoursOf(e.val);
+      var netHtml=(net!=null)?'<span class="d-net" title="'+t('dp_pause_notice').replace(/"/g,'&quot;')+'">≈ '+maFmtStd(net)+'</span>':'';
+      return maValDisp(e.val)+badge+netHtml;
     }).join(' · ');
     myH+='<div class="dp-day '+cls+'">'+dateCell+'<div class="d-val">'+valHtml+'</div></div>';
   }
