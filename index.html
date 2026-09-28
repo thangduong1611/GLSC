@@ -3791,7 +3791,19 @@ function dpPopulateAddSel(){
 function dpSaveFromDOM(){document.querySelectorAll('.dp-inp').forEach(function(inp){var ek=inp.dataset.emp,dt=inp.dataset.date;if(!dpShifts[ek])dpShifts[ek]={};dpShifts[ek][dt]=inp.value;});}
 function dpAddFromList(){var sel=document.getElementById('dp-add-sel'),idx=sel.value;if(idx==='')return;var e=loadEmps().filter(function(x){return x.active!==false;})[parseInt(idx)];if(!e)return;if(dpEmployees.some(function(x){return x.id===e.id;})){toast('Bereits in der Liste!');return;}dpSaveFromDOM();dpEmployees.push({name:e.name,id:e.id});dpRenderEmpTags();dpRenderWeeks();dpPopulateAddSel();sel.value='';toast('✓ '+e.name);}
 function dpAddManual(){var name=document.getElementById('dp-add-name').value.trim();if(!name)return;dpSaveFromDOM();dpEmployees.push({name:name,id:''});dpRenderEmpTags();dpRenderWeeks();document.getElementById('dp-add-name').value='';}
-function dpRemoveEmp(i){if(!confirm(dpEmployees[i].name+' entfernen?'))return;dpSaveFromDOM();dpEmployees.splice(i,1);dpRenderEmpTags();dpRenderWeeks();dpPopulateAddSel();}
+function dpRemoveEmp(i){if(!confirm(dpEmployees[i].name+' entfernen?'))return;dpSaveFromDOM();delete dpShifts[dpEmpKey(dpEmployees[i])];dpEmployees.splice(i,1);dpRenderEmpTags();dpRenderWeeks();dpPopulateAddSel();}
+// Entfernt aus einem shifts-Objekt alle Einträge, deren Mitarbeiter NICHT (mehr)
+// in dpEmployees steht — sonst überlebt ein entfernter Mitarbeiter in Firestore
+// weiter (dpPublishWeek liest vorhandene Schichten erst ein, dpPublishMonth
+// schreibt dpShifts 1:1), und andere Filialen sehen ihn über dpLoadElsewhere()
+// weiterhin als "arbeitet dort auch" inkl. Doppelbelegungs-Warnung, obwohl er
+// längst aus der Liste entfernt wurde (Auftrag t.duong 28.09.2026).
+function dpPruneShiftsToRoster(shifts){
+  var keep={}; dpEmployees.forEach(function(e){ keep[dpEmpKey(e)]=true; });
+  var out={};
+  Object.keys(shifts).forEach(function(ek){ if(keep[ek]) out[ek]=shifts[ek]; });
+  return out;
+}
 // ── DATUM-HELFER (zeitzonensicher, lokale ISO ohne UTC-Verschiebung) ──
 function dpISO(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
 function dpParse(s){var p=(''+s).split('-');return new Date(+p[0],+p[1]-1,+p[2],12,0,0);}
@@ -4196,7 +4208,7 @@ function dpPublishMonth(){
   var nowIso=new Date().toISOString();
   var newMeta={};
   dpGetWeeks(m).forEach(function(w){ newMeta[w.dates[0]]={source:'gebietsleiter',by:email,at:nowIso}; });
-  var jobs=[fbDb.collection('plan').doc(fbSlug(f)+'__'+m).set({employees:dpEmployees,shifts:dpShifts,weekMeta:newMeta})];
+  var jobs=[fbDb.collection('plan').doc(fbSlug(f)+'__'+m).set({employees:dpEmployees,shifts:dpPruneShiftsToRoster(dpShifts),weekMeta:newMeta})];
   dpEmployees.forEach(function(e){var p=dpEmpMasterPayload(e,f);if(p)jobs.push(fbDb.collection('emps').doc(''+e.id).set(p,{merge:true}));});
   Promise.all(jobs).then(function(){dpDirty=false;if(st)st.textContent='✓ Veröffentlicht: '+f+' · '+fmtMonth(m);toast('☁️ '+f+' veröffentlicht');})
     .catch(function(e){if(st)st.textContent='⚠️ '+e.message;alert('Fehler: '+e.message);});
@@ -4230,7 +4242,7 @@ function dpPublishWeek(wi){
     var email=(firebase.auth().currentUser&&firebase.auth().currentUser.email)||'?';
     var newMeta=Object.assign({},existingMeta);
     newMeta[wk.dates[0]]={source:'gebietsleiter',by:email,at:new Date().toISOString()};
-    var jobs=[ref.set({employees:dpEmployees,shifts:merged,weekMeta:newMeta})];
+    var jobs=[ref.set({employees:dpEmployees,shifts:dpPruneShiftsToRoster(merged),weekMeta:newMeta})];
     dpEmployees.forEach(function(e){var p=dpEmpMasterPayload(e,f);if(p)jobs.push(fbDb.collection('emps').doc(''+e.id).set(p,{merge:true}));});
     return Promise.all(jobs);
   }).then(function(){dpDirty=false;if(st)st.textContent='✓ KW '+wk.kw+' veröffentlicht ('+f+')';toast('☁️ KW '+wk.kw+' veröffentlicht');})
