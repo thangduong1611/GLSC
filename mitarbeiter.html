@@ -619,6 +619,10 @@ window.onerror=function(msg,src,line){
   <div class="panel" id="p-iv">
     <div class="card">
       <div class="card-title" data-i18n="iv_title">📦 Inventur</div>
+      <div id="iv-fil-wrap" style="display:none;margin-bottom:10px">
+        <label data-i18n="lbl_fil">Filiale</label>
+        <select id="iv-fil-sel" onchange="ivFilChange()"></select>
+      </div>
       <div id="iv-info" style="font-size:13px;color:var(--mut);margin-bottom:10px">—</div>
       <div id="iv-period" style="font-size:12px;margin-bottom:12px"></div>
 
@@ -888,6 +892,7 @@ var ivMonth=null, ivPeriod=null, ivCounts={}, ivCat='fisch', ivLoaded=false, ivL
 var ivDirtyItems={}; // Artikelnummern, die seit dem letzten bestätigten Sync lokal geändert wurden
 var ivPrevMonth=null, ivPeriodCur=null, ivPeriodPrev=null, ivMonthActive=null, ivMonthUsed=null, ivPeriodUnsub2=null;
 var ivPeriodUnsub=null, ivCountUnsub=null, ivSaveTimer=null;
+var ivFiliale=null; // Von der Stellvertretung Gebietsleitung gewählte Filiale zum Mithelfen beim Zählen (nur sess.vize)
 var ivCfg={catOrder:[],itemCat:{}}, ivPhotos={}, ivCfgUnsub=null, ivPhotoUnsub=null;
 // Effektive Kategorie/Reihenfolge (HR-Override berücksichtigen)
 function ivItemCat(it){ return ivCfg.itemCat[it[0]] || it[1]; }
@@ -964,14 +969,63 @@ function ivRebindCounts(){
   }, function(e){ console.warn('iv count', e); });
 }
 function ivSlug(f){ return (''+f).replace(/\s+/g,'_').toLowerCase(); }
-function ivDocId(sess){ return (ivMonthUsed||ivMonth)+'__'+ivSlug(sess.filiale||''); }
+// Normal: eigene Filiale. Stellvertretung Gebietsleitung (sess.vize): kann über
+// ivFilChange() eine andere Filiale der eigenen Region wählen, um dort beim
+// Zählen zu helfen - läuft dann genau wie ein normaler Mitarbeiter dieser
+// Filiale (gleicher Entwurf/Absenden-Ablauf, kein Extra-Genehmigungsschritt).
+function ivCurFiliale(){
+  var sess=maSession(); if(!sess) return '';
+  if(sess.vize && ivFiliale) return ivFiliale;
+  return sess.filiale||'';
+}
+// Baut die Filial-Auswahl für sess.vize auf (Filialen der eigenen Region,
+// genau wie slSetupFilPicker für den Dienstplan). Für alle anderen bleibt
+// das Feld versteckt, ivFiliale wird auf die eigene Filiale gesetzt.
+function ivSetupFilPicker(sess){
+  var wrap=document.getElementById('iv-fil-wrap'), sel=document.getElementById('iv-fil-sel');
+  if(!sess.vize){
+    if(wrap) wrap.style.display='none';
+    ivFiliale=sess.filiale||'';
+    return;
+  }
+  if(!wrap||!sel) return;
+  wrap.style.display='';
+  var q=fbDb.collection('filialen_meta');
+  if(sess.region) q=q.where('region','==',sess.region);
+  q.get().then(function(snap){
+    var names=[];
+    snap.forEach(function(d){ var x=d.data()||{}; if(x.name) names.push(x.name); });
+    if(sess.filiale && names.indexOf(sess.filiale)<0) names.push(sess.filiale);
+    names.sort();
+    sel.innerHTML=names.map(function(n){ return '<option value="'+n.replace(/"/g,'&quot;')+'">'+n+'</option>'; }).join('');
+    ivFiliale=(names.indexOf(sess.filiale)>=0?sess.filiale:names[0])||'';
+    sel.value=ivFiliale;
+  }).catch(function(e){ console.warn('iv fil picker', e); });
+}
+// Wechselt die Filiale, an der sess.vize gerade mitzählt. Ungespeicherte
+// Eingaben der VORHERIGEN Filiale werden zuerst geflusht (ivFiliale ändert
+// sich erst danach, sonst würde ivSaveDraft() an die neue Filiale schreiben),
+// danach der komplette Zähl-Zustand zurückgesetzt und für die neue Filiale
+// frisch geladen (sonst würden Zahlen der alten Filiale kurz durchscheinen).
+function ivFilChange(){
+  var sel=document.getElementById('iv-fil-sel'); if(!sel) return;
+  var next=sel.value; if(!next||next===ivCurFiliale()) return;
+  clearTimeout(ivSaveTimer);
+  if(Object.keys(ivDirtyItems).length) ivSaveDraft(true);
+  ivFiliale=next;
+  ivCounts={}; ivDirtyItems={}; ivLoaded=false; ivLocalAt='';
+  if(ivCountUnsub){ try{ivCountUnsub();}catch(e){} }
+  ivRebindCounts();
+  ivRender();
+}
+function ivDocId(sess){ return (ivMonthUsed||ivMonth)+'__'+ivSlug(ivCurFiliale()); }
 
 /* ── OFFLINE-SCHUTZ ──────────────────────────────────────────
    Jede Eingabe wird SOFORT lokal gespeichert (localStorage), inklusive welche
    Artikel noch nicht bestätigt synchronisiert sind (ivDirtyItems) — das übersteht
    auch einen Reload, damit im Lager ohne Netz nichts verloren geht oder von einer
    älteren Server-Version überschrieben wird. Sync mit Firestore passiert zusätzlich. */
-function ivLocalKey(sess){ return 'sc_iv_'+(ivMonthUsed||ivMonth)+'__'+ivSlug(sess.filiale||''); }
+function ivLocalKey(sess){ return 'sc_iv_'+(ivMonthUsed||ivMonth)+'__'+ivSlug(ivCurFiliale()); }
 function ivLocalSave(){
   var sess=maSession(); if(!sess||!ivMonth) return;
   try{
@@ -1070,7 +1124,7 @@ function ivRender(){
     document.getElementById('iv-progress-wrap').style.display='none';
     return;
   }
-  if(info) info.innerHTML='🏪 <strong>'+(sess.filiale||'—')+'</strong> · '+ivMonth;
+  if(info) info.innerHTML='🏪 <strong>'+(ivCurFiliale()||'—')+'</strong> · '+ivMonth;
   if(per) per.innerHTML='<span style="color:var(--grn);font-weight:600">'+t('iv_active')+'</span> · '+t('iv_count');
   // Erstes Mal: aus Firestore laden
   if(!ivLoaded){ ivLoadFromFirestore(sess, ivRender); return; }
@@ -1328,7 +1382,7 @@ function ivSaveDraft(silent){
   ivLocalAt=now; ivLocalSave();
   var pending=Object.assign({}, ivDirtyItems);
   if(!Object.keys(pending).length){ if(!silent) toast(t('iv_saved')); return; }
-  var meta={filiale:sess.filiale||'', month:(ivMonthUsed||ivMonth), by:sess.name||'', at:now, submitted:false, region:sess.region||'ost'};
+  var meta={filiale:ivCurFiliale(), month:(ivMonthUsed||ivMonth), by:sess.name||'', at:now, submitted:false, region:sess.region||'ost'};
   ivWriteDoc(ivDocId(sess), meta, ivBuildFieldUpdates(pending)).then(function(){
     // Nur die Artikel entfernen, die in DIESEM Aufruf gesendet wurden — währenddessen
     // neu eingetippte Artikel (weiterer ivCellInput-Aufruf) bleiben als "ausstehend" markiert.
@@ -1348,7 +1402,7 @@ function ivSubmit(){
   var now=new Date().toISOString();
   ivLocalAt=now; ivLocalSave();
   var pending=Object.assign({}, ivDirtyItems);
-  var meta={filiale:sess.filiale||'', month:(ivMonthUsed||ivMonth), by:sess.name||'', at:now, submitted:true, region:sess.region||'ost'};
+  var meta={filiale:ivCurFiliale(), month:(ivMonthUsed||ivMonth), by:sess.name||'', at:now, submitted:true, region:sess.region||'ost'};
   ivWriteDoc(ivDocId(sess), meta, ivBuildFieldUpdates(pending)).then(function(){
     Object.keys(pending).forEach(function(art){ delete ivDirtyItems[art]; });
     ivLocalSave();
@@ -1407,6 +1461,7 @@ function slInit(sess){
     if(btn) btn.style.display=slIsPlanner(sess)?'':'none';
     var ivb=document.getElementById('ico-im');
     if(ivb) ivb.style.display=sess.vize?'':'none';
+    ivSetupFilPicker(sess);
     if(slIsPlanner(sess)){
       slSetupFilPicker(sess);
       var mi=document.getElementById('sl-month');
