@@ -296,6 +296,10 @@ window.onerror=function(msg,src,line){
       <label data-i18n="lbl_month">Monat</label>
       <input type="month" id="dp-month" onchange="maRenderDP()">
       <div id="dp-out" style="margin-top:14px"></div>
+      <div id="mz-fil-wrap" style="display:none;margin-top:10px">
+        <label data-i18n="mz_lbl">Umsatzziel welcher Filiale?</label>
+        <select id="mz-fil-sel" onchange="mzFilChange()"></select>
+      </div>
       <div class="info" id="dp-ziel-info" style="margin-top:10px"></div>
     </div>
   </div>
@@ -1462,6 +1466,7 @@ function slInit(sess){
     var ivb=document.getElementById('ico-im');
     if(ivb) ivb.style.display=sess.vize?'':'none';
     ivSetupFilPicker(sess);
+    mzSetupPicker(sess);
     if(slIsPlanner(sess)){
       slSetupFilPicker(sess);
       var mi=document.getElementById('sl-month');
@@ -1688,13 +1693,25 @@ function weloLoadSelf(){
 // "Ganze Filiale"-Übersicht, NICHT mehr im Urlaub-Tab (Auftrag t.duong
 // 03.09.2026: gehört inhaltlich zur Filiale/zum Dienstplan, nicht zu den
 // persönlichen Urlaub/Krank-Daten).
+// Filial-Auswahl für sess.vize (Springer ohne feste Stamm-/Zweitfiliale, siehe
+// mzSetupPicker weiter unten): {name: marktNr} der eigenen Region, damit das
+// Tagesziel jeder Filiale abgerufen werden kann, nicht nur der emp_welo-eigenen.
+var mzFiliale=null, mzStores={};
 function maRenderZielInfo(sess){
   var el=document.getElementById('dp-ziel-info'); if(!el) return;
   if(!sess||!sess.id||!fbReady||!fbDb){ el.innerHTML=''; return; }
+  if(sess.vize && mzFiliale && mzStores[mzFiliale]){
+    maRenderZielFor(el, mzStores[mzFiliale], mzFiliale);
+    return;
+  }
   fbDb.collection('emp_welo').doc(sess.id).get().then(function(doc){
     if(!doc.exists){ el.innerHTML=''; return; }
     var d=doc.data();
     if(!d.marktNr){ el.innerHTML=''; return; }
+    maRenderZielFor(el, d.marktNr, d.marktname||'');
+  }).catch(function(e){ console.warn('maRenderZielInfo', e); el.innerHTML=''; });
+}
+function maRenderZielFor(el, marktNr, marktnameFallback){
     var heute=new Date();
     var compact=heute.getFullYear()+(''+(heute.getMonth()+1)).padStart(2,'0')+(''+heute.getDate()).padStart(2,'0');
     var iso=heute.getFullYear()+'-'+(''+(heute.getMonth()+1)).padStart(2,'0')+'-'+(''+heute.getDate()).padStart(2,'0');
@@ -1705,15 +1722,15 @@ function maRenderZielInfo(sess){
     // Axonity benutzt (filiale_produktion, von sync-axonity-produktion.js
     // mehrmals täglich aktualisiert) — Ziel/Vorjahr bleiben aus Welo.
     return Promise.all([
-      fbDb.collection('tagesziel').doc(d.marktNr+'_'+compact).get(),
-      fbDb.collection('filiale_produktion').doc(d.marktNr+'_'+iso).get(),
+      fbDb.collection('tagesziel').doc(marktNr+'_'+compact).get(),
+      fbDb.collection('filiale_produktion').doc(marktNr+'_'+iso).get(),
     ]).then(function(results){
       var zdoc=results[0], pdoc=results[1];
       if(!zdoc.exists){ el.innerHTML=''; return; }
       var z=zdoc.data();
       if(z.ziel==null && z.produktionsziel==null){ el.textContent=t('welo_ziel_unknown'); return; }
       var umsatzHeuteLive=(pdoc.exists && typeof pdoc.data().umsatzHeute==='number') ? pdoc.data().umsatzHeute : null;
-      var filiale=z.marktname||d.marktname||'';
+      var filiale=z.marktname||marktnameFallback||'';
       // Das eigentliche Tagesziel ist die Produktion (inkl. Waste) — nicht der
       // Vorjahres-Umsatz. Produktionsziel bevorzugt anzeigen und für die
       // Prozentanzeige/den Balken zugrunde legen (Auftrag t.duong 08.09.2026);
@@ -1736,8 +1753,42 @@ function maRenderZielInfo(sess){
         html+='<div style="margin-top:6px;font-size:11px;color:var(--mut)">'+t('welo_vgl',{filiale:filiale, vorjahr:weloFmtNum(z.umsatzVorjahr,2)+' €', ziel:weloFmtNum(z.ziel,2)+' €'})+'</div>';
       }
       el.innerHTML=html;
-    });
-  }).catch(function(e){ console.warn('maRenderZielInfo', e); el.innerHTML=''; });
+    }).catch(function(e){ console.warn('maRenderZielFor', e); el.innerHTML=''; });
+}
+// Baut die Filial-Auswahl für das Umsatzziel auf sess.vize (Springer, hat
+// keine feste Stamm-/Zweitfiliale — jede Filiale der eigenen Region kann
+// gerade "seine" sein, je nachdem wo er aushilft). Für alle anderen bleibt
+// das Feld versteckt, das Ziel kommt weiter wie bisher aus emp_welo/{id}.
+function mzSetupPicker(sess){
+  var wrap=document.getElementById('mz-fil-wrap'), sel=document.getElementById('mz-fil-sel');
+  if(!sess.vize){
+    if(wrap) wrap.style.display='none';
+    mzFiliale=null;
+    return;
+  }
+  if(!wrap||!sel||!fbReady||!fbDb) return;
+  wrap.style.display='';
+  var q=fbDb.collection('filialen_meta');
+  if(sess.region) q=q.where('region','==',sess.region);
+  q.get().then(function(snap){
+    mzStores={};
+    snap.forEach(function(d){ var x=d.data()||{}; if(x.name && x.marktNr) mzStores[x.name]=x.marktNr; });
+    var names=Object.keys(mzStores).sort();
+    sel.innerHTML='<option value="" data-i18n="mz_own">🏠 Eigenes Ziel</option>'
+      +names.map(function(n){ return '<option value="'+n.replace(/"/g,'&quot;')+'">'+n+'</option>'; }).join('');
+    sel.value='';
+    mzFiliale=null;
+    // mzStores ist jetzt erst befüllt - maEffectiveZweit() (Mein Dienstplan,
+    // eigene Urlaub-Konfliktprüfung) hing bis eben noch am alten Fallback
+    // (sess.zweit/nichts), einmal neu rendern, damit das nicht bis zum
+    // nächsten manuellen Klick veraltet stehen bleibt.
+    maAllocInfo(sess); maRenderDP();
+  }).catch(function(e){ console.warn('mz fil picker', e); });
+}
+function mzFilChange(){
+  var sel=document.getElementById('mz-fil-sel'); if(!sel) return;
+  mzFiliale=sel.value||null;
+  maRenderZielInfo(maSession());
 }
 
 function slParseRange(v){
@@ -2157,7 +2208,7 @@ function maWaNumber(){var b=maLoadBundle();return ((b&&b.managerWa)||localStorag
    ════════════════════════════════════════════════ */
 var I18N={
 de:{_name:'Deutsch',
- nav_im:'📊 Inventur-Stand',im_title:'📊 Inventur-Stand',im_info:'Übersicht, welche Filiale die Inventur schon gezählt und gesendet hat. Nur zur Ansicht — Zeitraum, Welo-Links und das Abtippen bleiben beim Gebietsleiter.',im_loading:'Lade Inventur-Stand…',im_items:'Artikel',im_nothing:'noch nichts gezählt',im_st_sent:'✓ Eingereicht',im_st_draft:'✎ Entwurf',im_st_none:'offen',im_summary:'{d} von {n} Filialen eingereicht',lbl_fil:'Filiale',
+ nav_im:'📊 Inventur-Stand',im_title:'📊 Inventur-Stand',im_info:'Übersicht, welche Filiale die Inventur schon gezählt und gesendet hat. Nur zur Ansicht — Zeitraum, Welo-Links und das Abtippen bleiben beim Gebietsleiter.',im_loading:'Lade Inventur-Stand…',im_items:'Artikel',im_nothing:'noch nichts gezählt',im_st_sent:'✓ Eingereicht',im_st_draft:'✎ Entwurf',im_st_none:'offen',im_summary:'{d} von {n} Filialen eingereicht',lbl_fil:'Filiale',mz_lbl:'Umsatzziel welcher Filiale?',mz_own:'🏠 Eigenes Ziel',
  nav_dp:'Dienstplan',nav_ul:'Urlaub',nav_kr:'Krankmeldung',nav_bl:'Belege',nav_av:'Vertrag',nav_nw:'Infos',
  iv_offline_note:'Noch nicht gesendet. Deine Eingaben sind auf diesem Gerät gespeichert und werden automatisch übertragen, sobald wieder Internet da ist. App darf zwischendurch geschlossen werden.',
  iv_offline_saved:'Offline gespeichert — wird automatisch gesendet, sobald Internet da ist.',
@@ -2184,7 +2235,7 @@ de:{_name:'Deutsch',
  err_pin_format:'PIN muss 4-6 Ziffern haben.',err_pin_wrong:'Falscher PIN. Bitte erneut versuchen.',err_pin_locked:'Zu viele Fehlversuche — bitte in {min} Minuten erneut versuchen oder den Gebietsleiter um Zurücksetzen bitten.',
  lbl_pin2:'PIN wiederholen',pin_setup_prompt:'Das ist dein erster Login — gib deinen PIN zur Bestätigung bitte noch einmal ein (und merk ihn dir für das nächste Mal).',err_pin_mismatch:'Die beiden PINs stimmen nicht überein. Bitte erneut eingeben.',err_pin_wrong_left:'Falscher PIN — noch {n} Versuch(e), danach wird der Login kurz gesperrt.',
  btn_logout:'Abmelden',q_logout:'Abmelden?',no_fil:'keine Filiale',
- dp_title:'📅 Mein Dienstplan',lbl_month:'Monat',fil:'Filiale',alloc_main:'Stammfiliale',alloc_backup:'Bei Bedarf Einsatz in',
+ dp_title:'📅 Mein Dienstplan',lbl_month:'Monat',fil:'Filiale',alloc_main:'Stammfiliale',alloc_backup:'Bei Bedarf Einsatz in',alloc_springer:'Springer - hilft bei Bedarf in allen {n} Filialen der Region aus',
  dp_pause_notice:'ℹ️ Bei mehr als 6 Std. Arbeit werden automatisch 30 Min Pause abgezogen, bei mehr als 9 Std. 45 Min (gesetzliche Pause).',unit_std:'Std.',
  st_gestern_ok:'✅ Gestern ({d}): genau wie geplant gearbeitet.', st_gestern_mehr:'🟡 Gestern ({d}): {n} Std. mehr als geplant.',
  st_gestern_weniger:'🔴 Gestern ({d}): {n} Std. weniger als geplant.', st_monat:'⏱ Diesen Monat gearbeitet: {n} Std.',
@@ -2289,7 +2340,7 @@ de:{_name:'Deutsch',
  wdS:['So','Mo','Di','Mi','Do','Fr','Sa'],
  wdL:['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag']},
 vi:{_name:'Tiếng Việt',
- nav_im:'📊 Tiến độ kiểm kê',im_title:'📊 Tiến độ kiểm kê',im_info:'Xem tiệm nào đã đếm và gửi kiểm kê. Chỉ để theo dõi — thời gian, link Welo và việc nhập liệu vẫn do Gebietsleiter làm.',im_loading:'Đang tải tiến độ…',im_items:'món',im_nothing:'chưa đếm gì',im_st_sent:'✓ Đã gửi',im_st_draft:'✎ Bản nháp',im_st_none:'chưa làm',im_summary:'{d}/{n} tiệm đã gửi',lbl_fil:'Tiệm',
+ nav_im:'📊 Tiến độ kiểm kê',im_title:'📊 Tiến độ kiểm kê',im_info:'Xem tiệm nào đã đếm và gửi kiểm kê. Chỉ để theo dõi — thời gian, link Welo và việc nhập liệu vẫn do Gebietsleiter làm.',im_loading:'Đang tải tiến độ…',im_items:'món',im_nothing:'chưa đếm gì',im_st_sent:'✓ Đã gửi',im_st_draft:'✎ Bản nháp',im_st_none:'chưa làm',im_summary:'{d}/{n} tiệm đã gửi',lbl_fil:'Tiệm',mz_lbl:'Xem mục tiêu doanh thu của tiệm nào?',mz_own:'🏠 Mục tiêu của mình',
  nav_dp:'Lịch làm',nav_ul:'Nghỉ phép',nav_kr:'Báo ốm',nav_bl:'Báo cáo',nav_av:'Hợp đồng',nav_nw:'Thông báo',
  iv_offline_note:'Chưa gửi. Dữ liệu bạn nhập đã được lưu trên máy này và sẽ tự động gửi đi khi có mạng trở lại. Bạn có thể tắt ứng dụng giữa chừng.',
  iv_offline_saved:'Đã lưu ngoại tuyến — sẽ tự động gửi khi có mạng.',
@@ -2316,7 +2367,7 @@ vi:{_name:'Tiếng Việt',
  err_pin_format:'Mã PIN phải có 4-6 chữ số.',err_pin_wrong:'Sai mã PIN. Vui lòng thử lại.',err_pin_locked:'Sai quá nhiều lần — vui lòng thử lại sau {min} phút hoặc nhờ Gebietsleiter đặt lại mã PIN.',
  lbl_pin2:'Nhập lại mã PIN',pin_setup_prompt:'Đây là lần đăng nhập đầu tiên — hãy nhập lại mã PIN một lần nữa để xác nhận (và nhớ kỹ mã này cho lần sau).',err_pin_mismatch:'Hai mã PIN không giống nhau. Vui lòng nhập lại.',err_pin_wrong_left:'Sai mã PIN — còn {n} lần thử, sau đó đăng nhập sẽ bị khóa tạm thời.',
  btn_logout:'Đăng xuất',q_logout:'Đăng xuất?',no_fil:'chưa có cửa hàng',
- dp_title:'📅 Lịch làm của tôi',lbl_month:'Tháng',fil:'Cửa hàng',alloc_main:'Cửa hàng chính',alloc_backup:'Hỗ trợ khi cần tại',
+ dp_title:'📅 Lịch làm của tôi',lbl_month:'Tháng',fil:'Cửa hàng',alloc_main:'Cửa hàng chính',alloc_backup:'Hỗ trợ khi cần tại',alloc_springer:'Springer - hỗ trợ khi cần ở cả {n} tiệm trong vùng',
  dp_pause_notice:'ℹ️ Nếu làm trên 6 tiếng, hệ thống sẽ tự động trừ 30 phút nghỉ; trên 9 tiếng trừ 45 phút (quy định nghỉ giải lao bắt buộc theo luật).',unit_std:'giờ',
  st_gestern_ok:'✅ Hôm qua ({d}): làm đúng số giờ theo kế hoạch.', st_gestern_mehr:'🟡 Hôm qua ({d}): làm dư {n} giờ so với kế hoạch.',
  st_gestern_weniger:'🔴 Hôm qua ({d}): làm ít hơn {n} giờ so với kế hoạch.', st_monat:'⏱ Đã làm trong tháng này: {n} giờ.',
@@ -2421,7 +2472,7 @@ vi:{_name:'Tiếng Việt',
  wdS:['CN','T2','T3','T4','T5','T6','T7'],
  wdL:['Chủ nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy']},
 en:{_name:'English',
- nav_im:'📊 Inventory status',im_title:'📊 Inventory status',im_info:'Overview of which store has already counted and submitted. View only — period, Welo links and data entry stay with the area manager.',im_loading:'Loading inventory status…',im_items:'items',im_nothing:'nothing counted yet',im_st_sent:'✓ Submitted',im_st_draft:'✎ Draft',im_st_none:'open',im_summary:'{d} of {n} stores submitted',lbl_fil:'Store',
+ nav_im:'📊 Inventory status',im_title:'📊 Inventory status',im_info:'Overview of which store has already counted and submitted. View only — period, Welo links and data entry stay with the area manager.',im_loading:'Loading inventory status…',im_items:'items',im_nothing:'nothing counted yet',im_st_sent:'✓ Submitted',im_st_draft:'✎ Draft',im_st_none:'open',im_summary:'{d} of {n} stores submitted',lbl_fil:'Store',mz_lbl:'Revenue target for which store?',mz_own:'🏠 My own target',
  nav_dp:'Schedule',nav_ul:'Vacation',nav_kr:'Sick note',nav_bl:'Receipts',nav_av:'Contract',nav_nw:'News',
  iv_offline_note:'Not sent yet. Your entries are saved on this device and will be transmitted automatically once there is internet again. You may close the app in the meantime.',
  iv_offline_saved:'Saved offline — will be sent automatically once there is internet.',
@@ -2448,7 +2499,7 @@ en:{_name:'English',
  err_pin_format:'PIN must be 4-6 digits.',err_pin_wrong:'Wrong PIN. Please try again.',err_pin_locked:'Too many wrong attempts — please try again in {min} minutes or ask your manager to reset your PIN.',
  lbl_pin2:'Repeat PIN',pin_setup_prompt:'This is your first login — please enter your PIN a second time to confirm it (and remember it for next time).',err_pin_mismatch:'The two PINs don\'t match. Please enter them again.',err_pin_wrong_left:'Wrong PIN — {n} attempt(s) left, then login is locked for a short time.',
  btn_logout:'Log out',q_logout:'Log out?',no_fil:'no store',
- dp_title:'📅 My schedule',lbl_month:'Month',fil:'Store',alloc_main:'Main store',alloc_backup:'Backup duty at',
+ dp_title:'📅 My schedule',lbl_month:'Month',fil:'Store',alloc_main:'Main store',alloc_backup:'Backup duty at',alloc_springer:'Floater - helps out at any of the {n} stores in the region as needed',
  dp_pause_notice:'ℹ️ Shifts over 6 hrs automatically deduct a 30-minute break; over 9 hrs, 45 minutes (statutory break rule).',unit_std:'hrs',
  st_gestern_ok:'✅ Yesterday ({d}): worked exactly as planned.', st_gestern_mehr:'🟡 Yesterday ({d}): {n} hrs more than planned.',
  st_gestern_weniger:'🔴 Yesterday ({d}): {n} hrs less than planned.', st_monat:'⏱ Worked this month: {n} hrs.',
@@ -2553,7 +2604,7 @@ en:{_name:'English',
  wdS:['Su','Mo','Tu','We','Th','Fr','Sa'],
  wdL:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']},
 th:{_name:'ไทย',
- nav_im:'📊 สถานะการตรวจนับ',im_title:'📊 สถานะการตรวจนับ',im_info:'ภาพรวมว่าสาขาใดนับและส่งแล้ว ดูอย่างเดียว — ช่วงเวลา ลิงก์ Welo และการคีย์ข้อมูลยังเป็นของผู้จัดการเขต',im_loading:'กำลังโหลดสถานะ…',im_items:'รายการ',im_nothing:'ยังไม่ได้นับ',im_st_sent:'✓ ส่งแล้ว',im_st_draft:'✎ ฉบับร่าง',im_st_none:'ยังไม่ทำ',im_summary:'ส่งแล้ว {d} จาก {n} สาขา',lbl_fil:'สาขา',
+ nav_im:'📊 สถานะการตรวจนับ',im_title:'📊 สถานะการตรวจนับ',im_info:'ภาพรวมว่าสาขาใดนับและส่งแล้ว ดูอย่างเดียว — ช่วงเวลา ลิงก์ Welo และการคีย์ข้อมูลยังเป็นของผู้จัดการเขต',im_loading:'กำลังโหลดสถานะ…',im_items:'รายการ',im_nothing:'ยังไม่ได้นับ',im_st_sent:'✓ ส่งแล้ว',im_st_draft:'✎ ฉบับร่าง',im_st_none:'ยังไม่ทำ',im_summary:'ส่งแล้ว {d} จาก {n} สาขา',lbl_fil:'สาขา',mz_lbl:'เป้าหมายยอดขายของสาขาไหน?',mz_own:'🏠 เป้าหมายของตัวเอง',
  nav_dp:'ตารางงาน',nav_ul:'วันลา',nav_kr:'แจ้งป่วย',nav_bl:'ใบเสร็จ',nav_av:'สัญญา',nav_nw:'ข่าวสาร',
  iv_offline_note:'ยังไม่ได้ส่ง ข้อมูลที่คุณกรอกถูกบันทึกไว้ในเครื่องนี้แล้ว และจะถูกส่งอัตโนมัติเมื่อมีอินเทอร์เน็ตอีกครั้ง คุณสามารถปิดแอปได้ระหว่างนี้',
  iv_offline_saved:'บันทึกแบบออฟไลน์แล้ว — จะส่งอัตโนมัติเมื่อมีอินเทอร์เน็ต',
@@ -2580,7 +2631,7 @@ th:{_name:'ไทย',
  err_pin_format:'รหัส PIN ต้องมี 4-6 หลัก',err_pin_wrong:'รหัส PIN ไม่ถูกต้อง กรุณาลองใหม่',err_pin_locked:'ลองผิดหลายครั้งเกินไป — กรุณาลองใหม่ใน {min} นาที หรือขอให้ผู้จัดการรีเซ็ตรหัส PIN',
  lbl_pin2:'ยืนยันรหัส PIN อีกครั้ง',pin_setup_prompt:'นี่คือการเข้าสู่ระบบครั้งแรก — กรุณากรอกรหัส PIN อีกครั้งเพื่อยืนยัน (และจำไว้สำหรับครั้งต่อไป)',err_pin_mismatch:'รหัส PIN ทั้งสองไม่ตรงกัน กรุณากรอกใหม่',err_pin_wrong_left:'รหัส PIN ไม่ถูกต้อง — เหลืออีก {n} ครั้ง หลังจากนั้นระบบจะล็อกชั่วคราว',
  btn_logout:'ออกจากระบบ',q_logout:'ออกจากระบบ?',no_fil:'ไม่มีสาขา',
- dp_title:'📅 ตารางงานของฉัน',lbl_month:'เดือน',fil:'สาขา',alloc_main:'สาขาหลัก',alloc_backup:'ช่วยงานเมื่อจำเป็นที่',
+ dp_title:'📅 ตารางงานของฉัน',lbl_month:'เดือน',fil:'สาขา',alloc_main:'สาขาหลัก',alloc_backup:'ช่วยงานเมื่อจำเป็นที่',alloc_springer:'Springer - ช่วยงานได้ทุกสาขาทั้ง {n} สาขาในเขตเมื่อจำเป็น',
  dp_pause_notice:'ℹ️ หากทำงานเกิน 6 ชม. ระบบจะหักเวลาพักอัตโนมัติ 30 นาที และหากเกิน 9 ชม. จะหัก 45 นาที (ตามกฎหมายเวลาพักงาน)',unit_std:'ชม.',
  st_gestern_ok:'✅ เมื่อวาน ({d}): ทำงานตรงตามแผนพอดี', st_gestern_mehr:'🟡 เมื่อวาน ({d}): ทำงานเกินแผน {n} ชม.',
  st_gestern_weniger:'🔴 เมื่อวาน ({d}): ทำงานน้อยกว่าแผน {n} ชม.', st_monat:'⏱ ทำงานเดือนนี้แล้ว: {n} ชม.',
@@ -2685,7 +2736,7 @@ th:{_name:'ไทย',
  wdS:['อา','จ','อ','พ','พฤ','ศ','ส'],
  wdL:['วันอาทิตย์','วันจันทร์','วันอังคาร','วันพุธ','วันพฤหัสบดี','วันศุกร์','วันเสาร์']},
 zh:{_name:'中文',
- nav_im:'📊 盘点进度',im_title:'📊 盘点进度',im_info:'查看哪些门店已完成盘点并提交。仅供查看——盘点时间、Welo链接和录入仍由区域经理负责。',im_loading:'正在加载盘点进度…',im_items:'件商品',im_nothing:'尚未盘点',im_st_sent:'✓ 已提交',im_st_draft:'✎ 草稿',im_st_none:'未开始',im_summary:'{n}家门店中已提交{d}家',lbl_fil:'门店',
+ nav_im:'📊 盘点进度',im_title:'📊 盘点进度',im_info:'查看哪些门店已完成盘点并提交。仅供查看——盘点时间、Welo链接和录入仍由区域经理负责。',im_loading:'正在加载盘点进度…',im_items:'件商品',im_nothing:'尚未盘点',im_st_sent:'✓ 已提交',im_st_draft:'✎ 草稿',im_st_none:'未开始',im_summary:'{n}家门店中已提交{d}家',lbl_fil:'门店',mz_lbl:'查看哪家门店的营业额目标？',mz_own:'🏠 自己的目标',
  nav_dp:'排班表',nav_ul:'休假',nav_kr:'病假',nav_bl:'报销',nav_av:'合同',nav_nw:'通知',
  iv_offline_note:'尚未发送。您输入的数据已保存在本设备上，一旦恢复网络会自动上传。中途可以关闭本应用。',
  iv_offline_saved:'已离线保存 — 网络恢复后会自动发送。',
@@ -2712,7 +2763,7 @@ zh:{_name:'中文',
  err_pin_format:'PIN 码必须为 4-6 位数字。',err_pin_wrong:'PIN 码错误，请重试。',err_pin_locked:'错误次数过多 — 请 {min} 分钟后重试，或联系主管重置 PIN 码。',
  lbl_pin2:'再次输入 PIN 码',pin_setup_prompt:'这是您首次登录 — 请再输入一次 PIN 码以确认（并记住它，下次登录要用）。',err_pin_mismatch:'两次输入的 PIN 码不一致，请重新输入。',err_pin_wrong_left:'PIN 码错误 — 还剩 {n} 次机会，之后登录将被暂时锁定。',
  btn_logout:'退出登录',q_logout:'确定要退出登录吗？',no_fil:'暂无门店',
- dp_title:'📅 我的排班表',lbl_month:'月份',fil:'门店',alloc_main:'主要门店',alloc_backup:'需要时支援',
+ dp_title:'📅 我的排班表',lbl_month:'月份',fil:'门店',alloc_main:'主要门店',alloc_backup:'需要时支援',alloc_springer:'机动人员 - 可支援该区域全部{n}家门店',
  dp_pause_notice:'ℹ️ 工作超过6小时将自动扣除30分钟休息时间,超过9小时扣除45分钟(法定休息规定)。',unit_std:'小时',
  st_gestern_ok:'✅ 昨天（{d}）：工时与排班一致。', st_gestern_mehr:'🟡 昨天（{d}）：比排班多做了{n}小时。',
  st_gestern_weniger:'🔴 昨天（{d}）：比排班少做了{n}小时。', st_monat:'⏱ 本月已工作：{n}小时。',
@@ -2874,7 +2925,12 @@ function maRefreshProfile(){
 function maAllocInfo(sess){
   var el=document.getElementById('dp-filiale-info'); if(!el) return;
   var html='🏪 <strong>'+t('alloc_main')+':</strong> '+(sess.filiale||'—');
-  if(sess.zweit&&sess.zweit.length) html+='<br>🔄 <strong>'+t('alloc_backup')+':</strong> '+sess.zweit.join(', ');
+  if(sess.vize){
+    var n=maEffectiveZweit(sess).length;
+    if(n) html+='<br>🔄 <strong>'+t('alloc_springer',{n:n})+'</strong>';
+  } else if(sess.zweit&&sess.zweit.length){
+    html+='<br>🔄 <strong>'+t('alloc_backup')+':</strong> '+sess.zweit.join(', ');
+  }
   el.innerHTML=html;
   maRenderStunden(sess);
 }
@@ -3678,9 +3734,20 @@ function maUrlaubOverlay(){
   return ov;
 }
 // Filialen, zu denen dieser Mitarbeiter gehört (Stammfiliale zuerst, dann Zweitfilialen)
+// Für sess.vize (Springer, siehe mzSetupPicker): alle Filialen der eigenen
+// Region außer der eigenen, statt einer manuell gepflegten Zweitfiliale-
+// Liste, die garantiert veraltet (Auftrag t.duong 28.09.2026 - Vize hat
+// keine feste Stamm-/Zweitfiliale, jede Filiale kann "seine" sein). Für
+// alle anderen bleibt die echte Zweitfiliale-Liste aus emps/{id}.zweit.
+function maEffectiveZweit(sess){
+  if(sess.vize && Object.keys(mzStores).length){
+    return Object.keys(mzStores).filter(function(n){ return n!==sess.filiale; });
+  }
+  return (sess.zweit||[]).filter(Boolean);
+}
 function maMyStores(sess){
   var list=[sess.filiale];
-  (sess.zweit||[]).forEach(function(z){ if(z && list.indexOf(z)<0) list.push(z); });
+  maEffectiveZweit(sess).forEach(function(z){ if(z && list.indexOf(z)<0) list.push(z); });
   return list.filter(Boolean);
 }
 // Live-Listener pro Filiale sicherstellen (mehrere Pläne gleichzeitig)
@@ -4049,7 +4116,7 @@ function maBlackoutHit(fromStr,toStr,rules){
   return null;
 }
 function maReqLoadZweitUrlaub(sess){
-  var zweit=(sess.zweit||[]).filter(Boolean);
+  var zweit=maEffectiveZweit(sess);
   if(!fbReady||!fbDb||!zweit.length) return Promise.resolve([]);
   return Promise.all(zweit.map(function(f){
     return fbDb.collection('filialen').doc(fbSlug(f)).collection('urlaub').get()
