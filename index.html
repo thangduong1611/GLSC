@@ -152,6 +152,13 @@ canvas{display:block;max-width:100%;}
 /* TOAST */
 .toast{position:fixed;bottom:22px;right:22px;background:var(--grn);color:#fff;padding:10px 18px;border-radius:var(--r);font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.2);transform:translateY(80px);opacity:0;transition:all .3s;z-index:999;}
 .toast.show{transform:translateY(0);opacity:1;}
+/* Schwebender Reload-Knopf, immer sichtbar (unten links, damit er dem Toast
+   unten rechts nicht in die Quere kommt) — z-index absichtlich UNTER den
+   Modal-Overlays (100/200/100000), damit er von offenen Dialogen korrekt
+   verdeckt wird statt darüber zu schweben. */
+.fab-refresh{position:fixed;left:16px;bottom:16px;z-index:90;background:var(--red);color:#fff;border:none;border-radius:999px;padding:12px 18px;font-size:13px;font-weight:700;box-shadow:0 4px 14px rgba(0,0,0,.28);cursor:pointer;}
+.fab-refresh:active{background:var(--red-d);}
+@media (max-width:640px){ .fab-refresh{left:12px;bottom:12px;padding:11px 15px;font-size:12.5px;} }
 .toast.warn{background:var(--amb,#B7791F);}
 
 /* MODAL */
@@ -280,6 +287,7 @@ window.onerror=function(msg,src,line){
 </div>
 
 <div class="wrap" id="main-wrap" style="display:none">
+<button id="global-refresh-btn" class="fab-refresh" onclick="globalRefresh()" title="Seite neu laden — holt überall den neuesten Stand (z.B. wenn woanders ein Urlaub storniert wurde)">🔄 Aktualisieren</button>
 <div class="nav-wrap">
   <div class="nav-grid">
     <button class="app-ico active" onclick="sw('krank',this)">
@@ -1451,7 +1459,6 @@ window.onerror=function(msg,src,line){
       </div>
       <datalist id="dp-presets"><option value="Frei"><option value="Urlaub"><option value="Krank"><option value="05:30-11:30"><option value="07:00-13:00"><option value="07:00-14:00"><option value="09:00-15:00"><option value="12:00-18:00"><option value="16:00-19:00"><option value="08:00-14:00"></datalist>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-        <button class="btn btn-sm" onclick="dpRefreshView()" title="Lädt Urlaub/Krank, Belegung anderer Filialen usw. neu, ohne die Seite neu zu laden — deine ungespeicherten Eingaben bleiben erhalten">🔄 Aktualisieren</button>
         <button class="btn btn-sm" onclick="dpSuggest()" style="background:#185FA5;color:#fff;border-color:#185FA5">💡 Vorschlag aus Vormonat</button>
         <button class="btn btn-sm" onclick="dpWeloRefresh()" style="background:#6C3483;color:#fff;border-color:#6C3483">📡 Urlaub aus Welo aktualisieren</button>
         <button class="btn btn-sm" onclick="dpCheckConflicts(false)">🔍 Doppelbelegung prüfen</button>
@@ -1626,6 +1633,20 @@ checkFirstStart();
   if(id==='we'){wePopulateFilFilter();weRenderAdmin();}
   if(id==='ug'){ugPopulateFilters();ugRenderCurrent();ugmOnShow();}
   if(id==='av'){avPopulateDropdown();avRenderList();}
+}
+// Schwebender "🔄 Aktualisieren"-Knopf (immer sichtbar, alle Panels) — lädt
+// die Seite komplett neu, damit wirklich überall der neueste Stand kommt
+// (z.B. wenn in einem anderen Browser-Tab/-Gerät gerade ein Urlaub storniert
+// wurde, während hier der Dienstplan offen ist — die einzelnen Panels haben
+// zwar eigene Live-Listener, aber nicht jede Änderung stößt in JEDEM anderen
+// Panel ein Neu-Rendern an). Bewusst ein einfacher, universeller Reload statt
+// 14 einzelner Panel-spezifischer Refresh-Funktionen (Auftrag t.duong: 1
+// Knopf, der überall gilt, statt nur im Dienstplan).
+function globalRefresh(){
+  if(typeof dpDirty!=='undefined' && dpDirty){
+    if(!confirm('Du hast im Dienstplan noch ungespeicherte Änderungen. Trotzdem neu laden? (Ungespeicherte Änderungen gehen sonst verloren.)')) return;
+  }
+  location.reload();
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────
@@ -4265,25 +4286,6 @@ function dpSugStatus(html,color){
   var el=document.getElementById('dp-sug-status'); if(!el) return;
   el.innerHTML=html||''; el.style.color=color||'var(--mut)'; el.style.display=html?'block':'none';
 }
-// "🔄 Aktualisieren"-Knopf: die zugrunde liegenden Daten (Urlaub/Krank via
-// fbDecided/fbKrank, Belegung anderer Filialen, AZ-Konto, Welo-Vorschläge)
-// laufen zwar schon live über eigene Firestore-Listener — nur dpRenderWeeks()
-// selbst wird nach so einer Änderung NICHT automatisch neu aufgerufen (z.B.
-// wenn im Panel Urlaub ein Antrag storniert wird, während der Manager gerade
-// im Dienstplan ist). Ein automatisches Neu-Rendern bei jeder Fremdänderung
-// würde riskieren, gerade getippte, noch ungespeicherte Werte zu verlieren —
-// deshalb bewusst ein manueller Knopf statt automatischem Live-Update
-// (Auftrag t.duong: Refresh-Knopf statt App neu starten müssen).
-function dpRefreshView(){
-  dpSaveFromDOM();                                          // laufende Eingaben zuerst sichern
-  dpRenderWeeks();                                          // Urlaub/Krank-Sperre sofort mit aktuellem Stand neu zeichnen
-  dpAzKontoCache=null; dpLoadAzKonto();                      // Cache erzwingen neu laden (sonst dauerhaft gecacht)
-  dpLoadElsewhere(true);                                    // Belegung anderer Filialen erzwungen neu laden
-  dpLoadWeloSuggest(dpGetFiliale(), document.getElementById('dp-month').value);
-  dpCheckConflicts(true);                                   // Doppelbelegung still im Hintergrund neu prüfen
-  toast('🔄 Aktualisiert');
-}
-
 // ════════ Urlaub-Vorschläge aus Welo (sync-welo-urlaub-suggest.js) ════════
 // dpWeloCache wird pro Filiale/Monat aus dem Firestore-Cache geladen (schnell,
 // kein Welo-Login) und füllt einmalig leere Zellen — genau wie dpSuggest(),
