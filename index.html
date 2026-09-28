@@ -228,6 +228,8 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 .dp-other-badge{display:block;font-size:8.5px;font-weight:600;color:#6B6860;line-height:1.15;text-align:center;margin-top:1px;}
 .dp-other-badge.clash{color:#C0392B;font-weight:700;}
 .dp-welo-badge{display:block;font-size:8.5px;font-weight:700;color:#6C3483;line-height:1.1;text-align:center;margin-top:1px;}
+.dp-cell-frist-warn{box-shadow:inset 0 0 0 2px #C0392B;background:#FBEAE7;}
+.dp-frist-badge{display:block;font-size:8.5px;font-weight:700;color:#C0392B;line-height:1.1;text-align:center;margin-top:1px;}
 .dp-th-ft{background:#FCF3E0 !important;color:#8a5a00;}
 .dp-fn{display:block;font-weight:600;font-size:8px;color:#a06600;line-height:1.1;margin-top:1px;}
 .dp-cell-ft{box-shadow:inset 0 0 0 1px #f0d9a8;}
@@ -1460,7 +1462,7 @@ window.onerror=function(msg,src,line){
       <datalist id="dp-presets"><option value="Frei"><option value="Urlaub"><option value="Krank"><option value="05:30-11:30"><option value="07:00-13:00"><option value="07:00-14:00"><option value="09:00-15:00"><option value="12:00-18:00"><option value="16:00-19:00"><option value="08:00-14:00"></datalist>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
         <button class="btn btn-sm" onclick="dpSuggest()" style="background:#185FA5;color:#fff;border-color:#185FA5">💡 Vorschlag aus Vormonat</button>
-        <button class="btn btn-sm" onclick="dpWeloRefresh()" style="background:#6C3483;color:#fff;border-color:#6C3483">📡 Urlaub aus Welo aktualisieren</button>
+        <button class="btn btn-sm" onclick="dpWeloRefresh()" style="background:#6C3483;color:#fff;border-color:#6C3483" title="Urlaub, Krank, ablaufende Arbeitserlaubnis/Verträge aus Welo laden">📡 Daten aus Welo aktualisieren</button>
         <button class="btn btn-sm" onclick="dpCheckConflicts(false)">🔍 Doppelbelegung prüfen</button>
       </div>
       <p id="dp-sug-status" style="font-size:12.5px;line-height:1.5;margin:0 0 8px;display:none"></p>
@@ -3719,6 +3721,7 @@ function dpInit(){
   dpLoadElsewhere();
   dpLoadAzKonto();
   dpLoadWeloSuggest(f,m);
+  dpLoadFristen();
 }
 // AZ-Konto (Über-/Unterstunden-Saldo Vormonat, nur Monatslohn-Verträge) je
 // Mitarbeiter-ID — einmalig geladen (ändert sich nur 1x täglich per Cron,
@@ -3740,6 +3743,10 @@ function dpLoadAzKonto(){
 }
 function dpFmtStd(n){
   return Math.abs(n).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:2}).replace('.',',');
+}
+// 'YYYY-MM-DD' -> 'DD.MM.' für kurze Warnhinweise (Arbeitserlaubnis/Vertrag).
+function dpFristDDMM(iso){
+  var p=(''+iso).split('-'); return p.length===3?(p[2]+'.'+p[1]+'.'):(iso||'');
 }
 // Liest den Plan live aus Firestore – damit von Shopleitern veröffentlichte
 // Pläne im HR-Portal automatisch erscheinen.
@@ -4016,12 +4023,24 @@ function dpRenderWeeks(){
         var ek=dpEmpKey(emp),eid=''+(emp.id||'');
         var zw=dpIsZweit(emp.id,dpGetFiliale());
         var az=dpAzKontoCache&&dpAzKontoCache[eid];
+        var frist=dpFristenCache[eid];
         // Auf eigener Zeile UNTER dem Namen statt inline dahinter (Auftrag
         // t.duong 05.09.2026: das Minusstunden-Badge lief bei laengeren
         // Namen in die Montags-Spalte hinein, weil die Namensspalte nur
         // max-width:100px ohne overflow:hidden hatte).
         var azHtml=(az!=null&&az<0)?'<div style="color:#C0392B;font-weight:700;font-size:10px;white-space:nowrap">-'+dpFmtStd(az)+' Std</div>':'';
-        h+='<tr><td title="'+emp.name+(zw?' · Zweitfiliale':'')+(az!=null&&az<0?' · AZ-Konto Vormonat: -'+dpFmtStd(az)+' Std':'')+'"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(zw?'🔄 ':'')+emp.name.substring(0,15)+(emp.name.length>15?'…':'')+'</div>'+azHtml+'</td>';
+        // Warnung neben dem Namen, wenn eine Arbeitserlaubnis-/Vertragsfrist
+        // in den GERADE ANGEZEIGTEN Monat fällt (unabhängig davon, ob der
+        // genaue Tag schon vorbei ist) — damit sie beim Planen auffällt, ohne
+        // erst jede Zelle absuchen zu müssen.
+        var fristSoonHtml='';
+        if(frist){
+          var fParts=[];
+          if(frist.aeFrist&&frist.aeFrist.slice(0,7)===m) fParts.push('AE '+dpFristDDMM(frist.aeFrist));
+          if(frist.vertragsEnde&&frist.vertragsEnde.slice(0,7)===m) fParts.push('Vertrag '+dpFristDDMM(frist.vertragsEnde));
+          if(fParts.length) fristSoonHtml='<div style="color:#C0392B;font-weight:700;font-size:10px;white-space:nowrap">⚠️ '+fParts.join(' · ')+'</div>';
+        }
+        h+='<tr><td title="'+emp.name+(zw?' · Zweitfiliale':'')+(az!=null&&az<0?' · AZ-Konto Vormonat: -'+dpFmtStd(az)+' Std':'')+'"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(zw?'🔄 ':'')+emp.name.substring(0,15)+(emp.name.length>15?'…':'')+'</div>'+azHtml+fristSoonHtml+'</td>';
         wk.dates.forEach(function(dt){
           var abs=dpAbs[eid]&&dpAbs[eid][dt];
           var stored=(dpShifts[ek]&&dpShifts[ek][dt])||'';
@@ -4036,13 +4055,24 @@ function dpRenderWeeks(){
             if(pend&&!cls)cls='dp-cell-pend';
             var clash=dpClashAt(eid,dt,val);
             if(clash.length) cls=(cls?cls+' ':'')+'dp-cell-clash';
-            var weloSug=!!(dpWeloCache[eid]&&dpWeloCache[eid][dt]&&val==='Urlaub');
-            var tip=pend?'Urlaubsantrag offen (noch nicht entschieden): '+pend
+            var weloSug=!!(dpWeloCache[eid]&&dpWeloCache[eid][dt]&&dpWeloCache[eid][dt]===val);
+            // Arbeitserlaubnis/Vertrag bereits abgelaufen an diesem Tag — nur
+            // Warnung, sperrt die Zelle NICHT (Auftrag t.duong 28.09.2026:
+            // Welo könnte eine bereits erfolgte Verlängerung noch nicht
+            // zeigen, harte Sperre würde dann fälschlich blockieren).
+            var fristParts=[];
+            if(frist&&frist.aeFrist&&dt>=frist.aeFrist) fristParts.push('Arbeitserlaubnis abgelaufen seit '+dpFristDDMM(frist.aeFrist));
+            if(frist&&frist.vertragsEnde&&dt>=frist.vertragsEnde) fristParts.push('Vertrag abgelaufen seit '+dpFristDDMM(frist.vertragsEnde));
+            if(fristParts.length) cls=(cls?cls+' ':'')+'dp-cell-frist-warn';
+            var tip=fristParts.length?fristParts.join(' · ')
+                  :(pend?'Urlaubsantrag offen (noch nicht entschieden): '+pend
                   :(clash.length?'Doppelbelegung: arbeitet am selben Tag auch in '+clash.map(function(o){return o.filiale+' ('+o.val+')';}).join(', ')
-                  :(weloSug?'Vorschlag aus Welo — kann geändert werden':''));
+                  :(weloSug?'Vorschlag aus Welo — kann geändert werden':'')));
+            var badge=fristParts.length?'<span class="dp-frist-badge">⚠️ '+(frist.aeFrist&&dt>=frist.aeFrist?'AE':'Vertrag')+' abgelaufen</span>'
+                  :(pend?'<span class="dp-pend-badge">🌴 beantragt</span>':(weloSug?'<span class="dp-welo-badge">📡 aus Welo</span>':''));
             h+='<td class="'+cls+(isF?' dp-cell-ft':'')+'"'+(tip?' title="'+tip+'"':'')
               +'><input class="dp-shift dp-inp" list="dp-presets" value="'+val+'" data-emp="'+ek+'" data-date="'+dt+'" data-eid="'+eid+'" oninput="dpCellChanged(this)">'
-              +(pend?'<span class="dp-pend-badge">🌴 beantragt</span>':(weloSug?'<span class="dp-welo-badge">📡 aus Welo</span>':''))
+              +badge
               +dpCellBadgeHtml(eid,dt,val)
               +'</td>';
           }
@@ -4310,7 +4340,8 @@ function dpLoadWeloSuggest(f,m){
       if(!doc||!doc.exists) return;
       var d=doc.data();
       cache[d.empId]={};
-      (d.days||[]).forEach(function(iso){ cache[d.empId][iso]=true; });
+      (d.urlaub||[]).forEach(function(iso){ cache[d.empId][iso]='Urlaub'; });
+      (d.krank||[]).forEach(function(iso){ cache[d.empId][iso]='Krank'; });
     });
     dpWeloCache=cache;
     dpApplyWeloSuggest();
@@ -4327,16 +4358,37 @@ function dpApplyWeloSuggest(){
     weeks.forEach(function(wk){
       wk.dates.forEach(function(dt){
         if(dt.slice(0,7)!==m) return;
-        if(!days[dt]) return;
+        var kat=days[dt]; if(!kat) return;            // 'Urlaub' oder 'Krank'
         if(abs[eid]&&abs[eid][dt]) return;           // App-genehmigter Urlaub/Krank hat Vorrang
         var cur=(dpShifts[ek]&&dpShifts[ek][dt])||'';
         if(cur.trim()!=='') return;                   // nichts Bestehendes/Manuelles überschreiben
         if(!dpShifts[ek]) dpShifts[ek]={};
-        dpShifts[ek][dt]='Urlaub';
+        dpShifts[ek][dt]=kat;
       });
     });
   });
   dpRenderWeeks();
+}
+// Arbeitserlaubnis-/Vertragsfristen (welo_fristen/{empId}) — reine Warnung,
+// sperrt nie eine Zelle (siehe dpRenderWeeks()). Kein Jahr im Dokument-Key,
+// eine Frist ist nicht kalenderjahrgebunden.
+var dpFristenCache={}; // {empId:{aeFrist, vertragsEnde}}
+function dpLoadFristen(){
+  if(!fbReady||!fbDb||!dpEmployees.length){ dpFristenCache={}; dpRenderWeeks(); return; }
+  var ids=dpEmployees.map(function(e){return ''+(e.id||'');}).filter(Boolean);
+  if(!ids.length){ dpFristenCache={}; return; }
+  Promise.all(ids.map(function(id){
+    return fbDb.collection('welo_fristen').doc(id).get().catch(function(){ return null; });
+  })).then(function(docs){
+    var cache={};
+    docs.forEach(function(doc){
+      if(!doc||!doc.exists) return;
+      var d=doc.data();
+      cache[d.empId]={aeFrist:d.aeFrist||null, vertragsEnde:d.vertragsEnde||null};
+    });
+    dpFristenCache=cache;
+    dpRenderWeeks();
+  });
 }
 function dpWeloRefresh(){
   var syncUrl=REGION_SYNC_URL[activeRegion];
@@ -4350,7 +4402,7 @@ function dpWeloRefresh(){
   var reqUrl;
   try{ reqUrl=new URL(syncUrl.replace(/\/+$/,'')+'/internal/welo-urlaub-suggest').toString(); }
   catch(e){ dpWeloStatus('⚠️ Ungültige Cloud-Run-Adresse für diese Region: '+e.message,'#C0392B'); return; }
-  dpWeloStatus('⏳ Lade Urlaubsdaten aus Welo… (kann 1-2 Minuten dauern)','#6B6860');
+  dpWeloStatus('⏳ Lade Daten aus Welo… (kann 1-2 Minuten dauern)','#6B6860');
   firebase.auth().currentUser.getIdToken().then(function(idToken){
     if(!idToken||typeof idToken!=='string'){ throw new Error('Kein gültiges Login-Token erhalten — bitte neu einloggen.'); }
     var opts={ method:'POST', headers:{'Content-Type':'application/json', Authorization:'Bearer '+idToken}, body: JSON.stringify({ year: year, empIds: ids }) };
@@ -4365,6 +4417,7 @@ function dpWeloRefresh(){
     if(!res.ok){ dpWeloStatus('⚠️ Fehler (HTTP '+res.status+'): '+((res.d&&res.d.error)||'unbekannt'),'#C0392B'); return; }
     dpWeloStatus('✓ Aktualisiert.','var(--grn)');
     dpLoadWeloSuggest(f,m);
+    dpLoadFristen();
   }).catch(function(e){ dpWeloStatus('⚠️ Fehler: '+e.message,'#C0392B'); });
 }
 // "07:00-13:00" -> {s:Minuten, e:Minuten}; sonst null

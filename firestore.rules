@@ -332,6 +332,19 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Dienstplan: Arbeitserlaubnis-/Vertragsfristen aus Welo (dieselbe
+    // sync-welo-urlaub-suggest.js wie oben) — 1 Dok. pro Mitarbeiter (docId =
+    // empId, kein Jahr, da eine Frist nicht kalenderjahrgebunden ist). Reine
+    // Anzeige-/Warnquelle für index.html (Dienstplan) — sperrt nie eine
+    // Dienstplan-Zelle, nur ein visueller Hinweis (Auftrag t.duong 28.09.2026:
+    // Warnung statt harter Sperre, falls Welo eine bereits verlängerte
+    // Erlaubnis/einen Vertrag noch nicht aktualisiert hat).
+    match /welo_fristen/{empId} {
+      allow get: if isManagerForRegion(docRegion(resource.data));
+      allow list: if isManagerForRegion(resource.data.region);
+      allow write: if false;
+    }
+
     // Wareneingang → Schwan-Reklamation-Assistent (sync-schwan-lookup.js /
     // sync-schwan-submit.js). Der Manager darf NUR sein eigenes Auftrag/
     // Artikel-Review als confirmedSelection eintragen — alles andere

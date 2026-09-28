@@ -270,15 +270,17 @@ app.post('/internal/week-welo-check', requireManager, async (req, res) => {
   }
 });
 
-// ── Dienstplan: Urlaub-Vorschläge aus Welo für die aktuelle Filiale/Team ──
-// Manuell aus index.html angestoßen ("📡 Urlaub aus Welo aktualisieren"),
+// ── Dienstplan: Daten aus Welo für die aktuelle Filiale/Team ──────────────
+// Manuell aus index.html angestoßen ("📡 Daten aus Welo aktualisieren"),
 // bewusst auf genau die im Dienstplan gerade sichtbaren Mitarbeiter begrenzt
 // (nicht alle ~111) — hält die Laufzeit klein und macht keine Welo-Logins für
-// Mitarbeiter nötig, die gar nicht gerade verplant werden. Bewusst OHNE
-// REGION-Abgleich (anders als /internal/inventur-apply): dieser Dienst läuft
-// auf dem geteilten Ost/West-Service ohne eigene REGION-Env, genau wie
-// /internal/schwan-lookup und /internal/week-welo-check — requireManager
-// (echter eingeloggter Manager) ist hier der Schutz, wie bei jenen Routen.
+// Mitarbeiter nötig, die gar nicht gerade verplant werden. Holt Urlaub+Krank
+// (pro Mitarbeiter) und Arbeitserlaubnis-/Vertragsfristen (firmenweite
+// Fristenliste, im Skript selbst auf die angefragten Mitarbeiter gefiltert).
+// Bewusst OHNE REGION-Abgleich (anders als /internal/inventur-apply): dieser
+// Dienst läuft auf dem geteilten Ost/West-Service ohne eigene REGION-Env,
+// genau wie /internal/schwan-lookup und /internal/week-welo-check —
+// requireManager (echter eingeloggter Manager) ist hier der Schutz.
 app.post('/internal/welo-urlaub-suggest', requireManager, async (req, res) => {
   const year = req.body && req.body.year;
   const empIds = req.body && req.body.empIds;
@@ -286,7 +288,7 @@ app.post('/internal/welo-urlaub-suggest', requireManager, async (req, res) => {
     return res.status(400).json({ error: 'year/empIds fehlen' });
   }
   try {
-    const result = await runFile('sync-welo-urlaub-suggest.js', `Urlaub-Vorschläge aus Welo (${empIds.length} MA)`, [String(year), empIds.join(',')], 10 * 60 * 1000);
+    const result = await runFile('sync-welo-urlaub-suggest.js', `Daten aus Welo: Urlaub/Krank/Fristen (${empIds.length} MA)`, [String(year), empIds.join(',')], 10 * 60 * 1000);
     res.status(result.ok ? 200 : 500).json(result);
   } catch (err) {
     res.status(500).json({ error: err.message });
