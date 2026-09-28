@@ -213,10 +213,13 @@ app.post('/internal/inventur-diff', requireManager, async (req, res) => {
 // ── Inventur: EINE Filiale/Monat wirklich in Welo eintragen ───────────────
 // Nur nachdem ein Manager die Vorschau für GENAU DIESE previewId geprüft und
 // freigegeben hat (kein "alle freigeben" — bewusst pro Filiale einzeln).
+// Bewusst OHNE REGION-Abgleich (Bugfix t.duong 28.09.2026 — dieselbe Ursache
+// wie bei /internal/welo-urlaub-suggest): dieser Dienst läuft auf dem
+// geteilten Ost/West-Service ohne eigene REGION-Env, das `!REGION`-Match
+// schlug dort IMMER fehl (403), egal wer eingeloggt war. requireManager
+// (echter eingeloggter Manager) ist hier der Schutz, wie bei
+// /internal/inventur-diff und /internal/schwan-submit.
 app.post('/internal/inventur-apply', requireManager, async (req, res) => {
-  if (!REGION || !req.managerRegions.includes(REGION)) {
-    return res.status(403).json({ error: 'not authorized for this region' });
-  }
   const previewId = req.body && req.body.previewId;
   if (!previewId) return res.status(400).json({ error: 'previewId fehlt' });
   try {
