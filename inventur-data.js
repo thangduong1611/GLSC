@@ -10,7 +10,6 @@ window.INVENTUR_ITEMS=[
 ["98043", "sauce", "KG", "Sesam weiß geröstet (1kg)", "Mè trắng rang (1kg)", "White sesame roasted (1kg)", "งาขาวคั่ว (1กก.)", "烤白芝麻（1公斤）"],
 ["98060", "reis", "Stueck", "Nori Gold halbe Blätter", "Nori Gold lá nửa", "Nori Gold half sheets", "สาหร่ายโนริ Gold แผ่นครึ่ง", "金牌海苔 半张"],
 ["98061", "reis", "Stueck", "Nori Gold ganze Blätter", "Nori Gold lá nguyên", "Nori Gold full sheets", "สาหร่ายโนริ Gold แผ่นเต็ม", "金牌海苔 整张"],
-["99310", "reis", "Stueck", "Sushi Nori ganz (SC)", "Nori sushi lá nguyên", "Sushi Nori full (SC)", "โนริซูชิแผ่นเต็ม", "寿司海苔 整张 (SC)"],
 ["98101", "sauce", "Stueck", "Ingwer Gari eingelegt (1kg)", "Gừng Gari ngâm (1kg)", "Pickled ginger Gari (1kg)", "ขิงดอง Gari (1กก.)", "腌姜片 Gari（1公斤）"],
 ["80178", "gemuese", "Stueck", "Röstzwiebeln", "Hành phi", "Fried onions", "หอมเจียว", "炸洋葱酥"],
 ["80264", "reis", "Stueck", "Reispapier rund 22cm", "Bánh tráng tròn 22cm", "Rice paper round 22cm", "แผ่นแป้งข้าวกลม 22ซม.", "圆形米纸 22cm"],
@@ -72,7 +71,6 @@ window.INVENTUR_ITEMS=[
 ["100848994", "reinigung", "Packung", "Sun PF Spülmaschinensalz", "Sun PF muối máy rửa chén", "Sun PF dishwasher salt", "Sun PF เกลือเครื่องล้างจาน", "Sun PF 洗碗机盐"],
 ["100892014", "reinigung", "Flasche", "SURE Descaler Entkalker", "SURE Descaler tẩy cặn vôi", "SURE Descaler", "SURE Descaler น้ำยาขจัดคราบ", "SURE Descaler 除垢剂"],
 ["AF10000", "gemuese", "Stueck", "Avocados (Ready to Eat)", "Bơ (chín sẵn)", "Avocados (ready to eat)", "อะโวคาโด (พร้อมทาน)", "牛油果（即食）"],
-["AF10020", "gemuese", "Schale", "Erdbeeren Schale 500g", "Dâu tây khay 500g", "Strawberries tray 500g", "สตรอว์เบอร์รี ถาด 500ก.", "草莓 盒装500克"],
 ["AF10001", "gemuese", "Stueck", "Salatgurken 400-500g", "Dưa leo 400-500g", "Cucumbers 400-500g", "แตงกวา 400-500ก.", "黄瓜 400-500克"],
 ["AF10003", "gemuese", "Stueck", "Paprika rot (lose)", "Ớt chuông đỏ", "Red bell pepper", "พริกหวานแดง", "红甜椒（散装）"],
 ["AF10007", "gemuese", "Kiste", "Rucola 100g Bund", "Rau Rucola bó 100g", "Rucola bunch 100g", "รูโคลา มัด 100ก.", "芝麻菜 束装100克"],
@@ -163,7 +161,19 @@ window.INVENTUR_ITEMS=[
 ["AF12027", "sauce", "Flasche", "Shoda Sojasauce 1L", "Nước tương Shoda 1L", "Shoda soy sauce 1L", "ซีอิ๊วโชดะ 1ล.", "Shoda 酱油 1升"],
 ["AF12386", "verpackung", "Stück", "Sushi Push-Up mit Logo", "Hộp Push-Up có logo", "Sushi push-up with logo", "ซูชิพุชอัพมีโลโก้", "印logo推推寿司杯"],
 ["AF12396", "reis", "Packung", "Japonica Reis (Zensho) 10kg", "Gạo Japonica (Zensho) 10kg", "Japonica rice (Zensho) 10kg", "ข้าวจาโปนิก้า 10กก.", "粳米（Zensho）10公斤"],
-["AF12447", "sauce", "Packung", "Kimchi Original + Verpackung 1kg", "Kimchi nguyên bản + bao bì 1kg", "Kimchi original + packaging 1kg", "กิมจิ + บรรจุภัณฑ์ 1กก.", "原味泡菜+包装 1公斤"]
+["AF12447", "sauce", "Packung", "Kimchi Original + Verpackung 1kg", "Kimchi nguyên bản + bao bì 1kg", "Kimchi original + packaging 1kg", "กิมจิ + บรรจุภัณฑ์ 1กก.", "原味泡菜+包装 1公斤"],
+["AF12183", "verpackung", "Stück", "Sushi Box XL + Deckel (540 Stk)", "Hộp sushi XL + nắp (540 cái)", "Sushi box XL + lid (540 pcs)", "กล่องซูชิ XL + ฝา (540 ใบ)", "寿司盒 XL + 盖子（540个装）"],
+["AF10467", "verpackung", "Stück", "Sushi Box S", "Hộp sushi S", "Sushi box S", "กล่องซูชิ S", "寿司盒 S"],
+["AF12114", "verpackung", "Stück", "Sushi Box L", "Hộp sushi L", "Sushi box L", "กล่องซูชิ L", "寿司盒 L"],
+["AF12120", "reinigung", "Beutel", "Spülmaschinensalz Diversey Sun Pro (2kg)", "Muối máy rửa chén Diversey Sun Pro (2kg)", "Dishwasher salt Diversey Sun Pro (2kg)", "เกลือเครื่องล้างจาน Diversey Sun Pro (2กก.)", "洗碗机盐 Diversey Sun Pro（2公斤）"],
+["80737", "verpackung", "Stueck", "Plastik Party Box XL", "Hộp tiệc nhựa XL", "Plastic party box XL", "กล่องปาร์ตี้พลาสติก XL", "塑料派对盒 XL"],
+["AF12509", "sauce", "Beutel", "Ingwer Gari Take-Out Portionen (200×5g)", "Gừng Gari phần mang đi (200×5g)", "Gari ginger take-out portions (200×5g)", "ขิง Gari แบบพกพา (200×5ก.)", "姜片 Gari 外带小包（200×5克）"],
+["AF12512", "sauce", "Packung", "Ramen-Suppenkonzentrat Tonkotsu (500g)", "Nước cốt súp Ramen Tonkotsu (500g)", "Ramen soup concentrate Tonkotsu (500g)", "น้ำซุปราเมงเข้มข้น ทงคตสึ (500ก.)", "拉面高汤浓缩 豚骨味（500克）"],
+["AF12444", "sauce", "Beutel", "Ramen-Suppenbasis Tonkotsu-Style (500ml)", "Nước dùng Ramen kiểu Tonkotsu (500ml)", "Ramen soup base Tonkotsu-style (500ml)", "ซุปเบสราเมง สไตล์ทงคตสึ (500มล.)", "拉面汤底 豚骨风味（500毫升）"],
+["AF12513", "tk", "Beutel", "Ramennudeln (TK, 5×250g)", "Mì Ramen (đông lạnh, 5×250g)", "Ramen noodles (frozen, 5×250g)", "เส้นราเมง (แช่แข็ง, 5×250ก.)", "拉面（冷冻，5×250克）"],
+["AF12443", "gemuese", "Stueck", "Pak Choi", "Cải thìa", "Pak choi", "ผักกวางตุ้ง", "小白菜"],
+["AF12222", "sauce", "Stueck", "Chiliöl Lao Gan Ma (210g)", "Dầu ớt Lao Gan Ma (210g)", "Chili oil Lao Gan Ma (210g)", "น้ำมันพริก Lao Gan Ma (210ก.)", "老干妈辣椒油（210克）"],
+["AF12405", "fleisch", "Packung", "Char-Siu Scheiben (TK, 150g)", "Xá xíu thái lát (đông lạnh, 150g)", "Char siu slices (frozen, 150g)", "หมูชาชิวหั่นแผ่น (แช่แข็ง, 150ก.)", "叉烧肉片（冷冻，150克）"]
 ];
 window.INVENTUR_CATS=[["fisch", "🐟 Fisch & Meeresfrüchte", "🐟 Cá & Hải sản", "🐟 Fish & Seafood", "🐟 ปลาและอาหารทะเล", "🐟 鱼类与海鲜"], ["fleisch", "🍗 Fleisch & Geflügel", "🍗 Thịt & Gia cầm", "🍗 Meat & Poultry", "🍗 เนื้อสัตว์", "🍗 肉类与禽类"], ["tk", "❄️ Tiefkühl", "❄️ Đông lạnh", "❄️ Frozen", "❄️ แช่แข็ง", "❄️ 冷冻食品"], ["gemuese", "🥬 Gemüse & Obst", "🥬 Rau & Trái cây", "🥬 Vegetables & Fruit", "🥬 ผักและผลไม้", "🥬 蔬菜水果"], ["sauce", "🍶 Saucen & Würze", "🍶 Nước sốt & Gia vị", "🍶 Sauces & Seasoning", "🍶 ซอสและเครื่องปรุง", "🍶 酱料调味"], ["reis", "🍚 Reis & Trocken", "🍚 Gạo & Đồ khô", "🍚 Rice & Dry goods", "🍚 ข้าวและของแห้ง", "🍚 米类与干货"], ["dessert", "🍡 Dessert & Snack", "🍡 Tráng miệng & Snack", "🍡 Dessert & Snacks", "🍡 ของหวานและขนม", "🍡 甜点零食"], ["verpackung", "📦 Verpackung & Etiketten", "📦 Bao bì & Nhãn", "📦 Packaging & Labels", "📦 บรรจุภัณฑ์", "📦 包装与标签"], ["hygiene", "🧤 Hygiene", "🧤 Vệ sinh tiêu hao", "🧤 Hygiene", "🧤 สุขอนามัย", "🧤 卫生用品"], ["reinigung", "🧴 Reinigung", "🧴 Hóa chất tẩy rửa", "🧴 Cleaning", "🧴 น้ำยาทำความสะอาด", "🧴 清洁用品"], ["sonstige", "❓ Sonstige", "❓ Khác", "❓ Other", "❓ อื่นๆ", "❓ 其他"]];
-window.INVENTUR_VERSION='2025-06';
+window.INVENTUR_VERSION='2026-09';

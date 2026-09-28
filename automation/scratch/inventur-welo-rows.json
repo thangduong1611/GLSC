@@ -1,0 +1,1394 @@
+[
+  {
+    "unit": "Stueck",
+    "shortName": "Bambusmatte",
+    "longDesc": "BAMBUSMATTE GROssGROEssE 27 X 27CM",
+    "pack": "Karton a 200stk",
+    "price": "0,80 €",
+    "artNr": "80191"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "SC Bamusmatte",
+    "longDesc": "SC BAMBUSMATTEGROEssE: 24X24CM",
+    "pack": "Karton a 50 Stk",
+    "price": "0,91 €",
+    "artNr": "99315"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Chili Pulver",
+    "longDesc": "CHILIPULVERSHICHIMI TOGARASHI",
+    "pack": "Karton a 30 x 300g",
+    "price": "4,55 €",
+    "artNr": "80024"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Chili Sauce",
+    "longDesc": "CHILISAUCE",
+    "pack": "4,5l Kanister",
+    "price": "15,55 €",
+    "artNr": "98009"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Stäbchen",
+    "longDesc": "SUSHI CIRCLE ESSSTAEBCHENBAMBUS, SOUSEI, 23CM, 3/4 HUELLE",
+    "pack": "karton à 30x100 Paar",
+    "price": "2,57 €",
+    "artNr": "99143"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Furikake (Nori mit Sesam)",
+    "longDesc": "FURIKAKE NORIWUERZMISCHUNG FUER REIS",
+    "pack": "getrocknet Nori-Mischung",
+    "price": "6,95 €",
+    "artNr": "80318"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Wakame trocken",
+    "longDesc": "WAKAMEBRAUNALGE, GESCHNITTEN, GETROCKNET",
+    "pack": "getrockneter Wakame",
+    "price": "15,95 €",
+    "artNr": "80028"
+  },
+  {
+    "unit": "KG",
+    "shortName": "Sesam schwarz",
+    "longDesc": "SESAM SCHWARZ GEROESTET",
+    "pack": "1 kg Beutel",
+    "price": "3,34 €",
+    "artNr": "98044"
+  },
+  {
+    "unit": "KG",
+    "shortName": "Sesam weiß",
+    "longDesc": "SESAM WEISS GEROESTET",
+    "pack": "1 kg Beutel",
+    "price": "4,05 €",
+    "artNr": "98043"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Nori Halb",
+    "longDesc": "NORI GOLD HALB\"YAKINORI\", GEROESTETE SEEALGEN",
+    "pack": "Noriblätter",
+    "price": "11,25 €",
+    "artNr": "98060"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Nori Ganz",
+    "longDesc": "NORI GOLD GANZ\"YAKINORI\", GEROESTETE SEEALGEN",
+    "pack": "Noriblätter",
+    "price": "11,25 €",
+    "artNr": "98061"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Ingwer",
+    "longDesc": "INGWER \"GARI\", WEISS INGWER, EINGELEGT",
+    "pack": "10 x 1 kg / Karton",
+    "price": "3,79 €",
+    "artNr": "98101"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Röstzwiebeln",
+    "longDesc": "ROESTZWIEBELNFRITTIERTE ZWIEBELSTUECKE",
+    "pack": "6 x 1kg /Karton",
+    "price": "5,72 €",
+    "artNr": "80178"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Reispapier",
+    "longDesc": "REISPAPIER RUND22 CM, CA. 27-30 BLAETTER",
+    "pack": "Für Sommer-Rollen",
+    "price": "1,39 €",
+    "artNr": "80264"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Wasabi",
+    "longDesc": "WASABI MEERRETTICHPASTE",
+    "pack": "200 Beutel pro Pack",
+    "price": "0,03 €",
+    "artNr": "4939"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Mayonnaise",
+    "longDesc": "MAYO \"JAPANESE STYLE\"FETTGEHALT: 70%",
+    "pack": "TroSo Mayonnaise",
+    "price": "2,95 €",
+    "artNr": "80132"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Sesamsoße",
+    "longDesc": "SESAM-SAUCE \"GOMA DARE\"",
+    "pack": "1 Liter Flasche",
+    "price": "10,95 €",
+    "artNr": "80127"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Reisnudeln",
+    "longDesc": "REISNUDELN 400GNUDELN AUS REISMEHL, DICKE: 1 MM",
+    "pack": "Für Sommerrolle",
+    "price": "1,45 €",
+    "artNr": "80267"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Unagi Sauce",
+    "longDesc": "UNAGI-SAUCEWUERZSAUCE FÜR AAL",
+    "pack": "1,8 Liter Flasche",
+    "price": "5,75 €",
+    "artNr": "98019"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "SC Ingwer",
+    "longDesc": "SC SUSHI INGWER IM GLAS, EINGELEGT",
+    "pack": "",
+    "price": "0,99 €",
+    "artNr": "99309"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Sesamöl",
+    "longDesc": "SESAMOELAUS 100% GEROESTETEM SESAM",
+    "pack": "1,8 Liter Dose",
+    "price": "21,50 €",
+    "artNr": "80020"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Essig",
+    "longDesc": "SUSHI SUWUERZMARINADE FUER SUSHIREIS",
+    "pack": "10 L Kanister",
+    "price": "30,50 €",
+    "artNr": "80316"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Mochi Cheesecake",
+    "longDesc": "MOCHI QUEEN CHEESECAKE 192GREISDESSERT, GEFUELLT, TK",
+    "pack": "TK - Karton a 10 Packungen",
+    "price": "4,40 €",
+    "artNr": "4857"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Mochi Kakao",
+    "longDesc": "MOCHI QUEEN KAKAO 192GREISDESSERT, GEFUELLT, TK",
+    "pack": "TK - Karton a 10 Packungen",
+    "price": "3,99 €",
+    "artNr": "4854"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Mochi Kokos",
+    "longDesc": "MOCHI QUEEN KOKOSNUSS 192GREISDESSERT, GEFUELLT, TK",
+    "pack": "TK - Karton a 10 Packungen",
+    "price": "3,99 €",
+    "artNr": "4852"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Mochi Mango",
+    "longDesc": "MOCHI QUEEN MANGO 192GREISDESSERT, GEFUELLT, TK",
+    "pack": "TK - Karton a 10 Packungen",
+    "price": "3,99 €",
+    "artNr": "4853"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Mochi Vanille",
+    "longDesc": "MOCHI QUEEN VANILLE 192GREISDESSERT, GEFUELLT, TK",
+    "pack": "TK - Karton a 10 Packungen",
+    "price": "3,99 €",
+    "artNr": "4858"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Masago Orange",
+    "longDesc": "MSC MASAGO ORANGE 450GMSC-C-50605, ROGEN V. CAPELIN,ROH,G",
+    "pack": "TK - Fischroggen/Fischeier",
+    "price": "5,75 €",
+    "artNr": "91580"
+  },
+  {
+    "unit": "KG",
+    "shortName": "Wakame Salat",
+    "longDesc": "TW GOMA WAKAME SELECTSEEALGENSALAT MIT SESAM,TK",
+    "pack": "1 Karton = 12 Stück",
+    "price": "4,05 €",
+    "artNr": "1599"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Inari Tofu",
+    "longDesc": "INARIAGE SOJATASCHEN-BEAN CURD 900GFRITTIERT, MARINIERT, TK",
+    "pack": "Tofutasche 1 kg",
+    "price": "5,50 €",
+    "artNr": "4978"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Edamame",
+    "longDesc": "GESCHAELTE EDAMAME 500GBLANCHIERT, TK",
+    "pack": "Tk Edamame",
+    "price": "1,29 €",
+    "artNr": "4807"
+  },
+  {
+    "unit": "KG",
+    "shortName": "Surimi",
+    "longDesc": "MSC SURIMI MAKI STICKS 1KGMSC-C-50605,KREBSFLEISCHIMITAT AUS",
+    "pack": "TK",
+    "price": "5,15 €",
+    "artNr": "4980"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Gyoza Seafood",
+    "longDesc": "GYOZA SEAFOOD 500GTEIGTASCHEN, GEFUELLT, VORGEBRATEN,",
+    "pack": "TK Karton a 20x 500g",
+    "price": "5,25 €",
+    "artNr": "4912"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Gyoza Vegetarisch",
+    "longDesc": "GYOZA VEGETARISCH",
+    "pack": "TK Karton a 20x 500g",
+    "price": "3,75 €",
+    "artNr": "4910"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Nudeln",
+    "longDesc": "GEBRATENE NUDELN MIT GEMUESEVORGEGART, MIT GEMUESE, TIEFGEFRORE",
+    "pack": "TK - Nudeln",
+    "price": "1,79 €",
+    "artNr": "4899"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Tamago Eier",
+    "longDesc": "TAMAGO EI-OMELETT IM BLOCK 600GATSUYAKI, GEWUERZT, GEGART, TK",
+    "pack": "TK    10x 600gr / Karton - Eier",
+    "price": "4,25 €",
+    "artNr": "4985"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Ebi",
+    "longDesc": "ASC SUSHI EBI 3LASC-C-00112,GEKOCHT,GESCHAELT,MSCHW",
+    "pack": "20x30 / Karton",
+    "price": "3,69 €",
+    "artNr": "1114"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Garnele 2kg Tatar",
+    "longDesc": "GARNELEN",
+    "pack": "Garnele für Gunkan",
+    "price": "14,95 €",
+    "artNr": "1110"
+  },
+  {
+    "unit": "KG",
+    "shortName": "Thunfisch Saku",
+    "longDesc": "THUNFISCH BIG EYE SAKU2 STCK,400-700, IVP, OHAUT, ROH, -6",
+    "pack": "TK  Karton  a 5 kg",
+    "price": "36,95 €",
+    "artNr": "2850"
+  },
+  {
+    "unit": "KG",
+    "shortName": "Thunfisch Saku Semi",
+    "longDesc": "THUNFISCH BIG EYE SAKU SEMI FORMAT2 STCK, 300-500 G, IVP, O.HAUT, ROH",
+    "pack": "TK  Karton  a 5 kg",
+    "price": "27,95 €",
+    "artNr": "2855"
+  },
+  {
+    "unit": "KG",
+    "shortName": "Thunfischloins",
+    "longDesc": "THUNFISCH YELLOWFIN BLOCK - LOINSRUECKENFILET, LOINS, O.HAUT, IVP, R",
+    "pack": "TK Karton a 10 kg",
+    "price": "21,95 €",
+    "artNr": "2851"
+  },
+  {
+    "unit": "KG",
+    "shortName": "Yakitori",
+    "longDesc": "YAKITORI-SPIEssE 40GHUEHNERBEINFLEISCH, MARINIERT, GEGR",
+    "pack": "1 Packungen=1,6kg",
+    "price": "9,75 €",
+    "artNr": "1639"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Karton  a 50 stk",
+    "longDesc": "Plastik Party Box S",
+    "pack": "Plastik Party Box S",
+    "price": "0,73 €",
+    "artNr": "80734"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Karton  a 50 stk",
+    "longDesc": "Plastik Party Box M",
+    "pack": "Plastik Party Box M",
+    "price": "0,83 €",
+    "artNr": "80735"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Karton  a 50 stk",
+    "longDesc": "Plastik Party Box L",
+    "pack": "Plastik Party Box L",
+    "price": "0,99 €",
+    "artNr": "80736"
+  },
+  {
+    "unit": "Packung",
+    "shortName": "Gyoza mit Huhn und Gemüse",
+    "longDesc": "Gyoza mit Huhn und Gemüse",
+    "pack": "TK Karton 10x600g",
+    "price": "3,34 €",
+    "artNr": "4913"
+  },
+  {
+    "unit": "Packung",
+    "shortName": "Chilipaste \"Gochujang\"",
+    "longDesc": "Chilipaste",
+    "pack": "Chilipaste",
+    "price": "5,30 €",
+    "artNr": "80051-A"
+  },
+  {
+    "unit": "Packung",
+    "shortName": "SOJASAUCE",
+    "longDesc": "SOJASAUCE",
+    "pack": "SOJASAUCE",
+    "price": "3,32 €",
+    "artNr": "98118"
+  },
+  {
+    "unit": "KG",
+    "shortName": "Chicken Katsu",
+    "longDesc": "Chicken Katsu",
+    "pack": "Tk Karton 10x1 kg",
+    "price": "9,45 €",
+    "artNr": "1649"
+  },
+  {
+    "unit": "Packung",
+    "shortName": "Golden Curry",
+    "longDesc": "Golden Curry Currypaste",
+    "pack": "Karton = 10 Packung x 1 kg",
+    "price": "6,79 €",
+    "artNr": "80161"
+  },
+  {
+    "unit": "Packung",
+    "shortName": "Udonnudeln",
+    "longDesc": "Udonnudeln",
+    "pack": "Tk Karton 8x 1Packung",
+    "price": "2,99 €",
+    "artNr": "4804"
+  },
+  {
+    "unit": "KGM",
+    "shortName": "",
+    "longDesc": "HAEHNCHENBRUST GEGRILLT 90-110GOHNE KNOCHEN, OHNE HAUT, IQF",
+    "pack": "4x2,5kg",
+    "price": "6,69 €",
+    "artNr": "4675"
+  },
+  {
+    "unit": "",
+    "shortName": "",
+    "longDesc": "GARNELEN 41/50 IQF \"BLACK TIGER\"ROH, OHNE SCHALE, ENTDAERMT, IQF",
+    "pack": "",
+    "price": "6,05 €",
+    "artNr": "307"
+  },
+  {
+    "unit": "",
+    "shortName": "",
+    "longDesc": "Chicken Tasutaage",
+    "pack": "",
+    "price": "4,29 €",
+    "artNr": "1648"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Handtuchpapier braun",
+    "longDesc": "DIB HandTowel Z-Fold 1plyNat.20x250pc W1",
+    "pack": "1 Karton = 20 Stück",
+    "price": "1,79 €",
+    "artNr": "D7524333"
+  },
+  {
+    "unit": "Flasche",
+    "shortName": "D4.12-Sprühdesinfektionsmittel",
+    "longDesc": "Suma QuickDes D4.12 6x0.75L A,CH,D",
+    "pack": "1 Karton = 6 Stück",
+    "price": "5,78 €",
+    "artNr": "100953747"
+  },
+  {
+    "unit": "Flasche",
+    "shortName": "Spülmittel D1.2",
+    "longDesc": "Suma Light D1.2 6x1L W3424",
+    "pack": "1 Karton = 6 Stück",
+    "price": "2,09 €",
+    "artNr": "7511933"
+  },
+  {
+    "unit": "Flasche",
+    "shortName": "D2 - Universalreiniger",
+    "longDesc": "Suma Multi D2 6x2L W207",
+    "pack": "1 Karton = 6 Stück",
+    "price": "8,11 €",
+    "artNr": "7010025"
+  },
+  {
+    "unit": "Flasche",
+    "shortName": "D5.8 - Entkalker",
+    "longDesc": "Suma Cit D5.8 6x2L W3160",
+    "pack": "1 Karton = 6 Stück",
+    "price": "10,72 €",
+    "artNr": "7516437"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Reinigungstücher, grün",
+    "longDesc": "Suma Lavette Green 6x25pc W1",
+    "pack": "1 Karton = 6 Stück",
+    "price": "10,17 €",
+    "artNr": "7517445"
+  },
+  {
+    "unit": "Flasche",
+    "shortName": "H35-Handseife",
+    "longDesc": "Soft Care Sensisept H35 6x0.8L A,CH,D",
+    "pack": "1 Karton = 6 Stück",
+    "price": "9,19 €",
+    "artNr": "100875238"
+  },
+  {
+    "unit": "Flasche",
+    "shortName": "E3c - Glasreiniger",
+    "longDesc": "TASKI Sprint Glass 6x0.75L W561",
+    "pack": "1 Karton = 6 Stück",
+    "price": "2,62 €",
+    "artNr": "7513050"
+  },
+  {
+    "unit": "Flasche",
+    "shortName": "H5 -Händedesinfektion",
+    "longDesc": "Soft Care Des E H5 10x0.5L A,CH,D,F",
+    "pack": "1 Karton = 10 Stück",
+    "price": "5,26 €",
+    "artNr": "101103807"
+  },
+  {
+    "unit": "Flasche",
+    "shortName": "Antibac-Handseife",
+    "longDesc": "SURE Antibac HandW.Free IC 4x1.3L W17",
+    "pack": "1 Karton = 4 Stück",
+    "price": "13,45 €",
+    "artNr": "100959758"
+  },
+  {
+    "unit": "Packung",
+    "shortName": "Hautschutzcreme",
+    "longDesc": "Soft Care Aquagard H72 6x0.8Kg W3704+",
+    "pack": "1 Karton = 6 Stück",
+    "price": "11,61 €",
+    "artNr": "100953625"
+  },
+  {
+    "unit": "Kanister",
+    "shortName": "L3 Geschirreiniger für Geschirrspülmaschine",
+    "longDesc": "Suma Lima L3 10L W1779",
+    "pack": "10 Liter Kanister",
+    "price": "47,73 €",
+    "artNr": "7010097"
+  },
+  {
+    "unit": "Kanister",
+    "shortName": "A5 - Klarspüler für Geschirrspülmaschine",
+    "longDesc": "Suma Rinse A5 10L W1779",
+    "pack": "10 Liter Kanister",
+    "price": "36,77 €",
+    "artNr": "7010130"
+  },
+  {
+    "unit": "Packung",
+    "shortName": "Salz für Geschirrspülmaschine",
+    "longDesc": "Sun PF.Dishwash Salt 6x2Kg W4062",
+    "pack": "1 Karton = 6 Stück",
+    "price": "1,47 €",
+    "artNr": "100848994"
+  },
+  {
+    "unit": "Flasche",
+    "shortName": "SURE Descaler",
+    "longDesc": "SURE Descaler (6 x 1 L)",
+    "pack": "1 Karton = 6 Stück",
+    "price": "5,36 €",
+    "artNr": "100892014"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Avocado",
+    "longDesc": "Avocados Ready to Eat",
+    "pack": "1 Karton = 16 Stueck",
+    "price": "1,60 €",
+    "artNr": "AF10000"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Salatgurke",
+    "longDesc": "Salatgurken 400-500g",
+    "pack": "1 Karton = 12 Stueck",
+    "price": "1,22 €",
+    "artNr": "AF10001"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Paprika",
+    "longDesc": "Paprika rot lose",
+    "pack": "Stueck",
+    "price": "1,05 €",
+    "artNr": "AF10003"
+  },
+  {
+    "unit": "Kiste",
+    "shortName": "Rocula",
+    "longDesc": "Rucola 100g Bund",
+    "pack": "1 Kiste = 10 Bund",
+    "price": "15,89 €",
+    "artNr": "AF10007"
+  },
+  {
+    "unit": "Schale",
+    "shortName": "Rocula",
+    "longDesc": "Rucola 100g Schale",
+    "pack": "1 Schale a 100g",
+    "price": "1,75 €",
+    "artNr": "AF10018"
+  },
+  {
+    "unit": "Bund",
+    "shortName": "Schnittlauch",
+    "longDesc": "Schnittlauch - 1 x 100 g Bund",
+    "pack": "Bund",
+    "price": "3,80 €",
+    "artNr": "AF10010"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Mango",
+    "longDesc": "Mango Ready to eat",
+    "pack": "Stueck",
+    "price": "1,80 €",
+    "artNr": "AF10006"
+  },
+  {
+    "unit": "Schale",
+    "shortName": "Dill",
+    "longDesc": "Dill Lose",
+    "pack": "1 x 40 g Schale",
+    "price": "1,98 €",
+    "artNr": "AF10008"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Eisberg",
+    "longDesc": "Eisberg lose",
+    "pack": "Stueck",
+    "price": "1,40 €",
+    "artNr": "AF10005"
+  },
+  {
+    "unit": "Beutel",
+    "shortName": "Koriander",
+    "longDesc": "Koriander",
+    "pack": "1 x 100 g Beutel",
+    "price": "2,85 €",
+    "artNr": "AF10012"
+  },
+  {
+    "unit": "Beutel",
+    "shortName": "Minze",
+    "longDesc": "Minze",
+    "pack": "1 x 100 g Beutel",
+    "price": "2,85 €",
+    "artNr": "AF10011"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Schale",
+    "longDesc": "Basilikum",
+    "pack": "1 x 40 g Schale",
+    "price": "1,98 €",
+    "artNr": "AF10009"
+  },
+  {
+    "unit": "KG",
+    "shortName": "Zwiebel Rot",
+    "longDesc": "Zwiebel Rot - 1 x 1 kg Netz",
+    "pack": "Netz = 1kg",
+    "price": "1,40 €",
+    "artNr": "AF10046"
+  },
+  {
+    "unit": "KG",
+    "shortName": "Karotten",
+    "longDesc": "Karotten Gourmet  - 1 x 1 kg",
+    "pack": "KG",
+    "price": "1,30 €",
+    "artNr": "AF10039"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Zitrone",
+    "longDesc": "Zitronen Lose - 1 x 1 Stueck",
+    "pack": "Stueck",
+    "price": "0,65 €",
+    "artNr": "AF10004"
+  },
+  {
+    "unit": "Packung",
+    "shortName": "Broccoli",
+    "longDesc": "Broccoli - 1 x 500 g",
+    "pack": "Packung",
+    "price": "2,20 €",
+    "artNr": "AF10056"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Rotkohl",
+    "longDesc": "Rotkohl - 1 x 720 ml Glas",
+    "pack": "Stueck",
+    "price": "1,80 €",
+    "artNr": "AF10610"
+  },
+  {
+    "unit": "Packung",
+    "shortName": "Speisesalz",
+    "longDesc": "Speisesalz - 1 x 500g Pack",
+    "pack": "Packung",
+    "price": "0,26 €",
+    "artNr": "AF10216"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Exquisa",
+    "longDesc": "Exquisa 200g - 1 x 10 x 200g Karton",
+    "pack": "10 x 200g Karton",
+    "price": "1,60 €",
+    "artNr": "AF10217"
+  },
+  {
+    "unit": "Packung",
+    "shortName": "Rote Bete Saft",
+    "longDesc": "Rote Bete Saft - 1 x 0,5 Liter",
+    "pack": "Packung",
+    "price": "1,38 €",
+    "artNr": "AF11201"
+  },
+  {
+    "unit": "Flasche",
+    "shortName": "Raps Öl",
+    "longDesc": "Raps-Öl, 1 x 1 Liter PET Flasche",
+    "pack": "Flasche",
+    "price": "2,50 €",
+    "artNr": "AF10201"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "gekochte Thunfisch",
+    "longDesc": "Thunfisch im eigenen Saft, 1 x 500 g Beutel",
+    "pack": "",
+    "price": "3,10 €",
+    "artNr": "AF12001"
+  },
+  {
+    "unit": "Flasche",
+    "shortName": "Chilisoße Srirache",
+    "longDesc": "Chili Sauce Sriracha, Flying Goose, - 1 x 0,73 Liter Flasche",
+    "pack": "Chilisoße Srirache",
+    "price": "4,20 €",
+    "artNr": "AF10701"
+  },
+  {
+    "unit": "Flasche",
+    "shortName": "Okonomi Sauce",
+    "longDesc": "Okonomi Sauce - 1 x 1,8 Liter Flasche",
+    "pack": "Stück",
+    "price": "11,65 €",
+    "artNr": "AF10710"
+  },
+  {
+    "unit": "Kanister",
+    "shortName": "Teriyaki Sauce",
+    "longDesc": "Teriyaki Sauce - 1 x 2.2 Liter Kanister",
+    "pack": "Teriyaki Sauce",
+    "price": "8,75 €",
+    "artNr": "AF10705"
+  },
+  {
+    "unit": "Packung",
+    "shortName": "Blaue Handschuhe S",
+    "longDesc": "Nitril-Hygienehandschuhe, Farbe blau, Größe S, 1 Karton a 10 x 100 St?ck",
+    "pack": "1 Karton = 10 x 100 Stueck",
+    "price": "3,40 €",
+    "artNr": "AF10104"
+  },
+  {
+    "unit": "Packung",
+    "shortName": "Blaue Handschuhe L",
+    "longDesc": "Nitril-Hygienehandschuhe, Farbe blau, Größe L, 1 Karton a 10 x 100 St?ck",
+    "pack": "1 Karton = 10 x 100 Stueck",
+    "price": "3,40 €",
+    "artNr": "AF10106"
+  },
+  {
+    "unit": "Packung",
+    "shortName": "Blaue Handschuhe M",
+    "longDesc": "Nitril-Hygienehandschuhe, Farbe: blau, Größe M, 1 Karton a 10 x 100 St?ck",
+    "pack": "1 Karton = 10 x 100 Stueck",
+    "price": "3,40 €",
+    "artNr": "AF10105"
+  },
+  {
+    "unit": "Packung",
+    "shortName": "Blaue Handschuhe XL",
+    "longDesc": "Nitril-Hygienehandschuhe, Farbe blau, Größe XL, 1 Karton a 10 x 100 St?ck",
+    "pack": "1 Karton = 10 x 100 Stueck",
+    "price": "3,40 €",
+    "artNr": "AF10107"
+  },
+  {
+    "unit": "Packung",
+    "shortName": "Schwarze Handschuhe S",
+    "longDesc": "TPE Einmal-Handschuhe, Farbe: Schwarz, Größe S - 1 x 1 Karton a 10 x 200 St?ck",
+    "pack": "1 Karton = 10 x 200 Stueck",
+    "price": "2,05 €",
+    "artNr": "AF10100"
+  },
+  {
+    "unit": "Packung",
+    "shortName": "Schwarze Handschuhe M",
+    "longDesc": "TPE Einmal-Handschuhe, Farbe: Schwarz, Größe M -1 x 1 Karton a 10 x 200 St?ck",
+    "pack": "1 Karton = 10 x 200 Stueck",
+    "price": "2,05 €",
+    "artNr": "AF10101"
+  },
+  {
+    "unit": "Packung",
+    "shortName": "Schwarze Handschuhe L",
+    "longDesc": "TPE Einmal-Handschuhe, Farbe: Schwarz, Größe L - 1 Karton a 10 x 200 St?ck",
+    "pack": "1 Karton = 10 x 200 Stueck",
+    "price": "2,05 €",
+    "artNr": "AF10102"
+  },
+  {
+    "unit": "Packung",
+    "shortName": "Schwarze Handschuhe XL",
+    "longDesc": "TPE Einmal-Handschuhe, Farbe Schwarz, Größe XL  - 1 Karton a 10 x 200 St?ck",
+    "pack": "1 Karton = 10 x 200 Stueck",
+    "price": "2,05 €",
+    "artNr": "AF10103"
+  },
+  {
+    "unit": "Packung",
+    "shortName": "Verkaufsetiketten Circle endlos",
+    "longDesc": "3.0 Verkaufsetiketten Circle endlos Termo Top 56 x 80 m - 1 x 10 Rollen (EW",
+    "pack": "10 Stück",
+    "price": "6,20 €",
+    "artNr": "AF11100"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Küchenrolle",
+    "longDesc": "K?chenrolle 3 lagig - 1 x 4er Pack a 45 Blatt",
+    "pack": "",
+    "price": "2,56 €",
+    "artNr": "AF10108"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Frischhalterfolie",
+    "longDesc": "Frischhaltefolie, Transparent - 1 x 1 Box 45 cm",
+    "pack": "",
+    "price": "5,58 €",
+    "artNr": "AF10109"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Müllbeutel",
+    "longDesc": "M?llbeutel 120L, Blau 63my - 1 x 1 Rolle",
+    "pack": "",
+    "price": "3,95 €",
+    "artNr": "AF10112"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Spritzbeutel",
+    "longDesc": "Spritzbeutel 128  - 1 x St?ck",
+    "pack": "",
+    "price": "3,30 €",
+    "artNr": "AF10318"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Flüssiggas",
+    "longDesc": "Fl?ssiggas-Kartuschen 227 g, 1 x 4 St?ck",
+    "pack": "1 Pack = 4 Stück",
+    "price": "2,74 €",
+    "artNr": "AF10320"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Flambierbrenner",
+    "longDesc": "Flambierbrenner mit Kartusche - 1 St?ck + 1 x Kartusche",
+    "pack": "",
+    "price": "24,50 €",
+    "artNr": "AF10321"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "H5 -Händedesinfektion",
+    "longDesc": "Handdesinfektion Soft Care Spray 1 x 0,5 Liter Flasche (EW)",
+    "pack": "",
+    "price": "5,45 €",
+    "artNr": "AF10110"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Essig zum Waschen",
+    "longDesc": "Essig 5% S?ure - 1 x  5 Liter Kanister",
+    "pack": "",
+    "price": "4,22 €",
+    "artNr": "AF10204"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Kokosraspeln",
+    "longDesc": "Kokosraspeln - 1 x 200 g",
+    "pack": "1 x 200 g",
+    "price": "1,35 €",
+    "artNr": "AF10504"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Kekse",
+    "longDesc": "Lotus Biscoff Kekse - 1 x 200 g",
+    "pack": "1 x 200 g",
+    "price": "1,50 €",
+    "artNr": "AF10505"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Vanille",
+    "longDesc": "Ruf - Vanille Extrakt - 1 x 77 g",
+    "pack": "1 x77 g",
+    "price": "3,90 €",
+    "artNr": "AF10506"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Kondensmilch",
+    "longDesc": "Gezuckerte Kondensmilch - 1 x 150 g Tube",
+    "pack": "1 x 150 g Tube",
+    "price": "2,65 €",
+    "artNr": "AF10508"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Puderzucker",
+    "longDesc": "Puderzucker - 1 x 250 g",
+    "pack": "1 x 250 g",
+    "price": "0,63 €",
+    "artNr": "AF10507"
+  },
+  {
+    "unit": "Rolle",
+    "shortName": "AKTION Etiketten",
+    "longDesc": "Dekoetiketten Rund , Art: Aktion, Größe: 30 mm - 1 x 1 Rolle à 1000 Etiketten (EW)",
+    "pack": "1 x 1 Rolle",
+    "price": "2,15 €",
+    "artNr": "AF11117"
+  },
+  {
+    "unit": "Rolle",
+    "shortName": "NEU Etiketten",
+    "longDesc": "Dekoetiketten Rund , Art: Neu, Größe: 30 mm - 1 x 1 Rolle à 1000 Etiketten (EW)",
+    "pack": "1 x 1 Rolle",
+    "price": "2,15 €",
+    "artNr": "AF11120"
+  },
+  {
+    "unit": "Rolle",
+    "shortName": "PROTEIN Etiketten",
+    "longDesc": "Dekoetiketten Rund , Art: Protein, Größe: 30 mm - 1 x 1 Rolle à 1000 Etiketten (EW)",
+    "pack": "1 x 1 Rolle",
+    "price": "2,15 €",
+    "artNr": "AF11118"
+  },
+  {
+    "unit": "Rolle",
+    "shortName": "TEMPERATUR Etiketten",
+    "longDesc": "Dekoetiketten Rund , Art: Temperatur, Größe: 30 mm - 1 x 1 Rolle à 1000 Etiketten (EW)",
+    "pack": "1 x 1 Rolle",
+    "price": "2,15 €",
+    "artNr": "AF11119"
+  },
+  {
+    "unit": "Rolle",
+    "shortName": "FAVORITE Etiketten",
+    "longDesc": "Dekoetiketten Rund, Art: Favoriten, Größe: 30 mm - 1 x 1 Rolle à 1000 Etiketten (EW)",
+    "pack": "1 x 1 Rolle",
+    "price": "2,15 €",
+    "artNr": "AF11121"
+  },
+  {
+    "unit": "Rolle",
+    "shortName": "Schmucketiketten Fisch & Meer",
+    "longDesc": "Schmucketiketten, Art: Fisch & Meer, 1 x 1 Rolle à 1000 Etiketten (EW)",
+    "pack": "1 x 1 Rolle",
+    "price": "5,66 €",
+    "artNr": "AF11111"
+  },
+  {
+    "unit": "Rolle",
+    "shortName": "Schmucketiketten Veggie",
+    "longDesc": "Schmucketiketten, Art:Veggie, 1 x 1 Rolle à 1000 Etiketten (EW)",
+    "pack": "1 x 1 Rolle",
+    "price": "5,66 €",
+    "artNr": "AF11112"
+  },
+  {
+    "unit": "Rolle",
+    "shortName": "Schmucketiketten Lachs",
+    "longDesc": "Schmucketiketten, Art:Lachs, Größe: XX mm - 1 x 1 Rolle à XX Etiketten (EW)",
+    "pack": "1 x 1 Rolle",
+    "price": "5,66 €",
+    "artNr": "AF11113"
+  },
+  {
+    "unit": "Rolle",
+    "shortName": "Schmucketiketten Hühnchen",
+    "longDesc": "Schmucketiketten, Art:Hühnchen, 1 x 1 Rolle à 1000 Etiketten (EW)",
+    "pack": "1 x 1 Rolle",
+    "price": "5,67 €",
+    "artNr": "AF11114"
+  },
+  {
+    "unit": "Rolle",
+    "shortName": "Schmucketiketten Thunfisch",
+    "longDesc": "Schmucketiketten, Art:Thunfisch, 1 x 1 Rolle à 1000 Etiketten (EW)",
+    "pack": "1 x 1 Rolle",
+    "price": "5,66 €",
+    "artNr": "AF11115"
+  },
+  {
+    "unit": "Rolle",
+    "shortName": "Schmucketiketten Dessert",
+    "longDesc": "Schmucketiketten, Art:Dessert, 1 x 1 Rolle à 1000 Etiketten (EW)",
+    "pack": "1 x 1 Rolle",
+    "price": "5,67 €",
+    "artNr": "AF11116"
+  },
+  {
+    "unit": "",
+    "shortName": "3.0 Verkaufsetiketten endlos Termo",
+    "longDesc": "3.0 Verkaufsetiketten endlos Termo",
+    "pack": "1 Rolle",
+    "price": "3,88 €",
+    "artNr": "AF11147"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Dressingbecher",
+    "longDesc": "Saucen Becher 30 ml PlastikTransparent - 1x50 St0 Stueck",
+    "pack": "1 Karton = 50 Stueck",
+    "price": "0,03 €",
+    "artNr": "AF10400"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Sushi Box S",
+    "longDesc": "4.0 Sushi Box S, Einteiler,  - 1 x 540 Stück (EW)",
+    "pack": "1 Karton = 540 Stück",
+    "price": "0,22 €",
+    "artNr": "AF10465"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Sushi Box Slim Einteiler",
+    "longDesc": "4.0 Sushi Box Slim, Einteiler,  - 1 x 280 Stück (EW)",
+    "pack": "1 Karton = 280 Stück",
+    "price": "0,23 €",
+    "artNr": "AF10471"
+  },
+  {
+    "unit": "",
+    "shortName": "Sushi Box Mochi",
+    "longDesc": "4.0 Sushi Box Mochi, Einteiler",
+    "pack": "1 Karton = 630 Stück",
+    "price": "0,20 €",
+    "artNr": "AF10474"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Sushi Box L",
+    "longDesc": "4.0 Sushi Box L, Einteiler",
+    "pack": "1 KArton = 220 Stück",
+    "price": "0,21 €",
+    "artNr": "AF 10480"
+  },
+  {
+    "unit": "Stueck",
+    "shortName": "Papier-Box XL",
+    "longDesc": "4.0 Sushi Box XL Einteiler (Papier)",
+    "pack": "1 Karton = 160 Stueck",
+    "price": "0,37 €",
+    "artNr": "AF10457"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Sushi Box Famile",
+    "longDesc": "4.0 Sushi Box Family 2, Einteiler- 1 x 140 Stück (EW)",
+    "pack": "1 Karton = 140 Stück",
+    "price": "0,45 €",
+    "artNr": "AF10472"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Karton = 200 Stück",
+    "longDesc": "Poke Bowl 750ml, Boden & Deckel, 1 Karton à 200 Stück",
+    "pack": "Poke Bowl",
+    "price": "0,37 €",
+    "artNr": "AF12206"
+  },
+  {
+    "unit": "",
+    "shortName": "Sushi Box Party Rund L",
+    "longDesc": "Sushi Box Party Rund L+Deckel",
+    "pack": "1x50 Stück",
+    "price": "0,76 €",
+    "artNr": "AF10491"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Große Papiertragetasche Braun",
+    "longDesc": "Papiertragetaschen groß",
+    "pack": "1 x 50 Stück",
+    "price": "0,16 €",
+    "artNr": "AF10499"
+  },
+  {
+    "unit": "",
+    "shortName": "",
+    "longDesc": "Papiertragetasche Flachhenkel, 32 x 22 x 24 cm, Braun",
+    "pack": "1 Karton à 50 Stück",
+    "price": "0,13 €",
+    "artNr": "AF12275"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Sushi Box Slim",
+    "longDesc": "Sushi Box Slim",
+    "pack": "1 Karton = 400 Stück",
+    "price": "0,16 €",
+    "artNr": "AF10489"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Sushi Box S",
+    "longDesc": "Sushi Box S",
+    "pack": "1 Karton = 400 Stück",
+    "price": "0,15 €",
+    "artNr": "AF10450"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Sushi Box L",
+    "longDesc": "Sushi Box L",
+    "pack": "1 Karton = 400 Stück",
+    "price": "0,16 €",
+    "artNr": "AF10488"
+  },
+  {
+    "unit": "Packung",
+    "shortName": "Kokosmilch",
+    "longDesc": "Aroy D - Kokosmilch , 1 x 1 Liter Pack",
+    "pack": "1 x 1 Liter Pack",
+    "price": "3,15 €",
+    "artNr": "AF12205"
+  },
+  {
+    "unit": "",
+    "shortName": "Gefrierbeutel 1L",
+    "longDesc": "Gefrierbeutel 1L",
+    "pack": "Packung = 20 Stück",
+    "price": "3,88 €",
+    "artNr": "AF10322"
+  },
+  {
+    "unit": "",
+    "shortName": "Beutel",
+    "longDesc": "THATs KiMCHi - Kimchi Original",
+    "pack": "1 x 1 kg Beutel",
+    "price": "3,06 €",
+    "artNr": "AF12255"
+  },
+  {
+    "unit": "",
+    "shortName": "Beutel",
+    "longDesc": "Golden Toast- Vegan Brioche Sandwich",
+    "pack": "1 x 375 g Beutel",
+    "price": "1,99 €",
+    "artNr": "AF12276"
+  },
+  {
+    "unit": "",
+    "shortName": "Tube",
+    "longDesc": "Bautzen - Senf, mittelscharf",
+    "pack": "1 x 200 g Tube",
+    "price": "1,15 €",
+    "artNr": "AF12277"
+  },
+  {
+    "unit": "1L Flasche",
+    "shortName": "Flasche",
+    "longDesc": "Shoda - Sojasauce",
+    "pack": "1x1 L Flasche",
+    "price": "2,49 €",
+    "artNr": "AF12027"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Stück",
+    "longDesc": "Donutverpackung, Grab & Go",
+    "pack": "1 x 100 Stk. Karton",
+    "price": "0,03 €",
+    "artNr": "AF12286"
+  },
+  {
+    "unit": "",
+    "shortName": "Otafuku",
+    "longDesc": "Yakisoba Sauce,",
+    "pack": "1,8L Flasche",
+    "price": "9,75 €",
+    "artNr": "AF12080"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Otoki - Jin Ramen Spicy",
+    "longDesc": "Otoki - Jin Ramen Spicy",
+    "pack": "1 Karton á 6 x 65 g Stück",
+    "price": "0,85 €",
+    "artNr": "AF12354"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Otoki - Jin Ramen Mild",
+    "longDesc": "Otoki - Jin Ramen Mild",
+    "pack": "1 Karton á 6 x 65 g Stück",
+    "price": "0,85 €",
+    "artNr": "AF12355"
+  },
+  {
+    "unit": "",
+    "shortName": "",
+    "longDesc": "Ja! - Tortilla Chips, mit Salz",
+    "pack": "1 x 300 g Packung",
+    "price": "1,59 €",
+    "artNr": "AF12399"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Korean Street - Kaludon Kimchi",
+    "longDesc": "Korean Street - Kaludon Kimchi",
+    "pack": "1 Karton á 6 x 215 g Stück",
+    "price": "2,77 €",
+    "artNr": "AF12356"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Crispy Seaweed mit Gochujang",
+    "longDesc": "Crispy Seaweed mit Gochujang",
+    "pack": "1 Karton á 24 x 32 g Stück",
+    "price": "1,41 €",
+    "artNr": "AF12357"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Koikeya - Teriyaki Chips",
+    "longDesc": "Koikeya - Teriyaki Chips",
+    "pack": "1 Karton á 12 x 100 g Stück",
+    "price": "1,23 €",
+    "artNr": "AF12358"
+  },
+  {
+    "unit": "Stück",
+    "shortName": "Haitai - Spicy ShinDangdong Teokbokki",
+    "longDesc": "Haitai - Spicy ShinDangdong Teokbokki",
+    "pack": "1 Karton á 24 x 100 g Stück",
+    "price": "1,44 €",
+    "artNr": "AF12359"
+  },
+  {
+    "unit": "",
+    "shortName": "",
+    "longDesc": "Limetten",
+    "pack": "1 x 1 Stück (ca. 100 g)",
+    "price": "0,69 €",
+    "artNr": "AF10054"
+  },
+  {
+    "unit": "Packung",
+    "shortName": "Japonica Reis",
+    "longDesc": "Reis-Zensho",
+    "pack": "10 kg",
+    "price": "7,13 €",
+    "artNr": "AF12396"
+  },
+  {
+    "unit": "",
+    "shortName": "1x1kg",
+    "longDesc": "THATs KIMCHI",
+    "pack": "Kimchi Original+Verpackung",
+    "price": "12,22 €",
+    "artNr": "AF12447"
+  },
+  {
+    "unit": "KG",
+    "shortName": "",
+    "longDesc": "SC Lachsfilet Treim E",
+    "pack": "",
+    "price": "14,90 €",
+    "artNr": "AF12453"
+  },
+  {
+    "unit": "",
+    "shortName": "Stück",
+    "longDesc": "Sushi Push-Up, mit Logo",
+    "pack": "Karton à 150 Stück",
+    "price": "1,42 €",
+    "artNr": "AF12386"
+  },
+  {
+    "unit": "",
+    "shortName": "",
+    "longDesc": "Sushi Box XL + Deckel",
+    "pack": "1 Karton à 540 Stück",
+    "price": "0,23 €",
+    "artNr": "AF12183"
+  },
+  {
+    "unit": "",
+    "shortName": "",
+    "longDesc": "Sushi Box S",
+    "pack": "",
+    "price": "0,11 €",
+    "artNr": "AF10467"
+  },
+  {
+    "unit": "",
+    "shortName": "",
+    "longDesc": "Sushi Box L",
+    "pack": "",
+    "price": "0,20 €",
+    "artNr": "AF12114"
+  },
+  {
+    "unit": "",
+    "shortName": "",
+    "longDesc": "Diversey - Sun Pro Formula, Geschirrspülsalz, 1 x 2 kg Beutel",
+    "pack": "Geschirr-Slaz",
+    "price": "3,60 €",
+    "artNr": "AF12120"
+  },
+  {
+    "unit": "",
+    "shortName": "",
+    "longDesc": "Plastik Box XL",
+    "pack": "",
+    "price": "0,23 €",
+    "artNr": "80737"
+  },
+  {
+    "unit": "",
+    "shortName": "1 Beutel à 200 x 5 g",
+    "longDesc": "Sushi Circle ? Ingwer Gari Take-Out",
+    "pack": "5g",
+    "price": "8,69 €",
+    "artNr": "AF12509"
+  },
+  {
+    "unit": "",
+    "shortName": "",
+    "longDesc": "Globe Gourmet ? Ramensuppe-Konzentrat Tonkotsu",
+    "pack": "1 Packung à 500 g",
+    "price": "4,75 €",
+    "artNr": "AF12512"
+  },
+  {
+    "unit": "",
+    "shortName": "Tonkotsu Style",
+    "longDesc": "Marumoto - Ramen Suppen Basis",
+    "pack": "1 x 500 ml Beutel",
+    "price": "4,80 €",
+    "artNr": "AF12444"
+  },
+  {
+    "unit": "",
+    "shortName": "",
+    "longDesc": "Seafood Market ? Ramennudeln",
+    "pack": "1 Beutel à 5 x 250 g (TK)",
+    "price": "0,92 €",
+    "artNr": "AF12513"
+  },
+  {
+    "unit": "",
+    "shortName": "",
+    "longDesc": "Pak Choi",
+    "pack": "Stück",
+    "price": "0,90 €",
+    "artNr": "AF12443"
+  },
+  {
+    "unit": "",
+    "shortName": "",
+    "longDesc": "Lao Gan Ma - Chilli-Öl",
+    "pack": "1 x 210 g Glas",
+    "price": "4,25 €",
+    "artNr": "AF12222"
+  },
+  {
+    "unit": "",
+    "shortName": "",
+    "longDesc": "NH Foods - Char-Siu Scheiben",
+    "pack": "1 Packung à 150 g (TK)",
+    "price": "3,93 €",
+    "artNr": "AF12405"
+  }
+]
