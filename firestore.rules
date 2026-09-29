@@ -154,7 +154,13 @@ service cloud.firestore {
             && request.resource.data.status == 'pending'
             && request.resource.data.diff(resource.data).affectedKeys()
                  .hasOnly(['from', 'to', 'updated']));
-      allow delete: if isManagerForRegion(docRegion(resource.data));
+      // Mitarbeiter darf einen eigenen Antrag zurückziehen, solange noch
+      // niemand entschieden hat (status noch 'pending') - sobald genehmigt,
+      // ist der Dienstplan schon danach gesperrt, dann nur noch der
+      // Gebietsleiter (Auftrag t.duong 29.09.2026, gleiche Grenze wie beim
+      // Bearbeiten oben).
+      allow delete: if isManagerForRegion(docRegion(resource.data))
+        || (isOwnEmp(resource.data.empId) && resource.data.status == 'pending');
     }
     match /{path=**}/urlaub/{u} {
       // list() auf einer collectionGroup kann Firestore nur dann gegen ein
@@ -183,9 +189,15 @@ service cloud.firestore {
     // ══════════════════════════════════════════════════════════
     match /krank/{k} {
       allow create: if isOwnEmp(request.resource.data.empId);
-      allow get: if isManagerForRegion(docRegion(resource.data));
-      allow list: if isManagerForRegion(resource.data.region);
-      allow update, delete: if isManagerForRegion(docRegion(resource.data));
+      // Mitarbeiter darf die eigenen Krankmeldungen sehen (für die neue
+      // "Meine Krankmeldungen"-Liste in mitarbeiter.html) und eine eigene
+      // löschen, solange sie noch existiert - genau wie beim Gebietsleiter
+      // ist "existiert noch" = "noch nicht erledigt" (Auftrag t.duong
+      // 29.09.2026). Kein eigenes update, dafür gibt es keinen Bedarf.
+      allow get: if isManagerForRegion(docRegion(resource.data)) || isOwnEmp(resource.data.empId);
+      allow list: if isManagerForRegion(resource.data.region) || isOwnEmp(resource.data.empId);
+      allow update: if isManagerForRegion(docRegion(resource.data));
+      allow delete: if isManagerForRegion(docRegion(resource.data)) || isOwnEmp(resource.data.empId);
     }
     match /antrag/{a} {
       // Feld heißt hier "id", nicht "empId" (siehe maSendAntrag in mitarbeiter.html).
@@ -231,7 +243,12 @@ service cloud.firestore {
             && request.resource.data.status == 'confirmed'
             && request.resource.data.diff(resource.data).affectedKeys()
                  .hasOnly(['status', 'confirmedAt', 'empHidden']));
-      allow delete: if isManagerForRegion(docRegion(resource.data));
+      // Mitarbeiter darf einen eigenen Beleg löschen, solange der
+      // Gebietsleiter ihn noch nicht bearbeitet hat (status noch 'new') -
+      // z.B. wenn versehentlich dasselbe Foto zweimal hochgeladen wurde
+      // (Auftrag t.duong 29.09.2026).
+      allow delete: if isManagerForRegion(docRegion(resource.data))
+        || (isOwnEmp(resource.data.empId) && resource.data.status == 'new');
     }
 
     // ══════════════════════════════════════════════════════════

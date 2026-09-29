@@ -415,6 +415,10 @@ window.onerror=function(msg,src,line){
       </div>
       <p id="kr-hint" style="font-size:12px;color:var(--mut);margin-top:10px;line-height:1.5;display:none" data-i18n="kr_hint"></p>
     </div>
+    <div class="card">
+      <div class="card-title" data-i18n="kr_list_title">📋 Meine Krankmeldungen</div>
+      <div id="kr-list"></div>
+    </div>
   </div>
 
   <!-- ── BELEGE (Hóa đơn hoàn ứng) ── -->
@@ -2222,6 +2226,7 @@ de:{_name:'Deutsch',
  lbl_bl_amount:'Betrag (€)',lbl_bl_note:'Notiz (was wurde gekauft?)',lbl_foto_bl:'Foto vom Kassenbon',
  btn_bl:'📤 Beleg senden',bl_list_title:'📋 Meine Belege',bl_none:'Noch keine Belege eingereicht.',
  bl_sent:'✓ Beleg gesendet',bl_fail:'Fehler: ',bl_need_photo:'Bitte zuerst ein Foto vom Kassenbon hochladen.',
+ bl_del_btn:'🗑 Löschen',bl_del_confirm:'Diesen Beleg wirklich löschen?',bl_del_ok:'✓ Gelöscht',
  lbl_bl_paytype:'Wie möchtest du das Geld zurückbekommen?',lbl_bl_payinfo:'IBAN',lbl_bl_payinfo_other:'Details (wohin überweisen?)',
  bl_payinfo_hint:'Wird gespeichert — beim nächsten Beleg schon ausgefüllt.',
  bl_need_pay:'Bitte IBAN / PayPal-Adresse angeben.',
@@ -2245,6 +2250,7 @@ de:{_name:'Deutsch',
  my_shifts:'👤 Meine Schichten',dp_pdf:'PDF laden',dp_pdf_none:'Kein PDF vorhanden.',whole_store:'🏪 Ganze Filiale',th_emp:'Mitarbeiter',no_entries:'Keine Einträge für dich in diesem Monat.',
  v_frei:'Frei',v_url:'Urlaub',v_krank:'Krank',
  ul_title:'🌴 Urlaub – Filiale',leg_ok:'Genehmigt',leg_wait:'Wartet auf Freigabe',leg_no:'Abgelehnt',st_wait:'Wartet',ul_gl_tag:'Vorschlag Gebietsleiter',ul_welo_tag:'Aus Welo übernommen',
+ ul_withdraw_btn:'↺ Zurückziehen',ul_withdraw_confirm:'Diesen Antrag wirklich zurückziehen?',ul_withdraw_ok:'✓ Antrag zurückgezogen',
  update_avail:'Neue Version verfügbar.',update_btn:'Jetzt aktualisieren',
  ul_year:'📋 Urlaub dieses Jahr',ul_none:'Noch kein Urlaub für {y} eingetragen.',
  req_title:'✏️ Meinen Urlaub beantragen',
@@ -2300,6 +2306,7 @@ de:{_name:'Deutsch',
  lbl_kr_von:'Krank von',lbl_kr_bis:'Voraussichtlich bis',lbl_foto:'Krankschreibung (Foto)',drop_txt:'Foto hochladen oder Kamera öffnen',
  btn_kr:'📤 Krankmeldung senden',
  kr_hint:'ℹ️ WhatsApp öffnet sich mit der Nachricht. Das Foto wird im Gerät gespeichert/angezeigt — bitte in WhatsApp noch anhängen (📎).',
+ kr_list_title:'📋 Meine Krankmeldungen',kr_list_none:'Noch keine Krankmeldung eingereicht.',kr_list_created:'Eingereicht am {d}',kr_del_confirm:'Diese Krankmeldung wirklich löschen?',
  t_kr_from:'Bitte mindestens das Startdatum wählen.',t_wa:'✓ WhatsApp geöffnet',t_wa_attach:' – Foto noch anhängen 📎',
  nw_title:'📢 Infos vom Gebietsleiter',nw_none:'Noch keine Mitteilungen.',
  push_info:'🔔 Aktiviere Push-Benachrichtigungen, um sofort informiert zu werden, sobald eine neue Info hochgeladen wird – auch wenn die App geschlossen ist.',push_btn:'🔔 Benachrichtigungen aktivieren',push_on:'✓ Benachrichtigungen aktiv',push_denied:'Benachrichtigungen wurden im Browser blockiert. Bitte in den Browser-Einstellungen erlauben.',push_unsupported:'Push-Benachrichtigungen werden auf diesem Gerät/Browser nicht unterstützt.',push_newinfo:'📢 Neue Info vom Gebietsleiter',
@@ -2354,6 +2361,7 @@ vi:{_name:'Tiếng Việt',
  lbl_bl_amount:'Số tiền (€)',lbl_bl_note:'Ghi chú (đã mua gì?)',lbl_foto_bl:'Ảnh hóa đơn',
  btn_bl:'📤 Gửi hóa đơn',bl_list_title:'📋 Hóa đơn của tôi',bl_none:'Chưa gửi hóa đơn nào.',
  bl_sent:'✓ Đã gửi hóa đơn',bl_fail:'Lỗi: ',bl_need_photo:'Vui lòng tải ảnh hóa đơn lên trước.',
+ bl_del_btn:'🗑 Xóa',bl_del_confirm:'Bạn có chắc muốn xóa hóa đơn này?',bl_del_ok:'✓ Đã xóa',
  lbl_bl_paytype:'Bạn muốn nhận lại tiền bằng cách nào?',lbl_bl_payinfo:'Số IBAN',lbl_bl_payinfo_other:'Chi tiết (chuyển vào đâu?)',
  bl_payinfo_hint:'Sẽ được lưu lại — lần sau tự động điền sẵn.',
  bl_need_pay:'Vui lòng nhập số IBAN / địa chỉ PayPal.',
@@ -2377,6 +2385,7 @@ vi:{_name:'Tiếng Việt',
  my_shifts:'👤 Ca của tôi',dp_pdf:'Tải PDF',dp_pdf_none:'Chưa có file PDF.',whole_store:'🏪 Cả cửa hàng',th_emp:'Nhân viên',no_entries:'Tháng này bạn chưa có ca nào.',
  v_frei:'Nghỉ',v_url:'Nghỉ phép',v_krank:'Ốm',
  ul_title:'🌴 Nghỉ phép – Cửa hàng',leg_ok:'Đã duyệt',leg_wait:'Chờ duyệt',leg_no:'Từ chối',st_wait:'Chờ',ul_gl_tag:'GL đề xuất',ul_welo_tag:'Lấy từ Welo',
+ ul_withdraw_btn:'↺ Thu hồi',ul_withdraw_confirm:'Bạn có chắc muốn thu hồi đơn này?',ul_withdraw_ok:'✓ Đã thu hồi đơn',
  update_avail:'Có phiên bản mới.',update_btn:'Cập nhật ngay',
  ul_year:'📋 Nghỉ phép năm nay',ul_none:'Chưa có nghỉ phép nào trong năm {y}.',
  req_title:'✏️ Đăng ký nghỉ phép',
@@ -2432,6 +2441,7 @@ vi:{_name:'Tiếng Việt',
  lbl_kr_von:'Ốm từ ngày',lbl_kr_bis:'Dự kiến đến',lbl_foto:'Giấy ốm (ảnh)',drop_txt:'Tải ảnh lên hoặc mở camera',
  btn_kr:'📤 Gửi báo ốm',
  kr_hint:'ℹ️ WhatsApp sẽ mở với tin nhắn soạn sẵn. Ảnh đã lưu trong máy — nhớ đính kèm trong WhatsApp (📎).',
+ kr_list_title:'📋 Đơn xin nghỉ ốm của tôi',kr_list_none:'Chưa gửi đơn xin nghỉ ốm nào.',kr_list_created:'Đã gửi ngày {d}',kr_del_confirm:'Bạn có chắc muốn xóa đơn xin nghỉ ốm này?',
  t_kr_from:'Vui lòng chọn ít nhất ngày bắt đầu.',t_wa:'✓ Đã mở WhatsApp',t_wa_attach:' – nhớ đính kèm ảnh 📎',
  nw_title:'📢 Thông báo từ Gebietsleiter',nw_none:'Chưa có thông báo nào.',
  push_info:'🔔 Bật thông báo đẩy để nhận tin ngay khi có thông tin mới được tải lên – kể cả khi đã đóng app.',push_btn:'🔔 Bật thông báo',push_on:'✓ Đã bật thông báo',push_denied:'Thông báo đã bị chặn trong trình duyệt. Vui lòng cho phép trong cài đặt trình duyệt.',push_unsupported:'Thiết bị/trình duyệt này không hỗ trợ thông báo đẩy.',push_newinfo:'📢 Thông báo mới từ Gebietsleiter',
@@ -2486,6 +2496,7 @@ en:{_name:'English',
  lbl_bl_amount:'Amount (€)',lbl_bl_note:'Note (what was bought?)',lbl_foto_bl:'Photo of the receipt',
  btn_bl:'📤 Send receipt',bl_list_title:'📋 My receipts',bl_none:'No receipts submitted yet.',
  bl_sent:'✓ Receipt sent',bl_fail:'Error: ',bl_need_photo:'Please upload a photo of the receipt first.',
+ bl_del_btn:'🗑 Delete',bl_del_confirm:'Really delete this receipt?',bl_del_ok:'✓ Deleted',
  lbl_bl_paytype:'How would you like to get the money back?',lbl_bl_payinfo:'IBAN',lbl_bl_payinfo_other:'Details (where to transfer?)',
  bl_payinfo_hint:'Will be saved — filled in automatically next time.',
  bl_need_pay:'Please provide an IBAN / PayPal address.',
@@ -2509,6 +2520,7 @@ en:{_name:'English',
  my_shifts:'👤 My shifts',dp_pdf:'Get PDF',dp_pdf_none:'No PDF available.',whole_store:'🏪 Whole store',th_emp:'Employee',no_entries:'No entries for you this month.',
  v_frei:'Off',v_url:'Vacation',v_krank:'Sick',
  ul_title:'🌴 Vacation – Store',leg_ok:'Approved',leg_wait:'Pending approval',leg_no:'Rejected',st_wait:'Pending',ul_gl_tag:'Manager proposal',ul_welo_tag:'Imported from Welo',
+ ul_withdraw_btn:'↺ Withdraw',ul_withdraw_confirm:'Really withdraw this request?',ul_withdraw_ok:'✓ Request withdrawn',
  update_avail:'A new version is available.',update_btn:'Update now',
  ul_year:'📋 Vacation this year',ul_none:'No vacation entered for {y} yet.',
  req_title:'✏️ Request my vacation',
@@ -2564,6 +2576,7 @@ en:{_name:'English',
  lbl_kr_von:'Sick from',lbl_kr_bis:'Expected until',lbl_foto:'Sick note (photo)',drop_txt:'Upload photo or open camera',
  btn_kr:'📤 Send sick report',
  kr_hint:'ℹ️ WhatsApp opens with the message. The photo is saved on your device — please attach it in WhatsApp (📎).',
+ kr_list_title:'📋 My sick notes',kr_list_none:'No sick note submitted yet.',kr_list_created:'Submitted on {d}',kr_del_confirm:'Really delete this sick note?',
  t_kr_from:'Please choose at least the start date.',t_wa:'✓ WhatsApp opened',t_wa_attach:' – attach the photo 📎',
  nw_title:'📢 News from the area manager',nw_none:'No news yet.',
  push_info:'🔔 Enable push notifications to be informed instantly when new info is uploaded – even when the app is closed.',push_btn:'🔔 Enable notifications',push_on:'✓ Notifications enabled',push_denied:'Notifications are blocked in the browser. Please allow them in the browser settings.',push_unsupported:'Push notifications are not supported on this device/browser.',push_newinfo:'📢 New info from the area manager',
@@ -2618,6 +2631,7 @@ th:{_name:'ไทย',
  lbl_bl_amount:'จำนวนเงิน (€)',lbl_bl_note:'บันทึก (ซื้ออะไร?)',lbl_foto_bl:'รูปใบเสร็จ',
  btn_bl:'📤 ส่งใบเสร็จ',bl_list_title:'📋 ใบเสร็จของฉัน',bl_none:'ยังไม่มีการส่งใบเสร็จ',
  bl_sent:'✓ ส่งใบเสร็จแล้ว',bl_fail:'ข้อผิดพลาด: ',bl_need_photo:'กรุณาอัปโหลดรูปใบเสร็จก่อน',
+ bl_del_btn:'🗑 ลบ',bl_del_confirm:'ต้องการลบใบเสร็จนี้จริงหรือไม่?',bl_del_ok:'✓ ลบแล้ว',
  lbl_bl_paytype:'คุณต้องการรับเงินคืนแบบไหน?',lbl_bl_payinfo:'เลขบัญชี IBAN',lbl_bl_payinfo_other:'รายละเอียด (โอนไปที่ไหน?)',
  bl_payinfo_hint:'จะถูกบันทึกไว้ — ครั้งต่อไปจะกรอกให้อัตโนมัติ',
  bl_need_pay:'กรุณาระบุเลขบัญชี IBAN หรือที่อยู่ PayPal',
@@ -2641,6 +2655,7 @@ th:{_name:'ไทย',
  my_shifts:'👤 กะของฉัน',dp_pdf:'ดาวน์โหลด PDF',dp_pdf_none:'ไม่มีไฟล์ PDF',whole_store:'🏪 ทั้งสาขา',th_emp:'พนักงาน',no_entries:'เดือนนี้คุณยังไม่มีกะงาน',
  v_frei:'หยุด',v_url:'ลาพักร้อน',v_krank:'ป่วย',
  ul_title:'🌴 วันลา – สาขา',leg_ok:'อนุมัติแล้ว',leg_wait:'รออนุมัติ',leg_no:'ถูกปฏิเสธ',st_wait:'รอ',ul_gl_tag:'ผู้จัดการเขตเสนอ',ul_welo_tag:'นำเข้าจาก Welo',
+ ul_withdraw_btn:'↺ ถอนคำขอ',ul_withdraw_confirm:'ต้องการถอนคำขอนี้จริงหรือไม่?',ul_withdraw_ok:'✓ ถอนคำขอแล้ว',
  update_avail:'มีเวอร์ชันใหม่',update_btn:'อัปเดตตอนนี้',
  ul_year:'📋 วันลาปีนี้',ul_none:'ยังไม่มีวันลาสำหรับปี {y}',
  req_title:'✏️ ยื่นขอวันลา',
@@ -2696,6 +2711,7 @@ th:{_name:'ไทย',
  lbl_kr_von:'ป่วยตั้งแต่',lbl_kr_bis:'คาดว่าถึง',lbl_foto:'ใบรับรองแพทย์ (รูป)',drop_txt:'อัปโหลดรูปหรือเปิดกล้อง',
  btn_kr:'📤 ส่งแจ้งป่วย',
  kr_hint:'ℹ️ WhatsApp จะเปิดพร้อมข้อความ รูปถูกบันทึกในเครื่อง — กรุณาแนบใน WhatsApp (📎)',
+ kr_list_title:'📋 ใบลาป่วยของฉัน',kr_list_none:'ยังไม่ได้ส่งใบลาป่วย',kr_list_created:'ส่งเมื่อ {d}',kr_del_confirm:'ต้องการลบใบลาป่วยนี้จริงหรือไม่?',
  t_kr_from:'กรุณาเลือกวันเริ่มอย่างน้อย',t_wa:'✓ เปิด WhatsApp แล้ว',t_wa_attach:' – อย่าลืมแนบรูป 📎',
  nw_title:'📢 ข่าวจากผู้จัดการเขต',nw_none:'ยังไม่มีประกาศ',
  push_info:'🔔 เปิดการแจ้งเตือนแบบพุช เพื่อรับข่าวทันทีเมื่อมีข้อมูลใหม่ – แม้ปิดแอปอยู่',push_btn:'🔔 เปิดการแจ้งเตือน',push_on:'✓ เปิดการแจ้งเตือนแล้ว',push_denied:'การแจ้งเตือนถูกบล็อกในเบราว์เซอร์ กรุณาอนุญาตในการตั้งค่าเบราว์เซอร์',push_unsupported:'อุปกรณ์/เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือนแบบพุช',push_newinfo:'📢 ข้อมูลใหม่จากผู้จัดการเขต',
@@ -2750,6 +2766,7 @@ zh:{_name:'中文',
  lbl_bl_amount:'金额 (€)',lbl_bl_note:'备注（购买了什么？）',lbl_foto_bl:'收据照片',
  btn_bl:'📤 发送报销单',bl_list_title:'📋 我的报销记录',bl_none:'尚未提交过报销单。',
  bl_sent:'✓ 报销单已发送',bl_fail:'错误：',bl_need_photo:'请先上传收据照片。',
+ bl_del_btn:'🗑 删除',bl_del_confirm:'确定要删除此报销单吗？',bl_del_ok:'✓ 已删除',
  lbl_bl_paytype:'您希望以什么方式收款？',lbl_bl_payinfo:'IBAN账号',lbl_bl_payinfo_other:'详细信息（转到哪里？）',
  bl_payinfo_hint:'将被保存 — 下次报销时自动填入。',
  bl_need_pay:'请填写IBAN账号或PayPal地址。',
@@ -2773,6 +2790,7 @@ zh:{_name:'中文',
  my_shifts:'👤 我的班次',dp_pdf:'下载PDF',dp_pdf_none:'暂无PDF文件。',whole_store:'🏪 整个门店',th_emp:'员工',no_entries:'本月您还没有排班。',
  v_frei:'休息',v_url:'休假',v_krank:'病假',
  ul_title:'🌴 休假 – 门店',leg_ok:'已批准',leg_wait:'等待批准',leg_no:'已拒绝',st_wait:'等待中',ul_gl_tag:'区域经理提议',ul_welo_tag:'从Welo导入',
+ ul_withdraw_btn:'↺ 撤回',ul_withdraw_confirm:'确定要撤回此申请吗？',ul_withdraw_ok:'✓ 已撤回申请',
  update_avail:'有新版本可用。',update_btn:'立即更新',
  ul_year:'📋 今年的休假',ul_none:'{y}年还没有休假记录。',
  req_title:'✏️ 申请我的休假',
@@ -2828,6 +2846,7 @@ zh:{_name:'中文',
  lbl_kr_von:'生病起始日期',lbl_kr_bis:'预计持续至',lbl_foto:'病假条（照片）',drop_txt:'上传照片或打开相机',
  btn_kr:'📤 发送病假报告',
  kr_hint:'ℹ️ WhatsApp会自动打开并附上消息。照片已保存在设备中——请记得在WhatsApp中添加附件 (📎)。',
+ kr_list_title:'📋 我的病假申请',kr_list_none:'尚未提交病假申请。',kr_list_created:'提交于{d}',kr_del_confirm:'确定要删除此病假申请吗？',
  t_kr_from:'请至少选择开始日期。',t_wa:'✓ WhatsApp已打开',t_wa_attach:' – 请记得添加照片附件 📎',
  nw_title:'📢 来自区域经理的通知',nw_none:'暂无通知。',
  push_info:'🔔 开启推送通知，即使应用已关闭，也能在有新通知时立即收到提醒。',push_btn:'🔔 开启通知',push_on:'✓ 通知已开启',push_denied:'通知已在浏览器中被屏蔽，请在浏览器设置中允许通知。',push_unsupported:'此设备/浏览器不支持推送通知。',push_newinfo:'📢 区域经理发布了新通知',
@@ -3212,6 +3231,7 @@ function maShowApp(sess){
       ivInit(sess);
       ugInit(sess);
       blStartListener();
+      krStartListener();
       avEStartListener();
       ulhrStartListener();
     };
@@ -3228,6 +3248,7 @@ function maNav(t){
   });
   if(t==='dp'){maRefreshProfile();}
   if(t==='ul'){maRenderCal();maRenderUlList();weloLoadSelf();ulhrRender();}
+  if(t==='kr'){krRender();}
   if(t==='bl'){blRender();blPayLoad();}
   if(t==='av'){avERender();}
   if(t==='nw'){maNewsMarkRead();}
@@ -4007,10 +4028,24 @@ function maRenderUlList(){
     var c=maStatusClass(u.status);
     var stTxt=u.status==='approved'?t('leg_ok'):u.status==='rejected'?t('leg_no'):t('st_wait');
     var glTag=u.source==='hr'?'<div class="ugl">'+t('ul_gl_tag')+'</div>':(u.source==='welo'?'<div class="ugl">'+t('ul_welo_tag')+'</div>':'');
+    // Zurückziehen nur beim eigenen, noch offenen (nicht entschiedenen)
+    // Antrag, und nur wenn selbst gestellt (nicht vom Gebietsleiter/Welo
+    // importiert) - sobald genehmigt, sperrt der Antrag schon den
+    // Dienstplan, dann nur noch über den Gebietsleiter (Auftrag t.duong
+    // 29.09.2026).
+    var canWithdraw=(''+u.id)===(''+sess.id) && u.status==='pending' && !u.source && u.docId;
+    var delBtn=canWithdraw?('<button class="btn btn-sm" style="margin-top:4px;background:#fff;color:#C0392B;border-color:#C0392B" onclick="maUlWithdraw(\''+u.docId+'\')">'+t('ul_withdraw_btn')+'</button>'):'';
     return '<div class="ul-list-item '+c+'"><div style="flex:1"><div class="uname">'+u.name+'</div>'
-      +'<div class="udate">'+maFmtDE(u.from)+' – '+maFmtDE(u.to)+'</div>'+glTag+'</div>'
+      +'<div class="udate">'+maFmtDE(u.from)+' – '+maFmtDE(u.to)+'</div>'+glTag+delBtn+'</div>'
       +'<span class="ustat '+c+'">'+stTxt+'</span></div>';
   }).join('');
+}
+function maUlWithdraw(docId){
+  var sess=maSession(); if(!sess||!fbReady||!fbDb) return;
+  if(!confirm(t('ul_withdraw_confirm'))) return;
+  fbDb.collection('filialen').doc(fbSlug(sess.filiale||'')).collection('urlaub').doc(docId).delete()
+    .then(function(){ toast(t('ul_withdraw_ok')); })
+    .catch(function(e){ toast(t('send_fail')+e.message,true); });
 }
 /* ── Doppelte Antraege verhindern + bestehenden Antrag aendern ──
    Bisher konnte derselbe Antrag mehrfach entstehen: der zweite Tap auf "beantragen"
@@ -4429,6 +4464,44 @@ function maSendKrank(){
   else prompt(t('wa_missing'),msg);
   toast(t('t_wa')+(maKrImg?t('t_wa_attach'):''));
 }
+/* ── Eigene Krankmeldungen anzeigen + zurückziehen können ──
+   Bisher rein "fire and forget": maSendKrank() schrieb einmal in die
+   krank-Collection, der Mitarbeiter sah danach nie wieder, was er gemeldet
+   hat, und konnte eine versehentliche/doppelte Meldung nicht mehr
+   korrigieren. "Existiert noch" = "vom Gebietsleiter noch nicht als
+   erledigt gelöscht" (index.html krDelete()) - genau dieselbe Bedingung
+   gilt hier fürs eigene Löschen (Auftrag t.duong 29.09.2026). */
+var krList=[], krUnsub=null;
+function krStartListener(){
+  var sess=maSession();
+  if(!fbReady||!fbDb||!sess) return;
+  if(krUnsub) krUnsub();
+  krUnsub=fbDb.collection('krank').where('empId','==',''+sess.id).onSnapshot(function(snap){
+    var raw=[]; snap.forEach(function(doc){ raw.push({docId:doc.id, ref:doc.ref, d:doc.data()||{}}); });
+    krList=raw.sort(function(a,b){ return (a.d.created||'')<(b.d.created||'')?1:-1; });
+    if(document.getElementById('p-kr') && document.getElementById('p-kr').classList.contains('active')) krRender();
+  }, function(err){ console.warn('FB krank (eigene)', err); });
+}
+function krRender(){
+  var box=document.getElementById('kr-list'); if(!box) return;
+  if(!krList.length){ box.innerHTML='<div style="font-size:13px;color:var(--mut);padding:8px 0">'+t('kr_list_none')+'</div>'; return; }
+  box.innerHTML=krList.map(function(k){
+    var d=k.d;
+    var dt=d.created?new Date(d.created).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}):'';
+    var range=maFmtDE(d.from)+(d.to?(' – '+maFmtDE(d.to)):'');
+    return '<div style="display:flex;gap:10px;align-items:center;padding:10px;border:1px solid #E8E4E0;border-radius:6px;margin-bottom:8px">'
+      +(d.img?'<img src="'+d.img+'" style="width:44px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0">':'')
+      +'<div style="flex:1;min-width:0"><div style="font-weight:700">'+range+'</div>'
+      +'<div style="font-size:11px;color:var(--mut)">'+t('kr_list_created',{d:dt})+'</div></div>'
+      +'<button class="btn btn-sm" style="background:#fff;color:#C0392B;border-color:#C0392B;flex-shrink:0" onclick="krDelete(\''+k.docId+'\')">'+t('bl_del_btn')+'</button>'
+      +'</div>';
+  }).join('');
+}
+function krDelete(id){
+  var k=krList.find(function(x){return x.docId===id;}); if(!k) return;
+  if(!confirm(t('kr_del_confirm'))) return;
+  k.ref.delete().then(function(){ toast(t('bl_del_ok')); }).catch(function(e){ toast(t('kr_fail')+e.message,true); });
+}
 
 /* ════════════════════════════════════════════════
    FEATURE 4 — BELEGE (Hóa đơn hoàn ứng)
@@ -4534,14 +4607,23 @@ function blRender(){
     // Ablehnungsgrund (z.B. Frist abgelaufen) wird direkt hier angezeigt,
     // statt separat per WhatsApp mitgeteilt zu werden.
     var rejectedBanner=d.status==='rejected'?('<div style="margin-top:6px;padding:8px;border-radius:6px;background:#FBEAE7;color:#C0392B;font-size:12px;font-weight:700">'+t('bl_rejected_banner')+(d.rejectReason?'<div style="font-weight:400;margin-top:2px">'+blEsc(d.rejectReason)+'</div>':'')+'<button class="btn" style="margin-top:6px;width:100%;background:#fff" onclick="blAckReject(\''+b.docId+'\')">'+t('bl_reject_ack_btn')+'</button></div>'):'';
+    // Löschen nur, solange der Gebietsleiter den Beleg noch nicht bearbeitet
+    // hat (status noch 'new') - z.B. um ein versehentlich doppelt
+    // hochgeladenes Foto wieder zu entfernen (Auftrag t.duong 29.09.2026).
+    var delBtn=d.status==='new'?('<button class="btn btn-sm" style="margin-top:6px;background:#fff;color:#C0392B;border-color:#C0392B" onclick="blDelete(\''+b.docId+'\')">'+t('bl_del_btn')+'</button>'):'';
     return '<div style="display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid #E8E4E0;border-left:4px solid '+m.c+';border-radius:6px;margin-bottom:8px">'
       +(d.img?'<img src="'+d.img+'" style="width:56px;height:56px;object-fit:cover;border-radius:6px;flex-shrink:0">':'')
       +'<div style="flex:1;min-width:0"><div style="font-weight:700">'+(d.amount?d.amount.toFixed(2)+' €':'')+' <span style="font-weight:400;color:var(--mut);font-size:12px">'+(d.note||'')+'</span></div>'
       +'<div style="font-size:11px;color:var(--mut)">'+dt+'</div>'
       +'<span style="display:inline-block;margin-top:4px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:'+m.bg+';color:'+m.c+'">'+m.txt+'</span>'
-      +paidBanner+rejectedBanner
+      +paidBanner+rejectedBanner+delBtn
       +'</div></div>';
   }).join('');
+}
+function blDelete(id){
+  var b=blList.find(function(x){return x.docId===id;}); if(!b) return;
+  if(!confirm(t('bl_del_confirm'))) return;
+  b.ref.delete().then(function(){ toast(t('bl_del_ok')); }).catch(function(e){ toast(t('bl_fail')+e.message,true); });
 }
 function blConfirm(id){
   var b=blList.find(function(x){return x.docId===id;}); if(!b) return;
