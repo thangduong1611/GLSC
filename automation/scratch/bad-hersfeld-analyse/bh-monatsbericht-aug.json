@@ -1,0 +1,2276 @@
+[
+  {
+    "datum": "01.08.2026",
+    "produkt": "Maki Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "19,16 €"
+  },
+  {
+    "datum": "01.08.2026",
+    "produkt": "Maki Gurke",
+    "anzahl": "4",
+    "gesamtpreis": "17,96 €"
+  },
+  {
+    "datum": "01.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "01.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "01.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "01.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "01.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "01.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "01.08.2026",
+    "produkt": "MakiNigi Salmon",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "01.08.2026",
+    "produkt": "Futo Sake Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "01.08.2026",
+    "produkt": "Futo Sake Big Mix",
+    "anzahl": "4",
+    "gesamtpreis": "55,96 €"
+  },
+  {
+    "datum": "01.08.2026",
+    "produkt": "Sake Lunch Box",
+    "anzahl": "4",
+    "gesamtpreis": "53,96 €"
+  },
+  {
+    "datum": "01.08.2026",
+    "produkt": "Veggy Easy",
+    "anzahl": "1",
+    "gesamtpreis": "8,59 €"
+  },
+  {
+    "datum": "01.08.2026",
+    "produkt": "Salmon Dinner Supreme",
+    "anzahl": "4",
+    "gesamtpreis": "75,96 €"
+  },
+  {
+    "datum": "01.08.2026",
+    "produkt": "Lachs Box",
+    "anzahl": "2",
+    "gesamtpreis": "30,98 €"
+  },
+  {
+    "datum": "01.08.2026",
+    "produkt": "Jubiläumsbox",
+    "anzahl": "2",
+    "gesamtpreis": "53,98 €"
+  },
+  {
+    "datum": "03.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "03.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "03.08.2026",
+    "produkt": "MakiNigi Salmon",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "03.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "03.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "03.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "03.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "03.08.2026",
+    "produkt": "Krabben Avocado Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "03.08.2026",
+    "produkt": "Futo Sake Big Mix",
+    "anzahl": "4",
+    "gesamtpreis": "55,96 €"
+  },
+  {
+    "datum": "03.08.2026",
+    "produkt": "Sake Lunch Box",
+    "anzahl": "4",
+    "gesamtpreis": "53,96 €"
+  },
+  {
+    "datum": "03.08.2026",
+    "produkt": "Glücks Circle Box",
+    "anzahl": "4",
+    "gesamtpreis": "75,96 €"
+  },
+  {
+    "datum": "03.08.2026",
+    "produkt": "Yakitori Spiesse",
+    "anzahl": "4",
+    "gesamtpreis": "19,96 €"
+  },
+  {
+    "datum": "03.08.2026",
+    "produkt": "Mochi Kakao",
+    "anzahl": "1",
+    "gesamtpreis": "3,49 €"
+  },
+  {
+    "datum": "03.08.2026",
+    "produkt": "Mochi Mango",
+    "anzahl": "1",
+    "gesamtpreis": "3,49 €"
+  },
+  {
+    "datum": "04.08.2026",
+    "produkt": "Yakitori Spiesse",
+    "anzahl": "3",
+    "gesamtpreis": "14,97 €"
+  },
+  {
+    "datum": "04.08.2026",
+    "produkt": "Teriyaki Chicken Karaage",
+    "anzahl": "4",
+    "gesamtpreis": "25,96 €"
+  },
+  {
+    "datum": "04.08.2026",
+    "produkt": "Korean Chicken Karaage",
+    "anzahl": "4",
+    "gesamtpreis": "25,96 €"
+  },
+  {
+    "datum": "04.08.2026",
+    "produkt": "Chicken Gyoza",
+    "anzahl": "3",
+    "gesamtpreis": "15,87 €"
+  },
+  {
+    "datum": "04.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "04.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "04.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "04.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "6",
+    "gesamtpreis": "53,94 €"
+  },
+  {
+    "datum": "04.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "04.08.2026",
+    "produkt": "MakiNigi Salmon",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "04.08.2026",
+    "produkt": "Futo Sake Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "04.08.2026",
+    "produkt": "Krabben Avocado Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "04.08.2026",
+    "produkt": "Wundertüte",
+    "anzahl": "2",
+    "gesamtpreis": "19,98 €"
+  },
+  {
+    "datum": "04.08.2026",
+    "produkt": "Salmon Dinner Supreme",
+    "anzahl": "4",
+    "gesamtpreis": "75,96 €"
+  },
+  {
+    "datum": "04.08.2026",
+    "produkt": "Futo Sake Big Mix",
+    "anzahl": "4",
+    "gesamtpreis": "55,96 €"
+  },
+  {
+    "datum": "05.08.2026",
+    "produkt": "Yakitori Spiesse",
+    "anzahl": "4",
+    "gesamtpreis": "19,96 €"
+  },
+  {
+    "datum": "05.08.2026",
+    "produkt": "Teriyaki Chicken Karaage",
+    "anzahl": "2",
+    "gesamtpreis": "12,98 €"
+  },
+  {
+    "datum": "05.08.2026",
+    "produkt": "Korean Chicken Karaage",
+    "anzahl": "3",
+    "gesamtpreis": "19,47 €"
+  },
+  {
+    "datum": "05.08.2026",
+    "produkt": "Chicken Gyoza",
+    "anzahl": "3",
+    "gesamtpreis": "15,87 €"
+  },
+  {
+    "datum": "05.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "05.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "05.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "05.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "05.08.2026",
+    "produkt": "Krabben Avocado Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "05.08.2026",
+    "produkt": "Maki Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "19,16 €"
+  },
+  {
+    "datum": "05.08.2026",
+    "produkt": "Maki Gurke",
+    "anzahl": "4",
+    "gesamtpreis": "17,96 €"
+  },
+  {
+    "datum": "05.08.2026",
+    "produkt": "Maki Lachs",
+    "anzahl": "4",
+    "gesamtpreis": "19,96 €"
+  },
+  {
+    "datum": "05.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "05.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "05.08.2026",
+    "produkt": "Futo Sake Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "05.08.2026",
+    "produkt": "Futo Sake Big Mix",
+    "anzahl": "4",
+    "gesamtpreis": "55,96 €"
+  },
+  {
+    "datum": "05.08.2026",
+    "produkt": "Sake Lunch Box",
+    "anzahl": "4",
+    "gesamtpreis": "53,96 €"
+  },
+  {
+    "datum": "05.08.2026",
+    "produkt": "Salmon Dinner Supreme",
+    "anzahl": "4",
+    "gesamtpreis": "75,96 €"
+  },
+  {
+    "datum": "06.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "06.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "06.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "06.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "06.08.2026",
+    "produkt": "Krabben Avocado Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "06.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "06.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "06.08.2026",
+    "produkt": "MakiNigi Salmon",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "06.08.2026",
+    "produkt": "Futo Sake Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "06.08.2026",
+    "produkt": "Sakana Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "37,16 €"
+  },
+  {
+    "datum": "06.08.2026",
+    "produkt": "Masago Rainbow",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "06.08.2026",
+    "produkt": "FutoNigi Big Mix",
+    "anzahl": "4",
+    "gesamtpreis": "59,96 €"
+  },
+  {
+    "datum": "06.08.2026",
+    "produkt": "Futo Sake Big Mix",
+    "anzahl": "4",
+    "gesamtpreis": "55,96 €"
+  },
+  {
+    "datum": "06.08.2026",
+    "produkt": "Wundertüte",
+    "anzahl": "1",
+    "gesamtpreis": "9,99 €"
+  },
+  {
+    "datum": "07.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "07.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "07.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "07.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "07.08.2026",
+    "produkt": "MakiNigi Supreme",
+    "anzahl": "4",
+    "gesamtpreis": "41,96 €"
+  },
+  {
+    "datum": "07.08.2026",
+    "produkt": "MakiNigi Salmon",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "07.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "07.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "07.08.2026",
+    "produkt": "Glücks Circle Box",
+    "anzahl": "4",
+    "gesamtpreis": "75,96 €"
+  },
+  {
+    "datum": "07.08.2026",
+    "produkt": "Sake Lunch Box",
+    "anzahl": "4",
+    "gesamtpreis": "53,96 €"
+  },
+  {
+    "datum": "07.08.2026",
+    "produkt": "Chicken Mexican Mix",
+    "anzahl": "2",
+    "gesamtpreis": "29,98 €"
+  },
+  {
+    "datum": "07.08.2026",
+    "produkt": "Chicken Mexican Roll",
+    "anzahl": "2",
+    "gesamtpreis": "17,98 €"
+  },
+  {
+    "datum": "07.08.2026",
+    "produkt": "Salmon Mexican Roll",
+    "anzahl": "2",
+    "gesamtpreis": "17,98 €"
+  },
+  {
+    "datum": "07.08.2026",
+    "produkt": "Wundertüte",
+    "anzahl": "2",
+    "gesamtpreis": "19,98 €"
+  },
+  {
+    "datum": "08.08.2026",
+    "produkt": "Yakitori Spiesse",
+    "anzahl": "4",
+    "gesamtpreis": "19,96 €"
+  },
+  {
+    "datum": "08.08.2026",
+    "produkt": "Chicken Gyoza",
+    "anzahl": "1",
+    "gesamtpreis": "5,29 €"
+  },
+  {
+    "datum": "08.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "08.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "6",
+    "gesamtpreis": "53,94 €"
+  },
+  {
+    "datum": "08.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "08.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "08.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "08.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "08.08.2026",
+    "produkt": "Krabben Avocado Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "08.08.2026",
+    "produkt": "Futo Sake Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "08.08.2026",
+    "produkt": "MakiNigi Salmon",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "08.08.2026",
+    "produkt": "MakiNigi Lachs Mix",
+    "anzahl": "4",
+    "gesamtpreis": "41,96 €"
+  },
+  {
+    "datum": "08.08.2026",
+    "produkt": "Sake Lunch Box",
+    "anzahl": "4",
+    "gesamtpreis": "53,96 €"
+  },
+  {
+    "datum": "08.08.2026",
+    "produkt": "FutoNigi Big Mix",
+    "anzahl": "4",
+    "gesamtpreis": "59,96 €"
+  },
+  {
+    "datum": "10.08.2026",
+    "produkt": "Yakitori Spiesse",
+    "anzahl": "4",
+    "gesamtpreis": "19,96 €"
+  },
+  {
+    "datum": "10.08.2026",
+    "produkt": "Chicken Gyoza",
+    "anzahl": "3",
+    "gesamtpreis": "15,87 €"
+  },
+  {
+    "datum": "10.08.2026",
+    "produkt": "Teriyaki Chicken Gyoza",
+    "anzahl": "3",
+    "gesamtpreis": "17,37 €"
+  },
+  {
+    "datum": "10.08.2026",
+    "produkt": "Wakame Salat",
+    "anzahl": "4",
+    "gesamtpreis": "15,96 €"
+  },
+  {
+    "datum": "10.08.2026",
+    "produkt": "Ingwer",
+    "anzahl": "4",
+    "gesamtpreis": "13,16 €"
+  },
+  {
+    "datum": "10.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "10.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "10.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "10.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "10.08.2026",
+    "produkt": "Krabben Avocado Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "10.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "10.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "10.08.2026",
+    "produkt": "MakiNigi Salmon",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "10.08.2026",
+    "produkt": "Futo Sake Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "10.08.2026",
+    "produkt": "MakiNigi Supreme",
+    "anzahl": "4",
+    "gesamtpreis": "41,96 €"
+  },
+  {
+    "datum": "10.08.2026",
+    "produkt": "Sake Lunch Box",
+    "anzahl": "4",
+    "gesamtpreis": "53,96 €"
+  },
+  {
+    "datum": "10.08.2026",
+    "produkt": "Futo Sake Big Mix",
+    "anzahl": "4",
+    "gesamtpreis": "55,96 €"
+  },
+  {
+    "datum": "11.08.2026",
+    "produkt": "Chicken Gyoza",
+    "anzahl": "3",
+    "gesamtpreis": "15,87 €"
+  },
+  {
+    "datum": "11.08.2026",
+    "produkt": "Teriyaki Chicken Gyoza",
+    "anzahl": "3",
+    "gesamtpreis": "17,37 €"
+  },
+  {
+    "datum": "11.08.2026",
+    "produkt": "Yakitori Spiesse",
+    "anzahl": "4",
+    "gesamtpreis": "19,96 €"
+  },
+  {
+    "datum": "11.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "11.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "11.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "11.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "11.08.2026",
+    "produkt": "Krabben Avocado Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "11.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "11.08.2026",
+    "produkt": "MakiNigi Salmon",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "11.08.2026",
+    "produkt": "Futo Sake Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "11.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "11.08.2026",
+    "produkt": "MakiNigi Lachs Mix",
+    "anzahl": "4",
+    "gesamtpreis": "41,96 €"
+  },
+  {
+    "datum": "11.08.2026",
+    "produkt": "Sake Lunch Box",
+    "anzahl": "4",
+    "gesamtpreis": "53,96 €"
+  },
+  {
+    "datum": "11.08.2026",
+    "produkt": "Salmon Dinner Supreme",
+    "anzahl": "4",
+    "gesamtpreis": "75,96 €"
+  },
+  {
+    "datum": "12.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "12.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "12.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "12.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "5",
+    "gesamtpreis": "44,95 €"
+  },
+  {
+    "datum": "12.08.2026",
+    "produkt": "Krabben Avocado Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "12.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "12.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "12.08.2026",
+    "produkt": "Futo Sake Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "12.08.2026",
+    "produkt": "Sake Lunch Box",
+    "anzahl": "4",
+    "gesamtpreis": "53,96 €"
+  },
+  {
+    "datum": "12.08.2026",
+    "produkt": "Glücks Circle Box",
+    "anzahl": "4",
+    "gesamtpreis": "75,96 €"
+  },
+  {
+    "datum": "12.08.2026",
+    "produkt": "Salmon Dinner Supreme",
+    "anzahl": "4",
+    "gesamtpreis": "75,96 €"
+  },
+  {
+    "datum": "13.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "13.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "13.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "13.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "13.08.2026",
+    "produkt": "Lachs Gurke Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "13.08.2026",
+    "produkt": "Krabben Avocado Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "13.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "13.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "13.08.2026",
+    "produkt": "Sakana Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "37,16 €"
+  },
+  {
+    "datum": "13.08.2026",
+    "produkt": "Veggy Easy",
+    "anzahl": "2",
+    "gesamtpreis": "17,18 €"
+  },
+  {
+    "datum": "13.08.2026",
+    "produkt": "Sake Lunch Box",
+    "anzahl": "4",
+    "gesamtpreis": "53,96 €"
+  },
+  {
+    "datum": "13.08.2026",
+    "produkt": "Salmon Dinner Supreme",
+    "anzahl": "4",
+    "gesamtpreis": "75,96 €"
+  },
+  {
+    "datum": "13.08.2026",
+    "produkt": "Wundertüte",
+    "anzahl": "3",
+    "gesamtpreis": "29,97 €"
+  },
+  {
+    "datum": "14.08.2026",
+    "produkt": "Yakitori Spiesse",
+    "anzahl": "4",
+    "gesamtpreis": "19,96 €"
+  },
+  {
+    "datum": "14.08.2026",
+    "produkt": "Teriyaki Chicken Gyoza",
+    "anzahl": "3",
+    "gesamtpreis": "17,37 €"
+  },
+  {
+    "datum": "14.08.2026",
+    "produkt": "Chicken Gyoza",
+    "anzahl": "3",
+    "gesamtpreis": "15,87 €"
+  },
+  {
+    "datum": "14.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "14.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "14.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "14.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "14.08.2026",
+    "produkt": "Krabben Avocado Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "14.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "14.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "14.08.2026",
+    "produkt": "MakiNigi Salmon",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "14.08.2026",
+    "produkt": "Futo Sake Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "14.08.2026",
+    "produkt": "MakiNigi Supreme",
+    "anzahl": "4",
+    "gesamtpreis": "41,96 €"
+  },
+  {
+    "datum": "14.08.2026",
+    "produkt": "Salmon Dinner Supreme",
+    "anzahl": "4",
+    "gesamtpreis": "75,96 €"
+  },
+  {
+    "datum": "14.08.2026",
+    "produkt": "Sake Lunch Box",
+    "anzahl": "4",
+    "gesamtpreis": "53,96 €"
+  },
+  {
+    "datum": "15.08.2026",
+    "produkt": "Krabben Avocado Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "15.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "15.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "15.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "15.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "15.08.2026",
+    "produkt": "MakiNigi Salmon",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "15.08.2026",
+    "produkt": "Futo Sake Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "15.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "15.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "15.08.2026",
+    "produkt": "Lachs Gurke Special",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "15.08.2026",
+    "produkt": "Salmon Dinner Supreme",
+    "anzahl": "4",
+    "gesamtpreis": "75,96 €"
+  },
+  {
+    "datum": "15.08.2026",
+    "produkt": "Sake Lunch Box",
+    "anzahl": "4",
+    "gesamtpreis": "53,96 €"
+  },
+  {
+    "datum": "15.08.2026",
+    "produkt": "Jubiläumsbox",
+    "anzahl": "2",
+    "gesamtpreis": "53,98 €"
+  },
+  {
+    "datum": "17.08.2026",
+    "produkt": "Yakitori Spiesse",
+    "anzahl": "4",
+    "gesamtpreis": "19,96 €"
+  },
+  {
+    "datum": "17.08.2026",
+    "produkt": "Teriyaki Chicken Gyoza",
+    "anzahl": "3",
+    "gesamtpreis": "17,37 €"
+  },
+  {
+    "datum": "17.08.2026",
+    "produkt": "Chicken Gyoza",
+    "anzahl": "3",
+    "gesamtpreis": "15,87 €"
+  },
+  {
+    "datum": "17.08.2026",
+    "produkt": "Krabben Avocado Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "17.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "17.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "17.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "17.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "17.08.2026",
+    "produkt": "MakiNigi Salmon",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "17.08.2026",
+    "produkt": "Futo Sake Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "17.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "14.08.2026",
+    "produkt": "Sake Lunch Box",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "17.08.2026",
+    "produkt": "Sakana Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "37,16 €"
+  },
+  {
+    "datum": "17.08.2026",
+    "produkt": "Glücks Circle Box",
+    "anzahl": "4",
+    "gesamtpreis": "75,96 €"
+  },
+  {
+    "datum": "17.08.2026",
+    "produkt": "Salmon Dinner Supreme",
+    "anzahl": "4",
+    "gesamtpreis": "75,96 €"
+  },
+  {
+    "datum": "18.08.2026",
+    "produkt": "Krabben Avocado Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "18.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "18.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "18.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "18.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "18.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "18.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "18.08.2026",
+    "produkt": "Futo Sake Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "18.08.2026",
+    "produkt": "Lachs Gurke Special",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "18.08.2026",
+    "produkt": "Sakana Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "37,16 €"
+  },
+  {
+    "datum": "18.08.2026",
+    "produkt": "Salmon Dinner Supreme",
+    "anzahl": "4",
+    "gesamtpreis": "75,96 €"
+  },
+  {
+    "datum": "18.08.2026",
+    "produkt": "Sake Lunch Box",
+    "anzahl": "4",
+    "gesamtpreis": "53,96 €"
+  },
+  {
+    "datum": "19.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "19.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "19.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "19.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "19.08.2026",
+    "produkt": "Lachs Gurke Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "19.08.2026",
+    "produkt": "Krabben Avocado Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "19.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "19.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "19.08.2026",
+    "produkt": "MakiNigi Salmon",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "19.08.2026",
+    "produkt": "Futo Sake Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "19.08.2026",
+    "produkt": "MakiNigi Lachs Mix",
+    "anzahl": "4",
+    "gesamtpreis": "41,96 €"
+  },
+  {
+    "datum": "19.08.2026",
+    "produkt": "Veggy Easy",
+    "anzahl": "2",
+    "gesamtpreis": "17,18 €"
+  },
+  {
+    "datum": "19.08.2026",
+    "produkt": "Veggy Pur",
+    "anzahl": "2",
+    "gesamtpreis": "17,18 €"
+  },
+  {
+    "datum": "19.08.2026",
+    "produkt": "Avocado Frischkäse",
+    "anzahl": "2",
+    "gesamtpreis": "17,18 €"
+  },
+  {
+    "datum": "19.08.2026",
+    "produkt": "Futo Sake Big Mix",
+    "anzahl": "2",
+    "gesamtpreis": "27,98 €"
+  },
+  {
+    "datum": "19.08.2026",
+    "produkt": "Sake Lunch Box",
+    "anzahl": "4",
+    "gesamtpreis": "53,96 €"
+  },
+  {
+    "datum": "20.08.2026",
+    "produkt": "Yakitori Spiesse",
+    "anzahl": "4",
+    "gesamtpreis": "19,96 €"
+  },
+  {
+    "datum": "20.08.2026",
+    "produkt": "Teriyaki Chicken Karaage",
+    "anzahl": "4",
+    "gesamtpreis": "25,96 €"
+  },
+  {
+    "datum": "20.08.2026",
+    "produkt": "Korean Chicken Karaage",
+    "anzahl": "4",
+    "gesamtpreis": "25,96 €"
+  },
+  {
+    "datum": "20.08.2026",
+    "produkt": "Chicken Karaage",
+    "anzahl": "4",
+    "gesamtpreis": "25,96 €"
+  },
+  {
+    "datum": "20.08.2026",
+    "produkt": "Teriyaki Chicken Gyoza",
+    "anzahl": "3",
+    "gesamtpreis": "17,37 €"
+  },
+  {
+    "datum": "20.08.2026",
+    "produkt": "Chicken Gyoza",
+    "anzahl": "3",
+    "gesamtpreis": "15,87 €"
+  },
+  {
+    "datum": "20.08.2026",
+    "produkt": "Krabben Avocado Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "20.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "20.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "20.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "20.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "20.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "20.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "20.08.2026",
+    "produkt": "MakiNigi Supreme",
+    "anzahl": "4",
+    "gesamtpreis": "41,96 €"
+  },
+  {
+    "datum": "20.08.2026",
+    "produkt": "Futo Sake Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "20.08.2026",
+    "produkt": "Salmon Dinner Supreme",
+    "anzahl": "4",
+    "gesamtpreis": "75,96 €"
+  },
+  {
+    "datum": "20.08.2026",
+    "produkt": "Glücks Circle Box",
+    "anzahl": "4",
+    "gesamtpreis": "75,96 €"
+  },
+  {
+    "datum": "20.08.2026",
+    "produkt": "Veggy Easy",
+    "anzahl": "2",
+    "gesamtpreis": "17,18 €"
+  },
+  {
+    "datum": "20.08.2026",
+    "produkt": "Veggy Pur",
+    "anzahl": "2",
+    "gesamtpreis": "17,18 €"
+  },
+  {
+    "datum": "20.08.2026",
+    "produkt": "Gurke Frischkäse",
+    "anzahl": "2",
+    "gesamtpreis": "15,98 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Krabben Avocado Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Futo Sake Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Lachs Gurke Special",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Sakana Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "37,16 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Salmon Dinner Supreme",
+    "anzahl": "4",
+    "gesamtpreis": "75,96 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Sake Lunch Box",
+    "anzahl": "4",
+    "gesamtpreis": "53,96 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Wundertüte",
+    "anzahl": "2",
+    "gesamtpreis": "19,98 €"
+  },
+  {
+    "datum": "22.08.2026",
+    "produkt": "Krabben Avocado Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "22.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "22.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "22.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "22.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "22.08.2026",
+    "produkt": "Veggy Easy",
+    "anzahl": "2",
+    "gesamtpreis": "17,18 €"
+  },
+  {
+    "datum": "22.08.2026",
+    "produkt": "Veggy Pur",
+    "anzahl": "2",
+    "gesamtpreis": "17,18 €"
+  },
+  {
+    "datum": "22.08.2026",
+    "produkt": "Veggy Pur Crunchy",
+    "anzahl": "2",
+    "gesamtpreis": "17,18 €"
+  },
+  {
+    "datum": "22.08.2026",
+    "produkt": "Avocado Frischkäse",
+    "anzahl": "2",
+    "gesamtpreis": "17,18 €"
+  },
+  {
+    "datum": "22.08.2026",
+    "produkt": "Gurke Frischkäse",
+    "anzahl": "2",
+    "gesamtpreis": "15,98 €"
+  },
+  {
+    "datum": "20.08.2026",
+    "produkt": "Veggy Pur",
+    "anzahl": "2",
+    "gesamtpreis": "17,18 €"
+  },
+  {
+    "datum": "20.08.2026",
+    "produkt": "Gurke Frischkäse",
+    "anzahl": "2",
+    "gesamtpreis": "15,98 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Krabben Avocado Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Futo Sake Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Lachs Gurke Special",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Sakana Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "37,16 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Salmon Dinner Supreme",
+    "anzahl": "4",
+    "gesamtpreis": "75,96 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Sake Lunch Box",
+    "anzahl": "4",
+    "gesamtpreis": "53,96 €"
+  },
+  {
+    "datum": "21.08.2026",
+    "produkt": "Wundertüte",
+    "anzahl": "2",
+    "gesamtpreis": "19,98 €"
+  },
+  {
+    "datum": "22.08.2026",
+    "produkt": "Krabben Avocado Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "22.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "22.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "22.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "22.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "22.08.2026",
+    "produkt": "Veggy Easy",
+    "anzahl": "2",
+    "gesamtpreis": "17,18 €"
+  },
+  {
+    "datum": "22.08.2026",
+    "produkt": "Veggy Pur",
+    "anzahl": "2",
+    "gesamtpreis": "17,18 €"
+  },
+  {
+    "datum": "22.08.2026",
+    "produkt": "Veggy Pur Crunchy",
+    "anzahl": "2",
+    "gesamtpreis": "17,18 €"
+  },
+  {
+    "datum": "22.08.2026",
+    "produkt": "Avocado Frischkäse",
+    "anzahl": "2",
+    "gesamtpreis": "17,18 €"
+  },
+  {
+    "datum": "22.08.2026",
+    "produkt": "Gurke Frischkäse",
+    "anzahl": "2",
+    "gesamtpreis": "15,98 €"
+  },
+  {
+    "datum": "25.08.2026",
+    "produkt": "Krabben Avocado Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "25.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "25.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "25.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "25.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "25.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "25.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "25.08.2026",
+    "produkt": "Futo Sake Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "25.08.2026",
+    "produkt": "Salmon Dinner Supreme",
+    "anzahl": "4",
+    "gesamtpreis": "75,96 €"
+  },
+  {
+    "datum": "25.08.2026",
+    "produkt": "Glücks Circle Box",
+    "anzahl": "4",
+    "gesamtpreis": "75,96 €"
+  },
+  {
+    "datum": "26.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "26.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "26.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "26.08.2026",
+    "produkt": "Lachs Gurke Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "26.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "26.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "26.08.2026",
+    "produkt": "MakiNigi Supreme",
+    "anzahl": "4",
+    "gesamtpreis": "41,96 €"
+  },
+  {
+    "datum": "26.08.2026",
+    "produkt": "MakiNigi Salmon",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "26.08.2026",
+    "produkt": "Futo Sake Big Mix",
+    "anzahl": "4",
+    "gesamtpreis": "55,96 €"
+  },
+  {
+    "datum": "26.08.2026",
+    "produkt": "Sake Lunch Box",
+    "anzahl": "4",
+    "gesamtpreis": "53,96 €"
+  },
+  {
+    "datum": "26.08.2026",
+    "produkt": "Maki Gurke",
+    "anzahl": "4",
+    "gesamtpreis": "17,96 €"
+  },
+  {
+    "datum": "26.08.2026",
+    "produkt": "Maki Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "19,16 €"
+  },
+  {
+    "datum": "26.08.2026",
+    "produkt": "Veggy Easy",
+    "anzahl": "2",
+    "gesamtpreis": "17,18 €"
+  },
+  {
+    "datum": "26.08.2026",
+    "produkt": "Veggy Pur",
+    "anzahl": "2",
+    "gesamtpreis": "17,18 €"
+  },
+  {
+    "datum": "26.08.2026",
+    "produkt": "Avocado Frischkäse",
+    "anzahl": "2",
+    "gesamtpreis": "17,18 €"
+  },
+  {
+    "datum": "26.08.2026",
+    "produkt": "Gurke Frischkäse",
+    "anzahl": "2",
+    "gesamtpreis": "15,98 €"
+  },
+  {
+    "datum": "27.08.2026",
+    "produkt": "Yakitori Spiesse",
+    "anzahl": "4",
+    "gesamtpreis": "19,96 €"
+  },
+  {
+    "datum": "27.08.2026",
+    "produkt": "Korean Chicken Karaage",
+    "anzahl": "4",
+    "gesamtpreis": "25,96 €"
+  },
+  {
+    "datum": "27.08.2026",
+    "produkt": "Wakame Salat",
+    "anzahl": "4",
+    "gesamtpreis": "15,96 €"
+  },
+  {
+    "datum": "27.08.2026",
+    "produkt": "Veggy Time Party",
+    "anzahl": "1",
+    "gesamtpreis": "44,99 €"
+  },
+  {
+    "datum": "27.08.2026",
+    "produkt": "Family Party",
+    "anzahl": "1",
+    "gesamtpreis": "65,99 €"
+  },
+  {
+    "datum": "27.08.2026",
+    "produkt": "Krabben Avocado Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "27.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "27.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "27.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "27.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "27.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "27.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "27.08.2026",
+    "produkt": "Glücks Circle Box",
+    "anzahl": "4",
+    "gesamtpreis": "75,96 €"
+  },
+  {
+    "datum": "27.08.2026",
+    "produkt": "FutoNigi Big Mix",
+    "anzahl": "4",
+    "gesamtpreis": "59,96 €"
+  },
+  {
+    "datum": "28.08.2026",
+    "produkt": "Krabben Avocado Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "28.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "28.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "6",
+    "gesamtpreis": "53,94 €"
+  },
+  {
+    "datum": "28.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "28.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "28.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "28.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "28.08.2026",
+    "produkt": "Lachs Gurke Special",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "28.08.2026",
+    "produkt": "Futo Sake Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "28.08.2026",
+    "produkt": "Salmon Dinner Supreme",
+    "anzahl": "4",
+    "gesamtpreis": "75,96 €"
+  },
+  {
+    "datum": "28.08.2026",
+    "produkt": "Sake Lunch Box",
+    "anzahl": "4",
+    "gesamtpreis": "53,96 €"
+  },
+  {
+    "datum": "29.08.2026",
+    "produkt": "Chicken Gyoza Udon Noodle",
+    "anzahl": "2",
+    "gesamtpreis": "16,98 €"
+  },
+  {
+    "datum": "29.08.2026",
+    "produkt": "Chicken Katsu Udon Noodle",
+    "anzahl": "2",
+    "gesamtpreis": "16,98 €"
+  },
+  {
+    "datum": "29.08.2026",
+    "produkt": "Korean Chicken Udon Noodle",
+    "anzahl": "2",
+    "gesamtpreis": "16,98 €"
+  },
+  {
+    "datum": "29.08.2026",
+    "produkt": "Teriyaki Chicken Udon Noodle",
+    "anzahl": "2",
+    "gesamtpreis": "16,98 €"
+  },
+  {
+    "datum": "29.08.2026",
+    "produkt": "Maki Gurke",
+    "anzahl": "4",
+    "gesamtpreis": "17,96 €"
+  },
+  {
+    "datum": "29.08.2026",
+    "produkt": "Maki Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "19,16 €"
+  },
+  {
+    "datum": "29.08.2026",
+    "produkt": "Krabben Avocado Crunchy",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "29.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "6",
+    "gesamtpreis": "53,94 €"
+  },
+  {
+    "datum": "29.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "29.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "29.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "29.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "29.08.2026",
+    "produkt": "Sakana Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "37,16 €"
+  },
+  {
+    "datum": "29.08.2026",
+    "produkt": "Futo Sake Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "29.08.2026",
+    "produkt": "MakiNigi Salmon",
+    "anzahl": "6",
+    "gesamtpreis": "61,74 €"
+  },
+  {
+    "datum": "29.08.2026",
+    "produkt": "MakiNigi Supreme",
+    "anzahl": "4",
+    "gesamtpreis": "41,96 €"
+  },
+  {
+    "datum": "29.08.2026",
+    "produkt": "Jubiläumsbox",
+    "anzahl": "2",
+    "gesamtpreis": "53,98 €"
+  },
+  {
+    "datum": "31.08.2026",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "anzahl": "6",
+    "gesamtpreis": "53,94 €"
+  },
+  {
+    "datum": "31.08.2026",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "anzahl": "6",
+    "gesamtpreis": "53,94 €"
+  },
+  {
+    "datum": "31.08.2026",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "anzahl": "6",
+    "gesamtpreis": "53,94 €"
+  },
+  {
+    "datum": "31.08.2026",
+    "produkt": "Futo Lachs Avocado",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "31.08.2026",
+    "produkt": "Lachs Avocado Frischkäse",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  },
+  {
+    "datum": "31.08.2026",
+    "produkt": "Futo Sake Small Mix",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "31.08.2026",
+    "produkt": "MakiNigi Salmon",
+    "anzahl": "4",
+    "gesamtpreis": "41,16 €"
+  },
+  {
+    "datum": "31.08.2026",
+    "produkt": "MakiNigi Supreme",
+    "anzahl": "4",
+    "gesamtpreis": "41,96 €"
+  },
+  {
+    "datum": "31.08.2026",
+    "produkt": "Sake Lunch Box",
+    "anzahl": "4",
+    "gesamtpreis": "53,96 €"
+  },
+  {
+    "datum": "31.08.2026",
+    "produkt": "Glücks Circle Box",
+    "anzahl": "4",
+    "gesamtpreis": "75,96 €"
+  },
+  {
+    "datum": "31.08.2026",
+    "produkt": "Chicken Tokyo",
+    "anzahl": "4",
+    "gesamtpreis": "35,96 €"
+  }
+]

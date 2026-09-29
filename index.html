@@ -3275,7 +3275,15 @@ function avCollectData(){
     s_alt: document.getElementById('av-s-alt').value, s_ab: document.getElementById('av-s-ab').value, s_neu: document.getElementById('av-s-neu').value,
     w_alt: document.getElementById('av-w-alt').value, w_ab: document.getElementById('av-w-ab').value, w_neu: document.getElementById('av-w-neu').value,
     sonstText: document.getElementById('av-sonst-text').value,
-    ortAG: document.getElementById('av-ort-ag').value || ('Hannover, '+avTodayDE())
+    ortAG: document.getElementById('av-ort-ag').value || ('Hannover, '+avTodayDE()),
+    // Bisher wurde av-sig-canvas (Arbeitgeber-Unterschrift) nur lokal in
+    // avGeneratePDF() gelesen, nie hier mitgeschickt - wer die Reihenfolge
+    // "erst Chef, dann Mitarbeiter unterschreiben lassen" nutzte, verlor die
+    // Chef-Unterschrift beim Senden komplett, weil sie nie in Firestore
+    // ankam (Auftrag t.duong 29.09.2026, live gemeldet: "Unterschrift des
+    // Chefs verschwunden"). agSig wird jetzt mitgesendet, egal ob schon
+    // ausgefüllt oder noch leer.
+    agSig: avSigHasContent() ? document.getElementById('av-sig-canvas').toDataURL('image/png') : null
   };
 }
 function avSendToEmployee(){
@@ -3317,9 +3325,13 @@ function avRenderList(){
     var d=x.d, signed=d.status==='signed';
     var m = signed ? {c:'#1E8449',bg:'#EAFAF1',txt:'✓ Vom Mitarbeiter unterschrieben'} : {c:'#B7791F',bg:'#FFF7E6',txt:'Wartet auf Unterschrift'};
     var dt=d.createdAt?new Date(d.createdAt).toLocaleDateString('de-DE'):'';
+    // Zeigt zusätzlich, ob der Chef schon VOR dem Senden unterschrieben hat
+    // (agSig) - ohne diesen Hinweis war nicht sichtbar, dass diese Unterschrift
+    // überhaupt gespeichert wurde (Auftrag t.duong 29.09.2026).
+    var agBadge = d.agSig ? '<span style="display:inline-block;margin-top:4px;margin-left:6px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:#EAF2FB;color:#1A5276">✓ Chef bereits unterschrieben</span>' : '';
     return '<div style="display:flex;gap:12px;align-items:center;padding:10px;border:1px solid #E8E4E0;border-left:4px solid '+m.c+';border-radius:6px;margin-bottom:8px;flex-wrap:wrap">'
       +'<div style="flex:1;min-width:160px"><strong>'+(d.empName||'?')+'</strong> · '+dt+'<br>'
-      +'<span style="display:inline-block;margin-top:4px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:'+m.bg+';color:'+m.c+'">'+m.txt+'</span></div>'
+      +'<span style="display:inline-block;margin-top:4px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:'+m.bg+';color:'+m.c+'">'+m.txt+'</span>'+agBadge+'</div>'
       +(signed?'<button class="btn btn-sm" style="background:#1E8449;color:#fff;border-color:#1E8449" onclick="avLoadSigned(\''+x.docId+'\')">📥 In Formular laden</button>':'')
       +'<button class="btn btn-sm" style="background:#C0392B;color:#fff;border-color:#C0392B" onclick="avDeleteItem(\''+x.docId+'\')">🗑 Löschen</button>'
       +'</div>';
@@ -3363,7 +3375,22 @@ function avLoadSigned(id){
     };
     img.src=d.anSig;
   }
-  toast('✓ Geladen — bitte als Arbeitgeber unterschreiben und PDF herunterladen.');
+  // Chef-Unterschrift ebenfalls wiederherstellen, falls schon VOR dem Senden
+  // an den Mitarbeiter ausgefüllt (Reihenfolge "erst Chef, dann Mitarbeiter")
+  // — sonst müsste sonst hier nochmal unterschrieben werden, obwohl das
+  // längst passiert ist.
+  sigClear('av-sig-canvas');
+  if(d.agSig){
+    var img2=new Image();
+    img2.onload=function(){
+      var c2=document.getElementById('av-sig-canvas'), ctx2=c2.getContext('2d');
+      ctx2.clearRect(0,0,c2.width,c2.height);
+      var scale2=Math.min(c2.width/img2.width,c2.height/img2.height)*0.9;
+      ctx2.drawImage(img2,(c2.width-img2.width*scale2)/2,(c2.height-img2.height*scale2)/2,img2.width*scale2,img2.height*scale2);
+    };
+    img2.src=d.agSig;
+  }
+  toast(d.agSig ? '✓ Geladen - beide Unterschriften vorhanden, jetzt PDF herunterladen.' : '✓ Geladen - bitte als Arbeitgeber unterschreiben und PDF herunterladen.');
 }
 
 // ── Filialen: PLZ & Ort Verwaltung (für Stundennachweis) ──

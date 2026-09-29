@@ -1,0 +1,22 @@
+Gesamt Docs für 402146: 21
+2026-09-09 | Umsatz: 611.71 | Ware: 49 | Sorten: 13 | SX: 10:14 - 13:37 | Top: Sake Lunch Box
+2026-09-10 | Umsatz: 603.05 | Ware: 65 | Sorten: 17 | SX: 09:50 - 12:46 | Top: Sake Lunch Box
+2026-09-11 | Umsatz: 591.58 | Ware: 62 | Sorten: 14 | SX: 11:01 - 13:40 | Top: Sake Lunch Box
+2026-09-12 | Umsatz: 616.57 | Ware: 63 | Sorten: 15 | SX: 08:35 - 12:01 | Top: Sake Lunch Box
+2026-09-13 | Umsatz: 0 | Ware: 0 | Sorten: 0 | SX: null - null | Top: Sake Lunch Box
+2026-09-14 | Umsatz: 604.4 | Ware: 60 | Sorten: 15 | SX: 08:42 - 12:15 | Top: Sake Lunch Box
+2026-09-15 | Umsatz: 461.02 | Ware: 58 | Sorten: 18 | SX: 10:06 - 10:56 | Top: Sake Lunch Box
+2026-09-16 | Umsatz: 671.56 | Ware: 74 | Sorten: 25 | SX: 10:52 - 12:32 | Top: Sake Lunch Box
+2026-09-17 | Umsatz: 683.64 | Ware: 76 | Sorten: 32 | SX: 10:55 - 12:51 | Top: Sake Lunch Box
+2026-09-18 | Umsatz: 728.86 | Ware: 74 | Sorten: 31 | SX: 10:51 - 12:38 | Top: Sake Lunch Box
+2026-09-19 | Umsatz: 872.11 | Ware: 99 | Sorten: 34 | SX: 09:11 - 12:04 | Top: Sake Lunch Box
+2026-09-20 | Umsatz: 0 | Ware: 0 | Sorten: 0 | SX: null - null | Top: Sake Lunch Box
+2026-09-21 | Umsatz: 728.78 | Ware: 82 | Sorten: 33 | SX: 09:26 - 12:04 | Top: Sake Lunch Box
+2026-09-22 | Umsatz: 628.5 | Ware: 70 | Sorten: 22 | SX: 08:24 - 13:28 | Top: Sake Lunch Box
+2026-09-23 | Umsatz: 621.75 | Ware: 65 | Sorten: 20 | SX: 10:05 - 13:20 | Top: Sake Lunch Box
+2026-09-24 | Umsatz: 619.6 | Ware: 60 | Sorten: 16 | SX: 08:38 - 13:10 | Top: Sake Lunch Box
+2026-09-25 | Umsatz: 606.77 | Ware: 63 | Sorten: 18 | SX: 09:03 - 12:18 | Top: Sake Lunch Box
+2026-09-26 | Umsatz: 608.27 | Ware: 73 | Sorten: 17 | SX: 08:55 - 12:16 | Top: Sake Lunch Box
+2026-09-27 | Umsatz: 0 | Ware: 0 | Sorten: 0 | SX: null - null | Top: Sake Lunch Box
+2026-09-28 | Umsatz: 0 | Ware: 0 | Sorten: 0 | SX: null - null | Top: Sake Lunch Box
+2026-09-29 | Umsatz: 0 | Ware: 0 | Sorten: 0 | SX: null - null | Top: Sake Lunch Box

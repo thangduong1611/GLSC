@@ -1,0 +1,298 @@
+[
+  {
+    "uhrzeit": "08:40",
+    "produkt": "Korean Chicken Donburi",
+    "ean": "4262415160427",
+    "anzahl": "2",
+    "einzelpreis": "8,49 €",
+    "gesamtpreis": "16,98 €"
+  },
+  {
+    "uhrzeit": "08:41",
+    "produkt": "Teriyaki Chicken Gyoza",
+    "ean": "4262415160342",
+    "anzahl": "3",
+    "einzelpreis": "5,79 €",
+    "gesamtpreis": "17,37 €"
+  },
+  {
+    "uhrzeit": "08:41",
+    "produkt": "Yakitori Spiesse",
+    "ean": "4260464510132",
+    "anzahl": "2",
+    "einzelpreis": "4,99 €",
+    "gesamtpreis": "9,98 €"
+  },
+  {
+    "uhrzeit": "08:42",
+    "produkt": "Chicken Katsu Sando",
+    "ean": "4262415163251",
+    "anzahl": "2",
+    "einzelpreis": "5,99 €",
+    "gesamtpreis": "11,98 €"
+  },
+  {
+    "uhrzeit": "08:44",
+    "produkt": "Mochi Mango",
+    "ean": "4260464512372",
+    "anzahl": "3",
+    "einzelpreis": "3,49 €",
+    "gesamtpreis": "10,47 €"
+  },
+  {
+    "uhrzeit": "08:44",
+    "produkt": "Mochi Vanille",
+    "ean": "4260464512334",
+    "anzahl": "3",
+    "einzelpreis": "3,49 €",
+    "gesamtpreis": "10,47 €"
+  },
+  {
+    "uhrzeit": "08:45",
+    "produkt": "Mochi Kokosnuss",
+    "ean": "4260464512389",
+    "anzahl": "3",
+    "einzelpreis": "3,49 €",
+    "gesamtpreis": "10,47 €"
+  },
+  {
+    "uhrzeit": "08:46",
+    "produkt": "Mochi Kakao",
+    "ean": "4260464512365",
+    "anzahl": "3",
+    "einzelpreis": "3,49 €",
+    "gesamtpreis": "10,47 €"
+  },
+  {
+    "uhrzeit": "09:30",
+    "produkt": "Maki Gurke",
+    "ean": "4260464510347",
+    "anzahl": "4",
+    "einzelpreis": "4,49 €",
+    "gesamtpreis": "17,96 €"
+  },
+  {
+    "uhrzeit": "09:31",
+    "produkt": "Maki Avocado",
+    "ean": "4260464510354",
+    "anzahl": "4",
+    "einzelpreis": "4,79 €",
+    "gesamtpreis": "19,16 €"
+  },
+  {
+    "uhrzeit": "09:33",
+    "produkt": "Futo Veggy",
+    "ean": "4260464511627",
+    "anzahl": "2",
+    "einzelpreis": "5,99 €",
+    "gesamtpreis": "11,98 €"
+  },
+  {
+    "uhrzeit": "09:33",
+    "produkt": "Big Roll Veggy",
+    "ean": "4260464511016",
+    "anzahl": "2",
+    "einzelpreis": "5,99 €",
+    "gesamtpreis": "11,98 €"
+  },
+  {
+    "uhrzeit": "09:34",
+    "produkt": "Veggy Easy",
+    "ean": "4260464511634",
+    "anzahl": "1",
+    "einzelpreis": "8,59 €",
+    "gesamtpreis": "8,59 €"
+  },
+  {
+    "uhrzeit": "09:34",
+    "produkt": "Gurke Frischkäse",
+    "ean": "4260464512006",
+    "anzahl": "2",
+    "einzelpreis": "7,99 €",
+    "gesamtpreis": "15,98 €"
+  },
+  {
+    "uhrzeit": "09:34",
+    "produkt": "Avocado Frischkäse",
+    "ean": "4260464512013",
+    "anzahl": "1",
+    "einzelpreis": "8,59 €",
+    "gesamtpreis": "8,59 €"
+  },
+  {
+    "uhrzeit": "10:01",
+    "produkt": "Chicken Mexican Mix",
+    "ean": "4262415163480",
+    "anzahl": "2",
+    "einzelpreis": "14,99 €",
+    "gesamtpreis": "29,98 €"
+  },
+  {
+    "uhrzeit": "10:02",
+    "produkt": "Krabben Avocado Crunchy",
+    "ean": "4260464513218",
+    "anzahl": "2",
+    "einzelpreis": "8,99 €",
+    "gesamtpreis": "17,98 €"
+  },
+  {
+    "uhrzeit": "10:02",
+    "produkt": "Spicy Chicken",
+    "ean": "4262415160625",
+    "anzahl": "2",
+    "einzelpreis": "8,99 €",
+    "gesamtpreis": "17,98 €"
+  },
+  {
+    "uhrzeit": "10:03",
+    "produkt": "Chicken Crunchy",
+    "ean": "4260464513270",
+    "anzahl": "1",
+    "einzelpreis": "8,99 €",
+    "gesamtpreis": "8,99 €"
+  },
+  {
+    "uhrzeit": "10:04",
+    "produkt": "Chicken Tokyo",
+    "ean": "4260464513010",
+    "anzahl": "3",
+    "einzelpreis": "8,99 €",
+    "gesamtpreis": "26,97 €"
+  },
+  {
+    "uhrzeit": "10:18",
+    "produkt": "Lachs Avocado Crunchy - cooked",
+    "ean": "4260464512778",
+    "anzahl": "2",
+    "einzelpreis": "8,99 €",
+    "gesamtpreis": "17,98 €"
+  },
+  {
+    "uhrzeit": "10:19",
+    "produkt": "Lachs Gurke Crunchy - cooked",
+    "ean": "4260464512877",
+    "anzahl": "2",
+    "einzelpreis": "8,99 €",
+    "gesamtpreis": "17,98 €"
+  },
+  {
+    "uhrzeit": "10:19",
+    "produkt": "Tuna Avocado Crunchy - cooked",
+    "ean": "4260464513058",
+    "anzahl": "2",
+    "einzelpreis": "8,99 €",
+    "gesamtpreis": "17,98 €"
+  },
+  {
+    "uhrzeit": "10:54",
+    "produkt": "Maki Lachs Avocado Mix",
+    "ean": "4260464510408",
+    "anzahl": "2",
+    "einzelpreis": "8,49 €",
+    "gesamtpreis": "16,98 €"
+  },
+  {
+    "uhrzeit": "10:55",
+    "produkt": "Sake Lunch Box",
+    "ean": "4260464513287",
+    "anzahl": "1",
+    "einzelpreis": "13,49 €",
+    "gesamtpreis": "13,49 €"
+  },
+  {
+    "uhrzeit": "10:55",
+    "produkt": "MakiNigi Salmon",
+    "ean": "4260464512198",
+    "anzahl": "2",
+    "einzelpreis": "10,29 €",
+    "gesamtpreis": "20,58 €"
+  },
+  {
+    "uhrzeit": "10:55",
+    "produkt": "Futo Lachs Avocado",
+    "ean": "4260464510613",
+    "anzahl": "2",
+    "einzelpreis": "8,99 €",
+    "gesamtpreis": "17,98 €"
+  },
+  {
+    "uhrzeit": "10:56",
+    "produkt": "Maki Lachs",
+    "ean": "4260464510361",
+    "anzahl": "4",
+    "einzelpreis": "4,99 €",
+    "gesamtpreis": "19,96 €"
+  },
+  {
+    "uhrzeit": "11:17",
+    "produkt": "Jubiläumsbox",
+    "ean": "4260464510323",
+    "anzahl": "2",
+    "einzelpreis": "26,99 €",
+    "gesamtpreis": "53,98 €"
+  },
+  {
+    "uhrzeit": "11:17",
+    "produkt": "Salmon Dinner Supreme",
+    "ean": "4260464511375",
+    "anzahl": "2",
+    "einzelpreis": "18,99 €",
+    "gesamtpreis": "37,98 €"
+  },
+  {
+    "uhrzeit": "11:36",
+    "produkt": "Futo Sake Small Mix",
+    "ean": "4260464513324",
+    "anzahl": "2",
+    "einzelpreis": "10,29 €",
+    "gesamtpreis": "20,58 €"
+  },
+  {
+    "uhrzeit": "11:37",
+    "produkt": "Maki Lachs",
+    "ean": "4260464510361",
+    "anzahl": "1",
+    "einzelpreis": "4,99 €",
+    "gesamtpreis": "4,99 €"
+  },
+  {
+    "uhrzeit": "11:37",
+    "produkt": "Lachs Avocado Frischkäse",
+    "ean": "4260464511689",
+    "anzahl": "1",
+    "einzelpreis": "8,99 €",
+    "gesamtpreis": "8,99 €"
+  },
+  {
+    "uhrzeit": "11:37",
+    "produkt": "Lachs Avocado Crunchy",
+    "ean": "4260464510507",
+    "anzahl": "1",
+    "einzelpreis": "8,99 €",
+    "gesamtpreis": "8,99 €"
+  },
+  {
+    "uhrzeit": "12:00",
+    "produkt": "Wundertüte",
+    "ean": "4262415163275",
+    "anzahl": "1",
+    "einzelpreis": "9,99 €",
+    "gesamtpreis": "9,99 €"
+  },
+  {
+    "uhrzeit": "12:01",
+    "produkt": "Wundertüte",
+    "ean": "4262415163275",
+    "anzahl": "1",
+    "einzelpreis": "9,99 €",
+    "gesamtpreis": "9,99 €"
+  },
+  {
+    "uhrzeit": "12:02",
+    "produkt": "Wundertüte",
+    "ean": "4262415163275",
+    "anzahl": "1",
+    "einzelpreis": "9,99 €",
+    "gesamtpreis": "9,99 €"
+  }
+]

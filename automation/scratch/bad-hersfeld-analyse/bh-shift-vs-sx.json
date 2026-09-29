@@ -1,0 +1,173 @@
+[
+  {
+    "datum": "2026-09-07",
+    "wd": "Mo",
+    "schedStart": "07:45",
+    "schedEnd": "15:15",
+    "sxStart": null,
+    "sxEnde": null,
+    "umsatz": 0
+  },
+  {
+    "datum": "2026-09-08",
+    "wd": "Di",
+    "schedStart": "08:00",
+    "schedEnd": "15:30",
+    "sxStart": null,
+    "sxEnde": null,
+    "umsatz": 0
+  },
+  {
+    "datum": "2026-09-09",
+    "wd": "Mi",
+    "schedStart": "07:30",
+    "schedEnd": "15:00",
+    "sxStart": "10:14",
+    "sxEnde": "13:37",
+    "umsatz": 611.71
+  },
+  {
+    "datum": "2026-09-10",
+    "wd": "Do",
+    "schedStart": "07:30",
+    "schedEnd": "15:00",
+    "sxStart": "09:50",
+    "sxEnde": "12:46",
+    "umsatz": 603.05
+  },
+  {
+    "datum": "2026-09-11",
+    "wd": "Fr",
+    "schedStart": "07:30",
+    "schedEnd": "15:00",
+    "sxStart": "11:01",
+    "sxEnde": "13:40",
+    "umsatz": 591.58
+  },
+  {
+    "datum": "2026-09-12",
+    "wd": "Sa",
+    "schedStart": "07:45",
+    "schedEnd": "15:15",
+    "sxStart": "08:35",
+    "sxEnde": "12:01",
+    "umsatz": 616.57
+  },
+  {
+    "datum": "2026-09-14",
+    "wd": "Mo",
+    "schedStart": "07:45",
+    "schedEnd": "15:15",
+    "sxStart": "08:42",
+    "sxEnde": "12:15",
+    "umsatz": 604.4
+  },
+  {
+    "datum": "2026-09-15",
+    "wd": "Di",
+    "schedStart": "08:00",
+    "schedEnd": "15:30",
+    "sxStart": "10:06",
+    "sxEnde": "10:56",
+    "umsatz": 461.02
+  },
+  {
+    "datum": "2026-09-16",
+    "wd": "Mi",
+    "schedStart": "07:30",
+    "schedEnd": "15:00",
+    "sxStart": "10:52",
+    "sxEnde": "12:32",
+    "umsatz": 671.56
+  },
+  {
+    "datum": "2026-09-17",
+    "wd": "Do",
+    "schedStart": "07:30",
+    "schedEnd": "15:00",
+    "sxStart": "10:55",
+    "sxEnde": "12:51",
+    "umsatz": 683.64
+  },
+  {
+    "datum": "2026-09-18",
+    "wd": "Fr",
+    "schedStart": "07:30",
+    "schedEnd": "15:00",
+    "sxStart": "10:51",
+    "sxEnde": "12:38",
+    "umsatz": 728.86
+  },
+  {
+    "datum": "2026-09-19",
+    "wd": "Sa",
+    "schedStart": "07:45",
+    "schedEnd": "15:15",
+    "sxStart": "09:11",
+    "sxEnde": "12:04",
+    "umsatz": 872.11
+  },
+  {
+    "datum": "2026-09-22",
+    "wd": "Di",
+    "schedStart": "08:00",
+    "schedEnd": "15:30",
+    "sxStart": "08:24",
+    "sxEnde": "13:28",
+    "umsatz": 628.5
+  },
+  {
+    "datum": "2026-09-23",
+    "wd": "Mi",
+    "schedStart": "07:30",
+    "schedEnd": "15:00",
+    "sxStart": "10:05",
+    "sxEnde": "13:20",
+    "umsatz": 621.75
+  },
+  {
+    "datum": "2026-09-24",
+    "wd": "Do",
+    "schedStart": "07:30",
+    "schedEnd": "15:00",
+    "sxStart": "08:38",
+    "sxEnde": "13:10",
+    "umsatz": 619.6
+  },
+  {
+    "datum": "2026-09-25",
+    "wd": "Fr",
+    "schedStart": "07:30",
+    "schedEnd": "15:00",
+    "sxStart": "09:03",
+    "sxEnde": "12:18",
+    "umsatz": 606.77
+  },
+  {
+    "datum": "2026-09-26",
+    "wd": "Sa",
+    "schedStart": "07:45",
+    "schedEnd": "15:15",
+    "sxStart": "08:55",
+    "sxEnde": "12:16",
+    "umsatz": 608.27
+  },
+  {
+    "datum": "2026-09-28",
+    "wd": "Mo",
+    "schedStart": "07:45",
+    "schedEnd": "15:15",
+    "sxStart": null,
+    "sxEnde": null,
+    "umsatz": 0
+  },
+  {
+    "datum": "2026-09-29",
+    "wd": "Di",
+    "schedStart": "08:00",
+    "schedEnd": "15:30",
+    "sxStart": null,
+    "sxEnde": null,
+    "umsatz": 0
+  }
+]

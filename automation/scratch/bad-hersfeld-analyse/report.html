@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Produktivitäts-Analyse: Bad Hersfeld vs. Bovenden</title>
+<style>
+  @page { size: A4; margin: 20mm 16mm 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, 'Segoe UI', sans-serif; color: #1A1A18; font-size: 12.5px; line-height: 1.55; margin: 0; }
+  h1 { font-size: 21px; margin: 0 0 4px; }
+  h2 { font-size: 15px; margin: 24px 0 10px; padding-bottom: 6px; border-bottom: 1.5px solid #1A1A18; }
+  h3 { font-size: 13px; margin: 14px 0 6px; }
+  .header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 3px solid #C0392B; padding-bottom: 10px; margin-bottom: 6px; }
+  .header .meta { text-align: right; font-size: 11.5px; color: #6B6860; line-height: 1.6; }
+  .subtitle { font-size: 12.5px; color: #6B6860; margin: 0 0 18px; }
+  .lead { font-size: 12.5px; margin: 0 0 10px; }
+  .note { background: #F5F3F0; border-left: 3px solid #2A6FB0; border-radius: 4px; padding: 8px 12px; margin: 10px 0; font-size: 11.5px; color: #6B6860; }
+  .stats-row { display: flex; gap: 12px; margin: 12px 0; }
+  .stat-tile { flex: 1; border: 1px solid #E5E2DC; border-radius: 8px; padding: 10px 12px; }
+  .stat-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #6B6860; margin-bottom: 6px; }
+  .stat-row { display: flex; justify-content: space-between; font-size: 12px; padding: 1px 0; }
+  .stat-month { color: #6B6860; }
+  .stat-val { font-weight: 600; }
+  .stat-val-main { font-weight: 800; font-size: 14px; }
+  .stat-delta { margin-top: 4px; font-weight: 700; font-size: 12px; }
+  .chart-block { border: 1px solid #E5E2DC; border-radius: 6px; padding: 10px 12px 8px; margin: 10px 0; }
+  .chart-title { font-size: 11.5px; font-weight: 700; margin-bottom: 6px; }
+  .legend { font-size: 10.5px; color: #6B6860; margin-top: 6px; }
+  .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin-right: 4px; }
+  .sw-plan { background: #F0EEE9; border: 1px solid #E5E2DC; }
+  .sw-active { background: #2A6FB0; }
+  .callout { background: #FFF7E6; border: 1px solid #F0C070; border-radius: 6px; padding: 10px 14px; margin: 10px 0; font-size: 12.5px; }
+  .callout b { color: #8A5A00; }
+  .compare-row { display: flex; gap: 14px; margin: 10px 0; }
+  .compare-card { flex: 1; border: 1px solid #E5E2DC; border-radius: 8px; padding: 12px 14px; }
+  .compare-card h4 { margin: 0 0 6px; font-size: 12.5px; }
+  .compare-card .big { font-size: 20px; font-weight: 800; }
+  .compare-card .sub { font-size: 11px; color: #6B6860; }
+  table.items { width: 100%; border-collapse: collapse; font-size: 10.8px; margin-top: 8px; }
+  table.items th, table.items td { border: 1px solid #E5E2DC; padding: 4px 7px; text-align: left; }
+  table.items th { background: #F5F3F0; font-weight: 700; }
+  table.items td.num, table.items th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  ul.next-steps { margin: 6px 0 0; padding-left: 18px; }
+  ul.next-steps li { margin-bottom: 5px; }
+  .footer-note { margin-top: 22px; padding-top: 10px; border-top: 1px solid #E5E2DC; font-size: 10.5px; color: #6B6860; }
+  .page-break { page-break-before: always; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1>Produktivitäts-Analyse: Bad Hersfeld</h1>
+      <div class="subtitle">Vergleich August → September 2026 &amp; Benchmark gegen Bovenden</div>
+    </div>
+    <div class="meta">Gebiet Ost<br>Gebietsleiter: Thang Duc Duong<br>Erstellt am 29.9.2026</div>
+  </div>
+
+  <h2>1. Entwicklung August → September (Tegut Bad Hersfeld)</h2>
+  <p class="lead">Reale Axonity-Zahlen (Produktionsbericht/Monatsbericht), Tagesdurchschnitt über alle Verkaufstage des jeweiligen Monats (August: 25 Tage, September: 16 Tage bisher).</p>
+  <div class="stats-row">
+    <div class="stat-tile">
+    <div class="stat-label">Ø Umsatz / Tag</div>
+    <div class="stat-row"><span class="stat-month">Aug</span><span class="stat-val">563 €</span></div>
+    <div class="stat-row"><span class="stat-month">Sep</span><span class="stat-val stat-val-main">641 €</span></div>
+    <div class="stat-delta" style="color:#1E8449">▲ 13.8 %</div>
+  </div>
+    <div class="stat-tile">
+    <div class="stat-label">Ø Produzierte Stück / Tag</div>
+    <div class="stat-row"><span class="stat-month">Aug</span><span class="stat-val">56.7</span></div>
+    <div class="stat-row"><span class="stat-month">Sep</span><span class="stat-val stat-val-main">68.3</span></div>
+    <div class="stat-delta" style="color:#1E8449">▲ 20.5 %</div>
+  </div>
+    <div class="stat-tile">
+    <div class="stat-label">Ø Sorten / Tag</div>
+    <div class="stat-row"><span class="stat-month">Aug</span><span class="stat-val">14.1</span></div>
+    <div class="stat-row"><span class="stat-month">Sep</span><span class="stat-val stat-val-main">21.3</span></div>
+    <div class="stat-delta" style="color:#1E8449">▲ 51.1 %</div>
+  </div>
+  </div>
+  <p class="lead">Es gibt echtes Wachstum: Umsatz +13.8 %, produzierte Menge +20.5 %, Produktvielfalt sogar +51.1 %. Das ist die gute Nachricht und sollte im Gespräch auch so benannt werden. Das eigentliche Problem liegt nicht im Trend, sondern im Abschnitt 2.</p>
+
+  <h2>2. Der eigentliche Befund: bezahlte Zeit vs. tatsächlich aktive Zeit</h2>
+  <p class="lead">Herr Nguyen (Bad Hersfeld) ist an den meisten Tagen für <b>7,5 Std.</b> eingeplant (z. B. 07:30–15:00). Axonity zeichnet zu jedem gescannten Produkt eine Uhrzeit auf – "SX-Start" und "SX-Ende" markieren die Spanne, in der überhaupt etwas produziert/verbucht wurde. Diese Spanne unten als blauer Balken, die geplante Schicht als heller Rahmen darum.</p>
+  <div class="chart-block">
+    <div class="chart-title">Geplante Schicht (hell) vs. aktives Produktionsfenster in Axonity (blau) – September 2026</div>
+    <svg viewBox="0 0 640 364" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Geplante Schicht vs. aktives Produktionsfenster"><line x1="70" y1="20" x2="70" y2="356" stroke="#E5E2DC" stroke-width="1"/><text x="70" y="16" text-anchor="middle" font-size="9.5" fill="#6B6860" font-family="Arial,sans-serif">7h</text><line x1="131.55555555555554" y1="20" x2="131.55555555555554" y2="356" stroke="#E5E2DC" stroke-width="1"/><text x="131.55555555555554" y="16" text-anchor="middle" font-size="9.5" fill="#6B6860" font-family="Arial,sans-serif">8h</text><line x1="193.1111111111111" y1="20" x2="193.1111111111111" y2="356" stroke="#E5E2DC" stroke-width="1"/><text x="193.1111111111111" y="16" text-anchor="middle" font-size="9.5" fill="#6B6860" font-family="Arial,sans-serif">9h</text><line x1="254.66666666666666" y1="20" x2="254.66666666666666" y2="356" stroke="#E5E2DC" stroke-width="1"/><text x="254.66666666666666" y="16" text-anchor="middle" font-size="9.5" fill="#6B6860" font-family="Arial,sans-serif">10h</text><line x1="316.2222222222222" y1="20" x2="316.2222222222222" y2="356" stroke="#E5E2DC" stroke-width="1"/><text x="316.2222222222222" y="16" text-anchor="middle" font-size="9.5" fill="#6B6860" font-family="Arial,sans-serif">11h</text><line x1="377.77777777777777" y1="20" x2="377.77777777777777" y2="356" stroke="#E5E2DC" stroke-width="1"/><text x="377.77777777777777" y="16" text-anchor="middle" font-size="9.5" fill="#6B6860" font-family="Arial,sans-serif">12h</text><line x1="439.3333333333333" y1="20" x2="439.3333333333333" y2="356" stroke="#E5E2DC" stroke-width="1"/><text x="439.3333333333333" y="16" text-anchor="middle" font-size="9.5" fill="#6B6860" font-family="Arial,sans-serif">13h</text><line x1="500.8888888888889" y1="20" x2="500.8888888888889" y2="356" stroke="#E5E2DC" stroke-width="1"/><text x="500.8888888888889" y="16" text-anchor="middle" font-size="9.5" fill="#6B6860" font-family="Arial,sans-serif">14h</text><line x1="562.4444444444443" y1="20" x2="562.4444444444443" y2="356" stroke="#E5E2DC" stroke-width="1"/><text x="562.4444444444443" y="16" text-anchor="middle" font-size="9.5" fill="#6B6860" font-family="Arial,sans-serif">15h</text><line x1="624" y1="20" x2="624" y2="356" stroke="#E5E2DC" stroke-width="1"/><text x="624" y="16" text-anchor="middle" font-size="9.5" fill="#6B6860" font-family="Arial,sans-serif">16h</text><text x="60" y="41" text-anchor="end" font-size="10" fill="#1A1A18" font-family="Arial,sans-serif">Mi 09.09.</text><rect x="100.77777777777777" y="29" width="461.6666666666666" height="14" rx="3" fill="#F0EEE9" stroke="#E5E2DC" stroke-width="1"/><rect x="269.02962962962965" y="29" width="208.26296296296294" height="14" rx="3" fill="#2A6FB0"/><text x="60" y="63" text-anchor="end" font-size="10" fill="#1A1A18" font-family="Arial,sans-serif">Do 10.09.</text><rect x="100.77777777777777" y="51" width="461.6666666666666" height="14" rx="3" fill="#F0EEE9" stroke="#E5E2DC" stroke-width="1"/><rect x="244.40740740740742" y="51" width="180.56296296296293" height="14" rx="3" fill="#2A6FB0"/><text x="60" y="85" text-anchor="end" font-size="10" fill="#1A1A18" font-family="Arial,sans-serif">Fr 11.09.</text><rect x="100.77777777777777" y="73" width="461.6666666666666" height="14" rx="3" fill="#F0EEE9" stroke="#E5E2DC" stroke-width="1"/><rect x="317.2481481481482" y="73" width="163.12222222222215" height="14" rx="3" fill="#2A6FB0"/><text x="60" y="107" text-anchor="end" font-size="10" fill="#1A1A18" font-family="Arial,sans-serif">Sa 12.09.</text><rect x="116.16666666666666" y="95" width="461.66666666666663" height="14" rx="3" fill="#F0EEE9" stroke="#E5E2DC" stroke-width="1"/><rect x="167.46296296296296" y="95" width="211.34074074074076" height="14" rx="3" fill="#2A6FB0"/><text x="60" y="129" text-anchor="end" font-size="10" fill="#1A1A18" font-family="Arial,sans-serif">Mo 14.09.</text><rect x="116.16666666666666" y="117" width="461.66666666666663" height="14" rx="3" fill="#F0EEE9" stroke="#E5E2DC" stroke-width="1"/><rect x="174.64444444444445" y="117" width="218.52222222222224" height="14" rx="3" fill="#2A6FB0"/><text x="60" y="151" text-anchor="end" font-size="10" fill="#1A1A18" font-family="Arial,sans-serif">Di 15.09.</text><rect x="131.55555555555554" y="139" width="461.66666666666663" height="14" rx="3" fill="#F0EEE9" stroke="#E5E2DC" stroke-width="1"/><rect x="260.8222222222222" y="139" width="51.296296296296305" height="14" rx="3" fill="#2A6FB0"/><text x="60" y="173" text-anchor="end" font-size="10" fill="#1A1A18" font-family="Arial,sans-serif">Mi 16.09.</text><rect x="100.77777777777777" y="161" width="461.6666666666666" height="14" rx="3" fill="#F0EEE9" stroke="#E5E2DC" stroke-width="1"/><rect x="308.0148148148148" y="161" width="102.59259259259255" height="14" rx="3" fill="#2A6FB0"/><text x="60" y="195" text-anchor="end" font-size="10" fill="#1A1A18" font-family="Arial,sans-serif">Do 17.09.</text><rect x="100.77777777777777" y="183" width="461.6666666666666" height="14" rx="3" fill="#F0EEE9" stroke="#E5E2DC" stroke-width="1"/><rect x="311.0925925925926" y="183" width="119.00740740740741" height="14" rx="3" fill="#2A6FB0"/><text x="60" y="217" text-anchor="end" font-size="10" fill="#1A1A18" font-family="Arial,sans-serif">Fr 18.09.</text><rect x="100.77777777777777" y="205" width="461.6666666666666" height="14" rx="3" fill="#F0EEE9" stroke="#E5E2DC" stroke-width="1"/><rect x="306.9888888888889" y="205" width="109.77407407407406" height="14" rx="3" fill="#2A6FB0"/><text x="60" y="239" text-anchor="end" font-size="10" fill="#1A1A18" font-family="Arial,sans-serif">Sa 19.09.</text><rect x="116.16666666666666" y="227" width="461.66666666666663" height="14" rx="3" fill="#F0EEE9" stroke="#E5E2DC" stroke-width="1"/><rect x="204.3962962962963" y="227" width="177.4851851851852" height="14" rx="3" fill="#2A6FB0"/><text x="60" y="261" text-anchor="end" font-size="10" fill="#1A1A18" font-family="Arial,sans-serif">Di 22.09.</text><rect x="131.55555555555554" y="249" width="461.66666666666663" height="14" rx="3" fill="#F0EEE9" stroke="#E5E2DC" stroke-width="1"/><rect x="156.17777777777778" y="249" width="311.8814814814815" height="14" rx="3" fill="#2A6FB0"/><text x="60" y="283" text-anchor="end" font-size="10" fill="#1A1A18" font-family="Arial,sans-serif">Mi 23.09.</text><rect x="100.77777777777777" y="271" width="461.6666666666666" height="14" rx="3" fill="#F0EEE9" stroke="#E5E2DC" stroke-width="1"/><rect x="259.7962962962963" y="271" width="200.05555555555554" height="14" rx="3" fill="#2A6FB0"/><text x="60" y="305" text-anchor="end" font-size="10" fill="#1A1A18" font-family="Arial,sans-serif">Do 24.09.</text><rect x="100.77777777777777" y="293" width="461.6666666666666" height="14" rx="3" fill="#F0EEE9" stroke="#E5E2DC" stroke-width="1"/><rect x="170.54074074074074" y="293" width="279.0518518518519" height="14" rx="3" fill="#2A6FB0"/><text x="60" y="327" text-anchor="end" font-size="10" fill="#1A1A18" font-family="Arial,sans-serif">Fr 25.09.</text><rect x="100.77777777777777" y="315" width="461.6666666666666" height="14" rx="3" fill="#F0EEE9" stroke="#E5E2DC" stroke-width="1"/><rect x="196.18888888888887" y="315" width="200.0555555555556" height="14" rx="3" fill="#2A6FB0"/><text x="60" y="349" text-anchor="end" font-size="10" fill="#1A1A18" font-family="Arial,sans-serif">Sa 26.09.</text><rect x="116.16666666666666" y="337" width="461.66666666666663" height="14" rx="3" fill="#F0EEE9" stroke="#E5E2DC" stroke-width="1"/><rect x="187.98148148148147" y="337" width="206.2111111111111" height="14" rx="3" fill="#2A6FB0"/></svg>
+    <div class="legend"><span class="sw sw-plan"></span> Geplante Schicht &nbsp;&nbsp; <span class="sw sw-active"></span> Aktives Produktionsfenster (SX-Start–SX-Ende)</div>
+  </div>
+  <div class="callout">
+    Im Schnitt beginnt die erste gescannte Produktion <b>123 Minuten (≈ 2 Std.)</b> nach Schichtbeginn, und die letzte Buchung liegt <b>149 Minuten (≈ 2,5 Std.)</b> vor Schichtende. Aktiv sind im Schnitt nur <b>178 Minuten von 450 Minuten Schicht – also 40 %</b>. An 4 Tagen (07.09., 08.09., 28.09., 29.09.) liegt überhaupt keine Produktionsbuchung vor, obwohl eine Schicht geplant war.
+  </div>
+  <p class="lead" style="font-size:11px;color:#6B6860">Hinweis zur Fairness: SX-Start/-Ende erfasst nur gescannte Produktion, nicht zwingend jede Tätigkeit (Verkauf am Tresen, Wareneingang, Reinigung). Die Lücke ist trotzdem so groß und so regelmäßig, dass sie ein reales Gesprächsthema ist – am besten direkt fragen, was in diesen ca. 4,5 Std. pro Tag passiert.</p>
+
+  <h3>Wichtig: Wenn er aktiv ist, ist die Leistung nicht schlecht</h3>
+  <div class="compare-row">
+    <div class="compare-card">
+      <h4>Bovenden – 17.09.2026, 1 Mitarbeiter allein</h4>
+      <div class="big">179 € / Std.</div>
+      <div class="sub">602,74 € in 202 Min. aktiver Produktion (08:40–12:02), 76 Stück, 34 Sorten</div>
+    </div>
+    <div class="compare-card">
+      <h4>Bad Hersfeld – Ø September, nur aktives Fenster</h4>
+      <div class="big">216 € / Std.</div>
+      <div class="sub">641 € Tagesschnitt in 178 Min. aktivem Fenster, 68 Stück, 21 Sorten</div>
+    </div>
+  </div>
+  <p class="lead">Pro aktiver Minute produziert Bad Hersfeld sogar etwas mehr Umsatz als Bovenden. Das Argument gegenüber dem Mitarbeiter ist deshalb nicht "du arbeitest langsam", sondern: <b>"in der Zeit, in der du produzierst, bist du gut – aber du produzierst nur an 40&nbsp;% deiner bezahlten Schicht. Bei Bovenden schafft eine Person allein in 3.4 Std. das, wofür du eine 7,5-Std.-Schicht zur Verfügung hast."</b></p>
+
+  <div class="page-break"></div>
+  <h2>3. Beispiel-Liste: Was 1 Mitarbeiter allein in einer Schicht produzieren kann (Bovenden, 17.09.2026)</h2>
+  <p class="lead">Vollständige Artikel-Liste aus Axonity, 08:40–12:02 (3.4 Std.), 1 Person allein, 37 Buchungen, 34 unterschiedliche Sorten, 76 Stück, 602,74 €.</p>
+  <table class="items"><thead><tr><th>Uhrzeit</th><th>Produkt</th><th class="num">Anzahl</th><th class="num">Einzelpreis</th><th class="num">Gesamt</th></tr></thead><tbody><tr><td>08:40</td><td>Korean Chicken Donburi</td><td class="num">2</td><td class="num">8,49 €</td><td class="num">16,98 €</td></tr><tr><td>08:41</td><td>Teriyaki Chicken Gyoza</td><td class="num">3</td><td class="num">5,79 €</td><td class="num">17,37 €</td></tr><tr><td>08:41</td><td>Yakitori Spiesse</td><td class="num">2</td><td class="num">4,99 €</td><td class="num">9,98 €</td></tr><tr><td>08:42</td><td>Chicken Katsu Sando</td><td class="num">2</td><td class="num">5,99 €</td><td class="num">11,98 €</td></tr><tr><td>08:44</td><td>Mochi Mango</td><td class="num">3</td><td class="num">3,49 €</td><td class="num">10,47 €</td></tr><tr><td>08:44</td><td>Mochi Vanille</td><td class="num">3</td><td class="num">3,49 €</td><td class="num">10,47 €</td></tr><tr><td>08:45</td><td>Mochi Kokosnuss</td><td class="num">3</td><td class="num">3,49 €</td><td class="num">10,47 €</td></tr><tr><td>08:46</td><td>Mochi Kakao</td><td class="num">3</td><td class="num">3,49 €</td><td class="num">10,47 €</td></tr><tr><td>09:30</td><td>Maki Gurke</td><td class="num">4</td><td class="num">4,49 €</td><td class="num">17,96 €</td></tr><tr><td>09:31</td><td>Maki Avocado</td><td class="num">4</td><td class="num">4,79 €</td><td class="num">19,16 €</td></tr><tr><td>09:33</td><td>Futo Veggy</td><td class="num">2</td><td class="num">5,99 €</td><td class="num">11,98 €</td></tr><tr><td>09:33</td><td>Big Roll Veggy</td><td class="num">2</td><td class="num">5,99 €</td><td class="num">11,98 €</td></tr><tr><td>09:34</td><td>Veggy Easy</td><td class="num">1</td><td class="num">8,59 €</td><td class="num">8,59 €</td></tr><tr><td>09:34</td><td>Gurke Frischkäse</td><td class="num">2</td><td class="num">7,99 €</td><td class="num">15,98 €</td></tr><tr><td>09:34</td><td>Avocado Frischkäse</td><td class="num">1</td><td class="num">8,59 €</td><td class="num">8,59 €</td></tr><tr><td>10:01</td><td>Chicken Mexican Mix</td><td class="num">2</td><td class="num">14,99 €</td><td class="num">29,98 €</td></tr><tr><td>10:02</td><td>Krabben Avocado Crunchy</td><td class="num">2</td><td class="num">8,99 €</td><td class="num">17,98 €</td></tr><tr><td>10:02</td><td>Spicy Chicken</td><td class="num">2</td><td class="num">8,99 €</td><td class="num">17,98 €</td></tr><tr><td>10:03</td><td>Chicken Crunchy</td><td class="num">1</td><td class="num">8,99 €</td><td class="num">8,99 €</td></tr><tr><td>10:04</td><td>Chicken Tokyo</td><td class="num">3</td><td class="num">8,99 €</td><td class="num">26,97 €</td></tr><tr><td>10:18</td><td>Lachs Avocado Crunchy - cooked</td><td class="num">2</td><td class="num">8,99 €</td><td class="num">17,98 €</td></tr><tr><td>10:19</td><td>Lachs Gurke Crunchy - cooked</td><td class="num">2</td><td class="num">8,99 €</td><td class="num">17,98 €</td></tr><tr><td>10:19</td><td>Tuna Avocado Crunchy - cooked</td><td class="num">2</td><td class="num">8,99 €</td><td class="num">17,98 €</td></tr><tr><td>10:54</td><td>Maki Lachs Avocado Mix</td><td class="num">2</td><td class="num">8,49 €</td><td class="num">16,98 €</td></tr><tr><td>10:55</td><td>Sake Lunch Box</td><td class="num">1</td><td class="num">13,49 €</td><td class="num">13,49 €</td></tr><tr><td>10:55</td><td>MakiNigi Salmon</td><td class="num">2</td><td class="num">10,29 €</td><td class="num">20,58 €</td></tr><tr><td>10:55</td><td>Futo Lachs Avocado</td><td class="num">2</td><td class="num">8,99 €</td><td class="num">17,98 €</td></tr><tr><td>10:56</td><td>Maki Lachs</td><td class="num">4</td><td class="num">4,99 €</td><td class="num">19,96 €</td></tr><tr><td>11:17</td><td>Jubiläumsbox</td><td class="num">2</td><td class="num">26,99 €</td><td class="num">53,98 €</td></tr><tr><td>11:17</td><td>Salmon Dinner Supreme</td><td class="num">2</td><td class="num">18,99 €</td><td class="num">37,98 €</td></tr><tr><td>11:36</td><td>Futo Sake Small Mix</td><td class="num">2</td><td class="num">10,29 €</td><td class="num">20,58 €</td></tr><tr><td>11:37</td><td>Maki Lachs</td><td class="num">1</td><td class="num">4,99 €</td><td class="num">4,99 €</td></tr><tr><td>11:37</td><td>Lachs Avocado Frischkäse</td><td class="num">1</td><td class="num">8,99 €</td><td class="num">8,99 €</td></tr><tr><td>11:37</td><td>Lachs Avocado Crunchy</td><td class="num">1</td><td class="num">8,99 €</td><td class="num">8,99 €</td></tr><tr><td>12:00</td><td>Wundertüte</td><td class="num">1</td><td class="num">9,99 €</td><td class="num">9,99 €</td></tr><tr><td>12:01</td><td>Wundertüte</td><td class="num">1</td><td class="num">9,99 €</td><td class="num">9,99 €</td></tr><tr><td>12:02</td><td>Wundertüte</td><td class="num">1</td><td class="num">9,99 €</td><td class="num">9,99 €</td></tr></tbody></table>
+
+  <div class="page-break"></div>
+  <h2>4. Gesprächsleitfaden &amp; nächste Schritte für Bad Hersfeld</h2>
+  <ul class="next-steps">
+    <li><b>Positiv einsteigen:</b> Wachstum August → September (+14 % Umsatz, +51 % Sortenvielfalt) anerkennen – das ist real und motiviert eher als ein reiner Vorwurf.</li>
+    <li><b>Die Zahlen zeigen, nicht behaupten:</b> das Gantt-Diagramm aus Abschnitt 2 gemeinsam anschauen und konkret fragen, was zwischen Schichtbeginn und erstem Scan bzw. nach dem letzten Scan bis Schichtende passiert.</li>
+    <li><b>Bovenden-Liste als Referenz zeigen:</b> nicht als Vorwurf ("mach das genauso"), sondern als Beleg, was in 3.4 Std. konzentrierter Arbeit möglich ist – Bad Hersfeld hat dafür die doppelte Zeit zur Verfügung.</li>
+    <li><b>Konkrete Zielvereinbarung:</b> z. B. aktives Produktionsfenster in den nächsten 4 Wochen schrittweise auf 5–6 Std. der 7,5-Std.-Schicht ausweiten, Fortschritt wöchentlich anhand von SX-Start/-Ende prüfen.</li>
+    <li><b>Die 4 Tage ganz ohne Buchung (07.09., 08.09., 28.09., 29.09.) direkt ansprechen</b> – dafür gibt es keine Krankmeldung im System, also nachfragen was an diesen Tagen tatsächlich lief.</li>
+    <li><b>Wiedervorlage:</b> in 4 Wochen dieselbe Auswertung erneut laufen lassen und direkt vergleichen, ob sich das aktive Fenster wirklich verändert hat.</li>
+  </ul>
+
+  <div class="footer-note">Datenquellen: Axonity "Produktionsbericht"/"Monatsbericht" (live abgerufen, 29.9.2026), Firestore <code>filiale_produktion</code> (September, bereits synchronisiert), Firestore <code>plan</code> (geplante Schichten Bad Hersfeld). Keine geschätzten Zahlen – alle Werte real erhoben.</div>
+</body>
+</html>
