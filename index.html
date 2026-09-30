@@ -401,6 +401,11 @@ window.onerror=function(msg,src,line){
         <option value="rejected">Abgelehnt</option>
       </select>
     </div>
+    <div class="btn-row" style="margin-bottom:8px">
+      <button class="btn" id="bl-dl-all-btn" style="background:#1A5276;color:#fff;border-color:#1A5276" onclick="blDownloadAllNew()">📥 Alle offenen Belege herunterladen (<span id="bl-dl-all-count">0</span>)</button>
+      <button class="btn" id="bl-skovik-btn" style="background:#2E7D32;color:#fff;border-color:#2E7D32" onclick="blSkovikUpload()">📤 Automatisch in Skovik hochladen</button>
+    </div>
+    <p id="bl-skovik-status" style="font-size:13px;line-height:1.5;margin:0 0 8px;display:none"></p>
     <div id="bl-live-status" style="font-size:13px;margin-bottom:8px;font-weight:600;display:none"></div>
     <div id="bl-live-sum" style="font-size:13px;color:#6B6860;margin-bottom:10px"></div>
     <div id="bl-live-list"></div>
@@ -6518,6 +6523,9 @@ function blRenderAdmin(){
   });
   var openCount=fbBelege.filter(function(b){return b.d.status==='new'||b.d.status==='skovik';}).length;
   if(cnt) cnt.textContent=openCount;
+  var newCount=fbBelege.filter(function(b){return b.d.status==='new';}).length;
+  var dlCnt=document.getElementById('bl-dl-all-count'); if(dlCnt) dlCnt.textContent=newCount;
+  var dlBtn=document.getElementById('bl-dl-all-btn'); if(dlBtn) dlBtn.style.display=newCount?'':'none';
   if(sum){
     var sumOpen=items.filter(function(b){return b.d.status==='new'||b.d.status==='skovik';}).reduce(function(s,b){return s+(b.d.amount||0);},0);
     sum.textContent='Offen (angezeigt): '+sumOpen.toFixed(2)+' € · '+items.length+' Beleg(e)';
@@ -6646,6 +6654,83 @@ function blImgFilename(b){
 function blOpenImg(id){
   var b=blFind(id); if(!b||!b.d.img) return;
   imgViewerOpen(b.d.img, blImgFilename(b));
+}
+// Lädt alle noch offenen Belege (status='new', also noch nicht "In Skovik
+// hochgeladen") in EINER ZIP-Datei herunter, statt jeden einzeln über
+// "🖼 Foto ansehen" öffnen und einzeln speichern zu müssen (Auftrag
+// t.duong 30.09.2026: das einzelne Herunterladen kostet vor jedem
+// Skovik-Upload spürbar Zeit). Sobald ein Beleg auf 'skovik' oder 'paid'
+// gesetzt wurde, taucht er hier nicht mehr auf - genau der Zustand, den
+// der Nutzer als "schon erledigt, braucht nicht mehr heruntergeladen zu
+// werden" beschrieben hat. JSZip ist bereits global geladen (siehe
+// <script src=".../jszip...">).
+async function blDownloadAllNew(){
+  var items=fbBelege.filter(function(b){ return b.d.status==='new' && b.d.img; });
+  if(!items.length){ toast('Keine offenen Belege zum Herunterladen.', true); return; }
+  var btn=document.getElementById('bl-dl-all-btn');
+  var orig=btn?btn.innerHTML:'';
+  if(btn){ btn.disabled=true; btn.innerHTML='⏳ Wird vorbereitet…'; }
+  try{
+    var zip=new JSZip();
+    var usedNames={};
+    for(var i=0;i<items.length;i++){
+      var b=items[i];
+      var name=blImgFilename(b);
+      // Namenskollision vermeiden (gleicher Mitarbeiter, gleicher Tag, 2 Belege am Stück)
+      if(usedNames[name]){ usedNames[name]++; name=name.replace(/\.jpg$/,'_'+usedNames[name]+'.jpg'); }
+      else usedNames[name]=1;
+      var resp=await fetch(b.d.img);
+      var blob=await resp.blob();
+      zip.file(name, blob);
+    }
+    var content=await zip.generateAsync({type:'blob'});
+    var url=URL.createObjectURL(content);
+    var a=document.createElement('a');
+    var today=new Date().toISOString().slice(0,10);
+    a.href=url; a.download='Belege_offen_'+today+'.zip';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 30000);
+    toast('✓ '+items.length+' Belege heruntergeladen');
+  }catch(e){
+    alert('Fehler beim Erstellen der ZIP-Datei: '+e.message);
+  }finally{
+    if(btn){ btn.disabled=false; btn.innerHTML=orig; }
+  }
+}
+function blSkovikStatus(msg,color){
+  var el=document.getElementById('bl-skovik-status'); if(!el) return;
+  el.innerHTML=msg||''; el.style.color=color||'var(--mut)'; el.style.display=msg?'block':'none';
+}
+// Stößt sync-skovik-upload.js auf dem Cloud-Run-Backend der aktiven Region an
+// (gleiches Muster wie dpWeloRefresh) — läuft komplett serverseitig, lädt
+// alle offenen Belege dieser Region in Batches zu Skovik hoch und setzt sie
+// danach selbst auf status:'skovik' (Auftrag t.duong 30.09.2026: "chỉ cần
+// bước tải lên là xong" — die Buchungsort-Zuordnung bleibt bewusst manuell
+// in Skovik selbst, wird hier nicht angefasst).
+function blSkovikUpload(){
+  var syncUrl=REGION_SYNC_URL[activeRegion];
+  if(!syncUrl||typeof syncUrl!=='string'){ blSkovikStatus('Für diese Region ist kein Cloud-Run-Backend hinterlegt - nicht verfügbar.','#C0392B'); return; }
+  var reqUrl;
+  try{ reqUrl=new URL(syncUrl.replace(/\/+$/,'')+'/internal/skovik-upload').toString(); }
+  catch(e){ blSkovikStatus('⚠️ Ungültige Cloud-Run-Adresse für diese Region: '+e.message,'#C0392B'); return; }
+  var btn=document.getElementById('bl-skovik-btn'); if(btn) btn.disabled=true;
+  blSkovikStatus('⏳ Belege werden zu Skovik hochgeladen… (kann je nach Anzahl mehrere Minuten dauern)','#6B6860');
+  firebase.auth().currentUser.getIdToken().then(function(idToken){
+    if(!idToken||typeof idToken!=='string'){ throw new Error('Kein gültiges Login-Token erhalten — bitte neu einloggen.'); }
+    var opts={ method:'POST', headers:{'Content-Type':'application/json', Authorization:'Bearer '+idToken}, body: JSON.stringify({ region: activeRegion }) };
+    return fetch(reqUrl, opts);
+  }).then(function(r){
+    return r.text().then(function(txt){
+      var d=null; try{ d=JSON.parse(txt); }catch(e){ throw new Error('Ungültige Antwort vom Server (HTTP '+r.status+'): '+txt.slice(0,120)); }
+      return {ok:r.ok, status:r.status, d:d};
+    });
+  }).then(function(res){
+    if(btn) btn.disabled=false;
+    if(!res.ok){ blSkovikStatus('⚠️ Fehler (HTTP '+res.status+'): '+((res.d&&res.d.error)||'unbekannt'),'#C0392B'); return; }
+    blSkovikStatus((res.d&&res.d.stdout&&res.d.stdout.trim().split('\n').pop())||'✓ Fertig.','var(--grn)');
+    // Live-Listener (blStartListener) holt die neuen status:'skovik'-Werte
+    // ohnehin automatisch nach - kein manuelles Neuladen nötig.
+  }).catch(function(e){ if(btn) btn.disabled=false; blSkovikStatus('⚠️ Fehler: '+e.message,'#C0392B'); });
 }
 function blSetStatus(id,status){
   var b=blFind(id); if(!b) return;

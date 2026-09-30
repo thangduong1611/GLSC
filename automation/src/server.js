@@ -295,6 +295,23 @@ app.post('/internal/welo-urlaub-suggest', requireManager, async (req, res) => {
   }
 });
 
+// Lädt alle offenen Belege (receipts.status=='new') der angegebenen Region
+// automatisiert zu Skovik hoch (sync-skovik-upload.js) - Region kommt vom
+// Client (activeRegion), wird gegen die echten Manager-Regionen geprüft,
+// damit niemand eine fremde Region auslösen kann (Auftrag t.duong
+// 30.09.2026).
+app.post('/internal/skovik-upload', requireManager, async (req, res) => {
+  const region = req.body && req.body.region;
+  if (!region) return res.status(400).json({ error: 'region fehlt' });
+  if (!req.managerRegions.includes(region)) return res.status(403).json({ error: 'not authorized for this region' });
+  try {
+    const result = await runFile('sync-skovik-upload.js', `Belege zu Skovik hochladen (${region})`, [region], 10 * 60 * 1000);
+    res.status(result.ok ? 200 : 500).json(result);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── Datenschutz: Krankmeldungs-Fotos automatisch nach 30 Tagen löschen ────
 // Region-unabhängig (gilt für alle Gebiete gleich, s. cleanup-krankmeldung.js)
 // — bewusst der gleiche Shared-Secret-Mechanismus wie die anderen
