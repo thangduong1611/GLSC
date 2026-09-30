@@ -8565,7 +8565,19 @@ function invRenderWeloPreview(){
   var box=document.getElementById('inv-welo-list'); if(!box) return;
   var ids=Object.keys(invWeloPreview);
   if(!ids.length){ box.innerHTML='<div style="font-size:13px;color:var(--mut)">Noch kein Vergleich gelaufen — oben "Vergleich neu laufen lassen" klicken.</div>'; return; }
-  box.innerHTML=ids.sort().map(function(id){
+  // Offene (noch zu erledigende) Filialen zuerst, bereits übernommene ans
+  // Ende und optisch zurückgenommen - sonst verliert man bei ~20-30 Filialen
+  // den Überblick, welche schon erledigt sind (Rückmeldung t.duong 30.09.2026).
+  var doneCount=ids.filter(function(id){ return invWeloPreview[id].applied; }).length;
+  ids.sort(function(a,b){
+    var pa=invWeloPreview[a], pb=invWeloPreview[b];
+    if(!!pa.applied!==!!pb.applied) return pa.applied?1:-1;
+    return a.localeCompare(b);
+  });
+  var summary='<div style="font-size:12.5px;color:var(--mut);margin-bottom:6px">'
+    +(doneCount?('✓ '+doneCount+' / '+ids.length+' Filialen bereits in Welo eingetragen'):('0 / '+ids.length+' Filialen bereits eingetragen'))
+    +'</div>';
+  box.innerHTML=summary+ids.map(function(id){
     var p=invWeloPreview[id];
     var badges=[];
     if(p.changedCount) badges.push('<span class="badge badge-blu">'+p.changedCount+' geändert</span>');
@@ -8577,7 +8589,7 @@ function invRenderWeloPreview(){
       : (p.changedCount
           ? '<button class="btn btn-sm btn-grn" onclick="invApproveWelo(\''+id+'\',this)">✓ Freigeben</button>'
           : '<span style="font-size:12px;color:var(--mut)">keine Änderung</span>');
-    return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--brd);font-size:13px;flex-wrap:wrap">'
+    return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--brd);font-size:13px;flex-wrap:wrap'+(p.applied?';opacity:.5':'')+'">'
       +'<span style="flex:1;min-width:140px">'+uglXmlEscape(p.filiale||'')+'</span>'
       +badges.join(' ')
       +'<a href="'+p.weloUrl+'" target="_blank" style="font-size:12px">🔗</a>'
