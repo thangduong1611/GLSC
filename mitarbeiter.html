@@ -977,23 +977,43 @@ function ivRebindCounts(){
   }, function(e){ console.warn('iv count', e); });
 }
 function ivSlug(f){ return (''+f).replace(/\s+/g,'_').toLowerCase(); }
-// Normal: eigene Filiale. Stellvertretung Gebietsleitung (sess.vize): kann über
-// ivFilChange() eine andere Filiale der eigenen Region wählen, um dort beim
-// Zählen zu helfen - läuft dann genau wie ein normaler Mitarbeiter dieser
-// Filiale (gleicher Entwurf/Absenden-Ablauf, kein Extra-Genehmigungsschritt).
+// Normal (ohne Zweitfiliale): eigene Filiale, kein Wechsel möglich.
+// Mit Zweitfiliale(n) ODER Stellvertretung Gebietsleitung (sess.vize): kann
+// über ivFilChange() eine andere eigene Filiale (bzw. bei vize: der ganzen
+// Region) wählen, um dort beim Zählen zu helfen - läuft dann genau wie ein
+// normaler Mitarbeiter dieser Filiale (gleicher Entwurf/Absenden-Ablauf,
+// kein Extra-Genehmigungsschritt). ivFiliale steht in beiden Fällen bereits
+// auf der eigenen Filiale, solange nichts anderes gewählt wurde - die
+// Bedingung "nur bei vize" ist deshalb nicht mehr nötig (Auftrag t.duong
+// 30.09.2026: auch normale Mitarbeiter mit Zweitfiliale sollen wählen können).
 function ivCurFiliale(){
   var sess=maSession(); if(!sess) return '';
-  if(sess.vize && ivFiliale) return ivFiliale;
+  if(ivFiliale) return ivFiliale;
   return sess.filiale||'';
 }
-// Baut die Filial-Auswahl für sess.vize auf (Filialen der eigenen Region,
-// genau wie slSetupFilPicker für den Dienstplan). Für alle anderen bleibt
+// Baut die Filial-Auswahl auf: bei sess.vize alle Filialen der eigenen
+// Region (genau wie slSetupFilPicker für den Dienstplan), sonst - falls
+// eine Zweitfiliale hinterlegt ist - nur Stamm- + Zweitfiliale(n). Für alle
 // das Feld versteckt, ivFiliale wird auf die eigene Filiale gesetzt.
 function ivSetupFilPicker(sess){
   var wrap=document.getElementById('iv-fil-wrap'), sel=document.getElementById('iv-fil-sel');
   if(!sess.vize){
-    if(wrap) wrap.style.display='none';
-    ivFiliale=sess.filiale||'';
+    var zweit=(sess.zweit||[]).filter(Boolean);
+    if(!zweit.length){
+      if(wrap) wrap.style.display='none';
+      ivFiliale=sess.filiale||'';
+      return;
+    }
+    // Zweitfiliale vorhanden, aber kein vize: keine Region-weite Abfrage
+    // nötig, die eigenen Filialen (Stamm + Zweit) sind schon aus der
+    // Session bekannt - synchron statt per Firestore-Query aufbauen.
+    if(!wrap||!sel) return;
+    wrap.style.display='';
+    var names=[sess.filiale].concat(zweit).filter(Boolean);
+    names=names.filter(function(n,i){ return names.indexOf(n)===i; }).sort();
+    sel.innerHTML=names.map(function(n){ return '<option value="'+n.replace(/"/g,'&quot;')+'">'+n+'</option>'; }).join('');
+    ivFiliale=(names.indexOf(sess.filiale)>=0?sess.filiale:names[0])||'';
+    sel.value=ivFiliale;
     return;
   }
   if(!wrap||!sel) return;
@@ -1464,6 +1484,12 @@ function slInit(sess){
     sess.shopleiter=!!d.shopleiter;
     sess.vize=!!d.vize;
     sess.region=d.region||sess.region||'';
+    // Wird hier zusätzlich zu maRefreshProfile() gesetzt (nicht nur dort):
+    // beide lesen denselben emps-Doc unabhängig voneinander, ohne
+    // garantierte Reihenfolge - ivSetupFilPicker() gleich unten braucht
+    // sess.zweit aber SOFORT, kann nicht auf das Timing von
+    // maRefreshProfile() warten (Auftrag t.duong 30.09.2026).
+    sess.zweit=d.zweit||sess.zweit||[];
     maSetSession(sess);
     var btn=document.getElementById('ico-sl');
     if(btn) btn.style.display=slIsPlanner(sess)?'':'none';
