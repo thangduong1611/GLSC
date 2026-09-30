@@ -1063,8 +1063,10 @@ window.onerror=function(msg,src,line){
     <p id="av-status" style="font-size:12px;color:var(--mut);margin-top:8px;text-align:center"></p>
 
     <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--brd)">
+      <p id="av-edit-hint" style="font-size:12.5px;color:#1A5276;font-weight:600;margin:0 0 8px;display:none"></p>
       <div class="btn-row">
-        <button class="btn btn-grn" onclick="avSendToEmployee()" style="flex:1;justify-content:center;font-size:14px">📤 An Mitarbeiter zum Unterschreiben senden</button>
+        <button class="btn btn-grn" id="av-send-btn" onclick="avSendToEmployee()" style="flex:1;justify-content:center;font-size:14px">📤 An Mitarbeiter zum Unterschreiben senden</button>
+        <button class="btn" id="av-cancel-edit-btn" onclick="avEditCancel()" style="display:none">✕ Abbrechen</button>
       </div>
       <p style="font-size:11px;color:var(--mut);margin-top:6px">Der Mitarbeiter sieht die Felder nur lesend, kann nichts ändern, hat keinen Download-Button — er kann nur unterschreiben und zurücksenden.</p>
     </div>
@@ -3296,17 +3298,50 @@ function avCollectData(){
     agSig: avSigHasContent() ? document.getElementById('av-sig-canvas').toDataURL('image/png') : null
   };
 }
+// Bisher gab es nur "neu senden" oder "ganz löschen" - ein Tippfehler im
+// Gehalt o.ä. VOR der Unterschrift des Mitarbeiters bedeutete: kompletten
+// Antrag löschen und alle Felder (inkl. einer evtl. schon vorhandenen Chef-
+// Unterschrift) neu eintragen. avEditingDocId merkt sich, ob gerade ein
+// bestehender Antrag bearbeitet wird (siehe avEditStart) - dann wird hier
+// per update() derselbe Antrag geändert statt ein neuer angelegt (Auftrag
+// t.duong 30.09.2026). Nur für status:'sent' möglich (siehe avRenderList) -
+// ein bereits unterschriebener Antrag wird bewusst nicht mehr nachträglich
+// verändert, sonst würde die Unterschrift für nicht mehr aktuelle Angaben
+// stehen.
+var avEditingDocId=null;
 function avSendToEmployee(){
   if(!fbReady||!fbDb){ toast('Keine Firebase-Verbindung.',true); return; }
   var d = avCollectData();
   if(!d.empId || !d.empName){ toast('Bitte zuerst Mitarbeiter wählen bzw. Name/Personalnummer ausfüllen.',true); return; }
   if(!d.chkGehalt && !d.chkVerlaeng && !d.chkStunde && !d.chkWochen && !d.chkSonst){ toast('Bitte mindestens eine Art der Änderung auswählen.',true); return; }
+  if(avEditingDocId){
+    fbDb.collection('aenderungsvertrag').doc(avEditingDocId).update(d)
+      .then(function(){ toast('✓ Änderungen gespeichert'); avEditCancel(); })
+      .catch(function(e){ toast('Fehler: '+e.message, true); });
+    return;
+  }
   d.status='sent'; d.createdAt=new Date().toISOString();
   d.anOrt=null; d.anSig=null; d.signedAt=null;
   d.region=activeRegion;
   fbDb.collection('aenderungsvertrag').add(d)
     .then(function(){ toast('✓ An Mitarbeiter gesendet'); })
     .catch(function(e){ toast('Fehler: '+e.message, true); });
+}
+// Lädt einen noch nicht unterschriebenen Antrag zum Bearbeiten ins Formular
+// (nutzt dieselbe Feld-/Unterschrift-Wiederherstellung wie avLoadSigned).
+function avEditStart(docId){
+  avLoadSigned(docId);
+  avEditingDocId=docId;
+  var hint=document.getElementById('av-edit-hint');
+  if(hint){ hint.style.display='block'; hint.textContent='✏️ Bearbeitung: Änderungen werden im bestehenden Antrag gespeichert, es wird kein neuer Antrag angelegt und keine neue Unterschriftsanfrage ausgelöst.'; }
+  var btn=document.getElementById('av-send-btn'); if(btn) btn.textContent='💾 Änderungen speichern';
+  var cancelBtn=document.getElementById('av-cancel-edit-btn'); if(cancelBtn) cancelBtn.style.display='';
+}
+function avEditCancel(){
+  avEditingDocId=null;
+  var hint=document.getElementById('av-edit-hint'); if(hint) hint.style.display='none';
+  var btn=document.getElementById('av-send-btn'); if(btn) btn.textContent='📤 An Mitarbeiter zum Unterschreiben senden';
+  var cancelBtn=document.getElementById('av-cancel-edit-btn'); if(cancelBtn) cancelBtn.style.display='none';
 }
 var fbAV=[];
 function avShowStatus(msg,color){
@@ -3343,6 +3378,7 @@ function avRenderList(){
       +'<div style="flex:1;min-width:160px"><strong>'+(d.empName||'?')+'</strong> · '+dt+'<br>'
       +'<span style="display:inline-block;margin-top:4px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:'+m.bg+';color:'+m.c+'">'+m.txt+'</span>'+agBadge+'</div>'
       +(signed?'<button class="btn btn-sm" style="background:#1E8449;color:#fff;border-color:#1E8449" onclick="avLoadSigned(\''+x.docId+'\')">📥 In Formular laden</button>':'')
+      +(!signed?'<button class="btn btn-sm" style="background:#1A5276;color:#fff;border-color:#1A5276" onclick="avEditStart(\''+x.docId+'\')">✏️ Bearbeiten</button>':'')
       +'<button class="btn btn-sm" style="background:#C0392B;color:#fff;border-color:#C0392B" onclick="avDeleteItem(\''+x.docId+'\')">🗑 Löschen</button>'
       +'</div>';
   }).join('');
