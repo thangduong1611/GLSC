@@ -23,6 +23,9 @@ async function login(page) {
   await page.locator('input[name="authpass"]').fill(PASSWORD);
   await page.locator('input[name="login"]').click();
   await page.waitForURL((url) => /^\/[A-Za-z0-9]+-[A-Za-z0-9]+\/index\.html/.test(url.pathname), { timeout: 15000 });
+  const m = page.url().match(/^(https:\/\/[^/]+\/[A-Za-z0-9]+-[A-Za-z0-9]+)\//);
+  if (!m) throw new Error('Session-Präfix nach Login nicht gefunden: ' + page.url());
+  return m[1];
 }
 
 async function applyInventur(previewId) {
@@ -38,8 +41,17 @@ async function applyInventur(previewId) {
   const browser = await chromium.launch();
   const page = await browser.newPage();
   try {
-    await login(page);
-    await page.goto(d.weloUrl);
+    const sessionBase = await login(page);
+    // WICHTIG: die in der Vorschau gespeicherte weloUrl enthält das
+    // Session-Präfix vom damaligen Login (z.B. /e4dafda-518dfa3/) - dieses
+    // Präfix ist an genau diese Login-Sitzung gebunden und wird von Welo
+    // nach deren Ende als abgelaufen behandelt ("Sitzungskennung ist
+    // abgelaufen"), unabhängig davon, ob die Inventur der Filiale wirklich
+    // noch offen ist. Deshalb hier die URL mit dem FRISCHEN Session-Präfix
+    // neu zusammensetzen statt d.weloUrl erneut aufzurufen.
+    const yyyymm = d.month.replace('-', '');
+    const url = `${sessionBase}/marktpflege/inventur/uebersicht/${d.weloNr}-${yyyymm}.html`;
+    await page.goto(url);
 
     // Frisch prüfen, ob die Felder JETZT noch offen sind (könnte sich seit
     // der Vorschau geändert haben, z.B. wenn die Filiale zwischenzeitlich
@@ -50,19 +62,30 @@ async function applyInventur(previewId) {
       throw new Error(`${d.filiale}: Inventur ist inzwischen nicht mehr offen (evtl. bereits abgeschlossen) — nichts geschrieben.`);
     }
 
+    // WICHTIG: ein synthetisches `dispatchEvent(new Event('focusout'))` löst
+    // Welos eigenen jQuery-Handler NICHT aus (live getestet 30.09.2026 - kein
+    // einziger Request an /export/inventur.json, obwohl das Element korrekt
+    // gefunden wurde). Welo speichert jedes Feld einzeln per AJAX im
+    // `focusout`-Handler (save_menge()); nur ein ECHTES Fokus/Blur - wie ein
+    // Mensch, der tippt und dann wegklickt - löst das zuverlässig aus. Playwright
+    // erzeugt das über locator.fill() (echter Fokus + Eingabe) gefolgt von
+    // Tab (echtes Blur), live bestätigt: {"success":true,"menge":80}.
     let gefuellt = 0, uebersprungen = 0;
     for (const change of d.changes) {
       if (!change.weloName) { uebersprungen++; continue; }
-      const ok = await page.evaluate(({ name, val }) => {
-        const el = document.querySelector(`input.inp[name="${CSS.escape(name)}"]`);
-        if (!el || el.disabled) return false;
-        el.value = val;
-        el.classList.remove('wby');
-        el.classList.add('wbg');
-        el.dispatchEvent(new Event('focusout', { bubbles: true }));
-        return true;
-      }, { name: change.weloName, val: fmtWeloVal(change.newVal) });
-      if (ok) { gefuellt++; await page.waitForTimeout(150); } else { uebersprungen++; }
+      const loc = page.locator(`input.inp[name="${change.weloName}"]`);
+      if (!(await loc.count()) || await loc.isDisabled()) { uebersprungen++; continue; }
+      const val = fmtWeloVal(change.newVal);
+      try {
+        const [resp] = await Promise.all([
+          page.waitForResponse((r) => r.url().includes('/export/inventur.json'), { timeout: 10000 }),
+          loc.fill(val).then(() => page.keyboard.press('Tab')),
+        ]);
+        const body = await resp.json().catch(() => null);
+        if (resp.ok() && body && body.success) { gefuellt++; } else { uebersprungen++; }
+      } catch (e) {
+        uebersprungen++;
+      }
     }
 
     await ref.set({

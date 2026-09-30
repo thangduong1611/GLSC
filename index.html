@@ -8575,7 +8575,7 @@ function invRenderWeloPreview(){
     var btn=p.applied
       ? ''
       : (p.changedCount
-          ? '<button class="btn btn-sm btn-grn" onclick="invApproveWelo(\''+id+'\')">✓ Freigeben</button>'
+          ? '<button class="btn btn-sm btn-grn" onclick="invApproveWelo(\''+id+'\',this)">✓ Freigeben</button>'
           : '<span style="font-size:12px;color:var(--mut)">keine Änderung</span>');
     return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--brd);font-size:13px;flex-wrap:wrap">'
       +'<span style="flex:1;min-width:140px">'+uglXmlEscape(p.filiale||'')+'</span>'
@@ -8585,10 +8585,12 @@ function invRenderWeloPreview(){
   }).join('');
 }
 
-function invApproveWelo(previewId){
+function invApproveWelo(previewId,btnEl){
   var syncUrl=REGION_SYNC_URL[activeRegion]; if(!syncUrl) return;
   var p=invWeloPreview[previewId];
   if(!confirm('In Welo für "'+(p?p.filiale:previewId)+'" wirklich '+(p?p.changedCount:'?')+' Felder eintragen?\n\n"Inventur abschließen" musst du danach selbst in Welo bestätigen.')) return;
+  var origText=btnEl?btnEl.textContent:'';
+  if(btnEl){ btnEl.disabled=true; btnEl.textContent='⏳ Wird eingetragen…'; }
   firebase.auth().currentUser.getIdToken().then(function(idToken){
     return fetch(syncUrl+'/internal/inventur-apply', {
       method:'POST', headers:{'Content-Type':'application/json', Authorization:'Bearer '+idToken},
@@ -8596,9 +8598,10 @@ function invApproveWelo(previewId){
     });
   }).then(function(r){ return r.json().then(function(d){ return {ok:r.ok, d:d}; }); })
     .then(function(res){
-      if(!res.ok){ alert('Fehler: '+(res.d.error||'unbekannt')); return; }
+      if(!res.ok){ alert('Fehler: '+(res.d.error||'unbekannt')); if(btnEl){ btnEl.disabled=false; btnEl.textContent=origText; } return; }
       toast('✓ In Welo eingetragen — bitte dort prüfen und "Inventur abschließen" bestätigen.');
-    }).catch(function(e){ alert('Fehler: '+e.message); });
+      // btnEl selbst wird gleich durch invRenderWeloPreview() ersetzt (applied:true kommt per Listener), kein Reset nötig.
+    }).catch(function(e){ alert('Fehler: '+e.message); if(btnEl){ btnEl.disabled=false; btnEl.textContent=origText; } });
 }
 
 // ── Wochen-Abgleich: Urlaub/Krankmeldung dieser Woche vs. Welo (nur lesen) ──
