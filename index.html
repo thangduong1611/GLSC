@@ -388,6 +388,11 @@ window.onerror=function(msg,src,line){
 <!-- ===== BELEGE (Hóa đơn hoàn ứng) ===== -->
 <div id="panel-belege" class="panel">
   <div class="card">
+    <div class="card-title">💰 Auszahlungsübersicht <span class="badge badge-red" id="bl-payout-count">0</span></div>
+    <div class="info">Summe je Mitarbeiter aus allen Belegen mit Status <strong>In Skovik hochgeladen</strong> (erfolgreich hochgeladen, von dir nicht abgelehnt, noch nicht überwiesen) — Beträge wie vom Mitarbeiter selbst beim Einreichen angegeben.</div>
+    <div id="bl-payout-list" style="margin-top:10px"></div>
+  </div>
+  <div class="card">
     <div class="card-title">🧾 Belege der Mitarbeiter <span class="badge badge-red" id="bl-live-count">0</span></div>
     <div class="info">Mitarbeiter laden Kassenbons hier hoch. Workflow: <strong>Eingereicht</strong> → <strong>In Skovik hochgeladen</strong> (Rückerstattung beantragt) → <strong>Überwiesen</strong> (an Mitarbeiter bezahlt). Der Mitarbeiter bestätigt den Erhalt selbst; der Beleg bleibt hier zur Dokumentation sichtbar. Vor der Überweisung kann ein Beleg mit Grund <strong>abgelehnt</strong> werden (z.B. Frist abgelaufen) — der Grund wird dem Mitarbeiter direkt in der App angezeigt.</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
@@ -6511,6 +6516,50 @@ function blStatusMeta(st){
   if(st==='rejected') return {c:'#C0392B',bg:'#FBEAE7',txt:'Abgelehnt'};
   return {c:'#6B6860',bg:'#F5F3F0',txt:st};
 }
+// Gruppiert alle status:'skovik'-Belege (erfolgreich hochgeladen, nicht
+// abgelehnt, noch nicht überwiesen) nach Mitarbeiter und zeigt die
+// Gesamtsumme + Zahlungsweg - Beträge kommen direkt aus receipts.amount
+// (vom Mitarbeiter selbst beim Einreichen angegeben), keine erneute
+// Abfrage bei Skovik nötig (Auftrag t.duong 30.09.2026).
+function blPayoutSummary(){
+  var box=document.getElementById('bl-payout-list'), cnt=document.getElementById('bl-payout-count');
+  if(!box) return;
+  var open=fbBelege.filter(function(b){ return b.d.status==='skovik'; });
+  if(cnt) cnt.textContent=open.length;
+  if(!open.length){ box.innerHTML='<div style="color:#6B6860;font-size:13px;padding:6px 0">Aktuell nichts zu überweisen.</div>'; return; }
+  var byEmp={};
+  open.forEach(function(b){
+    var d=b.d, key=d.empId||d.empName||'?';
+    if(!byEmp[key]) byEmp[key]={ empName:d.empName||'?', filiale:d.filiale||'', payType:d.payType, payInfo:d.payInfo, ids:[], sum:0 };
+    byEmp[key].ids.push(b.docId);
+    byEmp[key].sum+=(d.amount||0);
+  });
+  var rows=Object.keys(byEmp).map(function(k){ return {key:k, v:byEmp[k]}; }).sort(function(a,b){ return b.v.sum-a.v.sum; });
+  box.innerHTML='<table style="width:100%;border-collapse:collapse;font-size:13px">'
+    +'<tr style="border-bottom:2px solid #E8E4E0;text-align:left"><th style="padding:6px 8px">Mitarbeiter</th><th style="padding:6px 8px">Filiale</th><th style="padding:6px 8px">Zahlungsweg</th><th style="padding:6px 8px;text-align:right">Summe</th><th style="padding:6px 8px"></th></tr>'
+    +rows.map(function(r){
+      var v=r.v;
+      return '<tr style="border-bottom:1px solid #F0EEE9">'
+        +'<td style="padding:6px 8px;font-weight:700">'+uglXmlEscape(v.empName)+'</td>'
+        +'<td style="padding:6px 8px;color:#6B6860">'+uglXmlEscape(v.filiale)+'</td>'
+        +'<td style="padding:6px 8px">'+blPayRow(v)+'</td>'
+        +'<td style="padding:6px 8px;text-align:right;font-weight:700">'+v.sum.toFixed(2)+' € <span style="font-weight:400;color:#6B6860">('+v.ids.length+')</span></td>'
+        +'<td style="padding:6px 8px"><button class="btn btn-sm" style="background:#1E8449;color:#fff;border-color:#1E8449" onclick="blPayoutMarkPaid(\''+r.key.replace(/'/g,"\\'")+'\')">💸 Als überwiesen markieren</button></td>'
+        +'</tr>';
+    }).join('')
+    +'</table>';
+}
+function blPayoutMarkPaid(empKey){
+  var open=fbBelege.filter(function(b){ return b.d.status==='skovik' && (b.d.empId||b.d.empName||'?')===empKey; });
+  if(!open.length) return;
+  var empName=open[0].d.empName||'?';
+  var sum=open.reduce(function(s,b){ return s+(b.d.amount||0); },0);
+  if(!confirm(empName+': '+sum.toFixed(2)+' € für '+open.length+' Beleg(e) als überwiesen markieren?')) return;
+  var batch=fbDb.batch();
+  var now=new Date().toISOString();
+  open.forEach(function(b){ batch.update(b.ref, {status:'paid', paidAt:now}); });
+  batch.commit().then(function(){ toast('✓ Als überwiesen markiert'); }).catch(function(e){ alert('Fehler: '+e.message); });
+}
 function blRenderAdmin(){
   var list=document.getElementById('bl-live-list'), cnt=document.getElementById('bl-live-count'), sum=document.getElementById('bl-live-sum');
   if(!list) return;
@@ -6526,6 +6575,7 @@ function blRenderAdmin(){
   var newCount=fbBelege.filter(function(b){return b.d.status==='new';}).length;
   var dlCnt=document.getElementById('bl-dl-all-count'); if(dlCnt) dlCnt.textContent=newCount;
   var dlBtn=document.getElementById('bl-dl-all-btn'); if(dlBtn) dlBtn.style.display=newCount?'':'none';
+  blPayoutSummary(); // unabhängig vom aktuellen Filter unten - immer alle Mitarbeiter
   if(sum){
     var sumOpen=items.filter(function(b){return b.d.status==='new'||b.d.status==='skovik';}).reduce(function(s,b){return s+(b.d.amount||0);},0);
     sum.textContent='Offen (angezeigt): '+sumOpen.toFixed(2)+' € · '+items.length+' Beleg(e)';
