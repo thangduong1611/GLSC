@@ -955,6 +955,7 @@ window.onerror=function(msg,src,line){
     </div>
     <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-red" onclick="openAddModal()">+ Manuell hinzufügen</button>
+      <button class="btn" onclick="empBulkReactivate()" title="Setzt alle inaktiven Mitarbeiter ohne echtes vergangenes Austrittsdatum wieder auf aktiv (z.B. nach einer unvollständigen CSV)">✓ Fälschlich Inaktive reaktivieren</button>
       <button class="btn" onclick="exportCSVList()" style="margin-left:auto">⬇ Liste exportieren</button>
     </div>
   </div>
@@ -2370,6 +2371,46 @@ function delEmp(i) {
       .catch(function(err){ console.warn('delEmp sync', err); });
   }
   renderEmpTable(); populateDropdowns(); toast('✓ Als inaktiv markiert');
+}
+
+// Massen-Reaktivierung für fälschlich als inaktiv markierte Mitarbeiter -
+// z.B. nach einer unvollständigen CSV (jeder, der in der Datei fehlt, wird
+// beim Import automatisch deaktiviert, siehe importCSV()) oder einem Fehler
+// im taeglichen Welo-Abgleich (automation/src/sync-welo-personal.js). Findet
+// alle inaktiven Mitarbeiter OHNE echtes, bereits vergangenes Austrittsdatum
+// und setzt sie nach Bestätigung wieder auf aktiv.
+function empBulkReactivate(){
+  if(!fbReady||!fbDb||!activeRegion){ toast('Keine Firebase-Verbindung.',true); return; }
+  var today=new Date();
+  fbDb.collection('emps').where('region','==',activeRegion).where('active','==',false).get().then(function(snap){
+    var candidates=[];
+    snap.forEach(function(doc){
+      var d=doc.data()||{};
+      var echtVergangen=false;
+      if(d.austritt&&d.austritt!=='31.12.9999'){
+        var parts=d.austritt.split('.');
+        if(parts.length===3){
+          var dt=new Date(Number(parts[2]),Number(parts[1])-1,Number(parts[0]));
+          if(!isNaN(dt.getTime())&&dt<today) echtVergangen=true;
+        }
+      }
+      if(!echtVergangen) candidates.push({ref:doc.ref,id:doc.id,name:d.name||doc.id});
+    });
+    if(!candidates.length){ toast('Keine vermutlich fälschlich inaktiven Mitarbeiter gefunden.'); return; }
+    var namen=candidates.slice(0,20).map(function(c){return c.name;}).join(', ')+(candidates.length>20?' …':'');
+    if(!confirm('⚠️ '+candidates.length+' Mitarbeiter in dieser Region sind als inaktiv markiert, haben aber KEIN echtes, bereits vergangenes Austrittsdatum:\n\n'+namen+'\n\nAlle jetzt wieder als aktiv markieren?')) return;
+    var batch=fbDb.batch();
+    candidates.forEach(function(c){ batch.update(c.ref,{active:true,inactiveSince:firebase.firestore.FieldValue.delete()}); });
+    batch.commit().then(function(){
+      // lokalen Cache nachziehen, damit Tabelle/Dropdowns ohne Reload stimmen
+      var emps=loadEmps();
+      var byId={}; candidates.forEach(function(c){ byId[c.id]=true; });
+      emps.forEach(function(e){ if(byId[''+e.id]) e.active=true; });
+      saveEmps(emps);
+      renderEmpTable(); populateDropdowns();
+      toast('✓ '+candidates.length+' Mitarbeiter wieder aktiviert');
+    }).catch(function(e){ alert('Fehler: '+e.message); });
+  }).catch(function(e){ alert('Fehler: '+e.message); });
 }
 
 // close modal on bg click
