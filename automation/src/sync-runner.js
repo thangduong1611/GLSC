@@ -8,12 +8,24 @@ const { getRegionSecrets } = require('./secrets-client');
 // Reihenfolge bewusst: welo-personal + umsatz zuerst (schnell, stabil), die
 // zwei Axonity-Skripte zuletzt (aktuell instabil, lange Retries bei
 // Fehlern) — dieselbe Überlegung wie in run-catchup-all.bat.
-const SCRIPTS = [
+const ALL_SCRIPTS = [
   { key: 'welo-personal', file: 'sync-welo-personal.js', label: 'Personal & Tagesziel (Welo)' },
   { key: 'umsatz', file: 'sync-welo-umsatz.js', label: 'Umsatz (Welo)' },
   { key: 'produktion', file: 'sync-axonity-produktion.js', label: 'Produktion (Axonity)' },
   { key: 'bestellungen', file: 'sync-axonity-bestellungen.js', label: 'Bestellungen (Axonity)' },
 ];
+// Per Env-Var abschaltbar (SKIP_WELO_PERSONAL=true), NUR auf dem jeweiligen
+// Cloud-Run-Dienst gesetzt, nicht hier im gemeinsam genutzten Code - dieses
+// Modul wird von allen Regionen (ost/west, hoang, ...) deployt. Grund: bei
+// einer Reorganisation der Welo-Zuständigkeit kann das Gebietsleiter-Konto
+// vorübergehend die eigenen Mitarbeiter nicht mehr sehen, wodurch
+// sync-welo-personal.js sie faelschlich als "ausgeschieden" (active:false)
+// markieren wuerde (Auftrag t.duong 01.10.2026). Betrifft dann auch
+// Tagesziel/Urlaub-Saldo/Stunden dieser Mitarbeiter, die aus demselben Scan
+// kommen - bewusst der ganze Schritt pausiert, nicht nur die active-Logik.
+const SCRIPTS = process.env.SKIP_WELO_PERSONAL === 'true'
+  ? ALL_SCRIPTS.filter((s) => s.key !== 'welo-personal')
+  : ALL_SCRIPTS;
 
 const NODE_EXE = process.execPath;
 const AUTOMATION_DIR = path.resolve(__dirname, '..');

@@ -6282,7 +6282,20 @@ function fbFind(docId){ return fbPending.concat(fbDecided).find(function(r){retu
 function fbApprove(docId){
   var r=fbFind(docId); if(!r||!r.ref) return;
   r.ref.update({status:'approved', decidedAt:new Date().toISOString()})
-    .then(function(){ toast('✓ Urlaub genehmigt'); }).catch(function(e){ alert('Fehler: '+e.message); });
+    .then(function(){ toast('✓ Urlaub genehmigt'); fbNotifyVize('urlaub', r); }).catch(function(e){ alert('Fehler: '+e.message); });
+}
+// Push an die Vize dieser Region ("jemand hat Urlaub, evtl. aushelfen") -
+// bewusst fire-and-forget, wie das Pendant maNotifyVize() in mitarbeiter.html
+// bei Krankmeldung: ein Fehler hier darf die bereits erfolgte Genehmigung
+// nicht als fehlgeschlagen erscheinen lassen.
+function fbNotifyVize(type,r){
+  var syncUrl=REGION_SYNC_URL[activeRegion]; if(!syncUrl||!r||!r.filiale) return;
+  firebase.auth().currentUser.getIdToken().then(function(idToken){
+    return fetch(syncUrl+'/internal/notify-vize', {
+      method:'POST', headers:{'Content-Type':'application/json', Authorization:'Bearer '+idToken},
+      body: JSON.stringify({ type:type, region:activeRegion, filiale:r.filiale, name:r.name })
+    });
+  }).catch(function(e){ console.warn('notify-vize', e); });
 }
 function fbReject(docId){
   var r=fbFind(docId); if(!r||!r.ref) return;

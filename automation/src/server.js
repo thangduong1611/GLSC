@@ -19,6 +19,7 @@ const { setSecret } = require('./secrets-client');
 const { cleanupKrankmeldungFotos } = require('./cleanup-krankmeldung');
 const { cleanupDepartedEmployees } = require('./cleanup-departed-employees');
 const { employeeLogin } = require('./employee-auth');
+const { notifyVize } = require('./notify-vize');
 
 // getDb() ruft intern admin.initializeApp() auf — muss VOR dem ersten
 // admin.auth()-Aufruf passiert sein (sonst "default Firebase app does not
@@ -83,6 +84,24 @@ async function requireManager(req, res, next) {
     if (!regions.length) return res.status(403).json({ error: 'not a manager' });
     req.managerEmail = decoded.email;
     req.managerRegions = regions;
+    next();
+  } catch (err) {
+    res.status(401).json({ error: 'invalid token: ' + err.message });
+  }
+}
+
+// Für Routen, die sowohl ein Manager (index.html) als auch ein angemeldeter
+// Mitarbeiter (mitarbeiter.html, Custom Token uid "emp_<pid>" aus
+// employee-auth.js) aufrufen darf - reicht hier ein gültiges Firebase-ID-
+// Token, ohne weitere Rollenprüfung (z.B. /internal/notify-vize: die
+// eigentliche Krankmeldung/Urlaub ist bereits über die normalen Firestore-
+// Regeln abgesichert, hier geht es nur um die Push-Benachrichtigung danach).
+async function requireAnyAuth(req, res, next) {
+  const authHeader = req.get('Authorization') || '';
+  const idToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  if (!idToken) return res.status(401).json({ error: 'missing bearer token' });
+  try {
+    await admin.auth().verifyIdToken(idToken);
     next();
   } catch (err) {
     res.status(401).json({ error: 'invalid token: ' + err.message });
@@ -352,6 +371,21 @@ app.post('/employee/login', async (req, res) => {
     const status = err.status || 500;
     if (status === 500) console.error('[employee-login] Fehlgeschlagen:', err.message);
     res.status(status).json({ error: err.message, attemptsLeft: err.attemptsLeft, retryAfterMin: err.retryAfterMin });
+  }
+});
+
+// ── Push an Vize bei Krankmeldung/Urlaub einer ihrer Filialen ─────────────
+// Von mitarbeiter.html (nach Krankmeldung-Absenden) UND index.html (nach
+// Urlaub-Genehmigung) aufgerufen - region/filiale/name kommen direkt vom
+// Aufrufer (kein erneutes Nachlesen des Krank-/Urlaub-Dokuments nötig), da
+// hier nur eine Benachrichtigung ausgelöst wird, keine Datenänderung.
+app.post('/internal/notify-vize', requireAnyAuth, async (req, res) => {
+  const b = req.body || {};
+  try {
+    const result = await notifyVize({ region: b.region, filiale: b.filiale, name: b.name, type: b.type });
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 

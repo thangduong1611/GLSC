@@ -1497,6 +1497,10 @@ function slInit(sess){
     if(ivb) ivb.style.display=sess.vize?'':'none';
     ivSetupFilPicker(sess);
     mzSetupPicker(sess);
+    // sess.zweit ist jetzt sicher gesetzt (s.o.) - maStartZweitUrlaubListeners()
+    // (in maRenderDP()) braucht genau das, lief aber beim allerersten Aufruf
+    // kurz nach dem Login evtl. noch mit der alten/leeren Liste.
+    maRenderDP();
     if(slIsPlanner(sess)){
       slSetupFilPicker(sess);
       var mi=document.getElementById('sl-month');
@@ -3771,9 +3775,38 @@ function maDoImport(){
    ════════════════════════════════════════════════ */
 // Overlay { empId: { 'YYYY-MM-DD': 'Urlaub' } } aus genehmigten Urlauben.
 // Nur Anzeige – überschreibt gespeicherte Schichten visuell (Abwesenheit gewinnt).
+// maFbUrlaub deckt NUR sess.filiale ab (siehe maStartFbUrlaub) - für die
+// "GANZE FILIALE"-Ansicht in maRenderDP() (Filial-Umschalter, v.a. für Vize/
+// Springer ohne feste Stammfiliale) reichte das nicht: Urlaub einer anderen,
+// nur mitbetreuten Filiale (z.B. Köln) tauchte dort nie auf, die Zelle zeigte
+// weiter die alte, normale Schicht statt "Urlaub" - obwohl der Mitarbeiter
+// genehmigten Urlaub hat (live gemeldet 01.10.2026, gefährlich: sieht aus wie
+// normal besetzt). maZweitUrlaub sammelt dieselben Live-Daten zusätzlich für
+// jede Filiale aus maEffectiveZweit(), siehe maStartZweitUrlaubListeners().
+var maZweitUrlaub={}, maZweitUrlaubUnsubs={};
+function maStartZweitUrlaubListeners(sess){
+  if(!fbReady||!fbDb||!sess) return;
+  var wanted=maEffectiveZweit(sess).filter(Boolean);
+  var wantedSet={}; wanted.forEach(function(f){ wantedSet[f]=1; });
+  // Filialen, die nicht mehr gebraucht werden (z.B. nach Filialwechsel), abmelden
+  Object.keys(maZweitUrlaubUnsubs).forEach(function(f){
+    if(!wantedSet[f]){ try{maZweitUrlaubUnsubs[f]();}catch(e){} delete maZweitUrlaubUnsubs[f]; delete maZweitUrlaub[f]; }
+  });
+  wanted.forEach(function(f){
+    if(maZweitUrlaubUnsubs[f]) return; // schon abonniert
+    maZweitUrlaubUnsubs[f]=fbDb.collection('filialen').doc(fbSlug(f)).collection('urlaub')
+      .onSnapshot(function(snap){
+        var raw=[]; snap.forEach(function(doc){ raw.push({id:doc.id, data:doc.data()}); });
+        maZweitUrlaub[f]=maMapUrlaubSnapshot(raw);
+        maRenderDP();
+      }, function(e){ console.warn('zweit urlaub', f, e); });
+  });
+}
 function maUrlaubOverlay(){
   var ov={};
-  (maFbUrlaub||[]).forEach(function(u){
+  var alle=(maFbUrlaub||[]).slice();
+  Object.keys(maZweitUrlaub||{}).forEach(function(f){ alle=alle.concat(maZweitUrlaub[f]||[]); });
+  alle.forEach(function(u){
     if(u.status!=='approved'||!u.id||!u.from) return;
     var d=maParseDate(u.from), end=maParseDate(u.to||u.from), guard=0;
     while(d&&end&&d<=end&&guard<400){ var iso=maISO(d); if(!ov[''+u.id])ov[''+u.id]={}; if(!ov[''+u.id][iso])ov[''+u.id][iso]='Urlaub'; d.setDate(d.getDate()+1); guard++; }
@@ -3840,6 +3873,7 @@ function maFmtStd(n){ var r=Math.round(n*10)/10; return (''+r).replace('.',',')+
 
 function maRenderDP(){
   var sess=maSession();if(!sess)return;
+  maStartZweitUrlaubListeners(sess);
   var month=document.getElementById('dp-month').value;
   var out=document.getElementById('dp-out');
   if(!out)return;
@@ -4480,6 +4514,7 @@ function maSendKrank(){
       maKrImg=null;var p=document.getElementById('kr-prev');p.style.display='none';
       document.getElementById('kr-drop').classList.remove('ok');
       document.getElementById('kr-hint').style.display='none';
+      maNotifyVize('krank', sess);
     }).catch(function(e){ toast(t('kr_fail')+e.message,true); });
     return;
   }
@@ -4489,6 +4524,20 @@ function maSendKrank(){
   if(wa)window.open('https://wa.me/'+wa+'?text='+encodeURIComponent(msg),'_blank');
   else prompt(t('wa_missing'),msg);
   toast(t('t_wa')+(maKrImg?t('t_wa_attach'):''));
+}
+// Push an die Vize dieser Region ("jemand ist krank/im Urlaub, evtl.
+// aushelfen") - bewusst fire-and-forget: ein Fehler hier darf die eigentliche
+// Krankmeldung (schon erfolgreich gespeichert) nicht als fehlgeschlagen
+// erscheinen lassen, deshalb kein toast() im catch.
+function maNotifyVize(type,sess){
+  if(!sess||!sess.filiale) return;
+  if(!firebase.auth().currentUser) return;
+  firebase.auth().currentUser.getIdToken().then(function(idToken){
+    return fetch(EMPLOYEE_AUTH_URL+'/internal/notify-vize', {
+      method:'POST', headers:{'Content-Type':'application/json', Authorization:'Bearer '+idToken},
+      body: JSON.stringify({ type:type, region:sess.region||'', filiale:sess.filiale, name:sess.name })
+    });
+  }).catch(function(e){ console.warn('notify-vize', e); });
 }
 /* ── Eigene Krankmeldungen anzeigen + zurückziehen können ──
    Bisher rein "fire and forget": maSendKrank() schrieb einmal in die
