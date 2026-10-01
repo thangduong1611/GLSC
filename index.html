@@ -8284,7 +8284,10 @@ var invLinks={}, invStoreMap={}, invCounts={}, invTmKey=null, invTmChecked={};
 var invPeriodUnsub=null, invLinksUnsub=null, invMapUnsub=null, invCountsUnsub=null;
 var invWeloPreview={}, invWeloUnsub=null;
 
-function invDefaultMonth(){ var n=new Date(); return n.getFullYear()+'-'+('0'+(n.getMonth()+1)).slice(-2); }
+// Die Inventur-Periode eines Monats laeuft laut inventur_period (end) bis
+// zum 1. des Folgemonats - am 1. selbst soll die Vorauswahl deshalb noch den
+// Vormonat zeigen, sonst sieht man direkt eine leere Liste (bemerkt 01.10.2026).
+function invDefaultMonth(){ var n=new Date(); if(n.getDate()===1) n.setDate(0); return n.getFullYear()+'-'+('0'+(n.getMonth()+1)).slice(-2); }
 function invSlug(f){ return (''+f).replace(/\s+/g,'_').toLowerCase(); }
 // Markt-Nr. aus Welo-Filename ziehen: .../402501-202506-hash.html
 function invParseMarktNr(url){ var m=(''+url).match(/\/(\d{5,7})-\d{6}-/); return m?m[1]:null; }

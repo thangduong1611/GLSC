@@ -24,12 +24,23 @@ const USER = process.env.WELO_USER;
 const PASSWORD = process.env.WELO_PASSWORD;
 const ITEMS_URL = 'https://thangduong1611.github.io/GLSC/inventur-data.js';
 
-function heuteYYYYMM() {
+// Die Inventur-Periode eines Monats läuft laut inventur_period (sichtbar bis
+// "end") immer bis zum 1. des Folgemonats weiter (z.B. 2026-09: end
+// 2026-10-01) - am 1. eines Monats gehört die Abgleich-Prüfung deshalb noch
+// zum VORMONAT, sonst würde sie am 1. still auf den neuen (leeren) Monat
+// umschalten, während die Filialen den alten noch abschließen (live bemerkt
+// am 01.10.2026).
+function relevantesMonatsdatum() {
   const d = new Date();
+  if (d.getDate() === 1) d.setDate(0); // letzter Tag des Vormonats
+  return d;
+}
+function heuteYYYYMM() {
+  const d = relevantesMonatsdatum();
   return String(d.getFullYear()) + String(d.getMonth() + 1).padStart(2, '0');
 }
 function heuteMonthISO() {
-  const d = new Date();
+  const d = relevantesMonatsdatum();
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
 }
 function fbSlug(s) {
