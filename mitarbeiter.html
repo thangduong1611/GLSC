@@ -1445,7 +1445,7 @@ function ivSubmit(){
    Erlaubt: Schichten bearbeiten + pro Woche veröffentlichen.
    Nicht erlaubt: Mitarbeiter hinzufügen/löschen, Urlaub genehmigen.
    ════════════════════════════════════════════════ */
-var slEmps=[], slShifts={}, slPlanLoaded=false;
+var slEmps=[], slShifts={}, slPlanLoaded=false, slPlanUnsub=null, slPlanDocId=null;
 
 /* Hilfsfunktionen (identisch mit dpISO/dpParse/dpGetKW in index.html) */
 function slISO(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
@@ -1548,23 +1548,37 @@ function slFilChange(){
   slLoadPlan();
 }
 
-/* Plan für aktuellen Monat aus Firestore laden */
+/* Plan für aktuellen Monat aus Firestore laden - LIVE, damit ein vom
+   Gebietsleiter in index.html veröffentlichter Dienstplan sofort hier
+   erscheint, ohne dass Shopleiter/Vize neu laden müssen (Auftrag t.duong
+   01.10.2026: "nếu Quản lý đăng lịch thì bên Vize thấy được nó luôn"). */
 function slLoadPlan(){
   var sess=maSession(); if(!slIsPlanner(sess)||!fbReady||!fbDb) return;
   var m=document.getElementById('sl-month'); if(!m||!m.value) return;
   var filiale=slCurFiliale(); if(!filiale) return;
   var month=m.value, docId=slFbSlug(filiale)+'__'+month;
+  if(slPlanUnsub && slPlanDocId===docId) return; // schon genau auf diesem Dok abonniert
+  if(slPlanUnsub){ try{slPlanUnsub();}catch(e){} slPlanUnsub=null; }
+  slPlanDocId=docId;
   var st=document.getElementById('sl-status'); if(st) st.textContent=t('sl_loading');
-  // 1) Mitarbeiter dieser Filiale aus der emps-Sammlung laden (unabhängig vom Plan).
-  //    So sieht der Shopleiter die Wochen auch, wenn noch kein Plan existiert.
+  // Mitarbeiter dieser Filiale aus der emps-Sammlung (unabhängig vom Plan,
+  // damit die Wochen auch ohne bestehenden Plan sichtbar sind) - einmalig,
+  // da ein Rollenwechsel/Neuzugang selten genug ist, um keinen eigenen
+  // Live-Listener zu brauchen.
   fbDb.collection('emps').where('filiale','==',filiale).get().then(function(snap){
     var byId={};
     snap.forEach(function(doc){ var d=doc.data()||{}; if(d.active!==false) byId[doc.id]={id:doc.id, name:d.name||doc.id}; });
-    // 2) Bestehenden Plan laden (Schichten + evtl. Mitarbeiter, die nicht mehr in emps sind)
-    return fbDb.collection('plan').doc(docId).get().then(function(doc){
+    slPlanUnsub=fbDb.collection('plan').doc(docId).onSnapshot(function(doc){
+      // Während eines laufenden Tastendrucks in einer Schicht-Zelle NICHT
+      // überschreiben - sonst würde eine fremde Änderung (Gebietsleiter
+      // veröffentlicht gerade eine andere KW) den eigenen, noch ungespeicherten
+      // Eintrag im Browser löschen. slPublishWeek() liest beim Speichern selbst
+      // ohnehin frisch nach, verliert also nichts dadurch.
+      if(document.activeElement && (document.activeElement.className||'').indexOf('sl-inp')>=0) return;
       var d=doc.exists?(doc.data()||{}):{};
-      (d.employees||[]).forEach(function(e){ if(e&&e.id&&!byId[e.id]) byId[e.id]={id:e.id, name:e.name||e.id}; });
-      slEmps=Object.keys(byId).map(function(k){ return byId[k]; }).sort(function(a,b){ return (''+a.name).localeCompare(''+b.name); });
+      var byId2=Object.assign({},byId);
+      (d.employees||[]).forEach(function(e){ if(e&&e.id&&!byId2[e.id]) byId2[e.id]={id:e.id, name:e.name||e.id}; });
+      slEmps=Object.keys(byId2).map(function(k){ return byId2[k]; }).sort(function(a,b){ return (''+a.name).localeCompare(''+b.name); });
       slShifts={};
       var raw=d.shifts||{};
       Object.keys(raw).forEach(function(ek){ slShifts[ek]=Object.assign({},raw[ek]); });
@@ -1575,8 +1589,8 @@ function slLoadPlan(){
       }
       slRenderGrid();
       slLoadElsewhere();
-    });
-  }).catch(function(e){ if(st) st.textContent='⚠️ '+e.message; console.warn('sl load', e); });
+    }, function(e){ if(st) st.textContent='⚠️ '+e.message; console.warn('sl load', e); });
+  }).catch(function(e){ if(st) st.textContent='⚠️ '+e.message; console.warn('sl load emps', e); });
 }
 
 /* Alle Eingabefelder in slShifts sichern */
@@ -3211,6 +3225,9 @@ function maLogout(){
   if(maViewAsSess || confirm(t('q_logout'))){
     maViewAsSess=null;
     maSetSession(null);
+    if(slPlanUnsub){ try{slPlanUnsub();}catch(e){} slPlanUnsub=null; slPlanDocId=null; }
+    Object.keys(maZweitUrlaubUnsubs||{}).forEach(function(f){ try{maZweitUrlaubUnsubs[f]();}catch(e){} });
+    maZweitUrlaubUnsubs={}; maZweitUrlaub={};
     document.getElementById('login-pid').value='';
     var pinEl=document.getElementById('login-pin'); if(pinEl) pinEl.value='';
     maLoginLeaveSetup();
