@@ -43,6 +43,12 @@ header .sub{font-size:12px;opacity:.85;}
 /* CARDS */
 .card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--r);padding:18px;margin-bottom:14px;}
 .card-title{font-size:15px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+/* Einklappbare Karten (bisher nur im Mitarbeiter-Panel genutzt, siehe
+   cardCollapseToggle() - bewusst per eigener Klasse statt global auf .card,
+   damit andere Panels unberührt bleiben). */
+.card-title.card-toggle{cursor:pointer;user-select:none;}
+.card-title.card-toggle .card-caret{font-size:12px;color:var(--mut);transition:transform .15s;}
+.card.card-collapsed>*:not(.card-title){display:none;}
 .badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;}
 .badge-grn{background:var(--grn-bg);color:var(--grn);}
 .badge-blu{background:var(--blu-bg);color:var(--blu);}
@@ -899,13 +905,17 @@ window.onerror=function(msg,src,line){
 
 <!-- ===== MITARBEITER ===== -->
 <div id="panel-emp" class="panel">
-  <div class="card" id="pin-locks-card" style="display:none">
-    <div class="card-title">🔒 Gesperrte Anmeldungen <span class="badge badge-red" id="pin-locks-count">0</span></div>
+  <div class="card">
+    <div class="card-title">🔍 Mitarbeiter suchen</div>
+    <input type="text" id="emp-search" placeholder="Name oder Personalnr. eingeben…" oninput="renderEmpTable()" style="font-size:15px">
+  </div>
+  <div class="card card-collapsed" id="pin-locks-card" style="display:none">
+    <div class="card-title card-toggle" onclick="cardCollapseToggle(this)"><span class="card-caret">▸</span>🔒 Gesperrte Anmeldungen <span class="badge badge-red" id="pin-locks-count">0</span></div>
     <div class="info">Diese Mitarbeiter haben ihren PIN zu oft falsch eingegeben. Die Sperre endet von selbst (5, dann 15, dann 30 Min.). Hat jemand den PIN vergessen, hier zurücksetzen — beim nächsten Login legt die Person einen neuen fest.</div>
     <div id="pin-locks-list"></div>
   </div>
-  <div class="card">
-    <div class="card-title">🏪 Filial-Verteilung <span class="badge badge-blu">Haupt + Zweitfilialen</span></div>
+  <div class="card card-collapsed">
+    <div class="card-title card-toggle" onclick="cardCollapseToggle(this)"><span class="card-caret">▸</span>🏪 Filial-Verteilung <span class="badge badge-blu">Haupt + Zweitfilialen</span></div>
     <div class="info">Pro Mitarbeiter festlegen, in welchen Filialen er/sie <strong>bei Bedarf</strong> einspringt (Krankheit/Urlaub). Die Stammfiliale kommt aus der CSV. Nach Änderungen „Veröffentlichen" nicht vergessen — Mitarbeiter sehen die Zuteilung im Dienstplan-Tab.</div>
     <label>Mitarbeiter</label>
     <select id="fv-emp" onchange="fvRenderStores()"><option value="">— Mitarbeiter wählen —</option></select>
@@ -917,8 +927,8 @@ window.onerror=function(msg,src,line){
     <div style="font-size:13px;font-weight:700;margin:14px 0 6px;color:var(--mut)">Übersicht</div>
     <div id="fv-summary" style="font-size:13px;color:var(--mut)">—</div>
   </div>
-  <div class="card">
-    <div class="card-title">📥 CSV-Import vom Unternehmen</div>
+  <div class="card card-collapsed">
+    <div class="card-title card-toggle" onclick="cardCollapseToggle(this)"><span class="card-caret">▸</span>📥 CSV-Import vom Unternehmen</div>
     <div class="info">Laden Sie die aktuelle Personaldatei (CSV aus dem System) hoch. Bestehende Mitarbeiter werden aktualisiert, neue hinzugefügt. Mitarbeiter die nicht mehr in der Datei sind, werden als inaktiv markiert.</div>
     <div class="drop" id="csv-drop" onclick="document.getElementById('csv-file').click()">
       <div class="drop-icon">📂</div>
@@ -934,11 +944,11 @@ window.onerror=function(msg,src,line){
     </div>
   </div>
   <div id="emp-notif-card" class="card" style="display:none">
-    <div class="card-title">⚠️ Hinweise <span class="badge badge-amb" id="emp-notif-count">0</span></div>
+    <div class="card-title card-toggle" onclick="cardCollapseToggle(this)"><span class="card-caret">▾</span>⚠️ Hinweise <span class="badge badge-amb" id="emp-notif-count">0</span></div>
     <div id="emp-notif-list"></div>
   </div>
   <div class="card">
-    <div class="card-title">Mitarbeiterliste <span class="badge badge-blu" id="emp-count-badge">0 Einträge</span></div>
+    <div class="card-title card-toggle" onclick="cardCollapseToggle(this)"><span class="card-caret">▾</span>Mitarbeiterliste <span class="badge badge-blu" id="emp-count-badge">0 Einträge</span></div>
     <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
       <table class="emp-table">
         <thead><tr><th>Name</th><th>Personalnr.</th><th>Filiale</th><th>Eintritt</th><th>Austritt</th><th>Status</th><th></th></tr></thead>
@@ -2003,20 +2013,40 @@ ${SIG}`;
 // ─── EMPLOYEE MANAGEMENT ─────────────────────────────────────
 let editIdx = null;
 
+// Einklappbare Karten im Mitarbeiter-Panel (Auftrag t.duong 01.10.2026:
+// "tất cả các mục đều có thể thu gọn lại được để đỡ chiếm diện tích").
+// Bewusst eine eigene .card-collapsed-Klasse statt global auf .card, damit
+// alle anderen Panels im Rest der App unverändert bleiben.
+function cardCollapseToggle(titleEl){
+  const card=titleEl.closest('.card'); if(!card) return;
+  const collapsed=card.classList.toggle('card-collapsed');
+  const caret=titleEl.querySelector('.card-caret');
+  if(caret) caret.textContent=collapsed?'▸':'▾';
+}
+
 function renderEmpTable() {
-  const emps=loadEmps();
+  const allEmps=loadEmps();
   const tbody=document.getElementById('emp-tbody');
   tbody.innerHTML='';
-  const active=emps.filter(e=>e.active!==false).length;
-  document.getElementById('emp-count-badge').textContent=active+' aktiv / '+emps.length+' gesamt';
+  const active=allEmps.filter(e=>e.active!==false).length;
+  document.getElementById('emp-count-badge').textContent=active+' aktiv / '+allEmps.length+' gesamt';
+  const q=(document.getElementById('emp-search')||{}).value||'';
+  const qNorm=q.toLowerCase().trim();
+  const emps=qNorm?allEmps.filter(e=>(''+e.name).toLowerCase().includes(qNorm)||(''+e.id).includes(qNorm)):allEmps;
+  if(!allEmps.length){
+    tbody.innerHTML='<tr><td colspan="7" style="color:var(--mut);font-size:13px;padding:16px 10px">Noch keine Mitarbeiter. CSV importieren oder manuell hinzufügen.</td></tr>';
+    return;
+  }
   if(!emps.length){
-    tbody.innerHTML='<tr><td colspan="5" style="color:var(--mut);font-size:13px;padding:16px 10px">Noch keine Mitarbeiter. CSV importieren oder manuell hinzufügen.</td></tr>';
+    tbody.innerHTML='<tr><td colspan="7" style="color:var(--mut);font-size:13px;padding:16px 10px">Kein Mitarbeiter gefunden für „'+q+'".</td></tr>';
     return;
   }
   const today2=new Date();
-  emps.forEach((e,i)=>{
+  emps.forEach((e)=>{
+    const i=allEmps.indexOf(e); // Index im ungefilterten Array - openEditModal()/delEmp() erwarten den
     const isActive=e.active!==false;
     const tr=document.createElement('tr');
+    tr.id='emp-row-'+e.id;
     tr.style.opacity=isActive?'1':'0.5';
     // check upcoming Austritt
     let ausBadge='';
@@ -2028,7 +2058,7 @@ function renderEmpTable() {
         if(diffDays>=0&&diffDays<=45) ausBadge=`<span class="badge badge-amb" style="font-size:10px;margin-left:4px">⚠️ ${diffDays}T</span>`;
       }
     }
-    tr.innerHTML=`<td style="font-weight:500">${e.name}${ausBadge}</td>
+    tr.innerHTML=`<td style="font-weight:500;cursor:pointer;color:var(--blu)" onclick="empShowDetail('${e.id}')" title="Details anzeigen">${e.name}${ausBadge}</td>
 <td><span class="id-chip">${e.id}</span></td>
 <td style="color:var(--mut);font-size:12px">${e.filiale||'—'}${e.shopleiter?'<span style="margin-left:5px;font-size:10px;background:#F0F4F8;border:1px solid #AED6F1;color:#1A5276;border-radius:10px;padding:1px 6px;font-weight:700">🏪 SL</span>':''}${e.vize?'<span style="margin-left:5px;font-size:10px;background:#F3F0F8;border:1px solid #C3AED6;color:#5B3A8E;border-radius:10px;padding:1px 6px;font-weight:700">🗂️ Vize</span>':''}</td>
 <td style="font-size:11px;color:var(--mut)">${e.eintritt||'—'}</td>
@@ -2042,6 +2072,85 @@ function renderEmpTable() {
     tbody.appendChild(tr);
   });
   renderEmpNotif();
+}
+
+// ── Mitarbeiter-Detailkarte (Urlaub/Krank/Fristen/Stunden), beim Klick auf
+// den Namen in der Liste - statt alles dauerhaft sichtbar in der Tabelle zu
+// halten (Auftrag t.duong 01.10.2026: "không phải kéo dài trang xuống dưới
+// quá nhiều"). Daten kommen aus emp_welo/{id} + welo_fristen/{id} (beide vom
+// taeglichen Welo-Abgleich befuellt - siehe sync-welo-personal.js) sowie aus
+// den bereits geladenen Urlaub-/Krank-Listen (fbPending/fbDecided/fbKrank).
+const empDetailCache={};
+function empShowDetail(id){
+  const row=document.getElementById('emp-row-'+id); if(!row) return;
+  const existing=document.getElementById('emp-detail-'+id);
+  // Nur eine Detailzeile gleichzeitig offen, egal welche vorher offen war.
+  document.querySelectorAll('.emp-detail-row').forEach(tr=>{ if(tr.id!=='emp-detail-'+id) tr.remove(); });
+  if(existing){ existing.remove(); return; }
+  const tr=document.createElement('tr'); tr.className='emp-detail-row'; tr.id='emp-detail-'+id;
+  const td=document.createElement('td'); td.colSpan=7; td.style.background='#FAF9F7'; td.style.borderTop='1px solid var(--brd)';
+  td.innerHTML='<div style="padding:12px;color:var(--mut);font-size:13px">⏳ Lade…</div>';
+  tr.appendChild(td);
+  row.parentNode.insertBefore(tr, row.nextSibling);
+  const cached=empDetailCache[id];
+  const p=cached?Promise.resolve(cached):Promise.all([
+    fbDb.collection('emp_welo').doc(''+id).get().catch(()=>null),
+    fbDb.collection('welo_fristen').doc(''+id).get().catch(()=>null),
+  ]).then(function(res){
+    const data={welo:(res[0]&&res[0].exists)?res[0].data():null, fristen:(res[1]&&res[1].exists)?res[1].data():null};
+    empDetailCache[id]=data;
+    return data;
+  });
+  p.then(function(data){ td.innerHTML=empDetailHtml(id, data); })
+   .catch(function(e){ td.innerHTML='<div style="padding:12px;color:#C0392B;font-size:13px">Fehler: '+e.message+'</div>'; });
+}
+function empDetailFmtDE(iso){
+  if(!iso) return null;
+  const m=(''+iso).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m?(m[3]+'.'+m[2]+'.'+m[1]):iso;
+}
+function empDetailTile(label, value, sub){
+  return '<div style="background:#fff;border:1px solid var(--brd);border-radius:8px;padding:8px 10px;min-width:110px">'
+    +'<div style="font-size:11px;color:var(--mut);font-weight:600">'+label+'</div>'
+    +'<div style="font-size:17px;font-weight:700;margin-top:1px">'+value+'</div>'
+    +(sub?'<div style="font-size:11px;color:var(--mut)">'+sub+'</div>':'')
+    +'</div>';
+}
+function empDetailHtml(id, data){
+  const welo=data.welo||{}, fristen=data.fristen||{};
+  const emps=loadEmps(); const e=emps.find(x=>''+x.id===''+id)||{};
+  // Aktueller/kommender Urlaub dieser Person (aus bereits geladenen fbPending/fbDecided)
+  const urlaube=(typeof fbPending!=='undefined'?fbPending:[]).concat(typeof fbDecided!=='undefined'?fbDecided:[])
+    .filter(u=>''+u.empId===''+id).sort((a,b)=>(a.from||'')<(b.from||'')?-1:1);
+  const today=new Date().toISOString().slice(0,10);
+  const aktuellerUrlaub=urlaube.find(u=>u.status==='approved' && u.from<=today && (u.to||u.from)>=today);
+  const naechsterUrlaub=urlaube.find(u=>u.status==='approved' && u.from>today);
+  const offenerAntrag=urlaube.find(u=>u.status==='pending');
+  // Aktuelle Krankmeldung (aus bereits geladenem fbKrank)
+  const kranks=(typeof fbKrank!=='undefined'?fbKrank:[]).filter(k=>''+k.d.empId===''+id).sort((a,b)=>(b.d.created||'')<(a.d.created||'')?-1:1);
+  const aktuellerKrank=kranks.find(k=>!k.d.to || k.d.to>=today);
+  let badges='';
+  badges+=aktuellerUrlaub?('<span class="badge badge-grn">🏖 Im Urlaub bis '+empDetailFmtDE(aktuellerUrlaub.to||aktuellerUrlaub.from)+'</span>')
+    :naechsterUrlaub?('<span class="badge badge-blu">🏖 Urlaub ab '+empDetailFmtDE(naechsterUrlaub.from)+'</span>')
+    :'';
+  if(offenerAntrag) badges+=' <span class="badge badge-amb">⏳ Antrag offen ab '+empDetailFmtDE(offenerAntrag.from)+'</span>';
+  if(aktuellerKrank) badges+=' <span class="badge" style="background:#FBEAE7;color:#C0392B">🤒 Krank seit '+empDetailFmtDE(aktuellerKrank.d.from)+'</span>';
+  if(fristen.vertragsEnde) badges+=' <span class="badge" style="background:#F3F0F8;color:#5B3A8E">📄 Vertrag bis '+empDetailFmtDE(fristen.vertragsEnde)+'</span>';
+  if(fristen.aeFrist) badges+=' <span class="badge" style="background:#F3F0F8;color:#5B3A8E">🪪 AE bis '+empDetailFmtDE(fristen.aeFrist)+'</span>';
+  if(!badges) badges='<span style="color:var(--mut);font-size:12.5px">Kein laufender Urlaub/Krankmeldung.</span>';
+  const g=welo.stunden||{};
+  const tiles=[
+    empDetailTile('Resturlaub', (welo.urlaubOffen!=null?welo.urlaubOffen:'—')+' Tg', welo.urlaubAnspruch!=null?('Anspruch '+welo.urlaubAnspruch):''),
+    empDetailTile('Vertrag', (welo.sollStd!=null?welo.sollStd:'—')+' Std', 'pro Woche'),
+    empDetailTile('AZ-Konto', (welo.azKonto!=null?welo.azKonto:'—')+' Std', ''),
+    empDetailTile('Gestern', (g.gesternIst!=null?g.gesternIst:'—')+' / '+(g.gesternSoll!=null?g.gesternSoll:'—')+' Std', g.gesternDatum?empDetailFmtDE(g.gesternDatum):''),
+  ].join('');
+  const quelle=welo.updatedAt?('Welo-Daten vom '+new Date(welo.updatedAt).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})):'Noch keine Welo-Daten für diese Person geladen.';
+  return '<div style="padding:12px">'
+    +'<div style="margin-bottom:10px">'+badges+'</div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap">'+tiles+'</div>'
+    +'<div style="font-size:11px;color:var(--mut);margin-top:10px">'+quelle+'</div>'
+    +'</div>';
 }
 
 function importCSV(ev) {
