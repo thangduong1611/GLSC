@@ -2120,6 +2120,17 @@ function importCSV(ev) {
     let added=0,updated=0,deactivated=0;
     const csvIds=new Set(parsed.map(e=>e.id));
 
+    // Wer in der CSV fehlt, wird als inaktiv markiert (Annahme: ausgeschieden)
+    // - das kann bei einer unvollständigen/falschen CSV sehr viele echte,
+    // aktive Mitarbeiter fälschlich deaktivieren (live passiert 01.10.2026,
+    // 37 Mitarbeiter betroffen). Deshalb vor dem Schreiben explizit nachfragen
+    // statt stillschweigend zu deaktivieren.
+    const wuerdeDeaktiviert=existing.filter(e=>!csvIds.has(e.id)&&e.active!==false);
+    if(wuerdeDeaktiviert.length){
+      const namen=wuerdeDeaktiviert.slice(0,15).map(e=>e.name).join(', ')+(wuerdeDeaktiviert.length>15?' …':'');
+      const ok=confirm('⚠️ '+wuerdeDeaktiviert.length+' bestehende Mitarbeiter sind NICHT in dieser CSV enthalten und würden als inaktiv markiert:\n\n'+namen+'\n\nIst das wirklich die vollständige, aktuelle Mitarbeiterliste? Falls diese CSV unvollständig ist, auf "Abbrechen" klicken und NICHT importieren.\n\nTrotzdem fortfahren?');
+      if(!ok){ toast('Import abgebrochen - niemand wurde deaktiviert.',true); return; }
+    }
     // mark existing not in CSV as inactive
     existing.forEach(e=>{
       if(!csvIds.has(e.id)&&e.active!==false){e.active=false;deactivated++;}
