@@ -92,7 +92,6 @@
 // run-sync-welo-personal.bat). Per echtem Testlauf bestätigt (02.09.2026).
 require('dotenv').config();
 const { chromium } = require('playwright');
-const { parse } = require('csv-parse/sync');
 const { getDb, admin } = require('./firestore-client');
 const { MARKTNR_ALIASES, MARKTNR_REGION, resolveRegion } = require('./branches');
 const { withWeloLock } = require('./sync-lock');
@@ -168,40 +167,70 @@ async function login(page) {
   return m[1]; // z.B. https://welo.sushi-circle.de/de3bcae-518e741
 }
 
-function findCsvHref(html, base) {
-  const m = html.match(/href="([^"]*\/export\/csv-[^"]+\.csv)"/i);
-  if (!m) return null;
-  return new URL(m[1], base).toString();
-}
-
-async function fetchCsv(page, url) {
-  const res = await page.request.get(url);
-  if (!res.ok()) throw new Error(`CSV-Abruf fehlgeschlagen (${res.status()}): ${url}`);
-  const buf = await res.body();
-  return new TextDecoder('windows-1252').decode(buf);
-}
-
+// BUG gefunden 03.10.2026 (t.duong): "/pf/aktives-personal/index.html" zeigt
+// nur die Filialen, die GENAU DIESEM Welo-Konto aktuell als "eigen" zugeordnet
+// sind. Als West einem neuen (noch in Einarbeitung befindlichen) Manager
+// zugeordnet wurde, verschwanden alle West-Mitarbeiter aus dieser Liste -
+// sync-welo-personal.js hielt sie dadurch faelschlich für ausgeschieden und
+// deaktivierte sie (Folge: Login in der Mitarbeiter-App gesperrt, siehe
+// employee-auth.js). Ersetzt durch die allgemeine Personalsuche
+// ("/pf/index.html", Suchfeld "query" mit "*"), die laut t.duong UND live
+// bestätigt (76 Treffer, 35 verschiedene MarktNr. über BEIDE Regionen Ost+
+// West) nicht nach Konto-Zuordnung filtert, sondern wirklich alle Personen
+// zeigt, die diese Suche sieht.
 async function getPersonalRows(page, sessionBase) {
-  await page.goto(`${sessionBase}/pf/aktives-personal/index.html`);
-  const csvUrl = findCsvHref(await page.content(), sessionBase);
-  if (!csvUrl) throw new Error('CSV-Link auf "Aktives Personal" nicht gefunden.');
-  const records = parse(await fetchCsv(page, csvUrl), {
-    delimiter: ';', quote: '"', columns: true, skip_empty_lines: true, trim: true,
-  });
+  await page.goto(`${sessionBase}/pf/index.html`);
+  await page.fill('input[name="query"]', '*');
+  await page.click('input[name="search"]');
+  await page.waitForLoadState('networkidle');
+
+  const tables = await page.$$('table');
+  let dataRows = null;
+  for (const tbl of tables) {
+    const rows = await tbl.$$('tr');
+    if (rows.length < 2) continue;
+    const header = await rows[0].$$eval('td,th', (tds) => tds.map((td) => td.textContent.trim()));
+    if (header[0] === 'Personalnr.') { dataRows = rows.slice(1); break; }
+  }
+  if (!dataRows) throw new Error('Personal-Suchergebnis ("Personalnr."-Tabelle) auf /pf/index.html nicht gefunden - Seitenaufbau evtl. geändert.');
+
   const byId = {};
-  for (const r of records) {
-    const id = String(r['PersonalNr.'] || '').trim();
-    if (!id) continue; // Summenzeilen pro Filiale haben keine PersonalNr.
-    const marktNrRaw = String(r['MarktNr.'] || '').trim();
+  for (const row of dataRows) {
+    const cells = await row.$$eval('td', (tds) => tds.map((td) => td.textContent.trim()));
+    const id = cells[0]; if (!id) continue;
+    const nachname = cells[2] || '', vorname = cells[3] || '';
+    const ort = cells[7] || ''; // "402416-00 402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner"
+    const mNr = ort.match(/^(\d+)-\d+/);
+    const marktNrRaw = mNr ? mNr[1] : '';
+    if (!marktNrRaw || marktNrRaw === '00000') continue; // kein Einsatzort zugeordnet (z.B. noch nicht angelegt) - keiner Filiale zuordenbar
+    const mName = ort.match(/:\s*(.+)$/);
     byId[id] = {
-      name: r['Name'] || '',
-      taetigkeit: r['Tätigkeit'] || '',
+      name: vorname ? vorname + ' ' + nachname : nachname,
+      taetigkeit: '', // nicht auf dieser Seite - wird gleich aus /pf/info/{id}.html ergänzt
       marktNr: MARKTNR_ALIASES[marktNrRaw] || marktNrRaw,
-      marktname: r['Marktname'] || '',
-      sollStd: parseGermanNumber(r['Soll Std.']),
+      marktname: mName ? mName[1].trim() : ort,
     };
   }
   return byId;
+}
+
+// "Soll Std." (Vertragsstunden/Woche) + Tätigkeit standen bisher in der jetzt
+// ersetzten CSV; auf /pf/index.html gibt es sie nicht. Einzige verbliebene
+// Quelle: die "Arbeitszeit: W:40,00 U:0,00 (ab ...)"-Zeile in den Stammdaten
+// jeder Person (live bestätigt an 341384: W:40,00 = Wochenstunden).
+async function getPersonalInfoExtra(page, sessionBase, id) {
+  await page.goto(`${sessionBase}/pf/info/${id}.html`);
+  const txt = await page.locator('body').innerText();
+  const mArb = txt.match(/Arbeitszeit:\s*W:\s*([\d,]+)/i);
+  // NUR horizontalen Whitespace nach dem Doppelpunkt überspringen, nicht \s*
+  // (das schließt \n ein!) - sonst "überspringt" eine LEERE Stellenbeschreibung
+  // die eigene Zeile und fängt faelschlich den Inhalt des naechsten Feldes
+  // ein (live beobachtet: "Jahresansicht: 2027, 2026, ..." statt "").
+  const mStelle = txt.match(/Stellenbeschreibung:[ \t]*([^\n]*)/i);
+  return {
+    sollStd: mArb ? parseGermanNumber(mArb[1]) : null,
+    taetigkeit: mStelle ? mStelle[1].trim() : '',
+  };
 }
 
 // Frühere Version fragte die drei Sammel-CSVs unter /urlaubsliste/ ab (FS/MJ/
@@ -542,12 +571,22 @@ async function syncAll() {
     console.log('Login bei Welo/SuCi-Net…');
     const sessionBase = await login(page);
 
-    console.log('Lade Aktives Personal (Soll-Std.)…');
+    console.log('Lade Personalliste (Suche "*" auf /pf/index.html, regionsübergreifend)…');
     const personal = await getPersonalRows(page, sessionBase);
-    console.log(`  ${Object.keys(personal).length} aktive Mitarbeiter.`);
+    console.log(`  ${Object.keys(personal).length} Mitarbeiter gefunden.`);
 
     const heute = new Date();
     const ids = Object.keys(personal);
+    console.log(`Lade Vertragsstunden/Woche für ${ids.length} Personen einzeln (/pf/info/{id}.html)…`);
+    for (const id of ids) {
+      const extra = await getPersonalInfoExtra(page, sessionBase, id).catch((e) => {
+        console.warn(`  ⚠ Vertragsdaten für ${id} fehlgeschlagen: ${e.message}`);
+        return { sollStd: null, taetigkeit: '' };
+      });
+      personal[id].sollStd = extra.sollStd;
+      personal[id].taetigkeit = extra.taetigkeit;
+    }
+
     console.log(`Lade Urlaub/Krank/Ist-Stunden für ${heute.getFullYear()} (${ids.length} Personen einzeln)…`);
     const jahresdaten = await getJahresansichtData(page, sessionBase, ids, heute.getFullYear(), heute);
     console.log(`  ${Object.keys(jahresdaten).length} Datensätze.`);

@@ -32,7 +32,15 @@ async function withWeloLock(name, fn) {
         await new Promise((r) => setTimeout(r, pollMs));
         continue;
       }
-      console.log(`  ⚠ Verwaiste Lock-Datei "${name}" (${Math.round(age / 60000)} Min. alt, vermutlich nach Absturz/Neustart übrig geblieben) — wird ignoriert.`);
+      // BUG gefunden 03.10.2026: hier wurde bisher nur GELOGGT, dass die Datei
+      // ignoriert wird, aber nie geloescht - der writeFileSync-Versuch unten
+      // (flag 'wx') schlug dadurch IMMER mit EEXIST fehl, was zurueck an den
+      // Schleifenanfang sprang, wo exakt dieselbe verwaiste Datei erneut als
+      // "zu alt, wird ignoriert" erkannt wurde - eine Endlosschleife, die nie
+      // tatsaechlich synchronisierte (mehrere Mitarbeiter-Sync-Prozesse liefen
+      // dadurch tagelang leer, ohne je bei Welo einzuloggen).
+      console.log(`  ⚠ Verwaiste Lock-Datei "${name}" (${Math.round(age / 60000)} Min. alt, vermutlich nach Absturz/Neustart übrig geblieben) — wird entfernt.`);
+      try { fs.unlinkSync(lockPath); } catch (e) { /* von einem anderen Prozess schon entfernt */ }
     }
     try {
       // 'wx' = nur anlegen, wenn die Datei noch nicht existiert — schließt
