@@ -178,7 +178,7 @@ async function login(page) {
 // bestätigt (76 Treffer, 35 verschiedene MarktNr. über BEIDE Regionen Ost+
 // West) nicht nach Konto-Zuordnung filtert, sondern wirklich alle Personen
 // zeigt, die diese Suche sieht.
-async function getPersonalRows(page, sessionBase) {
+async function getPersonalRows(page, sessionBase, filMetaByNr) {
   await page.goto(`${sessionBase}/pf/index.html`);
   await page.fill('input[name="query"]', '*');
   await page.click('input[name="search"]');
@@ -203,12 +203,23 @@ async function getPersonalRows(page, sessionBase) {
     const mNr = ort.match(/^(\d+)-\d+/);
     const marktNrRaw = mNr ? mNr[1] : '';
     if (!marktNrRaw || marktNrRaw === '00000') continue; // kein Einsatzort zugeordnet (z.B. noch nicht angelegt) - keiner Filiale zuordenbar
+    const marktNr = MARKTNR_ALIASES[marktNrRaw] || marktNrRaw;
+    // WICHTIG (Bug gefunden+behoben 03.10.2026): "marktname" muss GENAU das
+    // kanonische filialen_meta-Format "{marktNr}: {Name}" sein (inkl. Präfix!)
+    // - exakt wie importCSV()/fbPublish() in index.html es für emps.filiale
+    // schreiben (filMetaForImport[filialeNr].name). Der erste Versuch schnitt
+    // den Präfix aus dem Seitentext heraus ("E-Leverkusen-..." statt "402422:
+    // E-Leverkusen-..."); fbSlug(filiale) ergab dadurch einen ANDEREN
+    // Dokumentnamen als die bestehenden plan/{slug}__{monat}-Dokumente - der
+    // komplette Oktober-Dienstplan aller West-Mitarbeiter wirkte dadurch wie
+    // verschwunden (war nur unter dem alten Slug nicht mehr auffindbar).
     const mName = ort.match(/:\s*(.+)$/);
+    const marktname = (filMetaByNr && filMetaByNr[marktNr]) || (marktNr + ': ' + (mName ? mName[1].trim() : ort));
     byId[id] = {
       name: vorname ? vorname + ' ' + nachname : nachname,
       taetigkeit: '', // nicht auf dieser Seite - wird gleich aus /pf/info/{id}.html ergänzt
-      marktNr: MARKTNR_ALIASES[marktNrRaw] || marktNrRaw,
-      marktname: mName ? mName[1].trim() : ort,
+      marktNr,
+      marktname,
     };
   }
   return byId;
@@ -571,8 +582,16 @@ async function syncAll() {
     console.log('Login bei Welo/SuCi-Net…');
     const sessionBase = await login(page);
 
+    // filialen_meta ist die kanonische Quelle für "{marktNr}: {Name}" (siehe
+    // importCSV()/fbPublish() in index.html) - hier gebraucht, damit
+    // emps.filiale exakt denselben String bekommt und fbSlug(filiale) weiter
+    // dieselben plan/{slug}__{monat}-Dokumente trifft.
+    const filMetaSnap = await db.collection('filialen_meta').get();
+    const filMetaByNr = {};
+    filMetaSnap.forEach((doc) => { const x = doc.data(); if (x.marktNr && x.name) filMetaByNr[x.marktNr] = x.name; });
+
     console.log('Lade Personalliste (Suche "*" auf /pf/index.html, regionsübergreifend)…');
-    const personal = await getPersonalRows(page, sessionBase);
+    const personal = await getPersonalRows(page, sessionBase, filMetaByNr);
     console.log(`  ${Object.keys(personal).length} Mitarbeiter gefunden.`);
 
     const heute = new Date();

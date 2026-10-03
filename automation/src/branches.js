@@ -27,6 +27,8 @@ const OST_KOSTENSTELLEN = [
   '402297', // Marktkauf Einbeck (Regie)
   '402501', // Tegut Göttingen (Weender Str.)
   '402502', // Tegut Göttingen (An der Lutter)
+  '402144', // F-Neustadt am Rübenberge-Rudolf-Diesel-Ring
+  '402418', // R-Barsinghausen-Reihekamp - Krause
 ];
 const WEST_KOSTENSTELLEN = [
   '402167', // Rewe Düsseldorf Hauptstr.
