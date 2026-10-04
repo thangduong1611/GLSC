@@ -699,6 +699,7 @@ window.onerror=function(msg,src,line){
 var FB_CONFIG = (typeof window!=='undefined' && window.FB_CONFIG) ? window.FB_CONFIG : null;
 var fbReady=false, fbDb=null, fbUnsub=null, maFbUrlaub=[], maFbPlans={};
 var maPlanUnsub=null, maPlanKey=null;
+var maWeekDownloadData=[]; // von maRenderDP() befuellt, siehe maDownloadWeekPdf()
 var maPlanUnsubs={}, maGridStore=null;
 var maFbPlanPdfs={}, maPlanPdfUnsubs={};
 var maNews=[], maNewsUnsub=null;
@@ -3982,34 +3983,53 @@ function maRenderDP(){
   stores.forEach(function(store){ myShiftByStore[store]=maMyShiftIn(plans[store],sess); });
   var myH='<div style="font-size:14px;font-weight:700;margin-bottom:8px">'+t('my_shifts')+'</div>';
   var any=false;
-  for(var d=1;d<=dim;d++){
-    var iso=yr+'-'+('0'+mo).slice(-2)+'-'+('0'+d).slice(-2);
-    var dt=new Date(yr,mo-1,d);
-    var dateCell='<div><div class="d-date">'+('0'+d).slice(-2)+'.'+('0'+mo).slice(-2)+'.</div><div class="d-wd">'+MA_WDF[dt.getDay()]+'</div></div>';
-    // genehmigter Urlaub gewinnt für den ganzen Tag (filialübergreifend)
-    if(myOv[iso]){
+  // Pro Woche gruppiert (statt nur Tag für Tag durchlaufen) - fuer den
+  // Wochen-Download-Knopf unten. slGetWeeks() ist bereits generisch (Mo-Sa,
+  // nicht an Shopleiter-Daten gebunden), hier fuer die eigene Schicht-Ansicht
+  // wiederverwendet.
+  maWeekDownloadData=[];
+  slGetWeeks(month).forEach(function(wk){
+    var weekRows=[];
+    wk.dates.forEach(function(iso){
+      if(iso.slice(0,7)!==month) return; // Woche kann in den Vormonat hineinreichen
+      var d=iso.slice(8,10), m2=iso.slice(5,7);
+      var dt=new Date(+iso.slice(0,4),+m2-1,+d);
+      var dateCell='<div><div class="d-date">'+d+'.'+m2+'.</div><div class="d-wd">'+MA_WDF[dt.getDay()]+'</div></div>';
+      if(myOv[iso]){
+        any=true;
+        myH+='<div class="dp-day urlaub">'+dateCell+'<div class="d-val">'+maValDisp(myOv[iso])+'</div></div>';
+        weekRows.push({iso:iso,txt:maValDisp(myOv[iso])});
+        return;
+      }
+      var entries=[];
+      stores.forEach(function(store){ var ms=myShiftByStore[store]; var v=ms?(ms[iso]||''):''; if(v) entries.push({store:store,val:v}); });
+      if(!entries.length) return;
+      var work=entries.filter(function(e){return !maIsAbsence(e.val);});
+      var show=work.length?work:[entries[0]];
       any=true;
-      myH+='<div class="dp-day urlaub">'+dateCell+'<div class="d-val">'+maValDisp(myOv[iso])+'</div></div>';
-      continue;
-    }
-    // Einträge aus allen Filialen sammeln
-    var entries=[];
-    stores.forEach(function(store){ var ms=myShiftByStore[store]; var v=ms?(ms[iso]||''):''; if(v) entries.push({store:store,val:v}); });
-    if(!entries.length) continue;
-    var work=entries.filter(function(e){return !maIsAbsence(e.val);});
-    var show=work.length?work:[entries[0]];
-    any=true;
-    var allAbsence=!work.length;
-    var cls=allAbsence?(show[0].val==='Frei'?'frei':show[0].val==='Urlaub'?'urlaub':show[0].val==='Krank'?'krank':''):'';
-    var valHtml=show.map(function(e){
-      var badge=(multi && fbSlug(e.store)!==fbSlug(sess.filiale)) ? '<span class="dp-store-badge">📍 '+e.store+'</span>' : '';
-      var net=maIsAbsence(e.val)?null:maNetHoursOf(e.val);
-      var netHtml=(net!=null)?'<span class="d-net" title="'+t('dp_pause_notice').replace(/"/g,'&quot;')+'">≈ '+maFmtStd(net)+'</span>':'';
-      return maValDisp(e.val)+badge+netHtml;
-    }).join(' · ');
-    myH+='<div class="dp-day '+cls+'">'+dateCell+'<div class="d-val">'+valHtml+'</div></div>';
-  }
+      var allAbsence=!work.length;
+      var cls=allAbsence?(show[0].val==='Frei'?'frei':show[0].val==='Urlaub'?'urlaub':show[0].val==='Krank'?'krank':''):'';
+      var txtParts=[];
+      var valHtml=show.map(function(e){
+        var badge=(multi && fbSlug(e.store)!==fbSlug(sess.filiale)) ? '<span class="dp-store-badge">📍 '+e.store+'</span>' : '';
+        var net=maIsAbsence(e.val)?null:maNetHoursOf(e.val);
+        var netHtml=(net!=null)?'<span class="d-net" title="'+t('dp_pause_notice').replace(/"/g,'&quot;')+'">≈ '+maFmtStd(net)+'</span>':'';
+        txtParts.push(maValDisp(e.val)+(multi?(' ('+e.store+')'):'')+(net!=null?(' ≈'+maFmtStd(net)):''));
+        return maValDisp(e.val)+badge+netHtml;
+      }).join(' · ');
+      myH+='<div class="dp-day '+cls+'">'+dateCell+'<div class="d-val">'+valHtml+'</div></div>';
+      weekRows.push({iso:iso,txt:txtParts.join(' · ')});
+    });
+    if(weekRows.length) maWeekDownloadData.push({kw:wk.kw,rows:weekRows});
+  });
   if(!any)myH+='<div class="dp-day"><div class="d-val" style="color:var(--mut)">'+t('no_entries')+'</div></div>';
+  if(maWeekDownloadData.length){
+    myH+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">'
+      +maWeekDownloadData.map(function(wd,wi){
+        return '<button onclick="maDownloadWeekPdf('+wi+')" style="font-size:11.5px;font-weight:600;padding:5px 10px;border-radius:8px;border:1px solid var(--brd);background:var(--surf);cursor:pointer;white-space:nowrap">📥 KW '+wd.kw+'</button>';
+      }).join('')
+      +'</div>';
+  }
 
   // ── GANZE FILIALE (mit Filial-Umschalter + PDF, falls vorhanden) ──
   if(!maGridStore || stores.indexOf(maGridStore)<0) maGridStore=sess.filiale;
@@ -4079,6 +4099,36 @@ function maDownloadPlanPdf(key){
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function(){try{URL.revokeObjectURL(url);}catch(e){}},5000);
   }catch(e){ try{ window.open(d.pdf,'_blank'); }catch(e2){ toast('PDF-Fehler',true); } }
+}
+// Eigenen Dienstplan EINER Woche als PDF herunterladen (Auftrag t.duong
+// 04.10.2026: "tải lịch làm theo tuần về máy phí nhân viên. không tải cả
+// tháng vì có thể có thay đổi" - bewusst pro Woche statt den ganzen Monat
+// als Datei zu bannen, weil sich spätere Wochen noch ändern können). Wird
+// aus den schon geladenen Daten in maRenderDP() generiert (maWeekDownloadData),
+// kein erneuter Firestore-Zugriff nötig.
+function maDownloadWeekPdf(wi){
+  var sess=maSession(); if(!sess) return;
+  var wd=maWeekDownloadData[wi]; if(!wd) return;
+  try{
+    var jsPDF=(window.jspdf||window.jsPDF).jsPDF;
+    var doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    doc.setFontSize(14);
+    doc.text('Dienstplan - KW '+wd.kw, 15, 18);
+    doc.setFontSize(11);
+    doc.text(sess.name+' (Pers.Nr. '+sess.id+')', 15, 26);
+    doc.setFontSize(10);
+    var y=38;
+    wd.rows.forEach(function(r){
+      var dIso=r.iso, dd=dIso.slice(8,10)+'.'+dIso.slice(5,7)+'.'+dIso.slice(0,4);
+      var wdName=MA_WDF[new Date(+dIso.slice(0,4),+dIso.slice(5,7)-1,+dIso.slice(8,10)).getDay()];
+      doc.text(wdName+' '+dd+':', 15, y);
+      doc.text(r.txt||'-', 60, y);
+      y+=8;
+    });
+    var fn='Dienstplan_'+sess.name.replace(/\s+/g,'_')+'_KW'+wd.kw+'.pdf';
+    doc.save(fn);
+    toast(t('t_pdf_ok'));
+  }catch(e){ toast('PDF-Fehler: '+e.message,true); }
 }
 function maMonthLabel(m){var p=m.split('-');return MA_MON[+p[1]-1]+' '+p[0];}
 
