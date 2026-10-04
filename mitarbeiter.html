@@ -2173,7 +2173,6 @@ function slPublishWeek(wi){
   // Read-Modify-Write: nur Tage dieser KW ändern, andere Wochen/Mitarbeiter unberührt lassen
   ref.get().then(function(doc){
     var existingShifts=(doc.exists&&doc.data().shifts)||{};
-    var existingEmps=(doc.exists&&doc.data().employees)||slEmps;
     var existingMeta=(doc.exists&&doc.data().weekMeta)||{};
     var merged={};
     Object.keys(existingShifts).forEach(function(ek){ merged[ek]=Object.assign({},existingShifts[ek]); });
@@ -2182,12 +2181,25 @@ function slPublishWeek(wi){
       if(!merged[ek]) merged[ek]={};
       wk.dates.forEach(function(dt){ merged[ek][dt]=(slShifts[ek]&&slShifts[ek][dt])||''; });
     });
+    // BUG gefunden+behoben 04.10.2026 (t.duong: Diem Thi Thanh Roth erschien
+    // in Kirchheims Tabelle mit echten Schichten, obwohl sie längst nach
+    // Baunatal gewechselt war): "existingEmps" + ungefiltertes "merged" oben
+    // übernahmen JEDE jemals vorhandene Mitarbeiter-Schicht unverändert in
+    // jede neue Veröffentlichung weiter - wer die Filiale verlassen hatte,
+    // blieb für immer als Geisterdaten im shifts-Objekt stehen. Gleiche Lücke
+    // wie der dpPruneShiftsToRoster()-Fix in index.html, hier aber nie
+    // nachgezogen, weil slPublishWeek() ein eigener, unabhängiger Schreibpfad
+    // ist. employees jetzt aus der AKTUELLEN Besetzung (slEmps), shifts auf
+    // genau diese Mitarbeiter beschränkt.
+    var keep={}; slEmps.forEach(function(emp){ keep[slEmpKey(emp)]=true; });
+    var pruned={};
+    Object.keys(merged).forEach(function(ek){ if(keep[ek]) pruned[ek]=merged[ek]; });
     // Markiert diese KW als "zuletzt vom Shopleiter" — der Gebietsleiter sieht das
     // dann als Warnhinweis im eigenen Dienstplan (dpWeekMetaBadge in index.html),
     // bevor er versehentlich drüberschreibt (Auftrag t.duong).
     var newMeta=Object.assign({},existingMeta);
     newMeta[wk.dates[0]]={source:'shopleiter',by:sess.name||('#'+sess.id),at:new Date().toISOString()};
-    return ref.set({employees:existingEmps, shifts:merged, weekMeta:newMeta});
+    return ref.set({employees:slEmps, shifts:pruned, weekMeta:newMeta});
   }).then(function(){
     var msg=t('sl_pub_ok').replace('{kw}',wk.kw);
     if(st) st.textContent='✓ '+msg;

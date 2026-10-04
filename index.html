@@ -4278,7 +4278,13 @@ function dpRenderWeeks(){
           if(frist.vertragsEnde&&frist.vertragsEnde.slice(0,7)===m) fParts.push('Vertrag '+dpFristDDMM(frist.vertragsEnde));
           if(fParts.length) fristSoonHtml='<div style="color:#C0392B;font-weight:700;font-size:10px;white-space:nowrap">⚠️ '+fParts.join(' · ')+'</div>';
         }
-        h+='<tr><td title="'+emp.name+(zw?' · Zweitfiliale':'')+(az!=null&&az<0?' · AZ-Konto Vormonat: -'+dpFmtStd(az)+' Std':'')+'"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(zw?'🔄 ':'')+emp.name.substring(0,15)+(emp.name.length>15?'…':'')+'</div>'+azHtml+fristSoonHtml+'</td>';
+        // Vertragsstunden/Woche direkt unter dem Namen, in rot - Auftrag
+        // t.duong 04.10.2026: "số giờ làm theo hợp đồng ... mở ngoặc màu đỏ
+        // ngay dưới tên nhân viên" (bisher gab es das nur als Tooltip auf der
+        // Summen-Spalte, nicht fest sichtbar).
+        var soll=dpSollStdCache&&dpSollStdCache[eid];
+        var sollHtml=(soll!=null)?'<div style="color:#C0392B;font-size:10px;white-space:nowrap">('+dpFmtStd(soll)+')</div>':'';
+        h+='<tr><td title="'+emp.name+(zw?' · Zweitfiliale':'')+(az!=null&&az<0?' · AZ-Konto Vormonat: -'+dpFmtStd(az)+' Std':'')+'"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(zw?'🔄 ':'')+emp.name.substring(0,15)+(emp.name.length>15?'…':'')+'</div>'+sollHtml+azHtml+fristSoonHtml+'</td>';
         wk.dates.forEach(function(dt){
           var abs=dpAbs[eid]&&dpAbs[eid][dt];
           var stored=(dpShifts[ek]&&dpShifts[ek][dt])||'';
