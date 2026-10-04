@@ -1446,6 +1446,7 @@ function ivSubmit(){
    Nicht erlaubt: Mitarbeiter hinzufügen/löschen, Urlaub genehmigen.
    ════════════════════════════════════════════════ */
 var slEmps=[], slShifts={}, slPlanLoaded=false, slPlanUnsub=null, slPlanDocId=null;
+var slSollStdCache={}; // PersonalNr -> Vertragsstunden/Woche (emp_welo.sollStd) - siehe slLoadSollStd()
 
 /* Hilfsfunktionen (identisch mit dpISO/dpParse/dpGetKW in index.html) */
 function slISO(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
@@ -1588,6 +1589,7 @@ function slLoadPlan(){
         else st.textContent='📅 '+slFmtMonth(month)+' · '+slEmps.length+' Mitarbeiter';
       }
       slRenderGrid();
+      slLoadSollStd();
       slLoadElsewhere();
     }, function(e){ if(st) st.textContent='⚠️ '+e.message; console.warn('sl load', e); });
   }).catch(function(e){ if(st) st.textContent='⚠️ '+e.message; console.warn('sl load emps', e); });
@@ -2040,6 +2042,38 @@ function imLoad(){
 }
 
 /* Wochengitter rendern */
+// Vertragsstunden/Woche je Mitarbeiter (emp_welo.sollStd, vom täglichen
+// Welo-Abgleich befuellt - siehe automation/src/sync-welo-personal.js) -
+// fuer die rote Klammer unter dem Namen + die Wochensumme-Faerbung in
+// slRenderGrid(). Einmalig pro slEmps-Zusammensetzung geladen (kein Live-
+// Listener - Vertragsstunden aendern sich praktisch nie innerhalb eines Tages).
+var slSollStdLoadedFor=null;
+function slLoadSollStd(){
+  if(!fbReady||!fbDb||!slEmps.length) return;
+  var ids=slEmps.map(function(e){return ''+(e.id||'');}).filter(Boolean);
+  var key=ids.slice().sort().join(',');
+  if(slSollStdLoadedFor===key) return;
+  slSollStdLoadedFor=key;
+  Promise.all(ids.map(function(id){
+    return fbDb.collection('emp_welo').doc(id).get().catch(function(){ return null; });
+  })).then(function(docs){
+    docs.forEach(function(doc,i){
+      if(doc&&doc.exists){ var d=doc.data(); if(d.sollStd!=null) slSollStdCache[ids[i]]=d.sollStd; }
+    });
+    slRenderGrid();
+  });
+}
+// Wochensumme-Zelle: rot+fett wenn unter Vertragsstunden, sonst gruen -
+// gleiches Muster wie dpWTotHtml() in index.html, fuer Shopleiter/Vize beim
+// Planen (Auftrag t.duong 04.10.2026).
+function slWTotHtml(empId,summe){
+  var soll=slSollStdCache[empId];
+  var txt=maFmtStd(summe);
+  if(soll==null) return '<span style="font-weight:600">'+txt+'</span>';
+  var unter=summe<soll-0.01;
+  return '<span style="font-weight:700;color:'+(unter?'#C0392B':'#1E8449')+'">'+txt+(unter?' ⚠️':'')+'</span>';
+}
+
 function slRenderGrid(){
   var box=document.getElementById('sl-grid'); if(!box) return;
   var m=document.getElementById('sl-month'); if(!m||!m.value){box.innerHTML='';return;}
@@ -2062,10 +2096,15 @@ function slRenderGrid(){
       var d=slParse(dt),ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
       h+='<th style="padding:6px 4px;text-align:center;background:var(--bg);min-width:96px">'+DAYS[di].substring(0,2)+'<br><small style="font-weight:400;font-size:10px">'+ds+'</small></th>';
     });
+    h+='<th style="padding:6px 8px;text-align:center;background:var(--bg);min-width:70px">Σ KW</th>';
     h+='</tr></thead><tbody>';
     slEmps.forEach(function(emp){
-      var ek=slEmpKey(emp);
-      h+='<tr><td title="'+emp.name.replace(/"/g,'&quot;')+'" style="padding:5px 8px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;position:sticky;left:0;background:var(--surf);z-index:1;border-top:1px solid var(--brd)">'+emp.name+'</td>';
+      var ek=slEmpKey(emp), empId0=''+(emp.id||'');
+      // Vertragsstunden in rot unter dem Namen - Auftrag t.duong 04.10.2026:
+      // "số giờ làm theo hợp đồng ... mở ngoặc màu đỏ ngay dưới tên nhân viên".
+      var sollTxt=slSollStdCache[empId0]!=null?('<br><span style="font-weight:400;font-size:10.5px;color:#C0392B">('+maFmtStd(slSollStdCache[empId0])+')</span>'):'';
+      h+='<tr><td title="'+emp.name.replace(/"/g,'&quot;')+'" style="padding:5px 8px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px;position:sticky;left:0;background:var(--surf);z-index:1;border-top:1px solid var(--brd)">'+emp.name+sollTxt+'</td>';
+      var wSumme=0;
       wk.dates.forEach(function(dt){
         var empId=''+(emp.id||'');
         var ovVal=slOv[empId]&&slOv[empId][dt];
@@ -2074,6 +2113,12 @@ function slRenderGrid(){
           return;
         }
         var val=(slShifts[ek]&&slShifts[ek][dt])||'';
+        // Pausenabzug automatisch beim Summieren (>6 Std. -30 Min., >9 Std.
+        // -45 Min.) - Auftrag t.duong 04.10.2026: "tôi sẽ không phải tính
+        // toán thêm nữa". maNetHoursOf() existiert schon (Mein-Dienstplan-
+        // Ansicht), hier fuer die Shopleiter/Vize-Planungsansicht wiederverwendet.
+        var net=maNetHoursOf(val);
+        if(net!=null) wSumme+=net;
         var pend=slPend[empId]&&slPend[empId][dt];
         var clash=slClashAt(empId,dt,val);
         var bg=val==='Frei'?'background:#EAF8F0':val==='Urlaub'?'background:#FEF9E7':val==='Krank'?'background:#FDEDEC':(pend?'background:#FEF6E6':'');
@@ -2086,6 +2131,7 @@ function slRenderGrid(){
           +slCellBadgeHtml(empId,dt,val)
           +'</td>';
       });
+      h+='<td style="padding:3px;text-align:center;border-top:1px solid var(--brd);white-space:nowrap">'+slWTotHtml(empId0,wSumme)+'</td>';
       h+='</tr>';
     });
     h+='</tbody></table></div></div>';
