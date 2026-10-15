@@ -1,0 +1,128 @@
+[
+  {
+    "kostenstelle": "401125",
+    "pdfName": "Baunatal",
+    "months": {
+      "2026-07": {"umsatz": 34848, "wareneinsatz": 6023, "personal": 19021, "ergebnis": -1299},
+      "2026-08": {"umsatz": 35676, "wareneinsatz": 8134, "personal": 7272, "ergebnis": 8865},
+      "2026-09": {"umsatz": 33858, "wareneinsatz": 8975, "personal": 7384, "ergebnis": 4878}
+    }
+  },
+  {
+    "kostenstelle": "401888",
+    "pdfName": "Homberg",
+    "months": {
+      "2026-07": {"umsatz": 17061, "wareneinsatz": 3483, "personal": 5393, "ergebnis": 1860},
+      "2026-08": {"umsatz": 17315, "wareneinsatz": 5479, "personal": 6490, "ergebnis": -1667},
+      "2026-09": {"umsatz": 16800, "wareneinsatz": 4771, "personal": 6398, "ergebnis": -1061}
+    }
+  },
+  {
+    "kostenstelle": "401891",
+    "pdfName": "Kassel-Aschoff",
+    "months": {
+      "2026-07": {"umsatz": 24128, "wareneinsatz": 4021, "personal": 17233, "ergebnis": -5126},
+      "2026-08": {"umsatz": 24530, "wareneinsatz": 6498, "personal": 11663, "ergebnis": -1858},
+      "2026-09": {"umsatz": 24506, "wareneinsatz": 8959, "personal": 14420, "ergebnis": -6110}
+    }
+  },
+  {
+    "kostenstelle": "402146",
+    "pdfName": "Bad Hersfeld",
+    "months": {
+      "2026-07": {"umsatz": 12003, "wareneinsatz": 2319, "personal": 3017, "ergebnis": 1886},
+      "2026-08": {"umsatz": 11606, "wareneinsatz": 2328, "personal": 5864, "ergebnis": -1171},
+      "2026-09": {"umsatz": 12041, "wareneinsatz": 3658, "personal": 4915, "ergebnis": -1271}
+    }
+  },
+  {
+    "kostenstelle": "402150",
+    "pdfName": "Sontra",
+    "months": {
+      "2026-07": {"umsatz": 10008, "wareneinsatz": 2883, "personal": -2513, "ergebnis": 4189},
+      "2026-08": {"umsatz": 9207, "wareneinsatz": 2935, "personal": 3881, "ergebnis": -2121},
+      "2026-09": {"umsatz": 9756, "wareneinsatz": 3236, "personal": 349, "ergebnis": 1028}
+    }
+  },
+  {
+    "kostenstelle": "402155",
+    "pdfName": "Nordhausen",
+    "months": {
+      "2026-07": {"umsatz": 17272, "wareneinsatz": 6752, "personal": 1191, "ergebnis": 2930},
+      "2026-08": {"umsatz": 17401, "wareneinsatz": 2922, "personal": 1075, "ergebnis": 7213},
+      "2026-09": {"umsatz": 16868, "wareneinsatz": 4718, "personal": 2828, "ergebnis": 2902}
+    }
+  },
+  {
+    "kostenstelle": "402207",
+    "pdfName": "Bovenden",
+    "months": {
+      "2026-07": {"umsatz": 6997, "wareneinsatz": 2705, "personal": 15128, "ergebnis": -14668},
+      "2026-08": {"umsatz": 7773, "wareneinsatz": 3163, "personal": 6281, "ergebnis": -5400},
+      "2026-09": {"umsatz": 7229, "wareneinsatz": 3919, "personal": 10363, "ergebnis": -10782}
+    }
+  },
+  {
+    "kostenstelle": "402240",
+    "pdfName": "Heilbad Heiligenstadt",
+    "months": {
+      "2026-07": {"umsatz": 31589, "wareneinsatz": 7750, "personal": 5033, "ergebnis": 8180},
+      "2026-08": {"umsatz": 30522, "wareneinsatz": 7988, "personal": 4695, "ergebnis": 7998},
+      "2026-09": {"umsatz": 33292, "wareneinsatz": 7940, "personal": 9362, "ergebnis": 4867}
+    }
+  },
+  {
+    "kostenstelle": "402254",
+    "pdfName": "Kirchheim",
+    "months": {
+      "2026-07": {"umsatz": 13589, "wareneinsatz": 1306, "personal": 4992, "ergebnis": 1597},
+      "2026-08": {"umsatz": 12482, "wareneinsatz": 2841, "personal": 5125, "ergebnis": -319},
+      "2026-09": {"umsatz": 10526, "wareneinsatz": 2568, "personal": 5000, "ergebnis": -1427}
+    }
+  },
+  {
+    "kostenstelle": "402257",
+    "pdfName": "Northeim",
+    "months": {
+      "2026-07": {"umsatz": 9051, "wareneinsatz": 3359, "personal": 4276, "ergebnis": -3190},
+      "2026-08": {"umsatz": 10731, "wareneinsatz": 4709, "personal": 4462, "ergebnis": 2081},
+      "2026-09": {"umsatz": 9829, "wareneinsatz": 1978, "personal": 4716, "ergebnis": -5495}
+    }
+  },
+  {
+    "kostenstelle": "402286",
+    "pdfName": "Göttingen Kaufpark",
+    "months": {
+      "2026-07": {"umsatz": 14666, "wareneinsatz": 6246, "personal": 3799, "ergebnis": 3277},
+      "2026-08": {"umsatz": 13813, "wareneinsatz": 1507, "personal": 1663, "ergebnis": 5041},
+      "2026-09": {"umsatz": 13181, "wareneinsatz": 5683, "personal": 2069, "ergebnis": 2661}
+    }
+  },
+  {
+    "kostenstelle": "402297",
+    "pdfName": "Einbeck",
+    "months": {
+      "2026-07": {"umsatz": 18183, "wareneinsatz": 5362, "personal": 3013, "ergebnis": 3106},
+      "2026-08": {"umsatz": 18374, "wareneinsatz": 4886, "personal": 8828, "ergebnis": -1602},
+      "2026-09": {"umsatz": 17426, "wareneinsatz": -99, "personal": 3033, "ergebnis": 7512}
+    }
+  },
+  {
+    "kostenstelle": "402501",
+    "pdfName": "Göttingen Weender Str.",
+    "months": {
+      "2026-07": {"umsatz": 5885, "wareneinsatz": 3409, "personal": 2956, "ergebnis": -4032},
+      "2026-08": {"umsatz": 5439, "wareneinsatz": 2070, "personal": 2534, "ergebnis": -2843},
+      "2026-09": {"umsatz": 5945, "wareneinsatz": 4984, "personal": 709, "ergebnis": -3494}
+    }
+  },
+  {
+    "kostenstelle": "402502",
+    "pdfName": "Göttingen An der Lutter",
+    "months": {
+      "2026-07": {"umsatz": 16716, "wareneinsatz": 4552, "personal": 1525, "ergebnis": 3726},
+      "2026-08": {"umsatz": 16738, "wareneinsatz": 4585, "personal": 4689, "ergebnis": 1848},
+      "2026-09": {"umsatz": 17449, "wareneinsatz": 3240, "personal": 4601, "ergebnis": 3015}
+    }
+  }
+]

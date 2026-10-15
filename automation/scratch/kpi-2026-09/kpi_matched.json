@@ -1,0 +1,758 @@
+[
+  {
+    "kostenstelle": "401125",
+    "pdfName": "RA-Baunatal-Fuldastraße",
+    "months": {
+      "2026-06": {
+        "umsatz": 33270,
+        "wareneinsatz": 11045,
+        "personal": 7656,
+        "ergebnis": 3960
+      },
+      "2026-07": {
+        "umsatz": 34848,
+        "wareneinsatz": 6023,
+        "personal": 19021,
+        "ergebnis": -1299
+      },
+      "2026-08": {
+        "umsatz": 35676,
+        "wareneinsatz": 8134,
+        "personal": 7272,
+        "ergebnis": 8872
+      }
+    },
+    "filiale": "401125: RA-Baunatal-Fuldastraße",
+    "region": "ost",
+    "matched": true
+  },
+  {
+    "kostenstelle": "401888",
+    "pdfName": "R-Homberg (Efze)-Kasseler Str. - Mohr",
+    "months": {
+      "2026-06": {
+        "umsatz": 15494,
+        "wareneinsatz": 5651,
+        "personal": 6145,
+        "ergebnis": -2890
+      },
+      "2026-07": {
+        "umsatz": 17061,
+        "wareneinsatz": 3483,
+        "personal": 5393,
+        "ergebnis": 1860
+      },
+      "2026-08": {
+        "umsatz": 17315,
+        "wareneinsatz": 5479,
+        "personal": 6490,
+        "ergebnis": -1663
+      }
+    },
+    "filiale": "401888: R-Homberg (Efze)-Kasseler Str. - Mohr",
+    "region": "ost",
+    "matched": true
+  },
+  {
+    "kostenstelle": "401891",
+    "pdfName": "E-Kassel-Frankfurter Str. - Aschoff",
+    "months": {
+      "2026-06": {
+        "umsatz": 25742,
+        "wareneinsatz": 11965,
+        "personal": 10532,
+        "ergebnis": -6602
+      },
+      "2026-07": {
+        "umsatz": 24128,
+        "wareneinsatz": 4021,
+        "personal": 17233,
+        "ergebnis": -5126
+      },
+      "2026-08": {
+        "umsatz": 24530,
+        "wareneinsatz": 6498,
+        "personal": 11663,
+        "ergebnis": -1853
+      }
+    },
+    "filiale": "401891: E-Kassel-Frankfurter Str. - Aschoff",
+    "region": "ost",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402133",
+    "pdfName": "K-Köln-Thebäerstraße",
+    "months": {
+      "2026-06": {
+        "umsatz": 10674,
+        "wareneinsatz": 4179,
+        "personal": 3293,
+        "ergebnis": -2017
+      },
+      "2026-07": {
+        "umsatz": 12692,
+        "wareneinsatz": 5240,
+        "personal": 5275,
+        "ergebnis": -2828
+      },
+      "2026-08": {
+        "umsatz": 10779,
+        "wareneinsatz": 4100,
+        "personal": 5296,
+        "ergebnis": -4146
+      }
+    },
+    "filiale": "402133: K-Köln-Thebäerstraße",
+    "region": "west",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402155",
+    "pdfName": "M-Nordhausen-Darrweg",
+    "months": {
+      "2026-06": {
+        "umsatz": 16613,
+        "wareneinsatz": 4034,
+        "personal": 5159,
+        "ergebnis": 1404
+      },
+      "2026-07": {
+        "umsatz": 17272,
+        "wareneinsatz": 6752,
+        "personal": 1191,
+        "ergebnis": 2930
+      },
+      "2026-08": {
+        "umsatz": 17401,
+        "wareneinsatz": 2922,
+        "personal": 1075,
+        "ergebnis": 7216
+      }
+    },
+    "filiale": "402155: M-Nordhausen-Darrweg",
+    "region": "ost",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402167",
+    "pdfName": "R-Düsseldorf-Hauptstr.",
+    "months": {
+      "2026-06": {
+        "umsatz": 30400,
+        "wareneinsatz": 7495,
+        "personal": 10660,
+        "ergebnis": 2210
+      },
+      "2026-07": {
+        "umsatz": 33442,
+        "wareneinsatz": 7930,
+        "personal": 11135,
+        "ergebnis": 3268
+      },
+      "2026-08": {
+        "umsatz": 28475,
+        "wareneinsatz": 7349,
+        "personal": 11306,
+        "ergebnis": -217
+      }
+    },
+    "filiale": "402167: R-Düsseldorf-Hauptstr.",
+    "region": "west",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402185",
+    "pdfName": "K-Hagen-Auf dem Lölfert",
+    "months": {
+      "2026-06": {
+        "umsatz": 13378,
+        "wareneinsatz": 4058,
+        "personal": 4762,
+        "ergebnis": -784
+      },
+      "2026-07": {
+        "umsatz": 13518,
+        "wareneinsatz": 4542,
+        "personal": 4766,
+        "ergebnis": -1318
+      },
+      "2026-08": {
+        "umsatz": 13219,
+        "wareneinsatz": 4257,
+        "personal": 4774,
+        "ergebnis": 130
+      }
+    },
+    "filiale": "402185: K-Hagen-Auf dem Lölfert",
+    "region": "west",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402205",
+    "pdfName": "R-Hattingen-Heggerstraße",
+    "months": {
+      "2026-06": {
+        "umsatz": 7869,
+        "wareneinsatz": 4917,
+        "personal": 4073,
+        "ergebnis": -5219
+      },
+      "2026-07": {
+        "umsatz": 8485,
+        "wareneinsatz": 1215,
+        "personal": 4269,
+        "ergebnis": -931
+      },
+      "2026-08": {
+        "umsatz": 7386,
+        "wareneinsatz": 4217,
+        "personal": 4228,
+        "ergebnis": -4877
+      }
+    },
+    "filiale": "402205: R-Hattingen-Heggerstraße",
+    "region": "west",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402207",
+    "pdfName": "E-Bovenden-Industriestraße",
+    "months": {
+      "2026-06": {
+        "umsatz": 7699,
+        "wareneinsatz": 1176,
+        "personal": 4134,
+        "ergebnis": -1358
+      },
+      "2026-07": {
+        "umsatz": 6997,
+        "wareneinsatz": 2705,
+        "personal": 15128,
+        "ergebnis": -14668
+      },
+      "2026-08": {
+        "umsatz": 7773,
+        "wareneinsatz": 3163,
+        "personal": 6281,
+        "ergebnis": -5398
+      }
+    },
+    "filiale": "402207: E-Bovenden-Industriestraße",
+    "region": "ost",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402240",
+    "pdfName": "R-Heilbad Heiligenstadt-Sperberwiese - Ihme",
+    "months": {
+      "2026-06": {
+        "umsatz": 31616,
+        "wareneinsatz": 8203,
+        "personal": 14086,
+        "ergebnis": -1304
+      },
+      "2026-07": {
+        "umsatz": 31589,
+        "wareneinsatz": 7750,
+        "personal": 5033,
+        "ergebnis": 8180
+      },
+      "2026-08": {
+        "umsatz": 30522,
+        "wareneinsatz": 7988,
+        "personal": 4695,
+        "ergebnis": 8004
+      }
+    },
+    "filiale": "402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme",
+    "region": "ost",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402251",
+    "pdfName": "R-Düsseldorf-Zeppelinstraße",
+    "months": {
+      "2026-06": {
+        "umsatz": 11820,
+        "wareneinsatz": 3619,
+        "personal": 5438,
+        "ergebnis": -1481
+      },
+      "2026-07": {
+        "umsatz": 11176,
+        "wareneinsatz": 1122,
+        "personal": 3963,
+        "ergebnis": 1329
+      },
+      "2026-08": {
+        "umsatz": 9453,
+        "wareneinsatz": 5207,
+        "personal": 3223,
+        "ergebnis": -3054
+      }
+    },
+    "filiale": "402251: R-Düsseldorf-Zeppelinstraße",
+    "region": "west",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402257",
+    "pdfName": "E-Northeim-Robert-Schnabel-Str. - Schnabel",
+    "months": {
+      "2026-06": {
+        "umsatz": 10454,
+        "wareneinsatz": 2507,
+        "personal": 4056,
+        "ergebnis": -541
+      },
+      "2026-07": {
+        "umsatz": 9051,
+        "wareneinsatz": 3359,
+        "personal": 4276,
+        "ergebnis": -3190
+      },
+      "2026-08": {
+        "umsatz": 10731,
+        "wareneinsatz": 4709,
+        "personal": 4462,
+        "ergebnis": 2083
+      }
+    },
+    "filiale": "402257: E-Northeim-Robert-Schnabel-Str. - Schnabel",
+    "region": "ost",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402261",
+    "pdfName": "R-Hilden-Mittelstraße",
+    "months": {
+      "2026-06": {
+        "umsatz": 18045,
+        "wareneinsatz": 5240,
+        "personal": 6237,
+        "ergebnis": -169
+      },
+      "2026-07": {
+        "umsatz": 20110,
+        "wareneinsatz": 6007,
+        "personal": 7355,
+        "ergebnis": -100
+      },
+      "2026-08": {
+        "umsatz": 17057,
+        "wareneinsatz": 5890,
+        "personal": 5632,
+        "ergebnis": -688
+      }
+    },
+    "filiale": "402261: R-Hilden-Mittelstraße",
+    "region": "west",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402272",
+    "pdfName": "R-Düsseldorf-Münsterstraße",
+    "months": {
+      "2026-06": {
+        "umsatz": 15305,
+        "wareneinsatz": 5146,
+        "personal": 8500,
+        "ergebnis": -4294
+      },
+      "2026-07": {
+        "umsatz": 17322,
+        "wareneinsatz": 4849,
+        "personal": 4145,
+        "ergebnis": 2190
+      },
+      "2026-08": {
+        "umsatz": 14988,
+        "wareneinsatz": 5887,
+        "personal": 5141,
+        "ergebnis": -1505
+      }
+    },
+    "filiale": "402272: R-Düsseldorf-Münsterstraße",
+    "region": "west",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402286",
+    "pdfName": "K-Göttingen-Am Kauf Park",
+    "months": {
+      "2026-06": {
+        "umsatz": 14041,
+        "wareneinsatz": 9577,
+        "personal": 3867,
+        "ergebnis": -10468
+      },
+      "2026-07": {
+        "umsatz": 14666,
+        "wareneinsatz": 6246,
+        "personal": 3799,
+        "ergebnis": 3277
+      },
+      "2026-08": {
+        "umsatz": 13813,
+        "wareneinsatz": 1507,
+        "personal": 1663,
+        "ergebnis": 5044
+      }
+    },
+    "filiale": "402286: K-Göttingen-Am Kauf Park",
+    "region": "ost",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402297",
+    "pdfName": "MK-Einbeck-Altendorfer Tor",
+    "months": {
+      "2026-06": {
+        "umsatz": 18472,
+        "wareneinsatz": 4767,
+        "personal": 4863,
+        "ergebnis": 2429
+      },
+      "2026-07": {
+        "umsatz": 18183,
+        "wareneinsatz": 5362,
+        "personal": 3013,
+        "ergebnis": 3106
+      },
+      "2026-08": {
+        "umsatz": 18374,
+        "wareneinsatz": 4886,
+        "personal": 8828,
+        "ergebnis": -1598
+      }
+    },
+    "filiale": "402297: MK-Einbeck-Altendorfer Tor",
+    "region": "ost",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402302",
+    "pdfName": "R-Neuss-Allerheiligen-Am alten Bach - Friederichs",
+    "months": {
+      "2026-06": {
+        "umsatz": 20316,
+        "wareneinsatz": 4742,
+        "personal": 7368,
+        "ergebnis": 940
+      },
+      "2026-07": {
+        "umsatz": 20588,
+        "wareneinsatz": 5048,
+        "personal": 7070,
+        "ergebnis": 1205
+      },
+      "2026-08": {
+        "umsatz": 16839,
+        "wareneinsatz": 4345,
+        "personal": 7189,
+        "ergebnis": -850
+      }
+    },
+    "filiale": "402302: R-Neuss-Allerheiligen-Am alten Bach - Friedrich",
+    "region": "hoang",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402310",
+    "pdfName": "R-Wuppertal-Ascheweg - Brücken Kaufpark",
+    "months": {
+      "2026-06": {
+        "umsatz": 12838,
+        "wareneinsatz": 4341,
+        "personal": 4968,
+        "ergebnis": -1939
+      },
+      "2026-07": {
+        "umsatz": 15245,
+        "wareneinsatz": 3731,
+        "personal": 5276,
+        "ergebnis": 362
+      },
+      "2026-08": {
+        "umsatz": 12720,
+        "wareneinsatz": 3506,
+        "personal": 5353,
+        "ergebnis": -1375
+      }
+    },
+    "filiale": "402310: R-Wuppertal-Ascheweg - Brücken Kaufpark",
+    "region": "west",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402315",
+    "pdfName": "R-Bochum-Viktoriastraße - Mert",
+    "months": {
+      "2026-06": {
+        "umsatz": 20356,
+        "wareneinsatz": 5114,
+        "personal": 6511,
+        "ergebnis": 1496
+      },
+      "2026-07": {
+        "umsatz": 21209,
+        "wareneinsatz": 5773,
+        "personal": 5961,
+        "ergebnis": 2069
+      },
+      "2026-08": {
+        "umsatz": 17727,
+        "wareneinsatz": 4561,
+        "personal": 4325,
+        "ergebnis": 1908
+      }
+    },
+    "filiale": "402315: R-Bochum-Viktoriastraße - Mert",
+    "region": "west",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402363",
+    "pdfName": "R-Bergneustadt-Stadionstr.",
+    "months": {
+      "2026-06": {
+        "umsatz": 16805,
+        "wareneinsatz": 4873,
+        "personal": 6239,
+        "ergebnis": -1221
+      },
+      "2026-07": {
+        "umsatz": 16976,
+        "wareneinsatz": 5537,
+        "personal": 6115,
+        "ergebnis": -1121
+      },
+      "2026-08": {
+        "umsatz": 16879,
+        "wareneinsatz": 4973,
+        "personal": 8909,
+        "ergebnis": -3044
+      }
+    },
+    "filiale": "402363: R-Bergneustadt-Stadionstr.",
+    "region": "hoang",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402414",
+    "pdfName": "E-Bergheim-Dansweilerstraße - Fischenich",
+    "months": {
+      "2026-06": {
+        "umsatz": 9914,
+        "wareneinsatz": 3091,
+        "personal": 4295,
+        "ergebnis": -1547
+      },
+      "2026-07": {
+        "umsatz": 14203,
+        "wareneinsatz": 3998,
+        "personal": 3769,
+        "ergebnis": 1418
+      },
+      "2026-08": {
+        "umsatz": 11456,
+        "wareneinsatz": 3002,
+        "personal": 1296,
+        "ergebnis": 2479
+      }
+    },
+    "filiale": "402414: E-Bergheim-Dansweilerstraße - Fischenich",
+    "region": "west",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402416",
+    "pdfName": "R-Bergisch Gladbach-Odenthaler Str. - Gärtner",
+    "months": {
+      "2026-06": {
+        "umsatz": 20102,
+        "wareneinsatz": 5360,
+        "personal": 6772,
+        "ergebnis": 518
+      },
+      "2026-07": {
+        "umsatz": 19382,
+        "wareneinsatz": 4573,
+        "personal": 7532,
+        "ergebnis": 439
+      },
+      "2026-08": {
+        "umsatz": 17196,
+        "wareneinsatz": 4772,
+        "personal": 5098,
+        "ergebnis": 1071
+      }
+    },
+    "filiale": "402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner",
+    "region": "west",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402422",
+    "pdfName": "E-Leverkusen-Pommernstraße",
+    "months": {
+      "2026-06": {
+        "umsatz": 34125,
+        "wareneinsatz": 11728,
+        "personal": 13043,
+        "ergebnis": -748
+      },
+      "2026-07": {
+        "umsatz": 36103,
+        "wareneinsatz": 10747,
+        "personal": 14258,
+        "ergebnis": 120
+      },
+      "2026-08": {
+        "umsatz": 27934,
+        "wareneinsatz": 10162,
+        "personal": 12928,
+        "ergebnis": -3523
+      }
+    },
+    "filiale": "402422: E-Leverkusen-Pommernstraße",
+    "region": "west",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402501",
+    "pdfName": "T-Göttingen-Weender Str",
+    "months": {
+      "2026-06": {
+        "umsatz": 6147,
+        "wareneinsatz": 3212,
+        "personal": 8464,
+        "ergebnis": -9399
+      },
+      "2026-07": {
+        "umsatz": 5885,
+        "wareneinsatz": 3409,
+        "personal": 2956,
+        "ergebnis": -4032
+      },
+      "2026-08": {
+        "umsatz": 5439,
+        "wareneinsatz": 2070,
+        "personal": 2534,
+        "ergebnis": -2842
+      }
+    },
+    "filiale": "402501: T-Göttingen-Weender Str.",
+    "region": "ost",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402502",
+    "pdfName": "T-Göttingen-An der Lutter",
+    "months": {
+      "2026-06": {
+        "umsatz": 19705,
+        "wareneinsatz": 7866,
+        "personal": 6253,
+        "ergebnis": -1307
+      },
+      "2026-07": {
+        "umsatz": 16716,
+        "wareneinsatz": 4552,
+        "personal": 1525,
+        "ergebnis": 3726
+      },
+      "2026-08": {
+        "umsatz": 16738,
+        "wareneinsatz": 4585,
+        "personal": 4689,
+        "ergebnis": 1852
+      }
+    },
+    "filiale": "402502: T-Göttingen-An-der-Lutter",
+    "region": "ost",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402507",
+    "pdfName": "K-Wesel-Rudolf-Diesel-Straße",
+    "months": {
+      "2026-06": {
+        "umsatz": 13662,
+        "wareneinsatz": 3973,
+        "personal": 6213,
+        "ergebnis": -2334
+      },
+      "2026-07": {
+        "umsatz": 14706,
+        "wareneinsatz": 6143,
+        "personal": 7011,
+        "ergebnis": -4229
+      },
+      "2026-08": {
+        "umsatz": 13562,
+        "wareneinsatz": 5010,
+        "personal": 6113,
+        "ergebnis": -3185
+      }
+    },
+    "filiale": "402507: K-Wesel-Rudolf-Diesel-Straße",
+    "region": "west",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402512",
+    "pdfName": "R-Remscheid-Wupperstraße",
+    "months": {
+      "2026-06": {
+        "umsatz": 7735,
+        "wareneinsatz": 2254,
+        "personal": 3428,
+        "ergebnis": -2087
+      },
+      "2026-07": {
+        "umsatz": 8636,
+        "wareneinsatz": 2820,
+        "personal": 2463,
+        "ergebnis": -979
+      },
+      "2026-08": {
+        "umsatz": 6843,
+        "wareneinsatz": 3470,
+        "personal": 3886,
+        "ergebnis": -4468
+      }
+    },
+    "filiale": "402512: R-Remscheid-Wupperstraße",
+    "region": "west",
+    "matched": true
+  },
+  {
+    "kostenstelle": "402523",
+    "pdfName": "K-Essen-Haedenkampstraße",
+    "months": {
+      "2026-06": {
+        "umsatz": 12849,
+        "wareneinsatz": 3846,
+        "personal": 5854,
+        "ergebnis": -1391
+      },
+      "2026-07": {
+        "umsatz": 12442,
+        "wareneinsatz": 3177,
+        "personal": 4080,
+        "ergebnis": 494
+      },
+      "2026-08": {
+        "umsatz": 11145,
+        "wareneinsatz": 4546,
+        "personal": 7058,
+        "ergebnis": -4715
+      }
+    },
+    "filiale": "402523: K-Essen-Haedenkampstraße",
+    "region": "west",
+    "matched": true
+  }
+]

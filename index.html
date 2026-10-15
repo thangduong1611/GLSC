@@ -1108,8 +1108,8 @@ window.onerror=function(msg,src,line){
     </div>
   </div>
   <div class="card" id="kpi-drafts-card" style="display:none">
-    <div class="card-title">📋 KPI-Auswertung Q3 — Entwürfe je Filiale</div>
-    <div class="info">Kurznachrichten aus der Q3-Analyse (Juni–August 2026), fertig zum Prüfen/Anpassen. Jede Nachricht geht nur an die Mitarbeiter der jeweiligen Filiale — nicht an alle.</div>
+    <div class="card-title">📋 KPI-Auswertung - Entwürfe je Filiale</div>
+    <div class="info">Kurznachrichten aus den BWA-Auswertungen, fertig zum Prüfen/Anpassen - gruppiert nach Berichtszeitraum, jede Filiale einzeln aufklappbar. Jede Nachricht geht nur an die Mitarbeiter der jeweiligen Filiale - nicht an alle.</div>
     <div id="kpi-drafts-list"></div>
   </div>
   <div class="card">
@@ -8188,125 +8188,156 @@ function nwSend(){
     .then(function(){ toast(filiale?('📤 An '+filiale+' gesendet'):'📤 An alle gesendet'); document.getElementById('nw-text').value=''; nwClearImg(); nwClearPdf(); if(filSel) filSel.value=''; })
     .catch(function(e){ alert('Senden fehlgeschlagen: '+e.message); });
 }
-// ── KPI-Auswertung Q3 (Jun-Aug 2026) — Entwürfe je Filiale ─────────────────
+// Legacy nr->{period,filiale} snapshot of the KPI_DRAFTS array as it existed BEFORE
+// 15.10.2026 (single batch, Juni-August 2026, nr 1-28). Inserting new branches
+// mid-list on a later PDF shifts every nr after the insertion point, so nr alone
+// can silently point an old 'sent' flag at the wrong branch after a merge - this
+// is exactly what happened to nr 21-28 when 3 new Ost branches were inserted on
+// 15.10.2026. Kept only so kpiDraftsMigrateLegacy() can re-key old sent-flags onto
+// the new, collision-proof period+filiale key - never used for anything else.
+var KPI_LEGACY_NR_MAP = {
+  1: {period: 'Juni - August 2026', filiale: '401125: RA-Baunatal-Fuldastraße'},
+  2: {period: 'Juni - August 2026', filiale: '401888: R-Homberg (Efze)-Kasseler Str. - Mohr'},
+  3: {period: 'Juni - August 2026', filiale: '401891: E-Kassel-Frankfurter Str. - Aschoff'},
+  4: {period: 'Juni - August 2026', filiale: '402133: K-Köln-Thebäerstraße'},
+  5: {period: 'Juni - August 2026', filiale: '402155: M-Nordhausen-Darrweg'},
+  6: {period: 'Juni - August 2026', filiale: '402167: R-Düsseldorf-Hauptstr.'},
+  7: {period: 'Juni - August 2026', filiale: '402185: K-Hagen-Auf dem Lölfert'},
+  8: {period: 'Juni - August 2026', filiale: '402205: R-Hattingen-Heggerstraße'},
+  9: {period: 'Juni - August 2026', filiale: '402207: E-Bovenden-Industriestraße'},
+  10: {period: 'Juni - August 2026', filiale: '402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme'},
+  11: {period: 'Juni - August 2026', filiale: '402251: R-Düsseldorf-Zeppelinstraße'},
+  12: {period: 'Juni - August 2026', filiale: '402257: E-Northeim-Robert-Schnabel-Str. - Schnabel'},
+  13: {period: 'Juni - August 2026', filiale: '402261: R-Hilden-Mittelstraße'},
+  14: {period: 'Juni - August 2026', filiale: '402272: R-Düsseldorf-Münsterstraße'},
+  15: {period: 'Juni - August 2026', filiale: '402286: K-Göttingen-Am Kauf Park'},
+  16: {period: 'Juni - August 2026', filiale: '402297: MK-Einbeck-Altendorfer Tor'},
+  17: {period: 'Juni - August 2026', filiale: '402302: R-Neuss-Allerheiligen-Am alten Bach - Friedrich'},
+  18: {period: 'Juni - August 2026', filiale: '402310: R-Wuppertal-Ascheweg - Brücken Kaufpark'},
+  19: {period: 'Juni - August 2026', filiale: '402315: R-Bochum-Viktoriastraße - Mert'},
+  20: {period: 'Juni - August 2026', filiale: '402363: R-Bergneustadt-Stadionstr.'},
+  21: {period: 'Juni - August 2026', filiale: '402414: E-Bergheim-Dansweilerstraße - Fischenich'},
+  22: {period: 'Juni - August 2026', filiale: '402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner'},
+  23: {period: 'Juni - August 2026', filiale: '402422: E-Leverkusen-Pommernstraße'},
+  24: {period: 'Juni - August 2026', filiale: '402501: T-Göttingen-Weender Str.'},
+  25: {period: 'Juni - August 2026', filiale: '402502: T-Göttingen-An-der-Lutter'},
+  26: {period: 'Juni - August 2026', filiale: '402507: K-Wesel-Rudolf-Diesel-Straße'},
+  27: {period: 'Juni - August 2026', filiale: '402512: R-Remscheid-Wupperstraße'},
+  28: {period: 'Juni - August 2026', filiale: '402523: K-Essen-Haedenkampstraße'},
+};
 // filiale MUSS exakt dem echten emps.filiale-Wert entsprechen (inkl.
 // "NNNNNN: "-Präfix), sonst filtert mitarbeiter.html die Nachricht für
-// niemanden sichtbar heraus — am 09.09.2026 direkt gegen die echten
-// emps-Werte abgeglichen (das KPI-PDF selbst verwendet gekürzte Namen ohne
-// Präfix, teils sogar mit leicht anderer Schreibweise, z.B. "Friederichs"
-// im PDF vs. "Friedrich" in emps.filiale — hier gilt der echte emps-Wert).
+// niemanden sichtbar heraus. "period" gruppiert die Karten im UI (neueste
+// Auswertung zuerst) und ist Teil des Schlüssels für den Versand-Status -
+// bei einer neuen PDF-Runde NICHT die alten Einträge für dieselbe Filiale
+// überschreiben, sondern als neuen Eintrag mit neuem "period"-Wert anhängen,
+// sonst geht die 'bereits gesendet'-Historie für das alte Quartal verloren.
 var KPI_DRAFTS = [
-{nr:'402207', filiale:'402207: E-Bovenden-Industriestraße',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 7.699 €, Wareneinsatz 1.176 €, Personal 4.134 €, Ergebnis −1.358 €\nJuli: Umsatz 6.997 €, Wareneinsatz 2.705 €, Personal 15.128 €, Ergebnis −14.668 €\nAugust: Umsatz 7.773 €, Wareneinsatz 3.163 €, Personal 6.281 €, Ergebnis −5.398 €\n\nWahrscheinlich eine einzelne Buchung im Juli (Nachzahlung, Abfindung o. Ä.) — schaut bitte kurz nach, was das war.',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 7.699€, Tiền hàng 1.176€, Nhân sự 4.134€, Lãi/lỗ -1.358€\nTháng 7: Doanh thu 6.997€, Tiền hàng 2.705€, Nhân sự 15.128€, Lãi/lỗ -14.668€\nTháng 8: Doanh thu 7.773€, Tiền hàng 3.163€, Nhân sự 6.281€, Lãi/lỗ -5.398€\n\nCó thể tháng 7 chỉ là một khoản ghi sổ đơn lẻ (trả bù, trợ cấp thôi việc...) — mọi người kiểm tra giúp xem đó là khoản gì nhé.'},
-{nr:'402501', filiale:'402501: T-Göttingen-Weender Str.',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 6.147 €, Wareneinsatz 3.212 €, Personal 8.464 €, Ergebnis −9.399 €\nJuli: Umsatz 5.885 €, Wareneinsatz 3.409 €, Personal 2.956 €, Ergebnis −4.032 €\nAugust: Umsatz 5.439 €, Wareneinsatz 2.070 €, Personal 2.534 €, Ergebnis −2.842 €\n\nIhr seid noch der schwächste Standort im Gebiet, aber die Entwicklung geht klar nach oben — bitte bleibt dran.',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 6.147€, Tiền hàng 3.212€, Nhân sự 8.464€, Lãi/lỗ -9.399€\nTháng 7: Doanh thu 5.885€, Tiền hàng 3.409€, Nhân sự 2.956€, Lãi/lỗ -4.032€\nTháng 8: Doanh thu 5.439€, Tiền hàng 2.070€, Nhân sự 2.534€, Lãi/lỗ -2.842€\n\nTiệm mình vẫn đang yếu nhất vùng, nhưng đang cải thiện rõ rệt — mọi người cố gắng duy trì đà này nhé.'},
-{nr:'402205', filiale:'402205: R-Hattingen-Heggerstraße',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 7.869 €, Wareneinsatz 4.917 €, Personal 4.073 €, Ergebnis −5.219 €\nJuli: Umsatz 8.485 €, Wareneinsatz 1.215 €, Personal 4.269 €, Ergebnis −931 €\nAugust: Umsatz 7.386 €, Wareneinsatz 4.217 €, Personal 4.228 €, Ergebnis −4.877 €\n\nWareneinsatz und Personal sind seit Monaten hoch — schaut bitte gemeinsam, wo sich das senken lässt.',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 7.869€, Tiền hàng 4.917€, Nhân sự 4.073€, Lãi/lỗ -5.219€\nTháng 7: Doanh thu 8.485€, Tiền hàng 1.215€, Nhân sự 4.269€, Lãi/lỗ -931€\nTháng 8: Doanh thu 7.386€, Tiền hàng 4.217€, Nhân sự 4.228€, Lãi/lỗ -4.877€\n\nTiền hàng và chi phí nhân sự bên mình cao nhiều tháng liền — mọi người cùng xem có thể giảm ở đâu nhé.'},
-{nr:'402512', filiale:'402512: R-Remscheid-Wupperstraße',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 7.735 €, Wareneinsatz 2.254 €, Personal 3.428 €, Ergebnis −2.087 €\nJuli: Umsatz 8.636 €, Wareneinsatz 2.820 €, Personal 2.463 €, Ergebnis −979 €\nAugust: Umsatz 6.843 €, Wareneinsatz 3.470 €, Personal 3.886 €, Ergebnis −4.468 €\n\nDer Verlust wird von Monat zu Monat größer — bitte schaut euch das zeitnah gemeinsam an.',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 7.735€, Tiền hàng 2.254€, Nhân sự 3.428€, Lãi/lỗ -2.087€\nTháng 7: Doanh thu 8.636€, Tiền hàng 2.820€, Nhân sự 2.463€, Lãi/lỗ -979€\nTháng 8: Doanh thu 6.843€, Tiền hàng 3.470€, Nhân sự 3.886€, Lãi/lỗ -4.468€\n\nMức lỗ đang tăng dần theo từng tháng — mọi người cùng xem lại sớm nhé.'},
-{nr:'402133', filiale:'402133: K-Köln-Thebäerstraße',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 10.674 €, Wareneinsatz 4.179 €, Personal 3.293 €, Ergebnis −2.017 €\nJuli: Umsatz 12.692 €, Wareneinsatz 5.240 €, Personal 5.275 €, Ergebnis −2.828 €\nAugust: Umsatz 10.779 €, Wareneinsatz 4.100 €, Personal 5.296 €, Ergebnis −4.146 €\n\nDer Standort ist seit Monaten im Minus und es wird eher schlimmer — hier braucht es eine klare Lösung.',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 10.674€, Tiền hàng 4.179€, Nhân sự 3.293€, Lãi/lỗ -2.017€\nTháng 7: Doanh thu 12.692€, Tiền hàng 5.240€, Nhân sự 5.275€, Lãi/lỗ -2.828€\nTháng 8: Doanh thu 10.779€, Tiền hàng 4.100€, Nhân sự 5.296€, Lãi/lỗ -4.146€\n\nTiệm mình lỗ nhiều tháng liền và đang nặng thêm — cần tìm hướng giải quyết rõ ràng.'},
-{nr:'402507', filiale:'402507: K-Wesel-Rudolf-Diesel-Straße',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 13.662 €, Wareneinsatz 3.973 €, Personal 6.213 €, Ergebnis −2.334 €\nJuli: Umsatz 14.706 €, Wareneinsatz 6.143 €, Personal 7.011 €, Ergebnis −4.229 €\nAugust: Umsatz 13.562 €, Wareneinsatz 5.010 €, Personal 6.113 €, Ergebnis −3.185 €\n\nSeit Juni durchgehend im Minus, deutlich schlechter als im Vorjahr — schaut, was sich verändert hat.',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 13.662€, Tiền hàng 3.973€, Nhân sự 6.213€, Lãi/lỗ -2.334€\nTháng 7: Doanh thu 14.706€, Tiền hàng 6.143€, Nhân sự 7.011€, Lãi/lỗ -4.229€\nTháng 8: Doanh thu 13.562€, Tiền hàng 5.010€, Nhân sự 6.113€, Lãi/lỗ -3.185€\n\nLỗ liên tục từ tháng 6, kém hơn hẳn năm ngoái — mọi người xem có gì thay đổi so với trước nhé.'},
-{nr:'401891', filiale:'401891: E-Kassel-Frankfurter Str. - Aschoff',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 25.742 €, Wareneinsatz 11.965 €, Personal 10.532 €, Ergebnis −6.602 €\nJuli: Umsatz 24.128 €, Wareneinsatz 4.021 €, Personal 17.233 €, Ergebnis −5.126 €\nAugust: Umsatz 24.530 €, Wareneinsatz 6.498 €, Personal 11.663 €, Ergebnis −1.853 €\n\nDie Personalkosten waren im Juli sehr hoch, im August schon deutlich besser — weiter so!',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 25.742€, Tiền hàng 11.965€, Nhân sự 10.532€, Lãi/lỗ -6.602€\nTháng 7: Doanh thu 24.128€, Tiền hàng 4.021€, Nhân sự 17.233€, Lãi/lỗ -5.126€\nTháng 8: Doanh thu 24.530€, Tiền hàng 6.498€, Nhân sự 11.663€, Lãi/lỗ -1.853€\n\nChi phí nhân sự tháng 7 rất cao, tháng 8 đã giảm rõ rệt — tiếp tục phát huy nhé!'},
-{nr:'402523', filiale:'402523: K-Essen-Haedenkampstraße',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 12.849 €, Wareneinsatz 3.846 €, Personal 5.854 €, Ergebnis −1.391 €\nJuli: Umsatz 12.442 €, Wareneinsatz 3.177 €, Personal 4.080 €, Ergebnis 494 €\nAugust: Umsatz 11.145 €, Wareneinsatz 4.546 €, Personal 7.058 €, Ergebnis −4.715 €\n\nAls neuer Standort ist ein Anlaufverlust normal — aber die Personalkosten steigen weiter, das lohnt einen zweiten Blick.',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 12.849€, Tiền hàng 3.846€, Nhân sự 5.854€, Lãi/lỗ -1.391€\nTháng 7: Doanh thu 12.442€, Tiền hàng 3.177€, Nhân sự 4.080€, Lãi/lỗ 494€\nTháng 8: Doanh thu 11.145€, Tiền hàng 4.546€, Nhân sự 7.058€, Lãi/lỗ -4.715€\n\nLà tiệm mới nên có lỗ ban đầu là bình thường — nhưng chi phí nhân sự đang tăng tiếp, mọi người xem lại giúp nhé.'},
-{nr:'402251', filiale:'402251: R-Düsseldorf-Zeppelinstraße',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 11.820 €, Wareneinsatz 3.619 €, Personal 5.438 €, Ergebnis −1.481 €\nJuli: Umsatz 11.176 €, Wareneinsatz 1.122 €, Personal 3.963 €, Ergebnis 1.329 €\nAugust: Umsatz 9.453 €, Wareneinsatz 5.207 €, Personal 3.223 €, Ergebnis −3.054 €\n\nIm August ist der Wareneinsatz plötzlich stark gestiegen — bitte prüft, ob da ein Fehler in Buchung oder Inventur ist.',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 11.820€, Tiền hàng 3.619€, Nhân sự 5.438€, Lãi/lỗ -1.481€\nTháng 7: Doanh thu 11.176€, Tiền hàng 1.122€, Nhân sự 3.963€, Lãi/lỗ 1.329€\nTháng 8: Doanh thu 9.453€, Tiền hàng 5.207€, Nhân sự 3.223€, Lãi/lỗ -3.054€\n\nTháng 8 tiền hàng tăng đột ngột — mọi người kiểm tra giúp xem có sai sót gì trong ghi sổ hay kiểm kê không nhé.'},
-{nr:'402363', filiale:'402363: R-Bergneustadt-Stadionstr.',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 16.805 €, Wareneinsatz 4.873 €, Personal 6.239 €, Ergebnis −1.221 €\nJuli: Umsatz 16.976 €, Wareneinsatz 5.537 €, Personal 6.115 €, Ergebnis −1.121 €\nAugust: Umsatz 16.879 €, Wareneinsatz 4.973 €, Personal 8.909 €, Ergebnis −3.044 €\n\nDie Personalkosten steigen spürbar — schaut bitte, ob sich an der Personalplanung etwas anpassen lässt.',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 16.805€, Tiền hàng 4.873€, Nhân sự 6.239€, Lãi/lỗ -1.221€\nTháng 7: Doanh thu 16.976€, Tiền hàng 5.537€, Nhân sự 6.115€, Lãi/lỗ -1.121€\nTháng 8: Doanh thu 16.879€, Tiền hàng 4.973€, Nhân sự 8.909€, Lãi/lỗ -3.044€\n\nChi phí nhân sự đang tăng rõ — mọi người xem lại cách sắp xếp nhân sự có điều chỉnh được không nhé.'},
-{nr:'402272', filiale:'402272: R-Düsseldorf-Münsterstraße',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 15.305 €, Wareneinsatz 5.146 €, Personal 8.500 €, Ergebnis −4.294 €\nJuli: Umsatz 17.322 €, Wareneinsatz 4.849 €, Personal 4.145 €, Ergebnis 2.190 €\nAugust: Umsatz 14.988 €, Wareneinsatz 5.887 €, Personal 5.141 €, Ergebnis −1.505 €\n\nEs geht bergauf — von deutlichem Minus im Juni auf fast ausgeglichen im August. Weiter so!',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 15.305€, Tiền hàng 5.146€, Nhân sự 8.500€, Lãi/lỗ -4.294€\nTháng 7: Doanh thu 17.322€, Tiền hàng 4.849€, Nhân sự 4.145€, Lãi/lỗ 2.190€\nTháng 8: Doanh thu 14.988€, Tiền hàng 5.887€, Nhân sự 5.141€, Lãi/lỗ -1.505€\n\nTình hình đang tốt lên — từ lỗ nặng tháng 6 đến gần hòa vốn tháng 8. Tiếp tục phát huy nhé!'},
-{nr:'402310', filiale:'402310: R-Wuppertal-Ascheweg - Brücken Kaufpark',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 12.838 €, Wareneinsatz 4.341 €, Personal 4.968 €, Ergebnis −1.939 €\nJuli: Umsatz 15.245 €, Wareneinsatz 3.731 €, Personal 5.276 €, Ergebnis 362 €\nAugust: Umsatz 12.720 €, Wareneinsatz 3.506 €, Personal 5.353 €, Ergebnis −1.375 €\n\nEin kleines, aber wiederkehrendes Minus die letzten Monate — nichts Dramatisches, aber im Blick behalten.',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 12.838€, Tiền hàng 4.341€, Nhân sự 4.968€, Lãi/lỗ -1.939€\nTháng 7: Doanh thu 15.245€, Tiền hàng 3.731€, Nhân sự 5.276€, Lãi/lỗ 362€\nTháng 8: Doanh thu 12.720€, Tiền hàng 3.506€, Nhân sự 5.353€, Lãi/lỗ -1.375€\n\nMấy tháng qua lỗ nhẹ nhưng đều đặn — không nghiêm trọng, nhưng cần theo dõi thêm.'},
-{nr:'402257', filiale:'402257: E-Northeim-Robert-Schnabel-Str. - Schnabel',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 10.454 €, Wareneinsatz 2.507 €, Personal 4.056 €, Ergebnis −541 €\nJuli: Umsatz 9.051 €, Wareneinsatz 3.359 €, Personal 4.276 €, Ergebnis −3.190 €\nAugust: Umsatz 10.731 €, Wareneinsatz 4.709 €, Personal 4.462 €, Ergebnis 2.083 €\n\nStarker August! Nach einem schwachen Juli klar ins Plus gedreht — der Wareneinsatz bleibt aber im Auge zu behalten.',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 10.454€, Tiền hàng 2.507€, Nhân sự 4.056€, Lãi/lỗ -541€\nTháng 7: Doanh thu 9.051€, Tiền hàng 3.359€, Nhân sự 4.276€, Lãi/lỗ -3.190€\nTháng 8: Doanh thu 10.731€, Tiền hàng 4.709€, Nhân sự 4.462€, Lãi/lỗ 2.083€\n\nTháng 8 rất tốt! Sau tháng 7 yếu đã chuyển sang có lãi rõ rệt — vẫn cần giữ tiền hàng ổn định.'},
-{nr:'401888', filiale:'401888: R-Homberg (Efze)-Kasseler Str. - Mohr',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 15.494 €, Wareneinsatz 5.651 €, Personal 6.145 €, Ergebnis −2.890 €\nJuli: Umsatz 17.061 €, Wareneinsatz 3.483 €, Personal 5.393 €, Ergebnis 1.860 €\nAugust: Umsatz 17.315 €, Wareneinsatz 5.479 €, Personal 6.490 €, Ergebnis −1.663 €\n\nDer Umsatz wächst schön, nur die Personalkosten ziehen das Ergebnis noch leicht ins Minus.',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 15.494€, Tiền hàng 5.651€, Nhân sự 6.145€, Lãi/lỗ -2.890€\nTháng 7: Doanh thu 17.061€, Tiền hàng 3.483€, Nhân sự 5.393€, Lãi/lỗ 1.860€\nTháng 8: Doanh thu 17.315€, Tiền hàng 5.479€, Nhân sự 6.490€, Lãi/lỗ -1.663€\n\nDoanh thu bên mình tăng tốt, chỉ có chi phí nhân sự khiến kết quả hơi lỗ nhẹ.'},
-{nr:'402286', filiale:'402286: K-Göttingen-Am Kauf Park',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 14.041 €, Wareneinsatz 9.577 €, Personal 3.867 €, Ergebnis −10.468 €\nJuli: Umsatz 14.666 €, Wareneinsatz 6.246 €, Personal 3.799 €, Ergebnis 3.277 €\nAugust: Umsatz 13.813 €, Wareneinsatz 1.507 €, Personal 1.663 €, Ergebnis 5.044 €\n\nDie stärkste Verbesserung im ganzen Gebiet — von großem Minus im Juni zu deutlichem Plus im August! Weiter so!',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 14.041€, Tiền hàng 9.577€, Nhân sự 3.867€, Lãi/lỗ -10.468€\nTháng 7: Doanh thu 14.666€, Tiền hàng 6.246€, Nhân sự 3.799€, Lãi/lỗ 3.277€\nTháng 8: Doanh thu 13.813€, Tiền hàng 1.507€, Nhân sự 1.663€, Lãi/lỗ 5.044€\n\nĐây là sự cải thiện tốt nhất toàn vùng — từ lỗ nặng tháng 6 chuyển sang có lãi rõ rệt tháng 8! Tiếp tục phát huy nhé!'},
-{nr:'402185', filiale:'402185: K-Hagen-Auf dem Lölfert',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 13.378 €, Wareneinsatz 4.058 €, Personal 4.762 €, Ergebnis −784 €\nJuli: Umsatz 13.518 €, Wareneinsatz 4.542 €, Personal 4.766 €, Ergebnis −1.318 €\nAugust: Umsatz 13.219 €, Wareneinsatz 4.257 €, Personal 4.774 €, Ergebnis 130 €\n\nDer Standort hat sich stabilisiert und liegt jetzt ungefähr bei Null — ein guter Stand.',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 13.378€, Tiền hàng 4.058€, Nhân sự 4.762€, Lãi/lỗ -784€\nTháng 7: Doanh thu 13.518€, Tiền hàng 4.542€, Nhân sự 4.766€, Lãi/lỗ -1.318€\nTháng 8: Doanh thu 13.219€, Tiền hàng 4.257€, Nhân sự 4.774€, Lãi/lỗ 130€\n\nTiệm mình đã ổn định và gần như hòa vốn — đây là mức tốt.'},
-{nr:'402422', filiale:'402422: E-Leverkusen-Pommernstraße',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 34.125 €, Wareneinsatz 11.728 €, Personal 13.043 €, Ergebnis −748 €\nJuli: Umsatz 36.103 €, Wareneinsatz 10.747 €, Personal 14.258 €, Ergebnis 120 €\nAugust: Umsatz 27.934 €, Wareneinsatz 10.162 €, Personal 12.928 €, Ergebnis −3.523 €\n\nDer Umsatz ist zuletzt spürbar gesunken — das ist aktuell das größere Thema.',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 34.125€, Tiền hàng 11.728€, Nhân sự 13.043€, Lãi/lỗ -748€\nTháng 7: Doanh thu 36.103€, Tiền hàng 10.747€, Nhân sự 14.258€, Lãi/lỗ 120€\nTháng 8: Doanh thu 27.934€, Tiền hàng 10.162€, Nhân sự 12.928€, Lãi/lỗ -3.523€\n\nDoanh thu bên mình gần đây giảm khá rõ — đây mới là vấn đề chính cần quan tâm.'},
-{nr:'402261', filiale:'402261: R-Hilden-Mittelstraße',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 18.045 €, Wareneinsatz 5.240 €, Personal 6.237 €, Ergebnis −169 €\nJuli: Umsatz 20.110 €, Wareneinsatz 6.007 €, Personal 7.355 €, Ergebnis −100 €\nAugust: Umsatz 17.057 €, Wareneinsatz 5.890 €, Personal 5.632 €, Ergebnis −688 €\n\nNur ein kleines Minus, insgesamt stabil die letzten Monate.',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 18.045€, Tiền hàng 5.240€, Nhân sự 6.237€, Lãi/lỗ -169€\nTháng 7: Doanh thu 20.110€, Tiền hàng 6.007€, Nhân sự 7.355€, Lãi/lỗ -100€\nTháng 8: Doanh thu 17.057€, Tiền hàng 5.890€, Nhân sự 5.632€, Lãi/lỗ -688€\n\nChỉ lỗ nhẹ thôi, nhìn chung khá ổn định mấy tháng qua.'},
-{nr:'402302', filiale:'402302: R-Neuss-Allerheiligen-Am alten Bach - Friedrich',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 20.316 €, Wareneinsatz 4.742 €, Personal 7.368 €, Ergebnis 940 €\nJuli: Umsatz 20.588 €, Wareneinsatz 5.048 €, Personal 7.070 €, Ergebnis 1.205 €\nAugust: Umsatz 16.839 €, Wareneinsatz 4.345 €, Personal 7.189 €, Ergebnis −850 €\n\nDer Umsatz ist etwas gesunken, das Ergebnis liegt knapp im Minus.',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 20.316€, Tiền hàng 4.742€, Nhân sự 7.368€, Lãi/lỗ 940€\nTháng 7: Doanh thu 20.588€, Tiền hàng 5.048€, Nhân sự 7.070€, Lãi/lỗ 1.205€\nTháng 8: Doanh thu 16.839€, Tiền hàng 4.345€, Nhân sự 7.189€, Lãi/lỗ -850€\n\nDoanh thu bên mình giảm nhẹ, kết quả hơi lỗ chút.'},
-{nr:'402416', filiale:'402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 20.102 €, Wareneinsatz 5.360 €, Personal 6.772 €, Ergebnis 518 €\nJuli: Umsatz 19.382 €, Wareneinsatz 4.573 €, Personal 7.532 €, Ergebnis 439 €\nAugust: Umsatz 17.196 €, Wareneinsatz 4.772 €, Personal 5.098 €, Ergebnis 1.071 €\n\nTrotz etwas weniger Umsatz bleibt der Standort profitabel — sehr sauber gewirtschaftet.',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 20.102€, Tiền hàng 5.360€, Nhân sự 6.772€, Lãi/lỗ 518€\nTháng 7: Doanh thu 19.382€, Tiền hàng 4.573€, Nhân sự 7.532€, Lãi/lỗ 439€\nTháng 8: Doanh thu 17.196€, Tiền hàng 4.772€, Nhân sự 5.098€, Lãi/lỗ 1.071€\n\nDù doanh thu giảm nhẹ nhưng tiệm mình vẫn có lãi — quản lý rất tốt.'},
-{nr:'402414', filiale:'402414: E-Bergheim-Dansweilerstraße - Fischenich',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 9.914 €, Wareneinsatz 3.091 €, Personal 4.295 €, Ergebnis −1.547 €\nJuli: Umsatz 14.203 €, Wareneinsatz 3.998 €, Personal 3.769 €, Ergebnis 1.418 €\nAugust: Umsatz 11.456 €, Wareneinsatz 3.002 €, Personal 1.296 €, Ergebnis 2.479 €\n\nSehr schöne Entwicklung: von Minus im Juni zu klarem Plus im August, bei wachsendem Umsatz.',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 9.914€, Tiền hàng 3.091€, Nhân sự 4.295€, Lãi/lỗ -1.547€\nTháng 7: Doanh thu 14.203€, Tiền hàng 3.998€, Nhân sự 3.769€, Lãi/lỗ 1.418€\nTháng 8: Doanh thu 11.456€, Tiền hàng 3.002€, Nhân sự 1.296€, Lãi/lỗ 2.479€\n\nTiến triển rất tốt: từ lỗ tháng 6 chuyển sang có lãi rõ rệt tháng 8, doanh thu vẫn tăng.'},
-{nr:'402167', filiale:'402167: R-Düsseldorf-Hauptstr.',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 30.400 €, Wareneinsatz 7.495 €, Personal 10.660 €, Ergebnis 2.210 €\nJuli: Umsatz 33.442 €, Wareneinsatz 7.930 €, Personal 11.135 €, Ergebnis 3.268 €\nAugust: Umsatz 28.475 €, Wareneinsatz 7.349 €, Personal 11.306 €, Ergebnis −217 €\n\nJuni und Juli liefen gut, im August ein kleiner Ausrutscher — insgesamt ein solides Quartal.',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 30.400€, Tiền hàng 7.495€, Nhân sự 10.660€, Lãi/lỗ 2.210€\nTháng 7: Doanh thu 33.442€, Tiền hàng 7.930€, Nhân sự 11.135€, Lãi/lỗ 3.268€\nTháng 8: Doanh thu 28.475€, Tiền hàng 7.349€, Nhân sự 11.306€, Lãi/lỗ -217€\n\nTháng 6 và 7 làm tốt, tháng 8 hơi chững lại chút — nhìn chung cả quý khá ổn.'},
-{nr:'402297', filiale:'402297: MK-Einbeck-Altendorfer Tor',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 18.472 €, Wareneinsatz 4.767 €, Personal 4.863 €, Ergebnis 2.429 €\nJuli: Umsatz 18.183 €, Wareneinsatz 5.362 €, Personal 3.013 €, Ergebnis 3.106 €\nAugust: Umsatz 18.374 €, Wareneinsatz 4.886 €, Personal 8.828 €, Ergebnis −1.598 €\n\nJuni und Juli waren stark, im August sind die Personalkosten plötzlich hochgeschossen.',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 18.472€, Tiền hàng 4.767€, Nhân sự 4.863€, Lãi/lỗ 2.429€\nTháng 7: Doanh thu 18.183€, Tiền hàng 5.362€, Nhân sự 3.013€, Lãi/lỗ 3.106€\nTháng 8: Doanh thu 18.374€, Tiền hàng 4.886€, Nhân sự 8.828€, Lãi/lỗ -1.598€\n\nTháng 6 và 7 rất tốt, nhưng tháng 8 chi phí nhân sự tăng vọt bất ngờ.'},
-{nr:'402502', filiale:'402502: T-Göttingen-An-der-Lutter',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 19.705 €, Wareneinsatz 7.866 €, Personal 6.253 €, Ergebnis −1.307 €\nJuli: Umsatz 16.716 €, Wareneinsatz 4.552 €, Personal 1.525 €, Ergebnis 3.726 €\nAugust: Umsatz 16.738 €, Wareneinsatz 4.585 €, Personal 4.689 €, Ergebnis 1.852 €\n\nSchöne Erholung von Minus zu Plus. Weiter so!',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 19.705€, Tiền hàng 7.866€, Nhân sự 6.253€, Lãi/lỗ -1.307€\nTháng 7: Doanh thu 16.716€, Tiền hàng 4.552€, Nhân sự 1.525€, Lãi/lỗ 3.726€\nTháng 8: Doanh thu 16.738€, Tiền hàng 4.585€, Nhân sự 4.689€, Lãi/lỗ 1.852€\n\nPhục hồi tốt từ lỗ sang có lãi. Tiếp tục phát huy nhé!'},
-{nr:'402315', filiale:'402315: R-Bochum-Viktoriastraße - Mert',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 20.356 €, Wareneinsatz 5.114 €, Personal 6.511 €, Ergebnis 1.496 €\nJuli: Umsatz 21.209 €, Wareneinsatz 5.773 €, Personal 5.961 €, Ergebnis 2.069 €\nAugust: Umsatz 17.727 €, Wareneinsatz 4.561 €, Personal 4.325 €, Ergebnis 1.908 €\n\nDrei Monate in Folge im Plus — konstant und solide. Gute Arbeit!',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 20.356€, Tiền hàng 5.114€, Nhân sự 6.511€, Lãi/lỗ 1.496€\nTháng 7: Doanh thu 21.209€, Tiền hàng 5.773€, Nhân sự 5.961€, Lãi/lỗ 2.069€\nTháng 8: Doanh thu 17.727€, Tiền hàng 4.561€, Nhân sự 4.325€, Lãi/lỗ 1.908€\n\n3 tháng liền đều có lãi — ổn định và chắc chắn. Làm tốt lắm!'},
-{nr:'401125', filiale:'401125: RA-Baunatal-Fuldastraße',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 33.270 €, Wareneinsatz 11.045 €, Personal 7.656 €, Ergebnis 3.960 €\nJuli: Umsatz 34.848 €, Wareneinsatz 6.023 €, Personal 19.021 €, Ergebnis −1.299 €\nAugust: Umsatz 35.676 €, Wareneinsatz 8.134 €, Personal 7.272 €, Ergebnis 8.872 €\n\nDer Standort läuft rund und hat das beste Ergebnis im ganzen Gebiet. Danke für die durchgehend gute Arbeit!',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 33.270€, Tiền hàng 11.045€, Nhân sự 7.656€, Lãi/lỗ 3.960€\nTháng 7: Doanh thu 34.848€, Tiền hàng 6.023€, Nhân sự 19.021€, Lãi/lỗ -1.299€\nTháng 8: Doanh thu 35.676€, Tiền hàng 8.134€, Nhân sự 7.272€, Lãi/lỗ 8.872€\n\nTiệm mình vận hành rất tốt và có kết quả cao nhất toàn vùng. Cảm ơn mọi người đã làm việc tốt liên tục!'},
-{nr:'402240', filiale:'402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 31.616 €, Wareneinsatz 8.203 €, Personal 14.086 €, Ergebnis −1.304 €\nJuli: Umsatz 31.589 €, Wareneinsatz 7.750 €, Personal 5.033 €, Ergebnis 8.180 €\nAugust: Umsatz 30.522 €, Wareneinsatz 7.988 €, Personal 4.695 €, Ergebnis 8.004 €\n\nStarke Wende von Minus im Juni zu deutlichem Plus im August. Sehr gute Arbeit!',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 31.616€, Tiền hàng 8.203€, Nhân sự 14.086€, Lãi/lỗ -1.304€\nTháng 7: Doanh thu 31.589€, Tiền hàng 7.750€, Nhân sự 5.033€, Lãi/lỗ 8.180€\nTháng 8: Doanh thu 30.522€, Tiền hàng 7.988€, Nhân sự 4.695€, Lãi/lỗ 8.004€\n\nChuyển biến rất mạnh từ lỗ tháng 6 sang có lãi rõ rệt tháng 8. Làm rất tốt!'},
-{nr:'402155', filiale:'402155: M-Nordhausen-Darrweg',
- de:'Hallo zusammen, hier unsere Zahlen der letzten 3 Monate:\n\nJuni: Umsatz 16.613 €, Wareneinsatz 4.034 €, Personal 5.159 €, Ergebnis 1.404 €\nJuli: Umsatz 17.272 €, Wareneinsatz 6.752 €, Personal 1.191 €, Ergebnis 2.930 €\nAugust: Umsatz 17.401 €, Wareneinsatz 2.922 €, Personal 1.075 €, Ergebnis 7.216 €\n\nDas beste Ergebnis im ganzen Gebiet! Danke für die tolle Arbeit, weiter so!',
- vi:'Chào cả nhóm, đây là số liệu 3 tháng gần đây của tiệm mình:\n\nTháng 6: Doanh thu 16.613€, Tiền hàng 4.034€, Nhân sự 5.159€, Lãi/lỗ 1.404€\nTháng 7: Doanh thu 17.272€, Tiền hàng 6.752€, Nhân sự 1.191€, Lãi/lỗ 2.930€\nTháng 8: Doanh thu 17.401€, Tiền hàng 2.922€, Nhân sự 1.075€, Lãi/lỗ 7.216€\n\nKết quả tốt nhất toàn vùng! Cảm ơn cả nhóm đã làm rất tốt, tiếp tục phát huy nhé!'},
+  {nr: 1, period: 'Juli - September 2026', filiale: '401125: RA-Baunatal-Fuldastraße', de: 'Großer Fortschritt bei den Personalkosten: von 19.021 € im Juli auf 7.272 € im August und 7.384 € im September - fast eine Drittelung. Dadurch ist das Ergebnis von -1.299 € auf +8.865 € und +4.878 € gedreht. Der Umsatz blieb mit 34.848 € / 35.676 € / 33.858 € stabil. Der Wareneinsatz ist dagegen gestiegen, von 6.023 € im Juli auf 8.975 € im September (26,5% vom Umsatz) - das im Blick behalten.', vi: 'Chi phí nhân sự cải thiện rất mạnh: từ 19.021 € tháng 7 xuống 7.272 € tháng 8 và 7.384 € tháng 9, gần như giảm một nửa. Nhờ đó kết quả kinh doanh đổi từ -1.299 € thành +8.865 € và +4.878 €. Doanh thu giữ ổn định ở mức 34.848 € / 35.676 € / 33.858 €. Ngược lại, chi phí hàng hóa lại tăng, từ 6.023 € tháng 7 lên 8.975 € tháng 9 (26,5% doanh thu) - cần để ý điểm này.'},
+  {nr: 2, period: 'Juli - September 2026', filiale: '401888: R-Homberg (Efze)-Kasseler Str. - Mohr', de: 'Der Umsatz blieb mit rund 17.000 € pro Monat stabil, aber Wareneinsatz und Personalkosten sind beide gestiegen: Wareneinsatz von 3.483 € auf 4.771-5.479 €, Personal von 5.393 € auf 6.398-6.490 €. Das Ergebnis ist dadurch von +1.860 € im Juli auf -1.667 € im August und -1.061 € im September gerutscht. Bitte schauen, wo bei den beiden Kostenblöcken gegengesteuert werden kann.', vi: 'Doanh thu giữ ổn định khoảng 17.000 €/tháng, nhưng chi phí hàng hóa và chi phí nhân sự đều tăng: hàng hóa từ 3.483 € lên 4.771-5.479 €, nhân sự từ 5.393 € lên 6.398-6.490 €. Vì vậy kết quả kinh doanh tuột từ +1.860 € tháng 7 xuống -1.667 € tháng 8 và -1.061 € tháng 9. Mong team xem lại 2 khoản chi phí này để điều chỉnh.'},
+  {nr: 3, period: 'Juli - September 2026', filiale: '401891: E-Kassel-Frankfurter Str. - Aschoff', de: 'Die Personalkosten sind im Verhältnis zum Umsatz sehr hoch: 17.233 € im Juli (71% vom Umsatz), 14.420 € im September (59%). Das Ergebnis war in allen drei Monaten deutlich negativ: -5.126 € / -1.858 € / -6.110 €, bei einem stabilen Umsatz von rund 24.000-24.500 €. Hier braucht es eine genaue Prüfung der Personalplanung, um aus den roten Zahlen zu kommen.', vi: 'Chi phí nhân sự quá cao so với doanh thu: 17.233 € tháng 7 (71% doanh thu), 14.420 € tháng 9 (59%). Kết quả kinh doanh âm nặng cả 3 tháng: -5.126 € / -1.858 € / -6.110 €, trong khi doanh thu ổn định khoảng 24.000-24.500 €. Cần rà soát kỹ lại việc xếp lịch nhân sự để thoát khỏi tình trạng lỗ này.'},
+  {nr: 4, period: 'Juli - September 2026', filiale: '402146: T-Bad Hersfeld-Heinrich-von-Stephan-Straße', de: 'Der Umsatz ist mit rund 12.000 € pro Monat stabil, aber Wareneinsatz (2.319 € → 3.658 €) und Personalkosten (3.017 € → 4.915 €) sind beide gestiegen. Das Ergebnis drehte dadurch von +1.886 € im Juli auf -1.171 € im August und -1.271 € im September. Bitte die beiden Kostenblöcke im September genauer anschauen.', vi: 'Doanh thu ổn định khoảng 12.000 €/tháng, nhưng chi phí hàng hóa (2.319 € → 3.658 €) và chi phí nhân sự (3.017 € → 4.915 €) đều tăng. Kết quả kinh doanh vì vậy chuyển từ +1.886 € tháng 7 sang -1.171 € tháng 8 và -1.271 € tháng 9. Mong team xem lại kỹ 2 khoản chi phí này trong tháng 9.'},
+  {nr: 5, period: 'Juli - September 2026', filiale: '402150: E-Sontra-Mühlbergstraße - Salzmann', de: 'Der Umsatz ist leicht gesunken: 10.008 € im Juli auf 9.756 € im September. Das Ergebnis schwankte stark zwischen +4.189 € (Juli), -2.121 € (August) und +1.028 € (September) - die Personalkosten im August (3.881 €) waren der Hauptgrund für den schwachen Monat. Insgesamt bleibt die Filiale im positiven Bereich.', vi: 'Doanh thu giảm nhẹ: từ 10.008 € tháng 7 xuống 9.756 € tháng 9. Kết quả kinh doanh dao động mạnh giữa +4.189 € (tháng 7), -2.121 € (tháng 8) và +1.028 € (tháng 9) - chi phí nhân sự tháng 8 (3.881 €) là nguyên nhân chính khiến tháng đó yếu. Nhìn chung tiệm vẫn giữ được kết quả dương.'},
+  {nr: 6, period: 'Juli - September 2026', filiale: '402155: M-Nordhausen-Darrweg', de: 'Starke drei Monate: das Ergebnis war durchgehend positiv mit +2.930 € / +7.213 € / +2.902 €, bei stabilem Umsatz von rund 17.000 €. Besonders der August mit niedrigem Wareneinsatz (2.922 €, nur 16,8% vom Umsatz) stach heraus. Weiter so!', vi: 'Ba tháng rất tốt: kết quả kinh doanh luôn dương với +2.930 € / +7.213 € / +2.902 €, doanh thu ổn định khoảng 17.000 €. Đặc biệt tháng 8 với chi phí hàng hóa thấp (2.922 €, chỉ 16,8% doanh thu) nổi bật nhất. Tiếp tục phát huy!'},
+  {nr: 7, period: 'Juli - September 2026', filiale: '402207: E-Bovenden-Industriestraße', de: 'Die Zahlen sind sehr besorgniserregend: bei einem Umsatz von nur 7.000-7.800 € pro Monat lagen die Personalkosten bei 15.128 € im Juli (216% vom Umsatz!), 6.281 € im August und 10.363 € im September. Das Ergebnis war entsprechend tief negativ: -14.668 € / -5.400 € / -10.782 €. Hier muss die Personalplanung dringend und grundlegend überarbeitet werden.', vi: 'Số liệu rất đáng lo: doanh thu chỉ 7.000-7.800 €/tháng nhưng chi phí nhân sự lên tới 15.128 € tháng 7 (216% doanh thu!), 6.281 € tháng 8 và 10.363 € tháng 9. Kết quả kinh doanh vì vậy âm rất nặng: -14.668 € / -5.400 € / -10.782 €. Cần xem lại và sắp xếp lại hoàn toàn kế hoạch nhân sự ở đây gấp.'},
+  {nr: 8, period: 'Juli - September 2026', filiale: '402240: R-Heilbad Heiligenstadt-Sperberwiese - Ihme', de: 'Drei starke Monate mit durchgehend positivem Ergebnis: +8.180 € / +7.998 € / +4.867 €, bei steigendem Umsatz (31.589 € → 33.292 €). Im September sind die Personalkosten auf 9.362 € gestiegen (vorher rund 5.000 €) - deshalb ist das Ergebnis trotz höherem Umsatz etwas niedriger ausgefallen. Insgesamt eine der stärksten Filialen im Gebiet.', vi: 'Ba tháng rất tốt với kết quả kinh doanh luôn dương: +8.180 € / +7.998 € / +4.867 €, doanh thu tăng dần (31.589 € → 33.292 €). Tháng 9 chi phí nhân sự tăng lên 9.362 € (trước đó khoảng 5.000 €) nên kết quả có giảm nhẹ dù doanh thu cao hơn. Nhìn chung đây là một trong những tiệm mạnh nhất của khu vực.'},
+  {nr: 9, period: 'Juli - September 2026', filiale: '402254: R-Kirchheim-Industriestraße - Messerschmidt', de: 'Der Umsatz ist spürbar gesunken: von 13.589 € im Juli auf 10.526 € im September (-22,5%). Die Personalkosten blieben mit rund 5.000 € pro Monat gleich, wurden dadurch aber im Verhältnis zum Umsatz immer schwerer (37% → 47,5%). Das Ergebnis drehte entsprechend von +1.597 € auf -1.427 €. Der Umsatzrückgang ist hier das zentrale Thema.', vi: 'Doanh thu giảm rõ rệt: từ 13.589 € tháng 7 xuống 10.526 € tháng 9 (-22,5%). Chi phí nhân sự vẫn giữ khoảng 5.000 €/tháng, nhưng vì doanh thu giảm nên tỷ lệ này ngày càng nặng hơn (37% → 47,5%). Kết quả kinh doanh vì vậy chuyển từ +1.597 € sang -1.427 €. Vấn đề chính ở đây là doanh thu đang đi xuống.'},
+  {nr: 10, period: 'Juli - September 2026', filiale: '402257: E-Northeim-Robert-Schnabel-Str. - Schnabel', de: 'Die Zahlen schwankten stark: Umsatz zwischen 9.051 € und 10.731 €, Ergebnis zwischen -3.190 € (Juli), +2.081 € (August) und -5.495 € (September). Im September ist bei niedrigerem Wareneinsatz (1.978 €) trotzdem ein deutliches Minus entstanden - das lohnt einen genaueren Blick auf diesen Monat.', vi: 'Số liệu dao động mạnh: doanh thu từ 9.051 € đến 10.731 €, kết quả kinh doanh từ -3.190 € (tháng 7), +2.081 € (tháng 8) đến -5.495 € (tháng 9). Tháng 9 dù chi phí hàng hóa thấp (1.978 €) nhưng vẫn lỗ nặng - nên xem lại kỹ tháng này.'},
+  {nr: 11, period: 'Juli - September 2026', filiale: '402286: K-Göttingen-Am Kauf Park', de: 'Drei Monate durchgehend im Plus: +3.277 € / +5.041 € / +2.661 €, trotz leicht sinkendem Umsatz (14.666 € → 13.181 €). Die niedrigen Personalkosten (zwischen 1.663 € und 3.799 €) haben das gut aufgefangen. Gute, stabile Kostenkontrolle.', vi: 'Ba tháng đều có lợi nhuận: +3.277 € / +5.041 € / +2.661 €, dù doanh thu giảm nhẹ (14.666 € → 13.181 €). Chi phí nhân sự thấp (từ 1.663 € đến 3.799 €) đã bù lại tốt. Kiểm soát chi phí ổn định và tốt.'},
+  {nr: 12, period: 'Juli - September 2026', filiale: '402297: MK-Einbeck-Altendorfer Tor', de: 'Der Umsatz blieb mit 17.400-18.400 € stabil. Das Ergebnis schwankte: +3.106 € im Juli, -1.602 € im August (hohe Personalkosten von 8.828 €), dann +7.512 € im September als stärkster Monat. Insgesamt eine positive Entwicklung zum Ende des Quartals.', vi: 'Doanh thu giữ ổn định ở mức 17.400-18.400 €. Kết quả kinh doanh dao động: +3.106 € tháng 7, -1.602 € tháng 8 (chi phí nhân sự cao 8.828 €), rồi +7.512 € tháng 9 là tháng mạnh nhất. Nhìn chung xu hướng cuối quý khá tích cực.'},
+  {nr: 13, period: 'Juli - September 2026', filiale: '402501: T-Göttingen-Weender Str.', de: 'Alle drei Monate waren negativ: -4.032 € / -2.843 € / -3.494 €. Der Umsatz ist mit 5.439-5.945 € sehr niedrig, während die Kosten (Wareneinsatz + Personal) zusammen regelmäßig über der Hälfte des Umsatzes liegen. Hier braucht es ein grundsätzliches Gespräch, wie der Umsatz an diesem Standort gesteigert werden kann.', vi: 'Cả 3 tháng đều âm: -4.032 € / -2.843 € / -3.494 €. Doanh thu rất thấp, chỉ 5.439-5.945 €, trong khi tổng chi phí (hàng hóa + nhân sự) thường vượt quá một nửa doanh thu. Cần một hướng giải quyết căn bản để tăng doanh thu tại địa điểm này.'},
+  {nr: 14, period: 'Juli - September 2026', filiale: '402502: T-Göttingen-An-der-Lutter', de: 'Solide drei Monate: Umsatz stabil bis leicht steigend (16.716 € → 17.449 €), Ergebnis durchgehend positiv mit +3.726 € / +1.848 € / +3.015 €. Gute, verlässliche Entwicklung.', vi: 'Ba tháng ổn định: doanh thu giữ vững và tăng nhẹ (16.716 € → 17.449 €), kết quả kinh doanh luôn dương với +3.726 € / +1.848 € / +3.015 €. Đây là sự phát triển tốt và đáng tin cậy.'},
+  {nr: 15, period: 'Juni - August 2026', filiale: '402133: K-Köln-Thebäerstraße', de: 'Der Verlust wird größer: von -2.017 € im Juni auf -4.146 € im August, bei fast gleichbleibendem Umsatz (rund 10.700-12.700 €). Die Personalkosten sind im August auf fast 49 % vom Umsatz gestiegen. Hier braucht es eine genauere Prüfung, was die Kosten treibt.', vi: 'Khoản lỗ đang tăng dần: từ -2.017 € tháng 6 lên -4.146 € tháng 8, trong khi doanh thu gần như không đổi (khoảng 10.700-12.700 €). Chi phí nhân sự tháng 8 đã tăng lên gần 49% doanh thu. Cần xem kỹ hơn nguyên nhân chi phí tăng.'},
+  {nr: 16, period: 'Juni - August 2026', filiale: '402167: R-Düsseldorf-Hauptstr.', de: 'Nach zwei guten Monaten (2.210 € und 3.268 € Gewinn) ist der August mit -217 € knapp ins Minus gerutscht - der Umsatz ist im August spürbar gesunken (von 33.442 € auf 28.475 €), bei fast gleichbleibenden Kosten. Hier lohnt sich ein Blick, woher der Umsatzrückgang kommt.', vi: 'Sau 2 tháng tốt (lãi 2.210 € và 3.268 €), tháng 8 bị lỗ nhẹ -217 € - doanh thu tháng 8 giảm rõ rệt (từ 33.442 € xuống 28.475 €) trong khi chi phí gần như không đổi. Nên xem lại nguyên nhân doanh thu giảm.'},
+  {nr: 17, period: 'Juni - August 2026', filiale: '402185: K-Hagen-Auf dem Lölfert', de: 'Nach zwei Monaten mit kleinem Verlust steht der August erstmals im Plus (130 €), bei stabilem Umsatz um 13.300 €. Ein kleiner, aber wichtiger Schritt in die richtige Richtung.', vi: 'Sau 2 tháng lỗ nhẹ, tháng 8 lần đầu có lãi (130 €), trong khi doanh thu ổn định quanh mức 13.300 €. Một bước tiến nhỏ nhưng đúng hướng.'},
+  {nr: 18, period: 'Juni - August 2026', filiale: '402205: R-Hattingen-Heggerstraße', de: 'Durchgehend hohe Verluste: -5.219 € im Juni, -4.877 € im August, bei niedrigem Umsatz (zwischen 7.400 € und 8.500 €). Material- und Personalkosten liegen zusammen bei über 100 % vom Umsatz - das ist auf Dauer nicht tragbar und braucht dringend eine Lösung.', vi: 'Lỗ nặng liên tục: -5.219 € tháng 6, -4.877 € tháng 8, trong khi doanh thu thấp (chỉ 7.400-8.500 €). Chi phí nguyên liệu và nhân sự cộng lại vượt quá 100% doanh thu - tình trạng này không thể kéo dài, cần giải pháp gấp.'},
+  {nr: 19, period: 'Juni - August 2026', filiale: '402251: R-Düsseldorf-Zeppelinstraße', de: 'Das Ergebnis schwankt stark: Juli noch 1.329 € Gewinn, im August dann -3.054 € Verlust - auch der Umsatz ist im August deutlich gesunken (von 11.176 € auf 9.453 €) bei gleichzeitig gestiegenen Materialkosten (55 % vom Umsatz). Der August sollte genauer angeschaut werden.', vi: 'Kết quả dao động mạnh: tháng 7 còn lãi 1.329 €, tháng 8 lại lỗ -3.054 € - doanh thu tháng 8 cũng giảm rõ rệt (từ 11.176 € xuống 9.453 €) trong khi chi phí nguyên liệu tăng lên 55% doanh thu. Nên xem kỹ lại tháng 8.'},
+  {nr: 20, period: 'Juni - August 2026', filiale: '402261: R-Hilden-Mittelstraße', de: 'Kleine, aber durchgehende Verluste (-169 €, -100 €, -688 €) bei stabilem Umsatz um 17.000-20.000 €. Die Zahlen sind knapp, Material- und Personalkosten zusammen liegen bei rund 68 % vom Umsatz - mit kleinen Anpassungen sollte hier ein Plus möglich sein.', vi: 'Lỗ nhỏ nhưng liên tục (-169 €, -100 €, -688 €) dù doanh thu ổn định quanh 17.000-20.000 €. Con số khá sát, chi phí nguyên liệu và nhân sự cộng lại chiếm khoảng 68% doanh thu - chỉ cần điều chỉnh nhỏ là có thể có lãi.'},
+  {nr: 21, period: 'Juni - August 2026', filiale: '402272: R-Düsseldorf-Münsterstraße', de: 'Starke Schwankungen: -4.294 € im Juni, dann 2.190 € Gewinn im Juli, im August wieder -1.505 € Verlust. Der Umsatz schwankt ähnlich stark (zwischen 15.000 € und 17.300 €) - hier wäre mehr Konstanz hilfreich.', vi: 'Biến động mạnh: -4.294 € tháng 6, rồi lãi 2.190 € tháng 7, tháng 8 lại lỗ -1.505 €. Doanh thu cũng dao động tương tự (từ 15.000 đến 17.300 €) - cần sự ổn định hơn.'},
+  {nr: 22, period: 'Juni - August 2026', filiale: '402302: R-Neuss-Allerheiligen-Am alten Bach - Friedrich', de: 'Nach zwei soliden Monaten (940 € und 1.205 € Gewinn) steht der August mit -850 € im Minus, bei gesunkenem Umsatz (von 20.588 € auf 16.839 €) und leicht gestiegenen Personalkosten. Den Umsatzrückgang im August im Blick behalten.', vi: 'Sau 2 tháng ổn (lãi 940 € và 1.205 €), tháng 8 lỗ -850 €, doanh thu giảm (từ 20.588 € xuống 16.839 €) và chi phí nhân sự tăng nhẹ. Cần theo dõi nguyên nhân doanh thu giảm trong tháng 8.'},
+  {nr: 23, period: 'Juni - August 2026', filiale: '402310: R-Wuppertal-Ascheweg - Brücken Kaufpark', de: 'Schwankendes Bild: -1.939 € im Juni, kurz ein kleines Plus im Juli (362 €), im August wieder -1.375 € Verlust. Umsatz und Kosten bewegen sich im ähnlichen Rahmen - mehr Stabilität wäre wünschenswert.', vi: 'Kết quả dao động: -1.939 € tháng 6, có lãi nhẹ tháng 7 (362 €), tháng 8 lại lỗ -1.375 €. Doanh thu và chi phí biến động tương tự - cần sự ổn định hơn.'},
+  {nr: 24, period: 'Juni - August 2026', filiale: '402315: R-Bochum-Viktoriastraße - Mert', de: 'Konstant gute Zahlen: in allen drei Monaten ein Gewinn zwischen rund 1.500 € und 2.100 €, bei stabilen Kosten. Weiter so!', vi: 'Kết quả ổn định tốt: cả 3 tháng đều có lãi khoảng 1.500-2.100 €, chi phí ổn định. Tiếp tục phát huy!'},
+  {nr: 25, period: 'Juni - August 2026', filiale: '402363: R-Bergneustadt-Stadionstr.', de: 'Der Verlust wird größer: von rund -1.200 € in Juni/Juli auf -3.044 € im August - dort sind die Personalkosten stark gestiegen (auf 8.909 €, fast 53 % vom Umsatz). Hier braucht es einen genaueren Blick auf die Personalplanung.', vi: 'Khoản lỗ đang tăng: từ khoảng -1.200 € tháng 6/7 lên -3.044 € tháng 8 - chi phí nhân sự tháng 8 tăng mạnh (lên 8.909 €, gần 53% doanh thu). Cần xem kỹ lại việc sắp xếp nhân sự.'},
+  {nr: 26, period: 'Juni - August 2026', filiale: '402414: E-Bergheim-Dansweilerstraße - Fischenich', de: 'Schöne Entwicklung: vom Verlust im Juni (-1.547 €) über 1.418 € im Juli bis zu 2.479 € Gewinn im August - vor allem durch deutlich gesunkene Personalkosten (von 4.295 € auf 1.296 €). Guter Trend.', vi: 'Phát triển tốt: từ lỗ tháng 6 (-1.547 €), lãi 1.418 € tháng 7, đến 2.479 € tháng 8 - chủ yếu nhờ chi phí nhân sự giảm mạnh (từ 4.295 € xuống 1.296 €). Xu hướng tích cực.'},
+  {nr: 27, period: 'Juni - August 2026', filiale: '402416: R-Bergisch Gladbach-Odenthaler Str. - Gärtner', de: 'Durchgehend positiv: 518 €, 439 € und 1.071 € Gewinn in den drei Monaten - und das, obwohl der Umsatz leicht gesunken ist (von 20.102 € auf 17.196 €). Die Kosten wurden gut im Griff behalten, das zeigt sich im August besonders gut.', vi: 'Liên tục có lãi: 518 €, 439 € và 1.071 € trong 3 tháng - dù doanh thu giảm nhẹ (từ 20.102 € xuống 17.196 €). Chi phí được kiểm soát tốt, đặc biệt rõ ở tháng 8.'},
+  {nr: 28, period: 'Juni - August 2026', filiale: '402422: E-Leverkusen-Pommernstraße', de: 'Der August fällt deutlich ab: nach fast ausgeglichenen Monaten (-748 € und 120 €) steht hier ein Verlust von -3.523 € - der Umsatz ist im August stark gesunken (von 36.103 € auf 27.934 €) bei gleichbleibend hohen Kosten. Der Umsatzrückgang im August sollte geklärt werden.', vi: 'Tháng 8 giảm rõ rệt: sau 2 tháng gần như hòa vốn (-748 € và 120 €), tháng 8 lỗ -3.523 € - doanh thu tháng 8 giảm mạnh (từ 36.103 € xuống 27.934 €) trong khi chi phí vẫn cao. Cần tìm hiểu nguyên nhân doanh thu giảm trong tháng 8.'},
+  {nr: 29, period: 'Juni - August 2026', filiale: '402507: K-Wesel-Rudolf-Diesel-Straße', de: 'Durchgehend Verlust in allen drei Monaten (-2.334 €, -4.229 €, -3.185 €), bei stabilem Umsatz um 13.500-14.700 €. Material- und Personalkosten zusammen liegen bei über 80 % vom Umsatz - hier braucht es eine genauere Prüfung der Kostenstruktur.', vi: 'Lỗ liên tục cả 3 tháng (-2.334 €, -4.229 €, -3.185 €), trong khi doanh thu ổn định quanh 13.500-14.700 €. Chi phí nguyên liệu và nhân sự cộng lại vượt quá 80% doanh thu - cần xem xét kỹ lại cơ cấu chi phí.'},
+  {nr: 30, period: 'Juni - August 2026', filiale: '402512: R-Remscheid-Wupperstraße', de: 'Der Verlust wird im August deutlich größer (-4.468 €) bei gleichzeitig gesunkenem Umsatz (von 8.636 € auf 6.843 €) und gestiegenen Personalkosten (57 % vom Umsatz). Diese Filiale braucht dringend eine genauere Betrachtung.', vi: 'Khoản lỗ tăng rõ rệt vào tháng 8 (-4.468 €), trong khi doanh thu giảm (từ 8.636 € xuống 6.843 €) và chi phí nhân sự tăng lên 57% doanh thu. Chi nhánh này cần được xem xét kỹ gấp.'},
+  {nr: 31, period: 'Juni - August 2026', filiale: '402523: K-Essen-Haedenkampstraße', de: 'Nach einem kleinen Plus im Juli (494 €) steht der August mit -4.715 € deutlich im Minus - die Personalkosten sind dabei stark gestiegen (auf 7.058 €, über 63 % vom Umsatz) bei gleichzeitig gesunkenem Umsatz. Der August sollte genauer angeschaut werden.', vi: 'Sau khoản lãi nhỏ tháng 7 (494 €), tháng 8 lỗ nặng -4.715 € - chi phí nhân sự tăng mạnh (lên 7.058 €, hơn 63% doanh thu) trong khi doanh thu giảm. Nên xem kỹ lại tháng 8.'},
 ];
-function kpiDraftsSentMap(){ try{ return JSON.parse(localStorage.getItem('sc_kpi_drafts_sent')||'{}'); }catch(e){ return {}; } }
+
+// Versand-Status wird über period+filiale geführt, nicht über nr - nr
+// verschiebt sich jedes Mal, wenn eine neue PDF-Runde Filialen mitten in die
+// Liste einfügt (passiert am 15.10.2026), und ein reiner nr-Schlüssel hätte
+// dann den "gesendet"-Status stillschweigend der falschen Filiale zugeordnet.
+function kpiDraftsSentKey(d){ return d.period+'::'+d.filiale; }
+function kpiDraftsSentMap(){ try{ return JSON.parse(localStorage.getItem('sc_kpi_drafts_sent_v2')||'{}'); }catch(e){ return {}; } }
+function kpiDraftsSaveSentMap(m){ localStorage.setItem('sc_kpi_drafts_sent_v2', JSON.stringify(m)); }
+// Einmalige Migration der alten, nr-basierten Versand-Flags (vor 15.10.2026)
+// auf den neuen period+filiale-Schlüssel, anhand des eingefrorenen alten
+// Zustands in KPI_LEGACY_NR_MAP - danach nie wieder nötig.
+function kpiDraftsMigrateLegacy(){
+  if(localStorage.getItem('sc_kpi_drafts_migrated_v2')) return;
+  try{
+    var legacy=JSON.parse(localStorage.getItem('sc_kpi_drafts_sent')||'{}');
+    var migrated=kpiDraftsSentMap();
+    Object.keys(legacy).forEach(function(nr){
+      if(!legacy[nr]) return;
+      var meta=KPI_LEGACY_NR_MAP[nr]; if(!meta) return;
+      var key=meta.period+'::'+meta.filiale;
+      if(!migrated[key]) migrated[key]={at:null};
+    });
+    kpiDraftsSaveSentMap(migrated);
+  }catch(e){}
+  localStorage.setItem('sc_kpi_drafts_migrated_v2','1');
+}
 function kpiDraftsRender(){
   var box=document.getElementById('kpi-drafts-list'); if(!box) return;
+  kpiDraftsMigrateLegacy();
   var sent=kpiDraftsSentMap();
-  box.innerHTML=KPI_DRAFTS.map(function(d,i){
-    var isSent=!!sent[d.nr];
-    var combined=d.de+'\n\n---\n\n'+d.vi;
-    return '<div class="card" style="margin-top:10px;background:var(--bg)">'
-      +'<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px">'
-      +'<b style="font-size:13px">'+d.filiale+'</b>'
-      +(isSent?'<span class="badge badge-grn">✓ Gesendet</span>':'')
-      +'</div>'
-      +'<textarea id="kpi-draft-'+i+'" style="min-height:110px;font-size:13px">'+combined.replace(/</g,'&lt;')+'</textarea>'
-      +'<div class="btn-row" style="margin-top:6px">'
-      +'<button class="btn btn-grn" style="flex:1;justify-content:center" onclick="kpiDraftSend('+i+')">📤 '+(isSent?'Erneut senden':'Senden')+'</button>'
-      +'</div></div>';
+  var groups=[]; var byPeriod={};
+  KPI_DRAFTS.forEach(function(d,i){
+    if(!byPeriod[d.period]){ byPeriod[d.period]={period:d.period, items:[]}; groups.push(byPeriod[d.period]); }
+    byPeriod[d.period].items.push({d:d, idx:i});
+  });
+  box.innerHTML=groups.map(function(g,gi){
+    var doneCount=g.items.filter(function(it){ return !!sent[kpiDraftsSentKey(it.d)]; }).length;
+    var allDone=doneCount===g.items.length;
+    var expand=gi===0; // neueste Auswertung standardmäßig aufgeklappt, ältere eingeklappt
+    return '<div class="card '+(expand?'':'card-collapsed')+'" style="margin-top:10px">'
+      +'<div class="card-title card-toggle" onclick="cardCollapseToggle(this)"><span class="card-caret">'+(expand?'▾':'▸')+'</span>📅 '+g.period
+      +' <span class="badge '+(allDone?'badge-grn':'badge-blu')+'">'+doneCount+'/'+g.items.length+' gesendet</span></div>'
+      +g.items.map(function(it){
+        var d=it.d, i=it.idx, isSent=!!sent[kpiDraftsSentKey(d)];
+        var sentAt=isSent&&sent[kpiDraftsSentKey(d)].at?new Date(sent[kpiDraftsSentKey(d)].at).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}):'';
+        var combined=d.de+'\n\n---\n\n'+d.vi;
+        return '<div class="card card-collapsed" style="margin-top:8px;background:var(--bg)">'
+          +'<div class="card-title card-toggle" style="font-size:13px;margin-bottom:0" onclick="cardCollapseToggle(this)"><span class="card-caret">▸</span>'+d.filiale
+          +(isSent?' <span class="badge badge-grn">✓ Gesendet'+(sentAt?(' '+sentAt):'')+'</span>':'')
+          +'</div>'
+          +'<div style="margin-top:14px">'
+          +'<textarea id="kpi-draft-'+i+'" style="min-height:110px;font-size:13px">'+combined.replace(/</g,'&lt;')+'</textarea>'
+          +'<div class="btn-row" style="margin-top:6px">'
+          +'<button class="btn '+(isSent?'':'btn-grn')+'" style="flex:1;justify-content:center" onclick="kpiDraftSend('+i+')">'+(isSent?'🔒 Erneut senden (mit Bestätigung)':'📤 Senden')+'</button>'
+          +'</div></div></div>';
+      }).join('')
+      +'</div>';
   }).join('');
 }
 function kpiDraftSend(i){
   if(!fbReady||!fbDb||!fbManager){ alert('Bitte zuerst als Manager anmelden (Einstellungen).'); return; }
   var d=KPI_DRAFTS[i]; if(!d) return;
+  var key=kpiDraftsSentKey(d);
+  var sent=kpiDraftsSentMap();
+  if(sent[key]){
+    var sentAt=sent[key].at?new Date(sent[key].at).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}):'unbekanntem Datum';
+    if(!confirm('Diese Nachricht an "'+d.filiale+'" ('+d.period+') wurde bereits am '+sentAt+' gesendet.\n\nTrotzdem erneut senden?')) return;
+  }
   var ta=document.getElementById('kpi-draft-'+i); var txt=ta?ta.value.trim():'';
   if(!txt){ alert('Text ist leer.'); return; }
   fbDb.collection('news').add({text:txt, img:null, filiale:d.filiale, region:activeRegion||null, created:new Date().toISOString()})
     .then(function(){
-      var sent=kpiDraftsSentMap(); sent[d.nr]=true; localStorage.setItem('sc_kpi_drafts_sent', JSON.stringify(sent));
+      var sent2=kpiDraftsSentMap(); sent2[key]={at:new Date().toISOString()}; kpiDraftsSaveSentMap(sent2);
       toast('📤 An '+d.filiale+' gesendet');
       kpiDraftsRender();
     })

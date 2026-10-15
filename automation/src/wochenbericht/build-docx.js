@@ -210,7 +210,7 @@ async function main() {
         ...cfg.nextSteps.map((n) => new Paragraph({ bullet: { level: 0 }, spacing: { after: 100 }, children: [new TextRun({ text: n, size: 20, color: INK })] })),
 
         new Paragraph({ spacing: { before: 300 }, border: { top: { style: BorderStyle.SINGLE, size: 4, color: BORDER_GRAY, space: 8 } }, children: [
-          new TextRun({ text: 'Datenquellen: Firestore filiale_umsatz (Welo-Statistik-Export, Monatswerte), filiale_produktion (Axonity, Tageswerte), tagesziel (Live-Berechnung). Bericht automatisiert aus echten Produktionsdaten erzeugt — keine geschätzten oder fiktiven Zahlen.', size: 16, color: MUTED }),
+          new TextRun({ text: 'Datenquellen: Firestore filiale_umsatz (Welo-Statistik-Export, Monatswerte), filiale_produktion (Axonity, Tageswerte), tagesziel (Live-Berechnung). Bericht automatisiert aus echten Produktionsdaten erzeugt - keine geschätzten oder fiktiven Zahlen.', size: 16, color: MUTED }),
         ] }),
       ],
     }],

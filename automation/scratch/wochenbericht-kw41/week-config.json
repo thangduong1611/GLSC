@@ -1,0 +1,36 @@
+{
+  "title": "Umsatz-Maßnahmenbericht",
+  "subtitle": "Kalenderwoche 41 · Dienstag, 6. Oktober 2026",
+  "author": "Thang Duc Duong",
+  "created": "06.10.2026",
+  "storesIntro": "Diese Woche im Fokus weiterhin dieselben drei Filialen. Die in den letzten Wochen geplanten Maßnahmen laufen inzwischen im normalen Betrieb - diese Woche ging es nur noch um die Durchführung, keine neuen Entscheidungen. KW40 (28.09.-04.10.) lässt sich dadurch nur eingeschränkt bewerten: der 03.10. ist der Tag der Deutschen Einheit (bundesweiter Feiertag), und für den 28.09. wurde bei allen drei Filialen ein Tagesumsatz von 0 € aufgezeichnet (vermutlich eine Datenlücke im Zeitraum des Monatsabschlusses/Inventur, da Kassenumsatz üblicherweise auch montags läuft). Ohne diese beiden Tage zeigen die verbleibenden vier echten Verkaufstage (Di. 29.09. bis Fr. 02.10.) eine klar bessere Zielerreichung als in KW39 - siehe Analyse je Filiale.",
+  "stores": [
+    {
+      "marktNr": "402240",
+      "name": "Heilbad Heiligenstadt",
+      "measure": "Die Anfang Oktober gestartete Testproduktion am Nachmittag läuft inzwischen im Regelbetrieb - keine neue Entscheidung diese Woche, nur Durchführung der bestehenden Schichtaufteilung.",
+      "measureShort": "Nachmittagsproduktion läuft seit Anfang Oktober im Regelbetrieb",
+      "analysis": "KW40 insgesamt (28.09.-04.10.): 5.602,38 € Ist gegen 8.972,56 € Ziel (62,4 %) - stark verzerrt durch den Feiertag am 03.10. und den auffälligen 0-€-Tag am 28.09. (vermutlich Datenlücke, kein echter Umsatzausfall). Rechnet man nur die vier bestätigten echten Verkaufstage (Di. 29.09. bis Fr. 02.10.), ergibt sich eine Zielerreichung von 107,8 % (5.602,38 € Ist gegen 5.195,28 € Ziel) - eine deutliche Verbesserung gegenüber KW39, als die Filiale an allen 7 Tagen bei 97,4 % lag. Das spricht dafür, dass die Nachmittagsproduktion im Regelbetrieb bereits Wirkung zeigt, auch wenn eine vollständige, feiertagsfreie Woche für eine endgültige Bewertung noch fehlt."
+    },
+    {
+      "marktNr": "402286",
+      "name": "Göttingen Kaufpark",
+      "measure": "Die laufenden Verkostungsaktionen werden trotz urlaubsbedingt dünner Personaldecke wie geplant durch den gesamten Oktober fortgeführt - diese Woche reine Fortführung, keine Anpassung nötig.",
+      "measureShort": "Verkostungsaktionen laufen planmäßig weiter (keine Anpassung nötig)",
+      "analysis": "KW40 insgesamt: 3.449,63 € Ist gegen 4.491,33 € Ziel (76,8 %), ebenfalls durch Feiertag (03.10.) und den 0-€-Tag am 28.09. verzerrt. An den vier echten Verkaufstagen (Di. 29.09.-Fr. 02.10.) wurde das Ziel mit 167,2 % (3.449,63 € Ist gegen 2.063,04 € Ziel) deutlich übertroffen - sogar noch stärker als KW39 (116,6 %), wo Göttingen Kaufpark schon die stärkste der drei Fokus-Filialen war. Die durchgehend fortgeführten Verkostungsaktionen scheinen trotz knapper Personaldecke weiterhin gut zu wirken."
+    },
+    {
+      "marktNr": "402146",
+      "name": "Bad Hersfeld",
+      "measure": "Die Suche nach einer Ersatzkraft läuft weiter; bis zur Einstellung übernehmen weiterhin Springer-Einsätze die Lücken - diese Woche keine neue Entwicklung, nur Fortführung der Übergangslösung.",
+      "measureShort": "Ersatzkraft-Suche läuft weiter, Springer überbrücken bis dahin",
+      "analysis": "KW40 insgesamt: 2.696,62 € Ist gegen 3.796,67 € Ziel (71,0 %), auch hier verzerrt durch Feiertag und den 0-€-Tag am 28.09. An den vier echten Verkaufstagen (Di. 29.09.-Fr. 02.10.) wurde das Ziel mit 125,2 % (2.696,62 € Ist gegen 2.154,49 € Ziel) übertroffen - eine klare Verbesserung gegenüber KW39 (93,6 %, Ziel noch nicht erreicht). Die Springer-Einsätze scheinen die Lücke bis zur Neueinstellung gut zu überbrücken; die monatliche Umsatz-Historie für diese Filiale fehlt im Welo-Export weiterhin (siehe unten)."
+    }
+  ],
+  "nextSteps": [
+    "Kostenstelle 402146 (Bad Hersfeld) weiterhin für den Welo-Statistik-Export nachtragen - fehlt seit KW39 noch immer, nur ein Monat (September) liegt vor.",
+    "Den 0-€-Tag vom 28.09. bei allen drei Filialen prüfen (Datenlücke vs. echter Vorfall), damit zukünftige Wochenvergleiche nicht verzerrt werden.",
+    "Nächste Woche (KW42, feiertagsfrei) für eine belastbare Bewertung aller drei Maßnahmen nutzen, da KW40 durch Feiertag und Datenlücke nur eingeschränkt aussagekräftig war.",
+    "Einstellungsprozess für die Ersatzkraft in Bad Hersfeld weiterverfolgen."
+  ]
+}

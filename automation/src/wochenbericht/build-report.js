@@ -194,7 +194,7 @@ function main() {
     ${cfg.nextSteps.map((n) => `<li>${n}</li>`).join('')}
   </ul>
 
-  <div class="footer-note">Datenquellen: Firestore <code>filiale_umsatz</code> (Welo-Statistik-Export, Monatswerte), <code>filiale_produktion</code> (Axonity, Tageswerte), <code>tagesziel</code> (Live-Berechnung). Bericht automatisiert aus echten Produktionsdaten erzeugt — keine geschätzten oder fiktiven Zahlen.</div>
+  <div class="footer-note">Datenquellen: Firestore <code>filiale_umsatz</code> (Welo-Statistik-Export, Monatswerte), <code>filiale_produktion</code> (Axonity, Tageswerte), <code>tagesziel</code> (Live-Berechnung). Bericht automatisiert aus echten Produktionsdaten erzeugt - keine geschätzten oder fiktiven Zahlen.</div>
 </body>
 </html>`;
 

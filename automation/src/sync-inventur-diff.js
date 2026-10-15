@@ -131,8 +131,17 @@ async function main() {
     throw new Error('Login bei Welo fehlgeschlagen: ' + err.message);
   }
 
+  // inventur_storemap/map ist eine alte, von Hand nachgetragene Liste und
+  // regelmäßig unvollständig (neue/spät zählende Filialen fehlen - live
+  // bemerkt bei Neuss, Bergneustadt, Bad Hersfeld am 30.09./01.10.2026).
+  // filialen_meta wird dagegen automatisch bei jeder Filiale aktuell gehalten
+  // und deckt bereits alle 48 bekannten Filialen ab - deshalb hier als
+  // vollständigere Quelle VORRANGIG genutzt, storeMap nur noch als Fallback
+  // für etwaige Sonderfälle, die dort nicht stehen.
   const storeMapDoc = await db.collection('inventur_storemap').doc('map').get();
   const storeMap = storeMapDoc.exists ? storeMapDoc.data() : {};
+  const filMetaSnap = await db.collection('filialen_meta').get();
+  filMetaSnap.forEach((doc) => { const x = doc.data(); if (x.marktNr && x.name) storeMap[x.marktNr] = x.name; });
 
   let geprueft = 0, offenGefunden = 0, fehler = 0;
   const batch = db.batch();
