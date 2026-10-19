@@ -229,6 +229,7 @@ input[type=text],input[type=date],input[type=month],input[type=time],input[type=
 .dp-shift:focus{background:#FFFBF0;border-radius:3px;}
 .dp-cell-frei{background:#F0EDE8;}.dp-cell-urlaub{background:#EAFAF1;}.dp-cell-krank{background:#FDEDEC;}
 .dp-cell-pend{background:#FEF6E6;}
+.dp-cell-locked{background:#F4F3F1;}
 .dp-pend-badge{display:block;font-size:8.5px;font-weight:700;color:#a06600;line-height:1.1;text-align:center;margin-top:1px;}
 .dp-cell-clash{box-shadow:inset 0 0 0 2px #C0392B;}
 .dp-other-badge{display:block;font-size:8.5px;font-weight:600;color:#6B6860;line-height:1.15;text-align:center;margin-top:1px;}
@@ -4245,12 +4246,21 @@ function dpRenderWeeks(){
   var hol=dpMonthHolidays();
   var weeks=dpGetWeeks(m),DAYS=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'],h='';
   dpRenderCopyStatus(weeks.length);
+  var dpToday=dpISO(new Date());
   weeks.forEach(function(wk,wi){
+    // Vergangene KW (letzter Tag < heute) ist fest schreibgeschützt — Auftrag
+    // t.duong 19.10.2026: veröffentlichte Pläne werden als Nachweis
+    // heruntergeladen, dürfen danach von NIEMANDEM mehr geändert werden
+    // (auch nicht vom Gebietsleiter selbst). Nur Darstellung/Client — siehe
+    // Plan-Dokument zu diesem Auftrag für die Begründung.
+    var wkPast=wk.dates[wk.dates.length-1]<dpToday;
     var isCopySrc=dpCopiedWeek&&dpCopiedWeek.srcIndex===wi;
-    var cpHtml='<button class="btn btn-sm" onclick="dpCopyWeek('+wi+')" title="Diese Woche kopieren">📋</button>'
+    var cpHtml=wkPast?'':('<button class="btn btn-sm" onclick="dpCopyWeek('+wi+')" title="Diese Woche kopieren">📋</button>'
       +(isCopySrc?'<span style="font-size:10.5px;color:#1A5276;font-weight:600">kopiert</span>'
-        :(dpCopiedWeek?'<button class="btn btn-sm" style="background:#1A5276;color:#fff;border-color:#1A5276" onclick="dpPasteWeek('+wi+')" title="Kopierte KW '+dpCopiedWeek.kw+' hier einfügen (überschreibt diese Woche)">📥</button>':''));
-    h+='<div class="card dp-kw-card"><div class="dp-kw-hdr"><span class="dp-kw-hdr-kw">KW: '+wk.kw+'</span>'+dpWeekMetaBadge(wk)+'<span class="dp-kw-hdr-pause">Pause &gt;6h: 30min · &gt;9h: 45min</span><span style="display:flex;align-items:center;gap:6px">'+cpHtml+'<button class="btn btn-sm btn-grn dp-kw-pub" onclick="dpPublishWeek('+wi+')" title="Nur diese Woche für Mitarbeiter veröffentlichen">☁️ KW</button><span class="dp-kw-hdr-yr">'+dpParse(wk.dates[0]).getFullYear()+'</span></span></div><div class="dp-scroll"><table class="dp-table"><thead><tr><th>Mitarbeiter</th>';
+        :(dpCopiedWeek?'<button class="btn btn-sm" style="background:#1A5276;color:#fff;border-color:#1A5276" onclick="dpPasteWeek('+wi+')" title="Kopierte KW '+dpCopiedWeek.kw+' hier einfügen (überschreibt diese Woche)">📥</button>':'')));
+    var pubBtnHtml=wkPast?'<span style="font-size:11px;color:var(--mut)" title="Vergangene Woche — als Nachweis schreibgeschützt">🔒 Abgeschlossen</span>'
+      :'<button class="btn btn-sm btn-grn dp-kw-pub" onclick="dpPublishWeek('+wi+')" title="Nur diese Woche für Mitarbeiter veröffentlichen">☁️ KW</button>';
+    h+='<div class="card dp-kw-card"><div class="dp-kw-hdr"><span class="dp-kw-hdr-kw">KW: '+wk.kw+'</span>'+dpWeekMetaBadge(wk)+'<span class="dp-kw-hdr-pause">Pause &gt;6h: 30min · &gt;9h: 45min</span><span style="display:flex;align-items:center;gap:6px">'+cpHtml+pubBtnHtml+'<span class="dp-kw-hdr-yr">'+dpParse(wk.dates[0]).getFullYear()+'</span></span></div><div class="dp-scroll"><table class="dp-table"><thead><tr><th>Mitarbeiter</th>';
     wk.dates.forEach(function(dt,di){var d=dpParse(dt),ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}),fn=hol[dt];h+='<th'+(fn?' class="dp-th-ft" title="'+fn+'"':'')+'>'+DAYS[di].substring(0,2)+'<br><small style="font-weight:400;font-size:10px">'+ds+'</small>'+(fn?'<br><small class="dp-fn">'+fn+'</small>':'')+'</th>';});
     h+='<th title="Summe Netto-Stunden diese Woche (Pause bereits abgezogen)">Std.</th>';
     h+='</tr></thead><tbody>';
@@ -4289,7 +4299,11 @@ function dpRenderWeeks(){
           var abs=dpAbs[eid]&&dpAbs[eid][dt];
           var stored=(dpShifts[ek]&&dpShifts[ek][dt])||'';
           var isF=!!hol[dt];
-          if(abs){
+          if(wkPast){
+            // Vergangene Woche: immer schreibgeschützt, unabhängig von abs/Urlaub/Krank.
+            var pastLbl=abs?(abs==='Urlaub'?'🌴 Urlaub':'🏥 Krank'):(stored||'–');
+            h+='<td class="dp-cell-locked'+(isF?' dp-cell-ft':'')+'" title="Vergangene Woche — schreibgeschützt (Nachweis)"><div style="padding:4px 2px;text-align:center;font-size:12px;color:var(--mut)">'+pastLbl+'</div></td>';
+          } else if(abs){
             var acls=abs==='Urlaub'?'dp-cell-urlaub':'dp-cell-krank';
             h+='<td class="'+acls+(isF?' dp-cell-ft':'')+'" title="Automatisch: '+abs+(stored?' (überschreibt: '+stored+')':'')+'"><div style="padding:4px 2px;text-align:center;font-size:12px;font-weight:600;color:'+(abs==='Urlaub'?'#1E8449':'#C0392B')+'">'+(abs==='Urlaub'?'🌴 Urlaub':'🏥 Krank')+'</div></td>';
           } else {
@@ -4428,36 +4442,17 @@ function dpEmpMasterPayload(e,f){
   return {name:e.name, filiale:f, active:true, region:activeRegion};
 }
 // Nur die aktuell geöffnete Filiale + Monat veröffentlichen (leichtgewichtig, gezielt)
-function dpPublishMonth(){
-  if(typeof fbReady==='undefined'||!fbReady||!fbDb||!fbManager){alert('Bitte zuerst als Manager anmelden (Einstellungen → ☁️ Cloud).');return;}
-  var f=dpGetFiliale(),m=document.getElementById('dp-month').value;
-  if(!f||!m){alert('Bitte Filiale und Monat wählen.');return;}
-  dpSaveFromDOM();dpStoreLS(dpKey(),{employees:dpEmployees,shifts:dpShifts});
-  var st=document.getElementById('dp-status');if(st)st.textContent='⏳ '+f+' · '+m+' wird veröffentlicht…';
-  // Ganzer Monat wird ersetzt -> jede KW gilt ab jetzt als "zuletzt vom Gebietsleiter" (überschreibt
-  // damit auch etwaige Shopleiter-Markierungen, korrekt so: der Monat wurde ja komplett neu geschrieben).
-  var email=(firebase.auth().currentUser&&firebase.auth().currentUser.email)||'?';
-  var nowIso=new Date().toISOString();
-  var newMeta={};
-  dpGetWeeks(m).forEach(function(w){ newMeta[w.dates[0]]={source:'gebietsleiter',by:email,at:nowIso}; });
-  var jobs=[fbDb.collection('plan').doc(fbSlug(f)+'__'+m).set({employees:dpEmployees,shifts:dpPruneShiftsToRoster(dpShifts),weekMeta:newMeta})];
-  dpEmployees.forEach(function(e){var p=dpEmpMasterPayload(e,f);if(p)jobs.push(fbDb.collection('emps').doc(''+e.id).set(p,{merge:true}));});
-  Promise.all(jobs).then(function(){dpDirty=false;if(st)st.textContent='✓ Veröffentlicht: '+f+' · '+fmtMonth(m);toast('☁️ '+f+' veröffentlicht');})
-    .catch(function(e){if(st)st.textContent='⚠️ '+e.message;alert('Fehler: '+e.message);});
-}
-// Nur EINE Woche veröffentlichen — überschreibt per Merge nur die Tage dieser KW
-function dpPublishWeek(wi){
-  if(typeof fbReady==='undefined'||!fbReady||!fbDb||!fbManager){alert('Bitte zuerst als Manager anmelden (Einstellungen → ☁️ Cloud).');return;}
-  var f=dpGetFiliale(),m=document.getElementById('dp-month').value;
-  if(!f||!m){alert('Bitte Filiale und Monat wählen.');return;}
-  dpSaveFromDOM();dpStoreLS(dpKey(),{employees:dpEmployees,shifts:dpShifts});
-  var weeks=dpGetWeeks(m),wk=weeks[wi];if(!wk)return;
-  var st=document.getElementById('dp-status');if(st)st.textContent='⏳ KW '+wk.kw+' wird veröffentlicht…';
+// Read-Modify-Write für GENAU EINE KW: liest Firestore IMMER frisch (nie den
+// u.U. veralteten dpShifts-Stand im Speicher), merged nur die Tage dieser KW
+// und lässt alle anderen Wochen unangetastet. Wird von dpPublishWeek() (1x)
+// UND dpPublishMonth() (nacheinander für jede KW, siehe dort) genutzt — ohne
+// dieses gemeinsame Muster würde set({shifts:partial},{merge:true}) die
+// anderen Wochen löschen, weil Firestore merge:true nur auf oberster Ebene
+// arbeitet (shifts wird als Ganzes ersetzt).
+function dpPublishWeekCore(f,m,wi){
+  var weeks=dpGetWeeks(m),wk=weeks[wi];if(!wk)return Promise.resolve(null);
   var ref=fbDb.collection('plan').doc(fbSlug(f)+'__'+m);
-  // Read-Modify-Write: erst vorhandene Schichten laden, dann nur diese KW überschreiben.
-  // Ohne dieses Muster würde set({shifts:partial},{merge:true}) die anderen Wochen löschen,
-  // weil Firestore merge:true nur auf oberster Ebene arbeitet (shifts wird als Ganzes ersetzt).
-  ref.get().then(function(doc){
+  return ref.get().then(function(doc){
     var existingShifts=(doc.exists&&doc.data().shifts)||{};
     var existingMeta=(doc.exists&&doc.data().weekMeta)||{};
     // Alle bisherigen Schichten übernehmen
@@ -4477,7 +4472,44 @@ function dpPublishWeek(wi){
     var jobs=[ref.set({employees:dpEmployees,shifts:dpPruneShiftsToRoster(merged),weekMeta:newMeta})];
     dpEmployees.forEach(function(e){var p=dpEmpMasterPayload(e,f);if(p)jobs.push(fbDb.collection('emps').doc(''+e.id).set(p,{merge:true}));});
     return Promise.all(jobs);
-  }).then(function(){dpDirty=false;if(st)st.textContent='✓ KW '+wk.kw+' veröffentlicht ('+f+')';toast('☁️ KW '+wk.kw+' veröffentlicht');})
+  }).then(function(){ return wk; });
+}
+// Nur EINE Woche veröffentlichen — überschreibt per Merge nur die Tage dieser KW
+function dpPublishWeek(wi){
+  if(typeof fbReady==='undefined'||!fbReady||!fbDb||!fbManager){alert('Bitte zuerst als Manager anmelden (Einstellungen → ☁️ Cloud).');return;}
+  var f=dpGetFiliale(),m=document.getElementById('dp-month').value;
+  if(!f||!m){alert('Bitte Filiale und Monat wählen.');return;}
+  dpSaveFromDOM();dpStoreLS(dpKey(),{employees:dpEmployees,shifts:dpShifts});
+  var st=document.getElementById('dp-status');
+  var weeks=dpGetWeeks(m),wk=weeks[wi];if(!wk)return;
+  if(st)st.textContent='⏳ KW '+wk.kw+' wird veröffentlicht…';
+  dpPublishWeekCore(f,m,wi).then(function(){dpDirty=false;if(st)st.textContent='✓ KW '+wk.kw+' veröffentlicht ('+f+')';toast('☁️ KW '+wk.kw+' veröffentlicht');})
+    .catch(function(e){if(st)st.textContent='⚠️ '+e.message;alert('Fehler: '+e.message);});
+}
+// Ganzen Monat veröffentlichen — ruft dpPublishWeekCore() NACHEINANDER für
+// jede KW auf (nie parallel: zwei gleichzeitige Read-Modify-Write-Zyklen auf
+// demselben Dokument würden sich gegenseitig überholen und die zuletzt
+// schreibende KW würde die davor geschriebene wieder verwerfen). Dadurch
+// liest jede KW Firestore unmittelbar vor dem Schreiben frisch — ein
+// veralteter dpShifts-Stand im Speicher (z.B. weil dpDirty den Live-Abgleich
+// in dpBindCloud() blockiert hat) kann dadurch höchstens die eigene, gerade
+// bearbeitete KW betreffen, nie mehr versehentlich eine fremde KW löschen.
+// (Auftrag t.duong 19.10.2026, nach echtem Datenverlust bei Homberg.)
+function dpPublishMonth(){
+  if(typeof fbReady==='undefined'||!fbReady||!fbDb||!fbManager){alert('Bitte zuerst als Manager anmelden (Einstellungen → ☁️ Cloud).');return;}
+  var f=dpGetFiliale(),m=document.getElementById('dp-month').value;
+  if(!f||!m){alert('Bitte Filiale und Monat wählen.');return;}
+  dpSaveFromDOM();dpStoreLS(dpKey(),{employees:dpEmployees,shifts:dpShifts});
+  var st=document.getElementById('dp-status');if(st)st.textContent='⏳ '+f+' · '+m+' wird veröffentlicht…';
+  var weeks=dpGetWeeks(m);
+  var chain=Promise.resolve();
+  weeks.forEach(function(w,wi){
+    chain=chain.then(function(){
+      if(st)st.textContent='⏳ '+f+' · '+m+' — KW '+w.kw+' …';
+      return dpPublishWeekCore(f,m,wi);
+    });
+  });
+  chain.then(function(){dpDirty=false;if(st)st.textContent='✓ Veröffentlicht: '+f+' · '+fmtMonth(m);toast('☁️ '+f+' veröffentlicht');})
     .catch(function(e){if(st)st.textContent='⚠️ '+e.message;alert('Fehler: '+e.message);});
 }
 var dpLastDoc=null,dpLastFname='';
@@ -5731,18 +5763,18 @@ async function fbPublish(){
       region:(bestehendeRegion[''+e.id]||activeRegion)
     },{merge:true}));
   });
-  var nPlan=0;
-  Object.keys(b.dienstplan).forEach(function(f){
-    Object.keys(b.dienstplan[f]).forEach(function(month){
-      nPlan++;
-      jobs.push(fbDb.collection('plan').doc(fbSlug(f)+'__'+month).set(b.dienstplan[f][month]));
-    });
-  });
+  // Dienstplan wird hier BEWUSST NICHT mehr mitveröffentlicht (Auftrag
+  // t.duong 19.10.2026, nach einem echten Datenverlust bei Homberg): diese
+  // Funktion schreibt aus buildMaBundle()'s localStorage-Cache, der nicht
+  // garantiert aktuell ist, und würde mit einem ungemergten .set() einen
+  // von Shopleiter/Vize zwischenzeitlich veröffentlichten Plan stillschweigend
+  // überschreiben. dpPublishWeek()/dpPublishMonth() lesen Firestore dagegen
+  // immer frisch und mergen nur die eigenen Änderungen — dafür da sind sie.
   jobs.push(fbDb.collection('meta').doc('config').set({managerWa:(localStorage.getItem('sc_manager_wa')||'')}));
   var stat=document.getElementById('ma-export-stat');
   if(stat) stat.textContent='⏳ Veröffentliche…';
   Promise.all(jobs).then(function(){
-    if(stat) stat.textContent='✓ Veröffentlicht: '+b.employees.length+' Mitarbeiter · '+nPlan+' Dienstplan-Monate';
+    if(stat) stat.textContent='✓ Veröffentlicht: '+b.employees.length+' Mitarbeiter';
     toast('☁️ Veröffentlicht');
   }).catch(function(e){ if(stat) stat.textContent='⚠️ Fehler: '+e.message; alert('Veröffentlichen fehlgeschlagen: '+e.message); });
 }

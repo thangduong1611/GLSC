@@ -701,16 +701,27 @@ async function syncAll() {
       const r = resolveRegion(p.marktNr);
       if (r) regionenDiesesLaufs.add(r);
     }
-    let deaktiviert = 0;
+    let deaktiviert = 0, uebersprungenVize = 0;
     for (const id of bestehendAktiv) {
       if (!personal[id] && regionenDiesesLaufs.has(bestehendeRegion[id])) {
+        // Personalnummern, die mit "5" beginnen, sind laut Konvention des
+        // Gebietsleiters Vize/Stellvertretung-Gebietsleitung bzw. ähnliche
+        // Springer-Rollen — die stehen strukturell NIE in Welos normaler
+        // Mitarbeiter-Liste (sie sind quasi Teil der Leitung, keine normalen
+        // Filial-Mitarbeiter), tauchen also jeden Tag als "fehlt in personal"
+        // auf und wurden dadurch laufend fälschlich auf active:false gesetzt.
+        // Auftrag t.duong 19.10.2026: diese ID-Klasse nie automatisch
+        // deaktivieren — ein echtes Ausscheiden wird für sie weiterhin per
+        // Hand (delEmp() in index.html) erfasst.
+        if (/^5/.test(id)) { uebersprungenVize++; continue; }
         empsBatch.set(db.collection(EMPS_COLLECTION).doc(id), { active: false, updatedAt: now, inactiveSince: now }, { merge: true });
         deaktiviert++;
       }
     }
     await empsBatch.commit();
     console.log(`✓ ${empsCount} Mitarbeiter in "${EMPS_COLLECTION}" aktualisiert, ${deaktiviert} als ausgeschieden markiert.`
-      + (empsOhneRegion ? ` ⚠️ ${empsOhneRegion} ohne Region (MARKTNR_REGION in branches.js prüfen).` : ''));
+      + (empsOhneRegion ? ` ⚠️ ${empsOhneRegion} ohne Region (MARKTNR_REGION in branches.js prüfen).` : '')
+      + (uebersprungenVize ? ` (${uebersprungenVize} Vize/Springer-ID(s) mit "5..." bewusst übersprungen.)` : ''));
 
     // Tagesziel: heute + robuste Vorjahres-Basis (geglättet / 2-Jahre-Fallback,
     // siehe Kommentar bei getTagesumsatzAlle/N1_GLAETTUNG_OFFSETS oben)
