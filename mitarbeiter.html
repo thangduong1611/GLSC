@@ -125,6 +125,8 @@ td.c-krank{background:var(--red-l);color:var(--red-d);font-weight:700;}
 /* Shopleiter-Planung: Hinweise direkt in der Zelle */
 .sl-pend-badge{display:block;font-size:9px;font-weight:700;color:#a06600;line-height:1.15;text-align:center;margin-top:2px;}
 .sl-meta-badge{font-size:11px;font-weight:700;color:#8A5A00;background:#FFF3D6;border:1px solid #F0C070;border-radius:6px;padding:2px 7px;white-space:nowrap;}
+.dp-week-meta{margin:10px 0 2px;}
+.dp-week-meta-badge{font-size:11px;font-weight:700;color:#8A5A00;background:#FFF3D6;border:1px solid #F0C070;border-radius:6px;padding:2px 7px;white-space:nowrap;}
 .sl-other-badge{display:block;font-size:9px;font-weight:600;color:var(--mut);line-height:1.2;text-align:center;margin-top:2px;}
 .sl-other-badge.clash{color:#C0392B;font-weight:700;}
 
@@ -1592,6 +1594,23 @@ function slLoadAdjacentPlan(filiale,month){
     slAdjPlan=doc.exists?{shifts:(doc.data().shifts||{}),weekMeta:(doc.data().weekMeta||{})}:{shifts:{},weekMeta:{}};
   }).catch(function(e){ console.warn('sl adjacent plan', e); slAdjPlan={shifts:{},weekMeta:{}}; });
 }
+// Liefert den TATSÄCHLICH im shifts-Objekt verwendeten Schlüssel für diesen
+// Mitarbeiter — Pendant zu dpResolveEmpKey() in index.html (gleiche
+// Begründung: Namen in "emps" werden täglich von sync-welo-personal.js
+// umformatiert, "id+'-'+Name"-Schlüssel können dadurch veralten). Gleiche
+// Fuzzy-Logik wie maMyShiftIn() weiter oben, hier für Lesen UND Schreiben in
+// der Planung verwendet, damit nie ein zweiter, paralleler Schlüssel für
+// dieselbe Person entsteht.
+function slResolveEmpKey(shiftsObj,emp){
+  var exact=slEmpKey(emp);
+  if(shiftsObj&&shiftsObj[exact]) return exact;
+  var id=''+(emp.id||'');
+  if(id&&shiftsObj){
+    var found=Object.keys(shiftsObj).find(function(k){ return k.indexOf(id+'-')===0; });
+    if(found) return found;
+  }
+  return exact;
+}
 function slApplyBoundaryMerge(){
   var adjShifts=slAdjPlan.shifts||{};
   Object.keys(adjShifts).forEach(function(ek){
@@ -2169,7 +2188,7 @@ function slRenderGrid(){
     h+='<th style="padding:6px 8px;text-align:center;background:var(--bg);min-width:70px">Σ KW</th>';
     h+='</tr></thead><tbody>';
     slEmps.forEach(function(emp){
-      var ek=slEmpKey(emp), empId0=''+(emp.id||'');
+      var ek=slResolveEmpKey(slShifts,emp), empId0=''+(emp.id||'');
       // Vertragsstunden in rot unter dem Namen - Auftrag t.duong 04.10.2026:
       // "số giờ làm theo hợp đồng ... mở ngoặc màu đỏ ngay dưới tên nhân viên".
       var sollTxt=slSollStdCache[empId0]!=null?('<br><span style="font-weight:400;font-size:10.5px;color:#C0392B">('+maFmtStd(slSollStdCache[empId0])+')</span>'):'';
@@ -2250,24 +2269,36 @@ function slPublishWeek(wi){
     var existingMeta=(doc.exists&&doc.data().weekMeta)||{};
     var merged={};
     Object.keys(existingShifts).forEach(function(ek){ merged[ek]=Object.assign({},existingShifts[ek]); });
+    // Schlüssel gegen die FRISCH gelesenen Firestore-Daten auflösen
+    // (slResolveEmpKey), damit bei abweichendem Namensformat kein zweiter,
+    // paralleler Schlüssel für dieselbe Person entsteht.
     slEmps.forEach(function(emp){
-      var ek=slEmpKey(emp);
+      var ek=slResolveEmpKey(merged,emp);
+      var srcKey=slResolveEmpKey(slShifts,emp);
       if(!merged[ek]) merged[ek]={};
-      wk.dates.forEach(function(dt){ merged[ek][dt]=(slShifts[ek]&&slShifts[ek][dt])||''; });
+      wk.dates.forEach(function(dt){ merged[ek][dt]=(slShifts[srcKey]&&slShifts[srcKey][dt])||''; });
     });
     // BUG gefunden+behoben 04.10.2026 (t.duong: Diem Thi Thanh Roth erschien
     // in Kirchheims Tabelle mit echten Schichten, obwohl sie längst nach
     // Baunatal gewechselt war): "existingEmps" + ungefiltertes "merged" oben
     // übernahmen JEDE jemals vorhandene Mitarbeiter-Schicht unverändert in
     // jede neue Veröffentlichung weiter - wer die Filiale verlassen hatte,
-    // blieb für immer als Geisterdaten im shifts-Objekt stehen. Gleiche Lücke
-    // wie der dpPruneShiftsToRoster()-Fix in index.html, hier aber nie
-    // nachgezogen, weil slPublishWeek() ein eigener, unabhängiger Schreibpfad
-    // ist. employees jetzt aus der AKTUELLEN Besetzung (slEmps), shifts auf
-    // genau diese Mitarbeiter beschränkt.
-    var keep={}; slEmps.forEach(function(emp){ keep[slEmpKey(emp)]=true; });
+    // blieb für immer als Geisterdaten im shifts-Objekt stehen. employees
+    // jetzt aus der AKTUELLEN Besetzung (slEmps), shifts auf genau diese
+    // Mitarbeiter beschränkt.
+    // WEITERE KORREKTUR 19.10.2026: der Vergleich lief nach VOLLEM Schlüssel
+    // (id+'-'+Name) statt nur nach ID — Namen in "emps" werden täglich von
+    // sync-welo-personal.js umformatiert, ein reiner Namensvergleich hätte
+    // dadurch (unabhängig von einem echten Filialwechsel) jeden Mitarbeiter
+    // mit geändertem Namensformat genauso fälschlich als "ausgeschieden"
+    // behandelt und seine Schichten gelöscht — exakt dieselbe Fehlerklasse
+    // wie beim Roth-Vorfall, nur mit anderem Auslöser.
+    var keepIds={}; slEmps.forEach(function(emp){ keepIds[''+(emp.id||'x')]=true; });
     var pruned={};
-    Object.keys(merged).forEach(function(ek){ if(keep[ek]) pruned[ek]=merged[ek]; });
+    Object.keys(merged).forEach(function(ek){
+      var dash=ek.indexOf('-'); var idPart=dash>=0?ek.slice(0,dash):ek;
+      if(keepIds[idPart]) pruned[ek]=merged[ek];
+    });
     // Markiert diese KW als "zuletzt vom Shopleiter" — der Gebietsleiter sieht das
     // dann als Warnhinweis im eigenen Dienstplan (dpWeekMetaBadge in index.html),
     // bevor er versehentlich drüberschreibt (Auftrag t.duong).
@@ -4020,6 +4051,14 @@ function maNetHoursOf(v){
 }
 function maFmtStd(n){ var r=Math.round(n*10)/10; return (''+r).replace('.',',')+' '+t('unit_std'); }
 
+// Pendant zu slWeekMetaBadge() (Planung) — für die persönliche "Mein
+// Dienstplan"-Ansicht jedes Mitarbeiters, nicht nur Shopleiter/Vize.
+function maWeekMetaLabel(wm){
+  var dt=wm.at?new Date(wm.at):null;
+  var ds=(dt&&!isNaN(dt))?dt.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+' '+dt.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}):'';
+  var who=wm.source==='gebietsleiter'?'🏢 Gebietsleitung':('🧑‍💼 '+(wm.by||'Shopleiter'));
+  return '<span class="dp-week-meta-badge" title="Veröffentlicht'+(ds?' am '+ds:'')+'">'+who+'</span>';
+}
 function maRenderDP(){
   var sess=maSession();if(!sess)return;
   maStartZweitUrlaubListeners(sess);
@@ -4062,7 +4101,7 @@ function maRenderDP(){
   // wiederverwendet.
   maWeekDownloadData=[];
   slGetWeeks(month).forEach(function(wk){
-    var weekRows=[];
+    var weekRows=[], weekHtml='';
     wk.dates.forEach(function(iso){
       if(iso.slice(0,7)!==month) return; // Woche kann in den Vormonat hineinreichen
       var d=iso.slice(8,10), m2=iso.slice(5,7);
@@ -4070,7 +4109,7 @@ function maRenderDP(){
       var dateCell='<div><div class="d-date">'+d+'.'+m2+'.</div><div class="d-wd">'+MA_WDF[dt.getDay()]+'</div></div>';
       if(myOv[iso]){
         any=true;
-        myH+='<div class="dp-day urlaub">'+dateCell+'<div class="d-val">'+maValDisp(myOv[iso])+'</div></div>';
+        weekHtml+='<div class="dp-day urlaub">'+dateCell+'<div class="d-val">'+maValDisp(myOv[iso])+'</div></div>';
         weekRows.push({iso:iso,txt:maValDisp(myOv[iso])});
         return;
       }
@@ -4090,10 +4129,19 @@ function maRenderDP(){
         txtParts.push(maValDisp(e.val)+(multi?(' ('+e.store+')'):'')+(net!=null?(' ≈'+maFmtStd(net)):''));
         return maValDisp(e.val)+badge+netHtml;
       }).join(' · ');
-      myH+='<div class="dp-day '+cls+'">'+dateCell+'<div class="d-val">'+valHtml+'</div></div>';
+      weekHtml+='<div class="dp-day '+cls+'">'+dateCell+'<div class="d-val">'+valHtml+'</div></div>';
       weekRows.push({iso:iso,txt:txtParts.join(' · ')});
     });
-    if(weekRows.length) maWeekDownloadData.push({kw:wk.kw,rows:weekRows});
+    if(weekRows.length){
+      // Zeigt, wer diese KW veröffentlicht hat — auch für normale Mitarbeiter,
+      // nicht nur Shopleiter/Vize (Auftrag t.duong 19.10.2026: "nhân viên bình
+      // thường cũng nên thấy được lịch làm là do người nào đã tạo").
+      var wm=null;
+      stores.forEach(function(store){ var p=plans[store]; if(!wm && p && p.weekMeta && p.weekMeta[wk.dates[0]]) wm=p.weekMeta[wk.dates[0]]; });
+      if(wm) myH+='<div class="dp-week-meta">'+maWeekMetaLabel(wm)+'</div>';
+      myH+=weekHtml;
+      maWeekDownloadData.push({kw:wk.kw,rows:weekRows});
+    }
   });
   if(!any)myH+='<div class="dp-day"><div class="d-val" style="color:var(--mut)">'+t('no_entries')+'</div></div>';
   if(maWeekDownloadData.length){

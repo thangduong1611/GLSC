@@ -4070,11 +4070,39 @@ function dpRemoveEmp(i){if(!confirm(dpEmployees[i].name+' entfernen?'))return;dp
 // schreibt dpShifts 1:1), und andere Filialen sehen ihn über dpLoadElsewhere()
 // weiterhin als "arbeitet dort auch" inkl. Doppelbelegungs-Warnung, obwohl er
 // längst aus der Liste entfernt wurde (Auftrag t.duong 28.09.2026).
+// Nur nach MITARBEITER-ID filtern, NICHT nach vollem Schlüssel (id+'-'+name) —
+// Auftrag t.duong 19.10.2026, nach einem live bestätigten Fast-Vorfall: Namen
+// in "emps" werden täglich von sync-welo-personal.js umformatiert ("Herr
+// Nachname, Vorname" -> "Vorname Nachname"). Ein Vergleich nach vollem
+// Schlüssel hätte jeden Mitarbeiter, dessen Name sich seit der letzten
+// Veröffentlichung geändert hat, hier fälschlich als "nicht mehr in der
+// Filiale" erkannt und seine komplette Monats-Schicht-Historie gelöscht —
+// exakt dieselbe Art Fehler wie der Roth/Baunatal-Vorfall vom 04.10.2026, nur
+// mit einem anderen Auslöser (Namensformat statt Filialwechsel).
 function dpPruneShiftsToRoster(shifts){
-  var keep={}; dpEmployees.forEach(function(e){ keep[dpEmpKey(e)]=true; });
+  var keep={}; dpEmployees.forEach(function(e){ keep[''+(e.id||'x')]=true; });
   var out={};
-  Object.keys(shifts).forEach(function(ek){ if(keep[ek]) out[ek]=shifts[ek]; });
+  Object.keys(shifts).forEach(function(ek){
+    var dash=ek.indexOf('-'); var idPart=dash>=0?ek.slice(0,dash):ek;
+    if(keep[idPart]) out[ek]=shifts[ek];
+  });
   return out;
+}
+// Liefert den TATSÄCHLICH im shifts-Objekt verwendeten Schlüssel für diesen
+// Mitarbeiter: exakter aktueller Name zuerst, sonst (falls der Name sich seit
+// der letzten Veröffentlichung geändert hat) jeder Schlüssel mit passender
+// ID — gleiche Fuzzy-Logik wie maMyShiftIn() in mitarbeiter.html, hier für
+// Lesen UND Schreiben verwendet, damit nie ein zweiter, paralleler Schlüssel
+// für dieselbe Person entsteht.
+function dpResolveEmpKey(shiftsObj,emp){
+  var exact=dpEmpKey(emp);
+  if(shiftsObj&&shiftsObj[exact]) return exact;
+  var id=''+(emp.id||'');
+  if(id&&shiftsObj){
+    var found=Object.keys(shiftsObj).find(function(k){ return k.indexOf(id+'-')===0; });
+    if(found) return found;
+  }
+  return exact;
 }
 // ── DATUM-HELFER (zeitzonensicher, lokale ISO ohne UTC-Verschiebung) ──
 function dpISO(d){return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);}
@@ -4313,7 +4341,7 @@ function dpRenderWeeks(){
     else{
       var dpAbs=dpAbsenceFor(), dpPend=dpPendingFor();
       dpEmployees.forEach(function(emp){
-        var ek=dpEmpKey(emp),eid=''+(emp.id||'');
+        var ek=dpResolveEmpKey(dpShifts,emp),eid=''+(emp.id||'');
         var zw=dpIsZweit(emp.id,dpGetFiliale());
         var az=dpAzKontoCache&&dpAzKontoCache[eid];
         var frist=dpFristenCache[eid];
@@ -4503,11 +4531,15 @@ function dpPublishWeekCore(f,m,wi){
     // Alle bisherigen Schichten übernehmen
     var merged={};
     Object.keys(existingShifts).forEach(function(ek){ merged[ek]=Object.assign({},existingShifts[ek]); });
-    // Nur die Tage dieser KW für aktuelle Mitarbeiter aktualisieren
+    // Nur die Tage dieser KW für aktuelle Mitarbeiter aktualisieren — Schlüssel
+    // gegen die FRISCH gelesenen Firestore-Daten auflösen (dpResolveEmpKey),
+    // damit bei abweichendem Namensformat kein zweiter, paralleler Schlüssel
+    // für dieselbe Person entsteht (siehe dpResolveEmpKey()-Kommentar oben).
     dpEmployees.forEach(function(emp){
-      var ek=dpEmpKey(emp);
+      var ek=dpResolveEmpKey(merged,emp);
+      var srcKey=dpResolveEmpKey(dpShifts,emp);
       if(!merged[ek]) merged[ek]={};
-      wk.dates.forEach(function(dt){ merged[ek][dt]=(dpShifts[ek]&&dpShifts[ek][dt])||''; });
+      wk.dates.forEach(function(dt){ merged[ek][dt]=(dpShifts[srcKey]&&dpShifts[srcKey][dt])||''; });
     });
     // Markiert NUR diese eine KW als "zuletzt vom Gebietsleiter" — andere Wochen (z.B. vom
     // Shopleiter) bleiben unangetastet, damit deren Markierung erhalten bleibt.
