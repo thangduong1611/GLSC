@@ -3945,10 +3945,54 @@ function dpInit(){
   var blSel=document.getElementById('dp-bundesland');if(blSel){var savedBl=localStorage.getItem('sc_dp_bl_'+f.replace(/\s+/g,'_').toLowerCase());if(savedBl)blSel.value=savedBl;}
   dpRenderEmpTags();dpRenderWeeks();dpPopulateAddSel();
   dpBindCloud(f,m);
+  dpLoadAdjacentPlan(f,m).then(function(){ dpApplyBoundaryMerge(); dpRenderWeeks(); });
   dpLoadElsewhere();
   dpLoadAzKonto();
   dpLoadWeloSuggest(f,m);
   dpLoadFristen();
+}
+// ── Monatsgrenzen-Wochen (Auftrag t.duong 19.10.2026) ──────────────────────
+// dpGetWeeks() baut jede KW als volle Mo-Sa-Woche — die erste KW eines Monats
+// reicht dadurch fast immer ein paar Tage in den VORHERIGEN Monat zurück, die
+// letzte KW manchmal in den NÄCHSTEN Monat hinein. Gespeichert wird aber
+// einzig im Dokument des gerade geöffneten Monats — wurde diese Rand-KW zuvor
+// unter dem JEWEILS ANDEREN Monat bearbeitet/veröffentlicht (z.B. im
+// September-Dokument, weil zu dem Zeitpunkt September geöffnet war), erscheint
+// sie hier leer, obwohl die echten Daten im Nachbar-Dokument liegen (live
+// bestätigt bei Hilden und Hattingen). dpApplyBoundaryMerge() füllt NUR die
+// dadurch leeren Zellen aus dem Nachbar-Dokument auf — dpPublishWeekCore()/
+// slPublishWeek() nehmen für jede KW ohnehin ungeprüft den aktuellen
+// dpShifts-Wert, brauchen also KEINE eigene Änderung: sobald dpShifts hier
+// korrekt vorbefüllt ist, schreibt ein künftiges Veröffentlichen dieser KW
+// automatisch die vollständigen Daten ins gerade offene Dokument (heilt die
+// Trennung von selbst, ohne Massen-Migrationsskript).
+var dpAdjPlan={shifts:{},weekMeta:{}}, dpAdjKey=null;
+function dpMonthShift(ym,delta){
+  var p=ym.split('-'); var d=new Date(+p[0],+p[1]-1+delta,1,12);
+  return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2);
+}
+function dpLoadAdjacentPlan(f,m){
+  var weeks=dpGetWeeks(m);
+  if(!weeks.length){ dpAdjPlan={shifts:{},weekMeta:{}}; dpAdjKey=null; return Promise.resolve(); }
+  var firstMonth=weeks[0].dates[0].slice(0,7);
+  var lastWk=weeks[weeks.length-1], lastMonth=lastWk.dates[lastWk.dates.length-1].slice(0,7);
+  var adjMonth=firstMonth!==m?firstMonth:(lastMonth!==m?lastMonth:null);
+  if(!adjMonth||typeof fbReady==='undefined'||!fbReady||!fbDb){ dpAdjPlan={shifts:{},weekMeta:{}}; dpAdjKey=null; return Promise.resolve(); }
+  var key=fbSlug(f)+'__'+adjMonth;
+  if(dpAdjKey===key) return Promise.resolve();
+  dpAdjKey=key;
+  return fbDb.collection('plan').doc(key).get().then(function(doc){
+    dpAdjPlan=doc.exists?{shifts:(doc.data().shifts||{}),weekMeta:(doc.data().weekMeta||{})}:{shifts:{},weekMeta:{}};
+  }).catch(function(e){ console.warn('dp adjacent plan', e); dpAdjPlan={shifts:{},weekMeta:{}}; });
+}
+function dpApplyBoundaryMerge(){
+  var adjShifts=dpAdjPlan.shifts||{};
+  Object.keys(adjShifts).forEach(function(ek){
+    var cur=dpShifts[ek]||(dpShifts[ek]={});
+    Object.keys(adjShifts[ek]).forEach(function(dt){
+      if(!cur[dt]) cur[dt]=adjShifts[ek][dt];
+    });
+  });
 }
 // AZ-Konto (Über-/Unterstunden-Saldo Vormonat, nur Monatslohn-Verträge) je
 // Mitarbeiter-ID — einmalig geladen (ändert sich nur 1x täglich per Cron,
@@ -3997,6 +4041,7 @@ function dpBindCloud(f,m){
     dpEmployees=(d.employees||dpEmployees).slice();
     dpShifts=d.shifts||{};
     dpWeekMeta=d.weekMeta||{};
+    dpApplyBoundaryMerge(); // Monatsgrenzen-KW aus dem Nachbar-Dokument auffüllen, falls hier leer
     dpStoreLS(dpKey(),{employees:dpEmployees,shifts:dpShifts});
     dpRenderEmpTags();dpRenderWeeks();
     var st=document.getElementById('dp-status'); if(st) st.textContent='☁️ Aktueller Stand aus der Cloud geladen.';
@@ -4233,7 +4278,7 @@ function dpRenderCellBadge(td,eid,dt,val){
 // Warnung vor sich selbst (Auftrag t.duong: vor versehentlichem Überschreiben
 // von Shopleiter-Plänen warnen, nicht jede Bearbeitung protokollieren).
 function dpWeekMetaBadge(wk){
-  var wm=dpWeekMeta[wk.dates[0]];
+  var wm=dpWeekMeta[wk.dates[0]]||dpAdjPlan.weekMeta[wk.dates[0]];
   if(!wm||wm.source!=='shopleiter') return '';
   var dt=wm.at?new Date(wm.at):null;
   var ds=(dt&&!isNaN(dt))?dt.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+' '+dt.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}):'';

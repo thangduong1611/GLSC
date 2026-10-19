@@ -1566,6 +1566,41 @@ function slFilChange(){
    Gebietsleiter in index.html veröffentlichter Dienstplan sofort hier
    erscheint, ohne dass Shopleiter/Vize neu laden müssen (Auftrag t.duong
    01.10.2026: "nếu Quản lý đăng lịch thì bên Vize thấy được nó luôn"). */
+// ── Monatsgrenzen-Wochen (Auftrag t.duong 19.10.2026, Pendant zu dpAdjPlan in
+// index.html — gleiche Begründung: slGetWeeks() baut jede KW als volle
+// Mo-Sa-Woche, die erste/letzte KW eines Monats reicht dadurch oft in den
+// Nachbarmonat hinein, dessen Daten aber im DORTIGEN Dokument liegen können.
+// slApplyBoundaryMerge() füllt nur die dadurch leeren Zellen auf;
+// slPublishWeek() nimmt für jede KW ohnehin den aktuellen slShifts-Wert,
+// braucht also keine eigene Änderung. ────────────────────────────────────
+var slAdjPlan={shifts:{},weekMeta:{}}, slAdjKey=null;
+function slMonthShift(ym,delta){
+  var p=ym.split('-'); var d=new Date(+p[0],+p[1]-1+delta,1,12);
+  return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2);
+}
+function slLoadAdjacentPlan(filiale,month){
+  var weeks=slGetWeeks(month);
+  if(!weeks.length){ slAdjPlan={shifts:{},weekMeta:{}}; slAdjKey=null; return Promise.resolve(); }
+  var firstMonth=weeks[0].dates[0].slice(0,7);
+  var lastWk=weeks[weeks.length-1], lastMonth=lastWk.dates[lastWk.dates.length-1].slice(0,7);
+  var adjMonth=firstMonth!==month?firstMonth:(lastMonth!==month?lastMonth:null);
+  if(!adjMonth||!fbReady||!fbDb){ slAdjPlan={shifts:{},weekMeta:{}}; slAdjKey=null; return Promise.resolve(); }
+  var key=slFbSlug(filiale)+'__'+adjMonth;
+  if(slAdjKey===key) return Promise.resolve();
+  slAdjKey=key;
+  return fbDb.collection('plan').doc(key).get().then(function(doc){
+    slAdjPlan=doc.exists?{shifts:(doc.data().shifts||{}),weekMeta:(doc.data().weekMeta||{})}:{shifts:{},weekMeta:{}};
+  }).catch(function(e){ console.warn('sl adjacent plan', e); slAdjPlan={shifts:{},weekMeta:{}}; });
+}
+function slApplyBoundaryMerge(){
+  var adjShifts=slAdjPlan.shifts||{};
+  Object.keys(adjShifts).forEach(function(ek){
+    var cur=slShifts[ek]||(slShifts[ek]={});
+    Object.keys(adjShifts[ek]).forEach(function(dt){
+      if(!cur[dt]) cur[dt]=adjShifts[ek][dt];
+    });
+  });
+}
 function slLoadPlan(){
   var sess=maSession(); if(!slIsPlanner(sess)||!fbReady||!fbDb) return;
   var m=document.getElementById('sl-month'); if(!m||!m.value) return;
@@ -1574,6 +1609,7 @@ function slLoadPlan(){
   if(slPlanUnsub && slPlanDocId===docId) return; // schon genau auf diesem Dok abonniert
   if(slPlanUnsub){ try{slPlanUnsub();}catch(e){} slPlanUnsub=null; }
   slPlanDocId=docId;
+  slLoadAdjacentPlan(filiale,month).then(function(){ slApplyBoundaryMerge(); slRenderGrid(); });
   var st=document.getElementById('sl-status'); if(st) st.textContent=t('sl_loading');
   // Mitarbeiter dieser Filiale aus der emps-Sammlung (unabhängig vom Plan,
   // damit die Wochen auch ohne bestehenden Plan sichtbar sind) - einmalig,
@@ -1597,6 +1633,7 @@ function slLoadPlan(){
       var raw=d.shifts||{};
       Object.keys(raw).forEach(function(ek){ slShifts[ek]=Object.assign({},raw[ek]); });
       slWeekMeta=d.weekMeta||{};
+      slApplyBoundaryMerge(); // Monatsgrenzen-KW aus dem Nachbar-Dokument auffüllen, falls hier leer
       slPlanLoaded=true;
       if(st){
         if(!slEmps.length) st.textContent='⚠️ '+t('sl_no_emps');
@@ -2094,7 +2131,7 @@ function slWTotHtml(empId,summe){
 // die KW veröffentlicht hat (Auftrag t.duong 19.10.2026: "cũng có thể thấy
 // nó được tạo bởi ai, giống như bên quản lý thấy ai đăng lịch").
 function slWeekMetaBadge(wk){
-  var wm=slWeekMeta[wk.dates[0]]; if(!wm) return '';
+  var wm=slWeekMeta[wk.dates[0]]||slAdjPlan.weekMeta[wk.dates[0]]; if(!wm) return '';
   var dt=wm.at?new Date(wm.at):null;
   var ds=(dt&&!isNaN(dt))?dt.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+' '+dt.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}):'';
   var who=wm.source==='gebietsleiter'?'🏢 Gebietsleitung':('🧑‍💼 '+(wm.by||'Shopleiter'));
