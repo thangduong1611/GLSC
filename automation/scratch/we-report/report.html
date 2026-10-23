@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Wareneingang – Problemauswertung</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: #2a2a2a; font-size: 12.5px; line-height: 1.5; margin: 0; }
+  h1 { font-size: 20px; margin: 0 0 4px; color: #1a1a1a; }
+  .subtitle { font-size: 12px; color: #666; margin: 0 0 18px; }
+  h2 { font-size: 14.5px; margin: 22px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #1E8449; color: #1a1a1a; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 4px; }
+  th { background: #F0F4F0; text-align: left; padding: 6px 8px; font-size: 11px; border-bottom: 2px solid #ccc; }
+  td { padding: 6px 8px; border-bottom: 1px solid #e5e5e5; vertical-align: top; font-size: 11.5px; }
+  tr:nth-child(even) td { background: #FAFBFA; }
+  .rank1 td:first-child, .rank2 td:first-child { font-weight: 700; }
+  .store-block { margin-bottom: 14px; padding: 10px 14px; background: #FAFAF8; border-left: 3px solid #1E8449; border-radius: 4px; }
+  .store-block.minor { border-left-color: #D4AC0D; }
+  .store-block h3 { margin: 0 0 4px; font-size: 13px; }
+  .store-block .meta { font-size: 10.5px; color: #888; margin-bottom: 6px; }
+  .store-block ul { margin: 4px 0 0; padding-left: 18px; }
+  .store-block li { margin-bottom: 3px; }
+  .note { background: #FFF9E6; border: 1px solid #F0D878; border-radius: 4px; padding: 8px 12px; font-size: 11px; margin-top: 10px; }
+  .footer { margin-top: 24px; font-size: 10px; color: #999; border-top: 1px solid #ddd; padding-top: 8px; }
+  .badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 1px 7px; border-radius: 10px; }
+  .badge-high { background: #FDECEA; color: #C0392B; }
+  .badge-mid { background: #FEF5E7; color: #B7950B; }
+  .badge-low { background: #EAFAF1; color: #1E8449; }
+</style>
+</head>
+<body>
+
+<h1>Wareneingang – Auswertung wiederkehrender Probleme</h1>
+<p class="subtitle">Zeitraum: 19.08.2026 – 14.10.2026 · Gebiete Ost + West · Quelle: Wareneingang-Meldungen aus der HR-App (35 Meldungen von Mitarbeitern vor Ort)</p>
+
+<h2>Übersicht: Filialen mit wiederkehrenden Problemen</h2>
+<table>
+  <thead><tr><th>Filiale</th><th>Echte Probleme</th><th>Zeitraum</th><th>Häufigster Problemtyp</th><th></th></tr></thead>
+  <tbody>
+    <tr class="rank1"><td>Leverkusen – Pommernstraße</td><td>7 von 7 Meldungen</td><td>15.09. – 13.10. (fast wöchentlich)</td><td>Frischware verdorben/welk + Fehlmengen</td><td><span class="badge badge-high">Hoch</span></td></tr>
+    <tr class="rank2"><td>Hagen – Auf dem Lölfert</td><td>3 von 4 Meldungen</td><td>16.09. – 06.10.</td><td>Fehlende Artikel (TK-Ware, Frischkäse)</td><td><span class="badge badge-mid">Mittel</span></td></tr>
+    <tr><td>Nordhausen – Darrweg</td><td>2 von 2 Meldungen</td><td>16.09. – 08.10.</td><td>Fehlmengen</td><td><span class="badge badge-mid">Mittel</span></td></tr>
+    <tr><td>Göttingen – Am Kauf Park</td><td>2 von 2 Meldungen</td><td>19.08. – 20.08.</td><td>Fehlmenge + nicht frisch</td><td><span class="badge badge-low">Beobachten</span></td></tr>
+    <tr><td>Homberg (Efze)</td><td>1 von 2 Meldungen</td><td>08.10.</td><td>Nicht frisch (Avocado)</td><td><span class="badge badge-low">Beobachten</span></td></tr>
+  </tbody>
+</table>
+
+<h2>Details je Filiale</h2>
+
+<div class="store-block">
+  <h3>1. Leverkusen – Pommernstraße <span class="badge badge-high">Hoch</span></h3>
+  <div class="meta">7 Meldungen in 4 Wochen, alle mit echtem Problem (keine „alles ok"-Meldung dabei) · gemeldet von Thi Ngoc Anh Nguyen</div>
+  <ul>
+    <li>15.09.: Brokkoli und Rucola beschädigt/vergilbt, Lachs-Etiketten fehlten</li>
+    <li>17.09.: 2 Chili fehlten, Mango matschig</li>
+    <li>22.09.: 1 Chili beschädigt, Brokkoli zu klein</li>
+    <li>24.09. (2 Meldungen): Limetten fehlten komplett; Box-Artikel fehlten (2× Slim, 1× Poke)</li>
+    <li>06.10.: Gurke vergilbt, Pak Choi welk, Schnittlauch beschädigt</li>
+    <li>13.10.: 5 Kartons Gurke vergilbt/beschädigt</li>
+  </ul>
+</div>
+
+<div class="store-block">
+  <h3>2. Hagen – Auf dem Lölfert <span class="badge badge-mid">Mittel</span></h3>
+  <div class="meta">3 Ereignisse in 3 Wochen · gemeldet von Dandan Schütte-Wei und Eric Ta</div>
+  <ul>
+    <li>16.09.: Frischkäse fehlte, Preisschild-Problem (Koikeya Teriyaki Chips)</li>
+    <li>23.09.: Brokkoli nicht frisch</li>
+    <li>06.10.: Gyoza mit Huhn, Yakitori-Spieße und Surimi fehlten</li>
+  </ul>
+</div>
+
+<div class="store-block minor">
+  <h3>3. Nordhausen – Darrweg <span class="badge badge-mid">Mittel</span></h3>
+  <div class="meta">2 Ereignisse · Lieferant bei 1 Meldung erfasst: Schwan Asia Food</div>
+  <ul>
+    <li>16.09.: Paprika-Mengen-Diskrepanz gemeldet (Lieferant: Schwan Asia Food)</li>
+    <li>08.10.: 4 Kartons Papiertüten für Kunden fehlten</li>
+  </ul>
+</div>
+
+<div class="store-block minor">
+  <h3>4. Göttingen – Am Kauf Park <span class="badge badge-low">Beobachten</span></h3>
+  <div class="meta">2 Meldungen, früh im Zeitraum · Lieferant: Schwan Asia Food</div>
+  <ul>
+    <li>19.08.: Brokkoli komplett fehlend (2 bestellt, 0 erhalten)</li>
+    <li>20.08.: 12 Avocados beschädigt/verdorben angeliefert</li>
+  </ul>
+</div>
+
+<div class="store-block minor">
+  <h3>5. Homberg (Efze) <span class="badge badge-low">Beobachten</span></h3>
+  <div class="meta">1 echtes Problem, 1 positive Rückmeldung</div>
+  <ul>
+    <li>08.10.: Avocados erst 2 Tage alt, aber bereits deutlich verdorben</li>
+    <li>06.10.: Schnittlauch-Qualität ausdrücklich gelobt (positiv, kein Problem)</li>
+  </ul>
+</div>
+
+<h2>Einzelfälle (nur 1 Meldung im Zeitraum)</h2>
+<table>
+  <tbody>
+    <tr><td style="width:28%">Düsseldorf – Hauptstr.</td><td>31.08.: 8 Stück Avocado beschädigt</td></tr>
+    <tr><td>Essen – Haedenkampstraße</td><td>04.09.: nur 6 von 7 Kolli angekommen</td></tr>
+    <tr><td>Einbeck – Altendorfer Tor</td><td>30.09.: Karotten fehlten</td></tr>
+    <tr><td>Göttingen – Weender Str.</td><td>09.10.: 1 Zwiebel, 1 Dill fehlten</td></tr>
+  </tbody>
+</table>
+
+<h2>Keine Auffälligkeit trotz vieler Meldungen</h2>
+<p><strong>Hattingen – Heggerstraße:</strong> 8 Meldungen im Zeitraum, aber überwiegend „alles ok" / „alles gut" – nur 2 echte Probleme (fehlende Papiertüten am 10.09., beschädigter Schnittlauch am 07.10.). Die Filiale meldet nur besonders häufig zurück, ist aber keine Problemfiliale.</p>
+<p><strong>Northeim – Robert-Schnabel-Str.:</strong> 3 Meldungen am selben Tag (03.10.), aber nur 1 echtes Problem (Preisschild-Rolle fehlte, Menge unklar – 3 bestellt, 2 erhalten). Die anderen beiden Meldungen bestätigen den korrekten, vollständigen Erhalt der Bestellungen vom 10.09. und vom 17.09. – keine Problemfiliale.</p>
+
+<div class="note">
+  <strong>Hinweis zum Lieferanten:</strong> Bei den Meldungen, die einen Lieferanten erfassen (5 von 35), erscheint durchgehend <strong>„Schwan Asia Food"</strong> (Frischware: Avocado, Brokkoli, Paprika, Papiertüten). Die meisten Mitarbeiter nutzen jedoch die Schnellmeldung (nur Foto + Kurztext) ohne Lieferant-Feld, daher lässt sich der Lieferant nicht für jeden Fall sicher bestätigen – das wiederkehrende Muster bei Frischware (Gemüse vergilbt/welk/beschädigt) in Leverkusen, Hagen und Göttingen deutet aber auf dieselbe Lieferkette hin.
+</div>
+
+<div class="footer">
+  Erstellt aus den Wareneingang-Meldungen der HR-App (Gebiete Ost + West), Stand 20.10.2026. „Echte Probleme" zählt Meldungen mit tatsächlichem Mangel; reine Bestätigungen („alles ok") sind ausgenommen.
+</div>
+
+</body>
+</html>

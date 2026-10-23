@@ -102,6 +102,18 @@ async function main() {
       const beforeCount = await page.getByText(registerBtnText).count();
       const fileInput = page.locator('input[type="file"]').first();
       await fileInput.setInputFiles(filePaths.map((f) => f.filePath));
+      // Seit Kurzem zeigt Skovik bei MEHREREN gleichzeitig ausgewählten Dateien
+      // zusätzlich einen Bestätigungsdialog "Vorschau der Quittung" mit dem
+      // Knopf "Quittungen hinzufügen" - ohne Klick bleiben die Dateien dort
+      // liegen und werden nie tatsächlich hinzugefügt (live bestätigt
+      // 23.10.2026 per Screenshot: 10 Belege blieben 3+ Minuten unbestätigt im
+      // Dialog stehen, 0 kamen durch - vorher reichte setInputFiles() allein,
+      // siehe Kommentar unten; bei genau 1 Datei erscheint der Dialog nicht).
+      const addBtn = page.getByRole('button', { name: 'Quittungen hinzufügen' });
+      try {
+        await addBtn.waitFor({ timeout: 5000 });
+        await addBtn.click();
+      } catch (e) { /* Dialog nicht erschienen (z.B. nur 1 Datei im Batch) - normal weiter */ }
       const expectedCount = beforeCount + filePaths.length;
       let confirmed = false;
       for (let attempt = 0; attempt < 30; attempt++) {
