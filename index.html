@@ -4010,7 +4010,12 @@ var dpSollStdCache=null; // PersonalNr -> Vertragsstunden/Woche (emp_welo.sollSt
 function dpLoadAzKonto(){
   if(dpAzKontoCache || typeof fbReady==='undefined' || !fbReady || !fbDb) return;
   dpAzKontoCache={};
-  fbDb.collection('emp_welo').get().then(function(snap){
+  // list() auf emp_welo ist region-scharf (firestore.rules) — ohne .where()
+  // kam hier bisher "Missing or insufficient permissions" zurück, nur
+  // unbemerkt, weil der catch-Block unten nur in die Konsole warnt statt
+  // es irgendwo sichtbar zu zeigen (gefunden 25.10.2026 beim Bau der
+  // Resturlaub-Übersicht, die denselben Fehler zeigte).
+  fbDb.collection('emp_welo').where('region','==',activeRegion).get().then(function(snap){
     var map={}, sollMap={};
     snap.forEach(function(doc){var v=doc.data(); if(v && v.azKonto!=null) map[doc.id]=v.azKonto; if(v && v.sollStd!=null) sollMap[doc.id]=v.sollStd;});
     dpAzKontoCache=map;
@@ -6562,7 +6567,9 @@ function uLoadResturlaub(){
   var box=document.getElementById('u-resturlaub-list'); if(!box) return;
   if(typeof fbReady==='undefined'||!fbReady||!fbDb){ box.innerHTML='<div style="font-size:12px;color:var(--mut)">Keine Cloud-Verbindung.</div>'; return; }
   box.innerHTML='<div style="font-size:12px;color:var(--mut);padding:8px 0">Lade…</div>';
-  fbDb.collection('emp_welo').get().then(function(snap){
+  // list() auf emp_welo ist in firestore.rules region-scharf (isManagerForRegion),
+  // ungefiltert würde "Missing or insufficient permissions" zurückkommen.
+  fbDb.collection('emp_welo').where('region','==',activeRegion).get().then(function(snap){
     var map={};
     snap.forEach(function(doc){ map[doc.id]=doc.data()||{}; });
     var emps=loadEmps().filter(function(e){return e.active!==false;});
