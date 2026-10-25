@@ -548,6 +548,12 @@ window.onerror=function(msg,src,line){
 <!-- ===== URLAUBSANTRAG ===== -->
 <div id="panel-urlaub" class="panel">
 
+  <div class="card" id="u-resturlaub-card">
+    <div class="card-title">📊 Resturlaub-Übersicht</div>
+    <div class="info">Absteigend sortiert — wer oben steht, hat noch am meisten Urlaub übrig (sollte eingeplant werden); wer unten steht/rot markiert ist, hat wenig oder keinen Resturlaub mehr. Daten aus Welo (täglich synchronisiert).</div>
+    <div id="u-resturlaub-list"><div style="font-size:12px;color:var(--mut);padding:8px 0">Lade…</div></div>
+  </div>
+
   <div class="card" id="fb-pending-card" style="display:none">
     <div class="card-title">📨 Urlaubs-Anträge (Live) <span class="badge badge-red" id="fb-pending-count">0</span></div>
     <div class="info">Neue Anträge aus der Mitarbeiter-App erscheinen hier automatisch. Genehmigen/Ablehnen → der Mitarbeiter sieht die Entscheidung sofort (grün/rot).</div>
@@ -1635,7 +1641,7 @@ function sw(id, el) {
   document.getElementById('panel-'+id).classList.add('active');
   if(id==='emp'){renderEmpTable();fvPopulate();}
   if(id==='news') nwRender();
-  if(id==='urlaub') uManualPopulate();
+  if(id==='urlaub'){ uManualPopulate(); uLoadResturlaub(); }
 avPopulateDropdown();
 initOrtDatumFields();
 applySettings();
@@ -6545,6 +6551,56 @@ function fbRevert(docId){
 }
 
 // ════════ URLAUB MANUELL EINTRAGEN (HR, ohne 10-Tage-Vorlauf) ════════
+// ── Resturlaub-Übersicht (Auftrag t.duong 25.10.2026): zeigt alle aktiven
+// Mitarbeiter absteigend nach Resturlaub sortiert, damit beim Planen sofort
+// sichtbar ist, wer noch viel Urlaub übrig hat (sollte eingeplant werden)
+// und wer kaum/keinen mehr hat. Daten aus "emp_welo" (urlaubOffen/
+// urlaubAnspruch), täglich von sync-welo-personal.js synchronisiert — gleiche
+// Quelle wie der "Resturlaub"-Tile in der Mitarbeiter-Detailansicht
+// (empDetailTile, Zeile ~2144), hier nur zusätzlich als sortierte Liste.
+function uLoadResturlaub(){
+  var box=document.getElementById('u-resturlaub-list'); if(!box) return;
+  if(typeof fbReady==='undefined'||!fbReady||!fbDb){ box.innerHTML='<div style="font-size:12px;color:var(--mut)">Keine Cloud-Verbindung.</div>'; return; }
+  box.innerHTML='<div style="font-size:12px;color:var(--mut);padding:8px 0">Lade…</div>';
+  fbDb.collection('emp_welo').get().then(function(snap){
+    var map={};
+    snap.forEach(function(doc){ map[doc.id]=doc.data()||{}; });
+    var emps=loadEmps().filter(function(e){return e.active!==false;});
+    var rows=emps.map(function(e){
+      var w=map[''+e.id]||{};
+      return {
+        name:e.name, filiale:e.filiale||'',
+        offen:(w.urlaubOffen!=null?w.urlaubOffen:null),
+        anspruch:(w.urlaubAnspruch!=null?w.urlaubAnspruch:null),
+      };
+    });
+    rows.sort(function(a,b){
+      if(a.offen==null&&b.offen==null) return (''+a.name).localeCompare(''+b.name);
+      if(a.offen==null) return 1;
+      if(b.offen==null) return -1;
+      return b.offen-a.offen;
+    });
+    uResturlaubRender(rows);
+  }).catch(function(e){ box.innerHTML='<div style="color:#C0392B;font-size:12px">⚠️ '+e.message+'</div>'; });
+}
+function uResturlaubRender(rows){
+  var box=document.getElementById('u-resturlaub-list'); if(!box) return;
+  if(!rows.length){ box.innerHTML='<div style="font-size:12px;color:var(--mut)">Keine Mitarbeiter gefunden.</div>'; return; }
+  var h='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12.5px">'
+    +'<thead><tr><th style="text-align:left;padding:5px 6px">Mitarbeiter</th><th style="text-align:left;padding:5px 6px">Filiale</th><th style="text-align:right;padding:5px 6px">Resturlaub</th><th style="text-align:right;padding:5px 6px">Anspruch</th></tr></thead><tbody>';
+  rows.forEach(function(r){
+    var val=r.offen;
+    var color=val==null?'var(--mut)':(val<=0?'#C0392B':(val<=5?'#B7950B':'#1E8449'));
+    var txt=val==null?'—':(val+' Tg');
+    var filKurz=r.filiale.length>28?r.filiale.slice(0,28)+'…':r.filiale;
+    h+='<tr><td style="padding:5px 6px;border-top:1px solid var(--brd)">'+r.name+'</td>'
+      +'<td style="padding:5px 6px;border-top:1px solid var(--brd);color:var(--mut);font-size:11px" title="'+r.filiale.replace(/"/g,'&quot;')+'">'+filKurz+'</td>'
+      +'<td style="padding:5px 6px;border-top:1px solid var(--brd);text-align:right;font-weight:700;color:'+color+'">'+txt+'</td>'
+      +'<td style="padding:5px 6px;border-top:1px solid var(--brd);text-align:right;color:var(--mut)">'+(r.anspruch!=null?r.anspruch:'—')+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  box.innerHTML=h;
+}
 function uManualPopulate(){
   var sel=document.getElementById('um-emp'); if(!sel) return;
   var cur=sel.value;
