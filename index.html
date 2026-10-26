@@ -550,7 +550,11 @@ window.onerror=function(msg,src,line){
 
   <div class="card" id="u-resturlaub-card">
     <div class="card-title">📊 Resturlaub-Übersicht</div>
-    <div class="info">Absteigend sortiert — wer oben steht, hat noch am meisten Urlaub übrig (sollte eingeplant werden); wer unten steht/rot markiert ist, hat wenig oder keinen Resturlaub mehr. Daten aus Welo (täglich synchronisiert).</div>
+    <div class="info">Absteigend sortiert — wer oben steht, hat noch am meisten Urlaub übrig (sollte eingeplant werden); wer unten steht/rot markiert ist, hat wenig oder keinen Resturlaub mehr. Daten aus Welo, standardmäßig vom letzten automatischen Sync — über den Knopf unten gezielt neu abrufen.</div>
+    <div class="btn-row">
+      <button class="btn btn-sm" onclick="uResturlaubRefresh()" style="background:#6C3483;color:#fff;border-color:#6C3483">📡 Urlaub aus Welo jetzt aktualisieren</button>
+    </div>
+    <p id="u-resturlaub-refresh-stat" style="font-size:12.5px;line-height:1.5;margin:6px 0 8px;display:none"></p>
     <div id="u-resturlaub-list"><div style="font-size:12px;color:var(--mut);padding:8px 0">Lade…</div></div>
   </div>
 
@@ -6563,6 +6567,29 @@ function fbRevert(docId){
 // urlaubAnspruch), täglich von sync-welo-personal.js synchronisiert — gleiche
 // Quelle wie der "Resturlaub"-Tile in der Mitarbeiter-Detailansicht
 // (empDetailTile, Zeile ~2144), hier nur zusätzlich als sortierte Liste.
+// Bewusst KEIN automatischer Cron für diese Ansicht (Auftrag t.duong
+// 26.10.2026: "tôi cần 1 nút bấm để cập nhật khi cần") — ruft stattdessen
+// gezielt NUR sync-welo-personal.js auf Cloud Run auf (nicht die ganzen 4
+// Skripte wie der "Jetzt aktualisieren"-Knopf im Dashboard), damit es
+// schnell geht und nur echte Urlaubsdaten anfasst. Der tägliche
+// Scheduler-Lauf bleibt davon unberührt und läuft weiter normal mit.
+function uResturlaubRefresh(){
+  var syncUrl=REGION_SYNC_URL[activeRegion];
+  var stat=document.getElementById('u-resturlaub-refresh-stat');
+  function setStat(msg,color){ if(!stat) return; stat.textContent=msg||''; stat.style.color=color||'var(--mut)'; stat.style.display=msg?'block':'none'; }
+  if(!syncUrl){ setStat('⚠️ Für diese Region ist kein Cloud-Run-Backend hinterlegt — nicht verfügbar.','#C0392B'); return; }
+  setStat('⏳ Lade aktuelle Urlaubsdaten aus Welo… (kann 1-2 Minuten dauern)','#6B6860');
+  firebase.auth().currentUser.getIdToken().then(function(idToken){
+    return fetch(syncUrl+'/internal/sync-one/welo-personal', {
+      method:'POST', headers:{'Authorization':'Bearer '+idToken}
+    });
+  }).then(function(r){ return r.json().then(function(d){ return {ok:r.ok, d:d}; }); })
+    .then(function(res){
+      if(!res.ok){ setStat('⚠️ Fehler: '+(res.d.error||'unbekannt'),'#C0392B'); return; }
+      setStat('✓ Aktualisiert.','var(--grn)');
+      uLoadResturlaub();
+    }).catch(function(e){ setStat('⚠️ Fehler: '+e.message,'#C0392B'); });
+}
 function uLoadResturlaub(){
   var box=document.getElementById('u-resturlaub-list'); if(!box) return;
   if(typeof fbReady==='undefined'||!fbReady||!fbDb){ box.innerHTML='<div style="font-size:12px;color:var(--mut)">Keine Cloud-Verbindung.</div>'; return; }

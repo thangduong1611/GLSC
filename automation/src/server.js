@@ -185,6 +185,28 @@ app.post('/internal/sync-all', async (req, res) => {
   await runAllAndTrackStatus('cloud-scheduler', res);
 });
 
+// ── Manager-Knopf → genau EIN Skript sofort laufen lassen (z.B. "Urlaub
+// jetzt aktualisieren" in index.html, statt auf den nächsten Scheduler-Lauf
+// zu warten). Anders als /internal/sync/:key (Scheduler, geteiltes Secret,
+// im Client-JS unsichtbar bleiben muss) prüft diese Route den Manager-Login
+// wie /sync/all. Nutzt bewusst NICHT die sync_triggers-Sperre von
+// runAllAndTrackStatus() (die ist nur für den 4-Skript-Bundle gedacht) — die
+// Kollisions-Sicherheit kommt vom Lock IN den Skripten selbst
+// (withWeloLock in sync-welo-personal.js), der jede gleichzeitige
+// Welo-Sitzung bereits abfängt (Auftrag t.duong 26.10.2026).
+app.post('/internal/sync-one/:key', requireManager, async (req, res) => {
+  const key = req.params.key;
+  if (!SCRIPTS.some((s) => s.key === key)) return res.status(400).json({ error: 'unbekannter Skript-Key: ' + key });
+  try {
+    console.log(`[manager-button] ${req.managerEmail} startet ${key}…`);
+    const result = await runOne(key);
+    res.status(result.ok ? 200 : 500).json(result);
+  } catch (err) {
+    console.error(`[manager-button] ${key} fehlgeschlagen:`, err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── Gebietsleiter trägt seine eigenen Axonity/Welo-Zugangsdaten ein ────────
 // Aufgerufen aus index.html (Settings-Panel), sobald diese Region ein
 // eigenes Cloud-Run-Konto hat. REGION kommt bewusst aus der eigenen .env
