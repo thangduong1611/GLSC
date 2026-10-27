@@ -7234,11 +7234,31 @@ function blSkovikUpload(){
     });
   }).then(function(res){
     if(btn) btn.disabled=false;
-    if(!res.ok){ blSkovikStatus('⚠️ Fehler (HTTP '+res.status+'): '+((res.d&&res.d.error)||'unbekannt'),'#C0392B'); return; }
-    blSkovikStatus((res.d&&res.d.stdout&&res.d.stdout.trim().split('\n').pop())||'✓ Fertig.','var(--grn)');
+    if(!res.ok){ blSkovikStatus('⚠️ Fehler (HTTP '+res.status+'): '+((res.d&&res.d.error)||'unbekannt'),'#C0392B'); toast('⚠️ Skovik-Upload fehlgeschlagen',true); return; }
+    // Die kleine Statuszeile allein ist leicht zu übersehen (Auftrag t.duong
+    // 27.10.2026: "trên app chưa thấy hiện gì") — zusätzlich ein auffälliger
+    // Toast, UND statt nur der letzten stdout-Zeile die strukturierten
+    // Ergebnisse aus sync_status/skovik-upload lesen (vom Skript selbst
+    // geschrieben, siehe writeSyncStatus in sync-skovik-upload.js), damit
+    // bei Fehlschlägen konkret sichtbar ist, WESSEN Beleg nicht hochgeladen
+    // wurde, statt nur einer Gesamtzahl.
+    return fbDb.collection('sync_status').doc('skovik-upload').get().then(function(doc){
+      if(!doc.exists){ var m0=(res.d&&res.d.stdout&&res.d.stdout.trim().split('\n').pop())||'✓ Fertig.'; blSkovikStatus(m0,'var(--grn)'); toast(m0); return; }
+      var d=doc.data()||{};
+      var msg='✓ '+(d.succeeded!=null?d.succeeded:'?')+'/'+(d.total!=null?d.total:'?')+' Beleg(e) zu Skovik hochgeladen';
+      if(d.failed){
+        var names=(d.failedDetails||[]).map(function(f){
+          var b=(typeof fbBelege!=='undefined'?fbBelege:[]).find(function(x){return x.id===f.id;});
+          return (b&&b.d&&b.d.empName?b.d.empName:f.id)+' ('+f.reason+')';
+        });
+        msg+=', '+d.failed+' fehlgeschlagen'+(names.length?': '+names.join('; '):'');
+      }
+      blSkovikStatus(msg, d.failed?'#B7950B':'var(--grn)');
+      toast(msg, !!d.failed);
+    });
     // Live-Listener (blStartListener) holt die neuen status:'skovik'-Werte
     // ohnehin automatisch nach - kein manuelles Neuladen nötig.
-  }).catch(function(e){ if(btn) btn.disabled=false; blSkovikStatus('⚠️ Fehler: '+e.message,'#C0392B'); });
+  }).catch(function(e){ if(btn) btn.disabled=false; blSkovikStatus('⚠️ Fehler: '+e.message,'#C0392B'); toast('⚠️ Skovik-Upload fehlgeschlagen',true); });
 }
 function blSetStatus(id,status){
   var b=blFind(id); if(!b) return;
