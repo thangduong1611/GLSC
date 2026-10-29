@@ -1362,6 +1362,22 @@ window.onerror=function(msg,src,line){
     <div id="ic-status" style="font-size:12px;margin-top:10px;font-weight:600;display:none"></div>
   </div>
   <div class="card">
+    <div class="card-h"><span>🔀 Inventur-Quelle</span></div>
+    <p style="font-size:13px;color:var(--mut);margin:0 0 12px">Mitarbeiter können in unserer eigenen App zählen — oder du blendest das vorübergehend aus und verlinkst stattdessen auf die externe Firmen-App.</p>
+    <label style="display:flex;align-items:center;gap:9px;cursor:pointer;padding:9px 12px;background:var(--bg);border:1px solid var(--brd);border-radius:var(--rs);margin-bottom:12px">
+      <input type="checkbox" id="ic-ext-check" style="width:16px;height:16px;accent-color:var(--red)" onchange="icExtDirty=true;icToggleExternal()">
+      <span style="font-size:13px">🔗 <strong>Externe Firmen-App</strong> verwenden — eigene Inventur-Zählung bei Mitarbeitern ausblenden</span>
+    </label>
+    <div id="ic-ext-fields" style="display:none">
+      <label style="font-size:12px;font-weight:600;color:var(--mut)">Link zur externen App</label>
+      <input type="text" id="ic-ext-url" placeholder="https://suc-inventur.lovable.app/" style="width:100%;margin-bottom:10px" oninput="icExtDirty=true">
+      <label style="font-size:12px;font-weight:600;color:var(--mut)">Hinweistext für Mitarbeiter (optional — leer = Standardtext in jeweiliger Sprache)</label>
+      <textarea id="ic-ext-note" rows="2" placeholder="z.B. Standort-PIN: 1234" style="width:100%;margin-bottom:10px" oninput="icExtDirty=true"></textarea>
+    </div>
+    <button class="btn btn-red" onclick="icSaveExternal()">💾 Speichern</button>
+    <div id="ic-ext-status" style="font-size:12px;margin-top:10px;font-weight:600;display:none"></div>
+  </div>
+  <div class="card">
     <div class="card-h"><span>📦 Inventur-Verwaltung</span></div>
     <p style="font-size:13px;color:var(--mut);margin:0 0 14px">Inventur-Links pro Filiale verteilen, Zeitraum festlegen und eingereichte Zählungen einsehen.</p>
 
@@ -8779,6 +8795,10 @@ function invParseMonthFromUrl(url){ var m=(''+url).match(/\/\d{5,7}-(\d{6})-/); 
 // die falsche Basis dauerhaft speichern).
 var icCfg={catOrder:[],itemCat:{}}, icCfgServer={catOrder:[],itemCat:{}}, icCfgLoaded=false, icDirty=false;
 var icPhotos={}, icCfgUnsub=null, icPhotoUnsub=null, icTab='order';
+// Umschalter "externe Firmen-App statt eigener Inventur-Zählung" — eigenes,
+// einfaches Feld-Set (kein Entwurf/Verwerfen-Mechanismus wie bei icCfg nötig,
+// da hier nur 1 Checkbox + 2 Textfelder direkt gespeichert werden).
+var icExtMode=false, icExtUrl='', icExtNote='', icExtDirty=false;
 
 function icStatus(msg,color){
   var el=document.getElementById('ic-status'); if(!el) return;
@@ -8799,6 +8819,8 @@ function icStartListeners(){
     // Laufende, unsaved Änderungen NICHT überschreiben (z.B. eigener Echo-Snapshot oder
     // gleichzeitige Bearbeitung durch jemand anderen) — erst nach Speichern/Verwerfen wieder syncen.
     if(!icDirty) icCfg={catOrder:icCfgServer.catOrder.slice(), itemCat:Object.assign({},icCfgServer.itemCat)};
+    icExtMode=!!(d&&d.externalMode); icExtUrl=(d&&d.externalUrl)||''; icExtNote=(d&&d.externalNote)||'';
+    icRenderExternal();
     var p=document.getElementById('panel-inventur');
     if(p&&p.classList.contains('active')) icRenderCurrent();
   }, function(e){ console.warn('ic cfg', e); icStatus('⚠️ Kein Zugriff auf inventur_config ('+e.code+') — Firestore-Regel fehlt.','#C0392B'); });
@@ -8822,6 +8844,36 @@ function icSaveCfg(){
 function icDiscardCfg(){
   icCfg={catOrder:icCfgServer.catOrder.slice(), itemCat:Object.assign({},icCfgServer.itemCat)};
   icDirty=false; icRenderSaveBar(); icRenderCurrent();
+}
+function icRenderExternal(){
+  var chk=document.getElementById('ic-ext-check'); if(!chk) return;
+  if(icExtDirty) return; // Admin bearbeitet gerade selbst — nicht überschreiben
+  chk.checked=icExtMode;
+  var urlEl=document.getElementById('ic-ext-url'), noteEl=document.getElementById('ic-ext-note');
+  if(urlEl) urlEl.value=icExtUrl||'https://suc-inventur.lovable.app/';
+  if(noteEl) noteEl.value=icExtNote||'';
+  var fields=document.getElementById('ic-ext-fields'); if(fields) fields.style.display=icExtMode?'':'none';
+}
+function icToggleExternal(){
+  var chk=document.getElementById('ic-ext-check'), fields=document.getElementById('ic-ext-fields');
+  if(fields) fields.style.display=(chk&&chk.checked)?'':'none';
+}
+function icSaveExternal(){
+  if(!fbReady||!fbDb){ icExtStatus('Keine Verbindung','#C0392B'); return; }
+  var chk=document.getElementById('ic-ext-check');
+  var url=(document.getElementById('ic-ext-url').value||'').trim()||'https://suc-inventur.lovable.app/';
+  var note=(document.getElementById('ic-ext-note').value||'').trim();
+  fbDb.collection('inventur_config').doc('current').set({
+    externalMode:!!(chk&&chk.checked), externalUrl:url, externalNote:note, extAt:new Date().toISOString()
+  },{merge:true}).then(function(){
+    icExtDirty=false;
+    icExtStatus('✓ Gespeichert — gilt jetzt für alle Mitarbeiter','var(--grn)');
+  }).catch(function(e){ icExtStatus('Fehler: '+e.message,'#C0392B'); });
+}
+function icExtStatus(msg,color){
+  var el=document.getElementById('ic-ext-status'); if(!el) return;
+  el.textContent=msg||''; el.style.color=color||'var(--mut)'; el.style.display=msg?'block':'none';
+  if(msg&&color!=='#C0392B') setTimeout(function(){ if(el.textContent===msg) el.style.display='none'; },2500);
 }
 function icEffCatOrder(){
   var base=(typeof INVENTUR_CATS!=='undefined')?INVENTUR_CATS.map(function(c){return c[0];}):[];

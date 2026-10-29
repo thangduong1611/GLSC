@@ -630,6 +630,12 @@ window.onerror=function(msg,src,line){
   <div class="panel" id="p-iv">
     <div class="card">
       <div class="card-title" data-i18n="iv_title">📦 Inventur</div>
+      <div id="iv-external-wrap" style="display:none">
+        <div style="font-size:14px;color:var(--txt);line-height:1.55;margin-bottom:14px" id="iv-external-note">—</div>
+        <a id="iv-external-link" href="https://suc-inventur.lovable.app/" target="_blank" rel="noopener"
+          class="btn btn-grn" style="display:flex;justify-content:center;text-decoration:none" data-i18n="iv_external_btn">🔗 Zur Inventur-App</a>
+      </div>
+      <div id="iv-internal-wrap">
       <div id="iv-fil-wrap" style="display:none;margin-bottom:10px">
         <label data-i18n="lbl_fil">Filiale</label>
         <select id="iv-fil-sel" onchange="ivFilChange()"></select>
@@ -653,6 +659,7 @@ window.onerror=function(msg,src,line){
       <div id="iv-actions" style="display:none;gap:8px;margin-top:14px;position:sticky;bottom:0;background:var(--surf);padding:10px 0;border-top:1px solid var(--brd)">
         <button class="btn" style="flex:1" onclick="ivSaveDraft()"><span data-i18n="iv_save">💾 Entwurf speichern</span></button>
         <button class="btn btn-grn" style="flex:1" onclick="ivSubmit()"><span data-i18n="iv_submit">✓ An HR senden</span></button>
+      </div>
       </div>
     </div>
   </div>
@@ -906,6 +913,9 @@ var ivPrevMonth=null, ivPeriodCur=null, ivPeriodPrev=null, ivMonthActive=null, i
 var ivPeriodUnsub=null, ivCountUnsub=null, ivSaveTimer=null;
 var ivFiliale=null; // Von der Stellvertretung Gebietsleitung gewählte Filiale zum Mithelfen beim Zählen (nur sess.vize)
 var ivCfg={catOrder:[],itemCat:{}}, ivPhotos={}, ivCfgUnsub=null, ivPhotoUnsub=null;
+// Gebietsleiter kann die eigene Zählung vorübergehend ausblenden und stattdessen
+// auf die externe Firmen-App verlinken (inventur_config/current, von index.html gesetzt).
+var ivExternalMode=false, ivExternalUrl='', ivExternalNote='';
 // Effektive Kategorie/Reihenfolge (HR-Override berücksichtigen)
 function ivItemCat(it){ return ivCfg.itemCat[it[0]] || it[1]; }
 function ivEffCats(){
@@ -1116,6 +1126,8 @@ function ivInit(sess){
   ivCfgUnsub=fbDb.collection('inventur_config').doc('current').onSnapshot(function(doc){
     var d=doc.exists?doc.data():null;
     ivCfg={catOrder:(d&&d.catOrder)||[], itemCat:(d&&d.itemCat)||{}};
+    ivExternalMode=!!(d&&d.externalMode); ivExternalUrl=(d&&d.externalUrl)||''; ivExternalNote=(d&&d.externalNote)||'';
+    ivUpdateVisibility();
     if(document.getElementById('p-iv') && document.getElementById('p-iv').classList.contains('active')) ivRender();
   }, function(e){ console.warn('iv cfg', e); });
   // Produktfotos beobachten (von Mitarbeitern hochgeladen)
@@ -1132,6 +1144,9 @@ function ivIsActive(){
 }
 function ivUpdateVisibility(){
   var btn=document.getElementById('ico-iv'); if(!btn) return;
+  // Externe Firmen-App: eigener Zeitraum/Status ist dann egal, Icon bleibt sichtbar
+  // (das externe System verwaltet seinen eigenen Zeitraum selbst).
+  if(ivExternalMode){ btn.style.display=''; return; }
   btn.style.display = ivIsActive() ? '' : 'none';
   // Falls Tab gerade offen, aber nicht mehr aktiv → zurück auf Dienstplan
   if(!ivIsActive() && document.getElementById('p-iv').classList.contains('active')) maNav('dp');
@@ -1146,6 +1161,18 @@ function ivLoadFromFirestore(sess, cb){
 
 function ivRender(){
   var sess=maSession(); if(!sess) return;
+  var extWrap=document.getElementById('iv-external-wrap'), intWrap=document.getElementById('iv-internal-wrap');
+  if(ivExternalMode){
+    if(extWrap) extWrap.style.display='';
+    if(intWrap) intWrap.style.display='none';
+    var extNoteEl=document.getElementById('iv-external-note');
+    if(extNoteEl) extNoteEl.textContent = ivExternalNote || t('iv_external_note');
+    var extLinkEl=document.getElementById('iv-external-link');
+    if(extLinkEl) extLinkEl.href = ivExternalUrl || 'https://suc-inventur.lovable.app/';
+    return;
+  }
+  if(extWrap) extWrap.style.display='none';
+  if(intWrap) intWrap.style.display='';
   var info=document.getElementById('iv-info'), per=document.getElementById('iv-period');
   if(!ivIsActive()){
     if(info) info.textContent=t('iv_none');
@@ -2423,6 +2450,8 @@ de:{_name:'Deutsch',
  nav_dp:'Dienstplan',nav_ul:'Urlaub',nav_kr:'Krankmeldung',nav_bl:'Belege',nav_av:'Vertrag',nav_nw:'Infos',
  iv_offline_note:'Noch nicht gesendet. Deine Eingaben sind auf diesem Gerät gespeichert und werden automatisch übertragen, sobald wieder Internet da ist. App darf zwischendurch geschlossen werden.',
  iv_offline_saved:'Offline gespeichert — wird automatisch gesendet, sobald Internet da ist.',
+ iv_external_note:'Die Inventur läuft momentan über die Firmen-App. Bitte dort mit dem Standort-PIN zählen.',
+ iv_external_btn:'🔗 Zur Inventur-App',
  iv_photo_add:'Foto aufnehmen',iv_photo_ok:'✓ Foto hochgeladen — danke!',
  iv_no_result:'Kein Produkt gefunden.',
  'av-e_title':'📝 Änderungsvereinbarung','av-e_none':'Aktuell nichts zu unterschreiben.',
@@ -2558,6 +2587,8 @@ vi:{_name:'Tiếng Việt',
  nav_dp:'Lịch làm',nav_ul:'Nghỉ phép',nav_kr:'Báo ốm',nav_bl:'Báo cáo',nav_av:'Hợp đồng',nav_nw:'Thông báo',
  iv_offline_note:'Chưa gửi. Dữ liệu bạn nhập đã được lưu trên máy này và sẽ tự động gửi đi khi có mạng trở lại. Bạn có thể tắt ứng dụng giữa chừng.',
  iv_offline_saved:'Đã lưu ngoại tuyến — sẽ tự động gửi khi có mạng.',
+ iv_external_note:'Việc kiểm kê hiện đang chạy qua app của công ty. Vui lòng đếm ở đó bằng mã PIN của cửa hàng.',
+ iv_external_btn:'🔗 Mở app kiểm kê',
  iv_photo_add:'Chụp ảnh',iv_photo_ok:'✓ Đã tải ảnh lên — cảm ơn!',
  iv_no_result:'Không tìm thấy sản phẩm.',
  'av-e_title':'📝 Thỏa thuận thay đổi hợp đồng','av-e_none':'Hiện không có gì cần ký.',
@@ -2693,6 +2724,8 @@ en:{_name:'English',
  nav_dp:'Schedule',nav_ul:'Vacation',nav_kr:'Sick note',nav_bl:'Receipts',nav_av:'Contract',nav_nw:'News',
  iv_offline_note:'Not sent yet. Your entries are saved on this device and will be transmitted automatically once there is internet again. You may close the app in the meantime.',
  iv_offline_saved:'Saved offline — will be sent automatically once there is internet.',
+ iv_external_note:'Inventory counting is currently done via the company app. Please count there using the store PIN.',
+ iv_external_btn:'🔗 Open inventory app',
  iv_photo_add:'Take photo',iv_photo_ok:'✓ Photo uploaded — thank you!',
  iv_no_result:'No product found.',
  'av-e_title':'📝 Contract amendment','av-e_none':'Nothing to sign right now.',
@@ -2828,6 +2861,8 @@ th:{_name:'ไทย',
  nav_dp:'ตารางงาน',nav_ul:'วันลา',nav_kr:'แจ้งป่วย',nav_bl:'ใบเสร็จ',nav_av:'สัญญา',nav_nw:'ข่าวสาร',
  iv_offline_note:'ยังไม่ได้ส่ง ข้อมูลที่คุณกรอกถูกบันทึกไว้ในเครื่องนี้แล้ว และจะถูกส่งอัตโนมัติเมื่อมีอินเทอร์เน็ตอีกครั้ง คุณสามารถปิดแอปได้ระหว่างนี้',
  iv_offline_saved:'บันทึกแบบออฟไลน์แล้ว — จะส่งอัตโนมัติเมื่อมีอินเทอร์เน็ต',
+ iv_external_note:'ขณะนี้การนับสต็อกดำเนินการผ่านแอปของบริษัท กรุณานับที่นั่นโดยใช้ PIN ของสาขา',
+ iv_external_btn:'🔗 เปิดแอปตรวจนับสต็อก',
  iv_photo_add:'ถ่ายรูป',iv_photo_ok:'✓ อัปโหลดรูปแล้ว — ขอบคุณ!',
  iv_no_result:'ไม่พบสินค้า',
  'av-e_title':'📝 ข้อตกลงเปลี่ยนแปลงสัญญา','av-e_none':'ขณะนี้ไม่มีเอกสารที่ต้องเซ็น',
@@ -2963,6 +2998,8 @@ zh:{_name:'中文',
  nav_dp:'排班表',nav_ul:'休假',nav_kr:'病假',nav_bl:'报销',nav_av:'合同',nav_nw:'通知',
  iv_offline_note:'尚未发送。您输入的数据已保存在本设备上，一旦恢复网络会自动上传。中途可以关闭本应用。',
  iv_offline_saved:'已离线保存 — 网络恢复后会自动发送。',
+ iv_external_note:'目前库存盘点通过公司应用程序进行。请使用门店PIN码在那里盘点。',
+ iv_external_btn:'🔗 打开盘点应用',
  iv_photo_add:'拍照',iv_photo_ok:'✓ 照片已上传 — 谢谢！',
  iv_no_result:'未找到相关商品。',
  'av-e_title':'📝 劳动合同变更协议','av-e_none':'目前没有需要签署的文件。',
