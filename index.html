@@ -4070,6 +4070,7 @@ function dpApplyBoundaryMerge(){
 // noch Minusstunden ausgleichen muss (Auftrag t.duong 03.09.2026).
 var dpAzKontoCache=null;
 var dpSollStdCache=null; // PersonalNr -> Vertragsstunden/Woche (emp_welo.sollStd), fuer die Wochenstunden-Spalte
+var dpUrlaubCache=null; // PersonalNr -> Resturlaub (emp_welo.urlaubOffen), fuer die gruene Anzeige neben dem Namen
 function dpLoadAzKonto(){
   if(dpAzKontoCache || typeof fbReady==='undefined' || !fbReady || !fbDb) return;
   dpAzKontoCache={};
@@ -4079,10 +4080,11 @@ function dpLoadAzKonto(){
   // es irgendwo sichtbar zu zeigen (gefunden 25.10.2026 beim Bau der
   // Resturlaub-Übersicht, die denselben Fehler zeigte).
   fbDb.collection('emp_welo').where('region','==',activeRegion).get().then(function(snap){
-    var map={}, sollMap={};
-    snap.forEach(function(doc){var v=doc.data(); if(v && v.azKonto!=null) map[doc.id]=v.azKonto; if(v && v.sollStd!=null) sollMap[doc.id]=v.sollStd;});
+    var map={}, sollMap={}, urlaubMap={};
+    snap.forEach(function(doc){var v=doc.data(); if(v && v.azKonto!=null) map[doc.id]=v.azKonto; if(v && v.sollStd!=null) sollMap[doc.id]=v.sollStd; if(v && v.urlaubOffen!=null) urlaubMap[doc.id]=v.urlaubOffen;});
     dpAzKontoCache=map;
     dpSollStdCache=sollMap;
+    dpUrlaubCache=urlaubMap;
     dpRenderWeeks();
   }).catch(function(e){ console.warn('emp_welo azKonto', e); });
 }
@@ -4441,7 +4443,12 @@ function dpRenderWeeks(){
         // Summen-Spalte, nicht fest sichtbar).
         var soll=dpSollStdCache&&dpSollStdCache[eid];
         var sollHtml=(soll!=null)?'<div style="color:#C0392B;font-size:10px;white-space:nowrap">('+dpFmtStd(soll)+')</div>':'';
-        h+='<tr><td title="'+emp.name+(zw?' · Zweitfiliale':'')+(az!=null&&az<0?' · AZ-Konto Vormonat: -'+dpFmtStd(az)+' Std':'')+'"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(zw?'🔄 ':'')+emp.name.substring(0,15)+(emp.name.length>15?'…':'')+'</div>'+sollHtml+azHtml+fristSoonHtml+'</td>';
+        // Resturlaub des Jahres direkt unter den Vertragsstunden, in grün —
+        // Auftrag t.duong 30.10.2026: beim Planen auf einen Blick sehen, wer
+        // noch wie viel Urlaub übrig hat, ohne extra in den Urlaub-Tab zu wechseln.
+        var urlaub=dpUrlaubCache&&dpUrlaubCache[eid];
+        var urlaubHtml=(urlaub!=null)?'<div style="color:#1E8449;font-weight:600;font-size:10px;white-space:nowrap">('+dpFmtStd(urlaub)+' Urlaub)</div>':'';
+        h+='<tr><td title="'+emp.name+(zw?' · Zweitfiliale':'')+(az!=null&&az<0?' · AZ-Konto Vormonat: -'+dpFmtStd(az)+' Std':'')+(urlaub!=null?' · Resturlaub: '+dpFmtStd(urlaub)+' Tage':'')+'"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(zw?'🔄 ':'')+emp.name.substring(0,15)+(emp.name.length>15?'…':'')+'</div>'+sollHtml+urlaubHtml+azHtml+fristSoonHtml+'</td>';
         wk.dates.forEach(function(dt){
           var abs=dpAbs[eid]&&dpAbs[eid][dt];
           var stored=(dpShifts[ek]&&dpShifts[ek][dt])||'';
