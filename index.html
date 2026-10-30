@@ -1563,6 +1563,8 @@ window.onerror=function(msg,src,line){
     <input type="text" id="m-name" placeholder="Nguyen Van A">
     <label>Personalnummer</label>
     <input type="text" id="m-id" placeholder="z.B. 1042">
+    <label>Austritt (Vertragsende) <span style="font-weight:400;color:var(--mut);text-transform:none;letter-spacing:0">— leer lassen = unbefristet</span></label>
+    <input type="date" id="m-austritt">
     <label>Filiale (Standard)</label>
     <select id="m-fil-select" onchange="mFilSelectChange()"><option value="">— Filiale wählen —</option><option value="_custom">✎ Andere (manuell)</option></select>
     <div id="m-fil-manual-wrap" style="display:none;margin-top:8px">
@@ -2267,9 +2269,21 @@ function importCSV(ev) {
       if(!csvIds.has(e.id)&&e.active!==false){e.active=false;deactivated++;}
     });
 
+    // Von Hand korrigierte Austritt-Daten (siehe saveEmp()/austrittManual) NIE durch
+    // die CSV überschreiben — die CSV vom Unternehmen kann veraltet sein (genau der
+    // Fall, der zu dieser Korrektur geführt hat), sonst würde jeder künftige Import
+    // die Korrektur stillschweigend wieder rückgängig machen.
+    let austrittProtected=0;
     parsed.forEach(newE=>{
       const idx=existing.findIndex(x=>x.id===newE.id);
-      if(idx>=0){existing[idx]={...existing[idx],...newE};updated++;}
+      if(idx>=0){
+        if(existing[idx].austrittManual && newE.austritt!==existing[idx].austritt){
+          newE=Object.assign({},newE,{austritt:existing[idx].austritt});
+          austrittProtected++;
+        }
+        existing[idx]={...existing[idx],...newE};
+        updated++;
+      }
       else{existing.push(newE);added++;}
     });
 
@@ -2288,11 +2302,11 @@ function importCSV(ev) {
   <div class="csv-stat-box"><div class="n" style="color:var(--blu)">${updated}</div><div class="l">Aktualisiert</div></div>
   <div class="csv-stat-box"><div class="n" style="color:var(--amb)">${deactivated}</div><div class="l">Als inaktiv markiert</div></div>
   <div class="csv-stat-box"><div class="n">${existing.length}</div><div class="l">Gesamt</div></div>
-</div>`;
+</div>`+(austrittProtected?`<div style="font-size:12.5px;color:var(--amb);margin-top:8px">🔒 ${austrittProtected} manuell korrigierte(s) Austritt-Datum unverändert gelassen (CSV hätte abweichenden Wert gehabt).</div>`:'');
     const drop=document.getElementById('csv-drop');
     drop.classList.add('ok');
     drop.innerHTML=`✅ ${f.name} importiert`;
-    toast(`✓ ${added} neu, ${updated} aktualisiert, ${deactivated} inaktiv`);
+    toast(`✓ ${added} neu, ${updated} aktualisiert, ${deactivated} inaktiv`+(austrittProtected?`, ${austrittProtected} Austritt-Korrektur(en) geschützt`:''));
   };
   reader.readAsText(f,'UTF-8');
 }
@@ -2355,11 +2369,29 @@ function mSetFilSelectForEdit(e){
     wrap.style.display=e.filiale?'block':'none';
   }
 }
+// Konvertiert zwischen dem im ganzen Projekt verwendeten String-Format
+// "TT.MM.JJJJ" (austritt/eintritt, z.B. aus dem CSV-Import) und dem ISO-
+// Format, das <input type="date"> erwartet — NUR fürs Formular, gespeichert
+// wird weiterhin TT.MM.JJJJ, damit renderEmpNotif()/empBulkReactivate()/
+// die CSV-Logik unverändert weiterfunktionieren. "31.12.9999" (Sentinel für
+// "unbefristet") und leer werden beide als leeres Datumsfeld behandelt —
+// genau wie es die bestehenden Prüfungen (z.B. Zeile ~5415) schon tun.
+function deDateToIso(d){
+  if(!d||d==='31.12.9999') return '';
+  var p=d.split('.'); if(p.length!==3) return '';
+  return p[2]+'-'+(''+p[1]).padStart(2,'0')+'-'+(''+p[0]).padStart(2,'0');
+}
+function isoDateToDe(iso){
+  if(!iso) return '';
+  var p=iso.split('-'); if(p.length!==3) return '';
+  return p[2]+'.'+p[1]+'.'+p[0];
+}
 function openAddModal() {
   editIdx=null;
   document.getElementById('modal-title').textContent='Mitarbeiter hinzufügen';
   document.getElementById('m-name').value='';
   document.getElementById('m-id').value='';
+  document.getElementById('m-austritt').value='';
   document.getElementById('m-fil').value='';
   document.getElementById('m-filnr').value='';
   mPopulateFilSelect();
@@ -2380,6 +2412,7 @@ function openEditModal(i) {
   document.getElementById('modal-title').textContent='Mitarbeiter bearbeiten';
   document.getElementById('m-name').value=e.name;
   document.getElementById('m-id').value=e.id;
+  document.getElementById('m-austritt').value=deDateToIso(e.austritt);
   document.getElementById('m-fil').value=e.filiale||'';
   document.getElementById('m-filnr').value=e.filialeNr||'';
   mPopulateFilSelect();
@@ -2459,6 +2492,7 @@ function closeModal() { document.getElementById('emp-modal').classList.remove('o
 function saveEmp() {
   const name=document.getElementById('m-name').value.trim();
   const id=document.getElementById('m-id').value.trim();
+  const austritt=isoDateToDe(document.getElementById('m-austritt').value);
   const fil=document.getElementById('m-fil').value.trim();
   const filnr=document.getElementById('m-filnr').value.trim();
   const zweit=[].slice.call(document.querySelectorAll('.m-zweit-chk:checked')).map(function(x){return x.value;});
@@ -2471,12 +2505,19 @@ function saveEmp() {
   // soll niemanden ins gerade offene Gebiet verschieben. Nur Neuanlagen bekommen activeRegion.
   const bisher=(editIdx!==null?emps[editIdx]:emps.find(function(x){return ''+x.id===''+id;}))||{};
   const region=bisher.region||activeRegion;
-  if(editIdx!==null) emps[editIdx]={...emps[editIdx],name,id,filiale:fil,filialeNr:filnr,zweit,shopleiter,vize,region};
-  else emps.push({name,id,filiale:fil,filialeNr:filnr,zweit,shopleiter,vize,region});
+  // Nur als "manuell" markieren, wenn der Austritt hier wirklich GEÄNDERT wurde — sonst
+  // würde jedes Speichern (auch nur z.B. Filiale ändern) die bisherige CSV-Herkunft
+  // sperren. Einmal manuell gesetzt, überschreibt importCSV() dieses Feld nicht mehr
+  // (siehe dort) — der nächste CSV-Import würde sonst eine frisch von Hand korrigierte
+  // Vertragsverlängerung wieder auf den alten (ggf. veralteten) CSV-Stand zurückdrehen
+  // (Auftrag t.duong 30.10.2026, Fall Vi Thi Thu 341475).
+  const austrittManual=(austritt!==(bisher.austritt||''))?true:!!bisher.austrittManual;
+  if(editIdx!==null) emps[editIdx]={...emps[editIdx],name,id,austritt,austrittManual,filiale:fil,filialeNr:filnr,zweit,shopleiter,vize,region};
+  else emps.push({name,id,austritt,austrittManual,filiale:fil,filialeNr:filnr,zweit,shopleiter,vize,region});
   saveEmps(emps);
   // Sofort in Firestore synchronisieren (Rollen müssen live verfügbar sein)
   if(fbReady&&fbDb&&id){
-    fbDb.collection('emps').doc(''+id).set({name,filiale:fil,filialeNr:filnr,zweit,shopleiter:shopleiter,vize:vize,active:true,region:region,inactiveSince:firebase.firestore.FieldValue.delete()},{merge:true})
+    fbDb.collection('emps').doc(''+id).set({name,austritt,austrittManual,filiale:fil,filialeNr:filnr,zweit,shopleiter:shopleiter,vize:vize,active:true,region:region,inactiveSince:firebase.firestore.FieldValue.delete()},{merge:true})
       .catch(function(e){ console.warn('Rollen-Sync', e); });
   }
   closeModal();
@@ -6243,7 +6284,7 @@ function empsSyncListener(){
       var lockMs=d.pinLockedUntil&&d.pinLockedUntil.toMillis?d.pinLockedUntil.toMillis():0;
       if(lockMs>nowMs && d.active!==false) locks[doc.id]={name:d.name||'', filiale:d.filiale||'', until:lockMs};
       arr.push({id:doc.id, name:d.name||'', filiale:d.filiale||'', filialeNr:d.filialeNr||'',
-        active:d.active!==false, eintritt:d.eintritt||'', austritt:d.austritt||'',
+        active:d.active!==false, eintritt:d.eintritt||'', austritt:d.austritt||'', austrittManual:!!d.austrittManual,
         zweit:d.zweit||[], shopleiter:!!d.shopleiter, vize:!!d.vize, region:d.region||''});
     });
     saveEmps(arr);
