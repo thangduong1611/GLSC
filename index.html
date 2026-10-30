@@ -4472,9 +4472,13 @@ function dpRenderWeeks(){
             // Warnung, sperrt die Zelle NICHT (Auftrag t.duong 28.09.2026:
             // Welo könnte eine bereits erfolgte Verlängerung noch nicht
             // zeigen, harte Sperre würde dann fälschlich blockieren).
+            // dt>FRIST, NICHT >=: der Fristtag selbst ist noch ein gültiger Arbeitstag
+            // (z.B. austritt=14.11. heißt "arbeitet bis einschließlich 14.11.", nicht
+            // "ab 14.11. nicht mehr" — Rückmeldung t.duong 30.10.2026, vorher wurde
+            // der letzte Arbeitstag selbst fälschlich als "abgelaufen" markiert).
             var fristParts=[];
-            if(frist&&frist.aeFrist&&dt>=frist.aeFrist) fristParts.push('Arbeitserlaubnis abgelaufen seit '+dpFristDDMM(frist.aeFrist));
-            if(frist&&frist.vertragsEnde&&dt>=frist.vertragsEnde) fristParts.push('Vertrag abgelaufen seit '+dpFristDDMM(frist.vertragsEnde));
+            if(frist&&frist.aeFrist&&dt>frist.aeFrist) fristParts.push('Arbeitserlaubnis abgelaufen seit '+dpFristDDMM(frist.aeFrist));
+            if(frist&&frist.vertragsEnde&&dt>frist.vertragsEnde) fristParts.push('Vertrag abgelaufen seit '+dpFristDDMM(frist.vertragsEnde));
             if(fristParts.length) cls=(cls?cls+' ':'')+'dp-cell-frist-warn';
             var tip=fristParts.length?fristParts.join(' · ')
                   :(pend?'Urlaubsantrag offen (noch nicht entschieden): '+pend
