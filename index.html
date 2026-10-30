@@ -969,8 +969,10 @@ window.onerror=function(msg,src,line){
     <div class="btn-row" style="margin-top:14px">
       <button class="btn btn-red" onclick="openAddModal()">+ Manuell hinzufügen</button>
       <button class="btn" onclick="empBulkReactivate()" title="Setzt alle inaktiven Mitarbeiter ohne echtes vergangenes Austrittsdatum wieder auf aktiv (z.B. nach einer unvollständigen CSV)">✓ Fälschlich Inaktive reaktivieren</button>
+      <button class="btn" onclick="empWeloRefresh()" style="background:#6C3483;color:#fff;border-color:#6C3483" title="Holt den aktuellen Stand (aktiv/inaktiv, verlängerte Verträge) direkt aus Welo, statt auf den nächsten täglichen Lauf zu warten">📡 Status aus Welo aktualisieren</button>
       <button class="btn" onclick="exportCSVList()" style="margin-left:auto">⬇ Liste exportieren</button>
     </div>
+    <p id="emp-welo-refresh-stat" style="font-size:12.5px;line-height:1.5;margin:8px 0 0;display:none"></p>
   </div>
 </div>
 
@@ -6604,6 +6606,32 @@ function uResturlaubRefresh(){
       if(!res.ok){ setStat('⚠️ Fehler: '+(res.d.error||'unbekannt'),'#C0392B'); return; }
       setStat('✓ Aktualisiert.','var(--grn)');
       uLoadResturlaub();
+    }).catch(function(e){ setStat('⚠️ Fehler: '+e.message,'#C0392B'); });
+}
+// Manueller "Welo jetzt cào"-Knopf speziell für den Mitarbeiterstatus
+// (aktiv/inaktiv, z.B. nach Vertragsverlängerung in Welo) — ruft denselben
+// Endpunkt wie uResturlaubRefresh() oben auf (/internal/sync-one/welo-
+// personal, selbes Skript aktualisiert Urlaub UND aktiv-Status in einem
+// Durchlauf), nur mit eigenem Status-Feld direkt bei der Mitarbeiterliste,
+// da dort der eigentliche Bedarf ist (Auftrag t.duong 30.10.2026: "nhân
+// viên đã gia hạn chưa được cập nhật" — nicht auf den täglichen Scheduler-
+// Lauf warten müssen). Die Tabelle selbst aktualisiert sich danach von
+// allein über empsSyncListener() (live onSnapshot auf 'emps'), kein
+// zusätzlicher Reload hier nötig.
+function empWeloRefresh(){
+  var syncUrl=REGION_SYNC_URL[activeRegion];
+  var stat=document.getElementById('emp-welo-refresh-stat');
+  function setStat(msg,color){ if(!stat) return; stat.textContent=msg||''; stat.style.color=color||'var(--mut)'; stat.style.display=msg?'block':'none'; }
+  if(!syncUrl){ setStat('⚠️ Für diese Region ist kein Cloud-Run-Backend hinterlegt — nicht verfügbar.','#C0392B'); return; }
+  setStat('⏳ Lade aktuellen Stand aus Welo… (kann 1-2 Minuten dauern)','#6B6860');
+  firebase.auth().currentUser.getIdToken().then(function(idToken){
+    return fetch(syncUrl+'/internal/sync-one/welo-personal', {
+      method:'POST', headers:{'Authorization':'Bearer '+idToken}
+    });
+  }).then(function(r){ return r.json().then(function(d){ return {ok:r.ok, d:d}; }); })
+    .then(function(res){
+      if(!res.ok){ setStat('⚠️ Fehler: '+(res.d.error||'unbekannt'),'#C0392B'); return; }
+      setStat('✓ Aktualisiert — Tabelle unten zeigt den neuen Stand.','var(--grn)');
     }).catch(function(e){ setStat('⚠️ Fehler: '+e.message,'#C0392B'); });
 }
 function uLoadResturlaub(){
