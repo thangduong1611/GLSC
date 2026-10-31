@@ -217,12 +217,21 @@ service cloud.firestore {
       allow list: if isManagerForRegion(resource.data.region) || isOwnEmp(resource.data.id);
       // Der Mitarbeiter darf einen vom Gebietsleiter gesendeten Antrag gegenzeichnen —
       // aber nur den Übergang sent_by_hr → signed, und nur die eigenen Unterschrift-Felder.
+      // ODER ablehnen und einen Gegenvorschlag machen (sent_by_hr → declined_by_employee,
+      // Auftrag t.duong 31.10.2026: bisher konnte der Mitarbeiter einen vom Gebietsleiter
+      // vorgeschlagenen Urlaub nur unterschreiben, nie ablehnen) — auch hier nur dieser
+      // eine Übergang und nur die Gegenvorschlag-Felder, kein anderes Feld anfassbar.
       allow update: if isManagerForRegion(docRegion(resource.data))
         || (isOwnEmp(resource.data.id)
             && resource.data.status == 'sent_by_hr'
             && request.resource.data.status == 'signed'
             && request.resource.data.diff(resource.data).affectedKeys()
-                 .hasOnly(['status','einsatz','ruf','anOrtDatum','anSig','signedAt']));
+                 .hasOnly(['status','einsatz','ruf','anOrtDatum','anSig','signedAt']))
+        || (isOwnEmp(resource.data.id)
+            && resource.data.status == 'sent_by_hr'
+            && request.resource.data.status == 'declined_by_employee'
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['status','declineFrom','declineTo','declineNote','declinedAt']));
       allow delete: if isManagerForRegion(docRegion(resource.data));
     }
 

@@ -313,6 +313,7 @@ window.onerror=function(msg,src,line){
       <div class="card-title" data-i18n="ulhr_title">📋 Urlaubsantrag zum Unterschreiben</div>
       <p style="font-size:13px;color:var(--mut);margin-bottom:10px;line-height:1.5" data-i18n="ulhr_info"></p>
       <div style="font-size:14px;font-weight:600;margin-bottom:10px"><span data-i18n="ulhr_period">Zeitraum</span>: <span id="ulhr-range"></span></div>
+      <div id="ulhr-accept-box">
       <div class="row2">
         <div><label data-i18n="lbl_einsatz">Wieder im Einsatz am</label><input type="date" id="ulhr-einsatz"></div>
         <div><label data-i18n="lbl_ruf">Rufnummer</label><input type="tel" id="ulhr-ruf" placeholder="z.B. 0151 123456"></div>
@@ -327,6 +328,21 @@ window.onerror=function(msg,src,line){
       </div>
       <div class="btn-row">
         <button class="btn btn-grn" id="btn-ulhr-send" onclick="ulhrSend()" data-i18n="av-e_btn_send">✍️ Unterschreiben und senden</button>
+        <button class="btn" style="color:#C0392B;border-color:#C0392B" onclick="ulhrShowDecline()" data-i18n="ulhr_decline_btn">✗ Ablehnen</button>
+      </div>
+      </div>
+      <div id="ulhr-decline-box" style="display:none">
+        <div id="ulhr-decline-q" style="font-weight:600;margin-bottom:10px;line-height:1.5"></div>
+        <div class="row2">
+          <div><label data-i18n="lbl_von">Von</label><input type="date" id="ulhr-decline-von"></div>
+          <div><label data-i18n="lbl_bis">Bis</label><input type="date" id="ulhr-decline-bis"></div>
+        </div>
+        <label data-i18n="ulhr_decline_note_lbl">Anmerkung (optional)</label>
+        <textarea id="ulhr-decline-note" rows="2"></textarea>
+        <div class="btn-row" style="margin-top:8px">
+          <button class="btn btn-red" id="btn-ulhr-decline-send" onclick="ulhrDeclineSend()" data-i18n="ulhr_decline_send">📨 Absenden</button>
+          <button class="btn" onclick="ulhrDeclineCancel()" data-i18n="ulhr_decline_back">← Zurück</button>
+        </div>
       </div>
     </div>
     <div class="card" id="welo-self-card" style="display:none">
@@ -1820,12 +1836,14 @@ function weloStatHtml(num, label){
   return '<div style="min-width:84px"><div style="font-size:20px;font-weight:700">'+num+'</div>'
     +'<div style="font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em">'+label+'</div></div>';
 }
+var weloSelfUrlaubOffen=null; // Cache für ulhrShowDecline() — Resturlaub-Zahl in der Ablehnen-Frage
 function weloLoadSelf(){
   var sess=maSession(); if(!sess||!sess.id||!fbReady||!fbDb) return;
   var card=document.getElementById('welo-self-card');
   fbDb.collection('emp_welo').doc(sess.id).get().then(function(doc){
     if(!doc.exists||!card) return;
     var d=doc.data();
+    weloSelfUrlaubOffen=(d.urlaubOffen!=null?d.urlaubOffen:null);
     card.style.display='block';
     var self=document.getElementById('welo-self');
     self.innerHTML =
@@ -2535,6 +2553,10 @@ de:{_name:'Deutsch',
  ulhr_title:'📋 Urlaubsantrag zum Unterschreiben',
  ulhr_info:'Dein Gebietsleiter hat diesen Urlaub bereits für dich eingetragen und genehmigt. Bitte unterschreibe unten, damit das offizielle Formular vollständig ist.',
  ulhr_period:'Zeitraum',ulhr_sent:'✓ Unterschrieben und gesendet',
+ ulhr_decline_btn:'✗ Ablehnen',ulhr_decline_note_lbl:'Anmerkung (optional)',ulhr_decline_send:'📨 Absenden',ulhr_decline_back:'← Zurück',
+ ulhr_decline_q:'Du hast noch {n} Urlaubstage übrig — wann möchtest du sie stattdessen nehmen?',
+ ulhr_decline_q_unknown:'Wann möchtest du stattdessen Urlaub nehmen?',
+ ulhr_decline_need_date:'Bitte ein Von-Datum wählen.',ulhr_decline_sent:'✓ Gegenvorschlag gesendet',
  t_dates:'Bitte Von und Bis wählen.',t_sign:'Bitte als Arbeitnehmer unterschreiben.',t_pdf_ok:'✓ PDF gespeichert',
  t_attach:'✓ PDF gespeichert – bitte in WhatsApp anhängen 📎',t_packet:'✓ Antrag-Datei gespeichert – in WhatsApp anhängen 📎',an_sent:'✓ Antrag an den Gebietsleiter gesendet — er unterschreibt und reicht ihn ein.',an_fail:'✗ Senden fehlgeschlagen: ',
  img_fail:'Formular-Bild konnte nicht geladen werden.',t_err:'Fehler beim Erstellen: ',
@@ -2671,6 +2693,10 @@ vi:{_name:'Tiếng Việt',
  ulhr_title:'📋 Đơn xin nghỉ phép cần ký',
  ulhr_info:'Quản lý khu vực đã đăng ký và duyệt kỳ nghỉ này cho bạn. Vui lòng ký tên bên dưới để hoàn tất mẫu đơn chính thức.',
  ulhr_period:'Thời gian nghỉ',ulhr_sent:'✓ Đã ký và gửi',
+ ulhr_decline_btn:'✗ Từ chối',ulhr_decline_note_lbl:'Ghi chú (không bắt buộc)',ulhr_decline_send:'📨 Gửi',ulhr_decline_back:'← Quay lại',
+ ulhr_decline_q:'Bạn còn {n} ngày Urlaub, bạn muốn dùng vào ngày nào?',
+ ulhr_decline_q_unknown:'Bạn muốn nghỉ phép vào ngày nào?',
+ ulhr_decline_need_date:'Vui lòng chọn ngày bắt đầu.',ulhr_decline_sent:'✓ Đã gửi đề xuất ngày khác',
  chef_hint:'„Gửi cho sếp" gửi đơn kèm chữ ký của bạn thẳng đến Gebietsleiter. Anh ấy ký phần Arbeitgeber và nộp bản PDF hoàn chỉnh.',
  t_dates:'Vui lòng chọn Từ ngày và Đến ngày.',t_sign:'Vui lòng ký tên.',t_pdf_ok:'✓ Đã lưu PDF',
  t_attach:'✓ Đã lưu PDF – nhớ đính kèm vào WhatsApp 📎',t_packet:'✓ Đã lưu file đơn – đính kèm vào WhatsApp 📎',an_sent:'✓ Đã gửi đơn cho Gebietsleiter — anh ấy sẽ ký và nộp.',an_fail:'✗ Gửi thất bại: ',
@@ -2808,6 +2834,10 @@ en:{_name:'English',
  ulhr_title:'📋 Vacation request to sign',
  ulhr_info:'Your area manager has already entered and approved this vacation for you. Please sign below to complete the official form.',
  ulhr_period:'Period',ulhr_sent:'✓ Signed and sent',
+ ulhr_decline_btn:'✗ Decline',ulhr_decline_note_lbl:'Note (optional)',ulhr_decline_send:'📨 Send',ulhr_decline_back:'← Back',
+ ulhr_decline_q:'You have {n} vacation days left — when would you like to take them instead?',
+ ulhr_decline_q_unknown:'When would you like to take vacation instead?',
+ ulhr_decline_need_date:'Please choose a start date.',ulhr_decline_sent:'✓ Counter-proposal sent',
  chef_hint:'"Send to manager" sends the request with your signature directly to the area manager. He countersigns and submits the final PDF.',
  t_dates:'Please choose From and To.',t_sign:'Please sign as employee.',t_pdf_ok:'✓ PDF saved',
  t_attach:'✓ PDF saved – attach it in WhatsApp 📎',t_packet:'✓ Request file saved – attach it in WhatsApp 📎',an_sent:'✓ Request sent to the area manager — he signs and submits it.',an_fail:'✗ Sending failed: ',
@@ -2945,6 +2975,10 @@ th:{_name:'ไทย',
  ulhr_title:'📋 ใบขอลาที่ต้องเซ็น',
  ulhr_info:'ผู้จัดการเขตของคุณได้บันทึกและอนุมัติวันลานี้ให้คุณแล้ว กรุณาเซ็นชื่อด้านล่างเพื่อให้แบบฟอร์มทางการสมบูรณ์',
  ulhr_period:'ช่วงเวลา',ulhr_sent:'✓ เซ็นและส่งแล้ว',
+ ulhr_decline_btn:'✗ ปฏิเสธ',ulhr_decline_note_lbl:'หมายเหตุ (ไม่บังคับ)',ulhr_decline_send:'📨 ส่ง',ulhr_decline_back:'← ย้อนกลับ',
+ ulhr_decline_q:'คุณเหลือวันลาอีก {n} วัน — คุณต้องการใช้วันไหนแทน?',
+ ulhr_decline_q_unknown:'คุณต้องการลาวันไหนแทน?',
+ ulhr_decline_need_date:'กรุณาเลือกวันเริ่มต้น',ulhr_decline_sent:'✓ ส่งข้อเสนอวันอื่นแล้ว',
  chef_hint:'"ส่งให้ผู้จัดการ" ส่งคำขอพร้อมลายเซ็นของคุณตรงถึงผู้จัดการเขต เขาจะเซ็นส่วน Arbeitgeber และยื่น PDF ฉบับสมบูรณ์',
  t_dates:'กรุณาเลือกวันเริ่มและวันสิ้นสุด',t_sign:'กรุณาเซ็นชื่อ',t_pdf_ok:'✓ บันทึก PDF แล้ว',
  t_attach:'✓ บันทึก PDF แล้ว – แนบใน WhatsApp 📎',t_packet:'✓ บันทึกไฟล์คำขอแล้ว – แนบใน WhatsApp 📎',an_sent:'✓ ส่งคำขอถึงผู้จัดการเขตแล้ว — เขาจะเซ็นและยื่นต่อ',an_fail:'✗ ส่งไม่สำเร็จ: ',
@@ -3082,6 +3116,10 @@ zh:{_name:'中文',
  ulhr_title:'📋 待签署的休假申请',
  ulhr_info:'你的区域经理已经为你登记并批准了这次休假。请在下方签名以完成正式表格。',
  ulhr_period:'休假期间',ulhr_sent:'✓ 已签名并发送',
+ ulhr_decline_btn:'✗ 拒绝',ulhr_decline_note_lbl:'备注（可选）',ulhr_decline_send:'📨 发送',ulhr_decline_back:'← 返回',
+ ulhr_decline_q:'您还剩 {n} 天年假 — 您想改在哪几天休？',
+ ulhr_decline_q_unknown:'您想改在哪天休假？',
+ ulhr_decline_need_date:'请选择开始日期。',ulhr_decline_sent:'✓ 已发送替代建议',
  chef_hint:'「发送给主管」会将带有您签名的申请直接发送给区域经理。他会以雇主身份签字并提交完整的PDF。',
  t_dates:'请选择开始日期和结束日期。',t_sign:'请以员工身份签名。',t_pdf_ok:'✓ PDF已保存',
  t_attach:'✓ PDF已保存 – 请在WhatsApp中添加附件 📎',t_packet:'✓ 申请文件已保存 – 请在WhatsApp中添加附件 📎',an_sent:'✓ 申请已发送给区域经理 — 他会签字并提交。',an_fail:'✗ 发送失败：',
@@ -5111,6 +5149,7 @@ function ulhrRender(){
   document.getElementById('ulhr-ruf').value=d.ruf||'';
   document.getElementById('ulhr-ort').value='';
   ulhrSigClear();
+  ulhrDeclineCancel();
 }
 var ulhrSending=false;
 function ulhrSend(){
@@ -5132,6 +5171,49 @@ function ulhrSend(){
     ulhrDoc=null; ulhrRender();
     var dot=document.getElementById('ul-dot'); if(dot) dot.style.display='none';
   }).catch(function(e){ ulhrSending=false; if(btn) btn.disabled=false; toast('Fehler: '+e.message, true); });
+}
+// Mitarbeiter lehnt den vom Gebietsleiter vorgeschlagenen Urlaubszeitraum ab
+// und schlägt stattdessen eigene Wunschtage vor — Auftrag t.duong 31.10.2026:
+// bisher konnte der Mitarbeiter einen "Vorschlag Urlaub" nur unterschreiben,
+// nie ablehnen. Schreibt NICHTS in den Dienstplan/die Urlaubsliste, sondern
+// nur den Gegenvorschlag in dasselbe antrag-Dokument — der Gebietsleiter
+// sieht ihn in der "Abgelehnt"-Liste (index.html, anRender()) und entscheidet
+// von dort, wie es weitergeht (neuer Vorschlag, manuell eintragen, ...).
+function ulhrShowDecline(){
+  document.getElementById('ulhr-accept-box').style.display='none';
+  document.getElementById('ulhr-decline-box').style.display='block';
+  var n=weloSelfUrlaubOffen;
+  document.getElementById('ulhr-decline-q').textContent=(n!=null)?t('ulhr_decline_q',{n:n}):t('ulhr_decline_q_unknown');
+  document.getElementById('ulhr-decline-von').value='';
+  document.getElementById('ulhr-decline-bis').value='';
+  document.getElementById('ulhr-decline-note').value='';
+}
+function ulhrDeclineCancel(){
+  var accept=document.getElementById('ulhr-accept-box'), decline=document.getElementById('ulhr-decline-box');
+  if(accept) accept.style.display='';
+  if(decline) decline.style.display='none';
+}
+var ulhrDeclineSending=false;
+function ulhrDeclineSend(){
+  if(ulhrDeclineSending || !ulhrDoc) return;
+  var von=document.getElementById('ulhr-decline-von').value;
+  var bis=document.getElementById('ulhr-decline-bis').value;
+  if(!von){ toast(t('ulhr_decline_need_date'),true); return; }
+  if(!bis) bis=von;
+  if(bis<von){ toast(t('v_endb4'),true); return; }
+  var note=document.getElementById('ulhr-decline-note').value.trim();
+  var btn=document.getElementById('btn-ulhr-decline-send');
+  ulhrDeclineSending=true; if(btn) btn.disabled=true;
+  ulhrDoc.ref.update({
+    status:'declined_by_employee',
+    declineFrom:von, declineTo:bis, declineNote:note,
+    declinedAt:new Date().toISOString()
+  }).then(function(){
+    ulhrDeclineSending=false; if(btn) btn.disabled=false;
+    toast(t('ulhr_decline_sent'));
+    ulhrDoc=null; ulhrRender();
+    var dot=document.getElementById('ul-dot'); if(dot) dot.style.display='none';
+  }).catch(function(e){ ulhrDeclineSending=false; if(btn) btn.disabled=false; toast('Fehler: '+e.message, true); });
 }
 
 /* ════════════════════════════════════════════════

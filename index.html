@@ -599,6 +599,7 @@ window.onerror=function(msg,src,line){
     <div id="an-live-status" style="font-size:13px;margin-bottom:8px;font-weight:600;display:none"></div>
     <div id="an-live-list"></div>
     <div id="an-wait-list"></div>
+    <div id="an-declined-list"></div>
   </div>
 
   <!-- Nur sichtbar für Regionen mit eigenem Cloud-Run-Konto (wie inv-welo-card
@@ -6819,9 +6820,14 @@ function anRender(){
   // noch nicht gegengezeichnet — gehört noch nicht in diese "bereit zum
   // Übernehmen"-Liste (sonst würde man versehentlich ein PDF ohne AN-Unterschrift
   // erzeugen). Erscheint hier automatisch, sobald anSig eintrifft.
-  var offen=fbAntrag.filter(function(a){ return !a.d.takenAt && a.d.status!=='sent_by_hr'; });
+  // declined_by_employee explizit ausschließen - gehört in die eigene Liste
+  // unten (anders bearbeitet als ein fertig unterschriebener Antrag, siehe
+  // anUseDeclineDates()), sonst würde anTake() versehentlich importMaAntrag()
+  // mit fehlenden Unterschrift-Feldern aufrufen.
+  var offen=fbAntrag.filter(function(a){ return !a.d.takenAt && a.d.status!=='sent_by_hr' && a.d.status!=='declined_by_employee'; });
   var waiting=fbAntrag.filter(function(a){ return !a.d.takenAt && a.d.status==='sent_by_hr'; });
-  if(cnt) cnt.textContent=offen.length;
+  var declined=fbAntrag.filter(function(a){ return !a.d.takenAt && a.d.status==='declined_by_employee'; });
+  if(cnt) cnt.textContent=offen.length+declined.length;
   list.innerHTML = offen.length
     ? offen.map(function(a){
         var d=a.d;
@@ -6848,12 +6854,47 @@ function anRender(){
           }).join('')
       : '';
   }
+  var dbox=document.getElementById('an-declined-list');
+  if(dbox){
+    dbox.innerHTML = declined.length
+      ? '<div style="font-size:12px;font-weight:600;color:#C0392B;margin:12px 0 6px">✗ Abgelehnt — Gegenvorschlag vom Mitarbeiter ('+declined.length+')</div>'
+        + declined.map(function(a){
+            var d=a.d;
+            return '<div style="display:flex;gap:10px;align-items:center;padding:8px 10px;border:1px solid #C0392B;border-radius:6px;margin-bottom:6px;flex-wrap:wrap;background:#FBEAE7">'
+              +'<div style="flex:1;min-width:160px"><strong>'+(d.name||'?')+'</strong> · '+(d.filiale||'')+'<br>'
+              +'<span style="font-size:12px;color:#6B6860">Vorgeschlagen: '+fmtDate(d.von)+' – '+fmtDate(d.bis)+'</span><br>'
+              +'<span style="font-size:13px;font-weight:600;color:#C0392B">Wunsch Mitarbeiter: '+fmtDate(d.declineFrom)+' – '+fmtDate(d.declineTo)+'</span>'
+              +(d.declineNote?'<br><span style="font-size:12px;color:#6B6860">📝 '+uglXmlEscape(d.declineNote)+'</span>':'')
+              +'</div>'
+              +'<button class="btn btn-sm" style="background:#1A5276;color:#fff;border-color:#1A5276" onclick="anUseDeclineDates(\''+a.docId+'\')" title="Wunschtermin ins Formular oben übernehmen, zum Prüfen und erneut senden">📋 Ins Formular übernehmen</button>'
+              +'<button class="btn btn-sm" style="color:#C0392B;border-color:#C0392B" onclick="anDelete(\''+a.docId+'\')">🗑</button>'
+              +'</div>';
+          }).join('')
+      : '';
+  }
 }
 function anFind(id){ return fbAntrag.find(function(x){return x.docId===id;}); }
 function anTake(id){
   var a=anFind(id); if(!a) return;
   importMaAntrag(a.d);
   a.ref.update({takenAt:new Date().toISOString()}).catch(function(){});
+}
+// Übernimmt den Gegenvorschlag des Mitarbeiters (declineFrom/declineTo) ins
+// obere Urlaub-Formular, damit der Gebietsleiter ihn prüfen, ggf. anpassen und
+// als neuen Vorschlag (erneut als Arbeitgeber unterschreiben + senden) oder
+// direkt als genehmigten Urlaub eintragen kann (uManualAdd) — bewusst KEINE
+// automatische Übernahme, der Gebietsleiter entscheidet jedes Mal neu.
+function anUseDeclineDates(id){
+  var a=anFind(id); if(!a) return;
+  var d=a.d;
+  sw('urlaub');
+  document.getElementById('u-name').value=d.name||'';
+  document.getElementById('u-id').value=d.id||'';
+  document.getElementById('u-von').value=d.declineFrom||'';
+  document.getElementById('u-bis').value=d.declineTo||'';
+  if(typeof updateUrlaub==='function') updateUrlaub();
+  a.ref.update({takenAt:new Date().toISOString()}).catch(function(){});
+  toast('📋 Wunschtermin ins Formular übernommen');
 }
 function anDelete(id){
   var a=anFind(id); if(!a) return;
