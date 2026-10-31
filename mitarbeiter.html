@@ -1809,16 +1809,24 @@ function maCheckBesetzungPreview(){
   var fb=document.getElementById('ul-feedback');
   if(!sess||!sess.filiale||!from||!to||to<from){ box.innerHTML=''; if(fb) fb.style.display='none'; return; }
   var trimmed=maTrimSonntag(from,to);
-  var v=maValidateUrlaub(trimmed.from,trimmed.to,maFilialeUrlaub(sess.filiale),maTodayISO(),sess.id,maEditReq,maUrlaubRules);
+  var remaining=maUrlaubRemaining(sess,maEditReq);
+  var v=maValidateUrlaub(trimmed.from,trimmed.to,maFilialeUrlaub(sess.filiale),maTodayISO(),sess.id,maEditReq,maUrlaubRules,remaining);
   if(!v.ok){ maReqFeedback(v); box.innerHTML=''; return; }
   if(fb){ fb.style.display='none'; fb.textContent=''; }
-  if(!fbReady||!fbDb){ box.innerHTML=''; return; }
-  box.innerHTML='<div style="font-size:12.5px;color:#8a8378">'+t('bz_checking')+'</div>';
+  // Live-Anzeige "diese Anfrage: N Tage, danach verbleiben: M" (Auftrag
+  // t.duong 31.10.2026) — nur wenn Resturlaub-Daten vorhanden sind.
+  var quotaHtml='';
+  if(remaining!=null){
+    var span=maUrlaubDaySpan(trimmed.from,trimmed.to);
+    quotaHtml='<div style="font-size:12.5px;font-weight:600;color:#1E8449;margin-bottom:4px">'+t('ul_quota_live',{n:span,left:remaining-span})+'</div>';
+  }
+  if(!fbReady||!fbDb){ box.innerHTML=quotaHtml; return; }
+  box.innerHTML=quotaHtml+'<div style="font-size:12.5px;color:#8a8378">'+t('bz_checking')+'</div>';
   var reqToken=(bzReqToken=(bzReqToken||0)+1);
   bzCheck(sess.filiale, from, to, maFbUrlaub||[], sess.id, null, maUrlaubRules.minStaffRequired).then(function(res){
     if(reqToken!==bzReqToken) return; // eine neuere Abfrage läuft schon
-    box.innerHTML=bzBadgeHtml(res);
-  }).catch(function(){ if(reqToken===bzReqToken) box.innerHTML=''; });
+    box.innerHTML=quotaHtml+bzBadgeHtml(res);
+  }).catch(function(){ if(reqToken===bzReqToken) box.innerHTML=quotaHtml; });
 }
 var bzReqToken=0;
 
@@ -1852,6 +1860,9 @@ function weloLoadSelf(){
       + weloStatHtml(weloFmtNum(d.krankTage,0), t('welo_krank'));
     var standEl=document.getElementById('welo-stand');
     if(standEl && d.updatedAt && d.updatedAt.toDate) standEl.textContent=t('welo_stand',{datum:d.updatedAt.toDate().toLocaleDateString('de-DE')});
+    // Resturlaub kann erst jetzt (nach diesem Laden) in die Regel-Box
+    // einfließen — sie kann vorher schon ohne diese Zahl gerendert worden sein.
+    if(typeof maRenderUlRulesBox==='function') maRenderUlRulesBox();
   }).catch(function(e){ console.warn('weloLoadSelf', e); });
 }
 // Tagesziel der (Haupt-)Filiale — unten auf der Dienstplan-Seite, unter der
@@ -2516,6 +2527,10 @@ de:{_name:'Deutsch',
  rules_staff_warn:'Mindestens <strong>{min} Person(en)</strong> sollten in der Filiale bleiben.',
  rules_blackout_item:'🚫 {label} ({range})',
  rules_pending:'Nach dem Absenden wartet der Antrag auf Freigabe durch den Gebietsleiter (🟧).',
+ ul_quota_left:'Du hast noch <strong>{n} Urlaubstage</strong> für dieses Jahr übrig.',
+ ul_quota_none:'Du hast dieses Jahr keine Urlaubstage mehr übrig - ein neuer Antrag ist nicht möglich.',
+ v_urlaub_exceeds:'Dieser Antrag umfasst {n} Tage, du hast aber nur noch {rem} Urlaubstage übrig.',
+ ul_quota_live:'Dieser Antrag: {n} Tage. Danach verbleiben: {left} Urlaubstage.',
  lbl_von:'Von',lbl_bis:'Bis',btn_req:'🌴 Urlaub beantragen',
  sent_fb:'✓ Antrag gesendet (🟧 wartet auf Freigabe). Der Gebietsleiter sieht ihn sofort – die Freigabe erscheint hier automatisch.',
  sent_off:'✓ Antrag gespeichert (🟧 wartet auf Freigabe). Bitte zur Bestätigung per WhatsApp an den Gebietsleiter senden.',
@@ -2657,6 +2672,10 @@ vi:{_name:'Tiếng Việt',
  rules_staff_warn:'Cửa hàng nên còn ít nhất <strong>{min} người</strong>.',
  rules_blackout_item:'🚫 {label} ({range})',
  rules_pending:'Sau khi gửi, đơn chờ Gebietsleiter duyệt (🟧).',
+ ul_quota_left:'Bạn còn <strong>{n} ngày Urlaub</strong> có thể đăng ký trong năm nay.',
+ ul_quota_none:'Bạn đã hết ngày Urlaub của năm nay - không thể đăng ký thêm.',
+ v_urlaub_exceeds:'Yêu cầu này là {n} ngày, nhưng bạn chỉ còn {rem} ngày Urlaub.',
+ ul_quota_live:'Yêu cầu này: {n} ngày. Còn lại sau khi đăng ký: {left} ngày.',
  lbl_von:'Từ ngày',lbl_bis:'Đến ngày',btn_req:'🌴 Gửi đăng ký',
  sent_fb:'✓ Đã gửi đơn (🟧 chờ duyệt). Gebietsleiter thấy ngay – kết quả sẽ tự hiện ở đây.',
  sent_off:'✓ Đã lưu đơn (🟧 chờ duyệt). Vui lòng gửi WhatsApp cho Gebietsleiter để xác nhận.',
@@ -2798,6 +2817,10 @@ en:{_name:'English',
  rules_staff_warn:'At least <strong>{min} people</strong> should stay in the store.',
  rules_blackout_item:'🚫 {label} ({range})',
  rules_pending:'After sending, the request waits for approval by the area manager (🟧).',
+ ul_quota_left:'You still have <strong>{n} vacation days</strong> left this year.',
+ ul_quota_none:'You have no vacation days left this year - a new request is not possible.',
+ v_urlaub_exceeds:'This request covers {n} days, but you only have {rem} vacation days left.',
+ ul_quota_live:'This request: {n} days. Remaining afterward: {left} days.',
  lbl_von:'From',lbl_bis:'To',btn_req:'🌴 Request vacation',
  sent_fb:'✓ Request sent (🟧 pending). The area manager sees it instantly – the decision appears here automatically.',
  sent_off:'✓ Request saved (🟧 pending). Please confirm via WhatsApp to the area manager.',
@@ -2939,6 +2962,10 @@ th:{_name:'ไทย',
  rules_staff_warn:'ควรมีพนักงานเหลืออย่างน้อย <strong>{min} คน</strong> ในสาขา',
  rules_blackout_item:'🚫 {label} ({range})',
  rules_pending:'หลังส่ง คำขอจะรอผู้จัดการเขตอนุมัติ (🟧)',
+ ul_quota_left:'คุณยังมีวันลาเหลืออีก <strong>{n} วัน</strong> ในปีนี้',
+ ul_quota_none:'คุณไม่มีวันลาเหลือในปีนี้แล้ว - ไม่สามารถส่งคำขอใหม่ได้',
+ v_urlaub_exceeds:'คำขอนี้รวม {n} วัน แต่คุณเหลือวันลาเพียง {rem} วัน',
+ ul_quota_live:'คำขอนี้: {n} วัน เหลือหลังจากนี้: {left} วัน',
  lbl_von:'ตั้งแต่',lbl_bis:'ถึง',btn_req:'🌴 ส่งคำขอ',
  sent_fb:'✓ ส่งคำขอแล้ว (🟧 รออนุมัติ) ผู้จัดการเห็นทันที ผลจะแสดงที่นี่อัตโนมัติ',
  sent_off:'✓ บันทึกคำขอแล้ว (🟧 รออนุมัติ) กรุณาส่ง WhatsApp ถึงผู้จัดการเพื่อยืนยัน',
@@ -3080,6 +3107,10 @@ zh:{_name:'中文',
  rules_staff_warn:'门店建议保留至少 <strong>{min} 人</strong>。',
  rules_blackout_item:'🚫 {label}（{range}）',
  rules_pending:'发送后，申请将等待区域经理批准 (🟧)。',
+ ul_quota_left:'你今年还剩 <strong>{n} 天</strong>年假。',
+ ul_quota_none:'你今年的年假已经用完 - 无法再提交新申请。',
+ v_urlaub_exceeds:'此申请共{n}天，但你只剩{rem}天年假。',
+ ul_quota_live:'此申请：{n}天。之后剩余：{left}天年假。',
  lbl_von:'开始日期',lbl_bis:'结束日期',btn_req:'🌴 申请休假',
  sent_fb:'✓ 申请已发送（🟧 等待批准）。区域经理会立即看到——批准结果会自动显示在这里。',
  sent_off:'✓ 申请已保存（🟧 等待批准）。请通过WhatsApp发送给区域经理以确认。',
@@ -3303,7 +3334,7 @@ function maFilialeUrlaub(filiale){
 // "own" wird gesetzt, wenn die Ueberschneidung der eigene, noch nicht entschiedene Antrag
 // ist — dann bietet die Oberflaeche "aendern" an, statt einen zweiten Antrag zuzulassen.
 // skipDocId = der Antrag, der gerade geaendert wird (darf sich nicht selbst blockieren).
-function maValidateUrlaub(fromStr,toStr,existing,todayStr,selfId,skipDocId,rules){
+function maValidateUrlaub(fromStr,toStr,existing,todayStr,selfId,skipDocId,rules,remaining){
   rules=rules||URLAUB_RULES_DEFAULT;
   if(!fromStr||!toStr)return{ok:false,reason:t('v_pick')};
   var f=maParseDate(fromStr),tt=maParseDate(toStr);
@@ -3311,9 +3342,13 @@ function maValidateUrlaub(fromStr,toStr,existing,todayStr,selfId,skipDocId,rules
   if(tt<f)return{ok:false,reason:t('v_endb4')};
   var ahead=maDaysAhead(fromStr,todayStr);
   if(ahead<rules.minAdvanceDays)return{ok:false,reason:t('v_min10',{n:ahead,min:rules.minAdvanceDays})};
-  if(rules.maxDaysPerRequest){
-    var span=Math.round((tt-f)/86400000)+1;
-    if(span>rules.maxDaysPerRequest)return{ok:false,reason:t('v_maxdays',{n:rules.maxDaysPerRequest,m:span})};
+  var span=Math.round((tt-f)/86400000)+1;
+  if(rules.maxDaysPerRequest&&span>rules.maxDaysPerRequest)return{ok:false,reason:t('v_maxdays',{n:rules.maxDaysPerRequest,m:span})};
+  // remaining = Resturlaub aus emp_welo.urlaubOffen, siehe maUrlaubRemaining()
+  // weiter unten. null = keine Welo-Daten -> keine Sperre (fail open).
+  if(remaining!=null){
+    if(remaining<=0)return{ok:false,reason:t('ul_quota_none')};
+    if(span>remaining)return{ok:false,reason:t('v_urlaub_exceeds',{n:span,rem:remaining})};
   }
   var blackout=maBlackoutHit(fromStr,toStr,rules);
   if(blackout)return{ok:false,reason:t('v_blackout',{label:blackout.label||(maFmtDE(blackout.from)+'–'+maFmtDE(blackout.to)),range:maFmtDE(blackout.from)+'–'+maFmtDE(blackout.to)})};
@@ -3332,6 +3367,32 @@ function maValidateUrlaub(fromStr,toStr,existing,todayStr,selfId,skipDocId,rules
     return{ok:false,reason:t('v_ov',{who:e.name+' ('+range+')'})};
   }
   return{ok:true};
+}
+// Tage-Spanne wie überall sonst in der App (automation/src/plan-urlaub-
+// ost|west.js nutzt dieselbe Formel): alle Kalendertage inklusive. Ein
+// Sonntag am Rand ist schon vorher via maTrimSonntag entfernt, ein Sonntag
+// MITTEN im Zeitraum zählt hier mit, genau wie bei rules.maxDaysPerRequest.
+function maUrlaubDaySpan(fromStr,toStr){
+  var f=maParseDate(fromStr),t=maParseDate(toStr);
+  if(!f||!t)return 0;
+  return Math.round((t-f)/86400000)+1;
+}
+// Resturlaub (emp_welo.urlaubOffen) abzüglich der eigenen, noch in der
+// Zukunft liegenden, nicht abgelehnten Anträge — dieselbe Rechnung wie in
+// den Urlaubsplan-Skripten (automation/src/plan-urlaub-ost|west.js:
+// "urlaubOffen abzüglich bereits gebuchter Urlaub"). Nur zukünftige
+// Einträge werden abgezogen: vergangene Tage hat Welo beim täglichen Sync
+// bereits selbst aus "Offen" herausgerechnet, die nochmal abzuziehen würde
+// doppelt zählen. skipDocId = der Antrag, der gerade bearbeitet wird (zählt
+// nicht gegen sich selbst). null = noch kein emp_welo-Eintrag vorhanden
+// (z.B. ganz neuer Mitarbeiter) -> keine Sperre.
+function maUrlaubRemaining(sess,skipDocId){
+  if(weloSelfUrlaubOffen==null||!sess)return null;
+  var today=maTodayISO();
+  var used=maFilialeUrlaub(sess.filiale).filter(function(e){
+    return ''+e.id===''+sess.id && e.status!=='rejected' && e.to>=today && (!skipDocId||e.docId!==skipDocId);
+  }).reduce(function(sum,e){ return sum+maUrlaubDaySpan(e.from,e.to); },0);
+  return Math.max(0, weloSelfUrlaubOffen-used);
 }
 
 // Parse a minimal employee CSV (Personalnummer;Name;Filiale) for fallback import
@@ -4465,12 +4526,16 @@ function maEditReqStart(docId){
   document.getElementById('ul-to').value=e.to||'';
   var fb=document.getElementById('ul-feedback'); fb.style.display='none'; fb.textContent='';
   maReqRenderMode();
+  maRenderUlRulesBox();
+  maCheckBesetzungPreview();
 }
 function maEditReqCancel(){
   maEditReq=null; maEditReqRange='';
   document.getElementById('ul-from').value=''; document.getElementById('ul-to').value='';
   var fb=document.getElementById('ul-feedback'); fb.style.display='none'; fb.textContent='';
   maReqRenderMode();
+  maRenderUlRulesBox();
+  var box=document.getElementById('ul-besetzung'); if(box) box.innerHTML='';
 }
 // Meldung + ggf. "Antrag aendern"-Knopf. Bewusst ueber textContent/DOM statt innerHTML,
 // damit ein Filial-/Mitarbeitername im Text kein Markup einschleusen kann.
@@ -4522,6 +4587,21 @@ function maRenderUlRulesBox(){
   var box=document.getElementById('ul-rules-box'); if(!box) return;
   var r=maUrlaubRules;
   var lines=[];
+  // Resturlaub-Anzeige + Sperre, wenn das Jahr aufgebraucht ist (Auftrag
+  // t.duong 31.10.2026) — skipDocId=maEditReq, damit der gerade bearbeitete
+  // Antrag nicht gegen sich selbst zählt.
+  var sess=maSession();
+  var remaining=sess?maUrlaubRemaining(sess,maEditReq):null;
+  var submitBtn=document.getElementById('ul-submit');
+  if(remaining!=null){
+    if(remaining<=0){
+      lines.push('<strong style="color:var(--red)">'+t('ul_quota_none')+'</strong>');
+      if(submitBtn) submitBtn.disabled=true;
+    } else {
+      lines.push(t('ul_quota_left',{n:remaining}));
+      if(submitBtn) submitBtn.disabled=false;
+    }
+  } else if(submitBtn){ submitBtn.disabled=false; }
   lines.push(t('rules_advance',{min:r.minAdvanceDays}));
   if(r.maxDaysPerRequest) lines.push(t('rules_maxdays',{n:r.maxDaysPerRequest}));
   lines.push(t(r.zweitfilialeCountsForConflict ? 'rules_overlap_zweit' : 'rules_overlap'));
@@ -4567,13 +4647,14 @@ function maRequestUrlaub(){
   var from=trimmed.from,to=trimmed.to;
   var fb=document.getElementById('ul-feedback');
   var rules=maUrlaubRules;
+  var remaining=maUrlaubRemaining(sess,maEditReq);
   // Zweitfiliale nur laden/prüfen, wenn die Region das so eingestellt hat —
   // sonst unnötige Firestore-Reads UND unnötiger Konflikt, den der
   // Gebietsleiter bewusst nicht (mehr) haben will.
   var zweitPromise=rules.zweitfilialeCountsForConflict ? maReqLoadZweitUrlaub(sess) : Promise.resolve([]);
   zweitPromise.then(function(zweitEntries){
   var existing=maFilialeUrlaub(sess.filiale).concat(zweitEntries);
-  var v=maValidateUrlaub(from,to,existing,maTodayISO(),sess.id,maEditReq,rules);
+  var v=maValidateUrlaub(from,to,existing,maTodayISO(),sess.id,maEditReq,rules,remaining);
   if(!v.ok){ maReqFeedback(v); return; }
   // Mindestbesetzung nur als HARTE Sperre prüfen, wenn die Region das so will
   // (staffBlockMode==='block') — im Standardfall ('warn') bleibt es bei der
@@ -4618,6 +4699,7 @@ function maRequestUrlaub(){
     p.then(function(){
         maReqSetBusy(false);
         maEditReq=null; maEditReqRange=''; maReqRenderMode();
+        maRenderUlRulesBox();
         fb.style.display='block';fb.style.color='var(--grn)';
         fb.textContent=t(editing?'edit_ok':'sent_fb');
         document.getElementById('ul-from').value='';document.getElementById('ul-to').value='';
