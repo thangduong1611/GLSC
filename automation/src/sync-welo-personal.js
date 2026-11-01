@@ -560,6 +560,16 @@ async function getTagesumsatzAlle(page, sessionBase, date) {
   return out;
 }
 
+// Liest regions/{slug}.weloSyncPaused aus Firestore — Set der Region-Slugs,
+// für die der Gebietsleiter die automatische Welo-Synchronisierung über das
+// Settings-Panel in index.html pausiert hat (siehe Kommentar in syncAll()).
+async function getPausedRegions(db) {
+  const snap = await db.collection('regions').get();
+  const out = new Set();
+  snap.forEach((doc) => { if ((doc.data() || {}).weloSyncPaused) out.add(doc.id); });
+  return out;
+}
+
 // Läuft von mehreren Stellen aus (Startup-Catchup, manueller Doppelklick,
 // automatische Umsatz-Auffrischung im Watcher) — withWeloLock verhindert,
 // dass zwei dieser Läufe sich eine Welo-Sitzung teilen und sich gegenseitig
@@ -593,6 +603,23 @@ async function syncAll() {
     console.log('Lade Personalliste (Suche "*" auf /pf/index.html, regionsübergreifend)…');
     const personal = await getPersonalRows(page, sessionBase, filMetaByNr);
     console.log(`  ${Object.keys(personal).length} Mitarbeiter gefunden.`);
+
+    // regions/{slug}.weloSyncPaused=true (Settings-Toggle in index.html,
+    // Auftrag t.duong 01.11.2026): Mitarbeiter dieser Region(en) werden
+    // behandelt, als hätte Welo sie gar nicht zurückgegeben — dieselbe
+    // bestehende Eingrenzung weiter unten (regionenDiesesLaufs), die schon
+    // verhindert, dass eine Region, die dieser Lauf nicht abdeckt, fälschlich
+    // als "ausgeschieden" markiert wird, greift dadurch automatisch auch hier.
+    // Bestehende emp_welo-/emps-Daten dieser Region bleiben unverändert stehen
+    // (zuletzt bekannter Stand), werden nur nicht mehr überschrieben.
+    const pausedRegions = await getPausedRegions(db);
+    if (pausedRegions.size) {
+      let pausiertUebersprungen = 0;
+      for (const id of Object.keys(personal)) {
+        if (pausedRegions.has(resolveRegion(personal[id].marktNr))) { delete personal[id]; pausiertUebersprungen++; }
+      }
+      console.log(`  ⏸️ ${pausiertUebersprungen} Mitarbeiter in pausierten Region(en) [${[...pausedRegions].join(', ')}] übersprungen.`);
+    }
 
     const heute = new Date();
     const ids = Object.keys(personal);

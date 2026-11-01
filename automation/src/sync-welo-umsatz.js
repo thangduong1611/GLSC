@@ -55,6 +55,18 @@ function parseRows(csvText) {
     });
 }
 
+// regions/{slug}.weloSyncPaused=true (Settings-Toggle in index.html, Auftrag
+// t.duong 01.11.2026) — dieselbe Pause wie in sync-welo-personal.js, hier
+// auf die Umsatz-Zeilen angewandt, damit eine Region ganz ohne Welo-Zugriff
+// (z.B. West) nicht mehr automatisch überschrieben wird, während andere
+// Regionen unverändert weiterlaufen.
+async function getPausedRegions(db) {
+  const snap = await db.collection('regions').get();
+  const out = new Set();
+  snap.forEach((doc) => { if ((doc.data() || {}).weloSyncPaused) out.add(doc.id); });
+  return out;
+}
+
 async function main() {
   if (!CSV_URL) {
     throw new Error('WELO_STATISTIK_URL fehlt in der .env-Datei.');
@@ -62,10 +74,17 @@ async function main() {
 
   console.log('Lade Welo-Statistik-Export…');
   const csvText = await fetchCsv(CSV_URL);
-  const rows = parseRows(csvText);
+  let rows = parseRows(csvText);
   console.log(`${rows.length} Zeilen geparst.`);
 
   const db = getDb();
+  const pausedRegions = await getPausedRegions(db);
+  if (pausedRegions.size) {
+    const vorher = rows.length;
+    rows = rows.filter((row) => !pausedRegions.has(resolveRegion(row.marktNr)));
+    console.log(`  ⏸️ ${vorher - rows.length} Zeile(n) in pausierten Region(en) [${[...pausedRegions].join(', ')}] übersprungen.`);
+  }
+
   const batch = db.batch();
   const now = admin.firestore.FieldValue.serverTimestamp();
 

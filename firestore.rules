@@ -72,11 +72,11 @@ service cloud.firestore {
       // verhindert das Durchzählen aller Regionen).
       allow get: if isAuthed();
       allow list: if isManager();
-      // Ein Manager darf nur urlaubRules seiner EIGENEN Region ändern — label/
-      // syncUrl bleiben admin-only (per Skript gesetzt, siehe regions/{slug}
-      // Kommentar weiter oben im Projekt).
+      // Ein Manager darf nur urlaubRules und weloSyncPaused seiner EIGENEN
+      // Region ändern — label/syncUrl bleiben admin-only (per Skript gesetzt,
+      // siehe regions/{slug} Kommentar weiter oben im Projekt).
       allow update: if isManagerForRegion(slug)
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['urlaubRules']);
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['urlaubRules', 'weloSyncPaused']);
       allow create, delete: if false;
     }
 

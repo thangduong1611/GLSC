@@ -1159,6 +1159,15 @@ window.onerror=function(msg,src,line){
     <div id="fr-creds-stat" style="font-size:12px;margin-top:8px;font-weight:600"></div>
   </div>
   <div class="card">
+    <div class="card-title">📡 Automatische Welo-Aktualisierung <span class="badge badge-blu" id="ws-region-badge">—</span></div>
+    <div class="info">Gilt nur für die aktuell gewählte Region. Hast du für diese Region keinen Welo-Zugriff mehr (z.B. nach einer Umstrukturierung), pausiere hier die automatische Synchronisierung — bestehende Daten (Resturlaub, Tagesziel, Stundenkonto, Umsatz) bleiben wie zuletzt bekannt erhalten, werden aber nicht mehr automatisch überschrieben. Andere Regionen laufen unverändert weiter.</div>
+    <label style="display:flex;align-items:center;gap:8px;margin-top:8px;cursor:pointer">
+      <input type="checkbox" id="ws-paused" style="width:16px;height:16px" onchange="wsSaveToggle()">
+      <span>Automatische Welo-Aktualisierung für diese Region pausieren</span>
+    </label>
+    <div id="ws-stat" style="font-size:12px;margin-top:8px;font-weight:600"></div>
+  </div>
+  <div class="card">
     <div class="card-title">🌴 Urlaub-Regeln <span class="badge badge-blu" id="ur-region-badge">—</span></div>
     <div class="info">Gelten nur für Urlaubsanträge von Mitarbeitern in der aktuell gewählten Region — jede Region kann ihre eigenen Regeln haben.</div>
     <div class="row2">
@@ -5663,6 +5672,12 @@ var REGION_SYNC_URL={};
 var URLAUB_RULES_DEFAULT={minAdvanceDays:10,maxDaysPerRequest:null,zweitfilialeCountsForConflict:true,minStaffRequired:1,staffBlockMode:'warn',blackoutPeriods:[]};
 var REGION_URLAUB_RULES={};
 var urBlackoutDraft=[];
+// Pausiert die automatische Welo-Synchronisierung (sync-welo-personal.js/
+// sync-welo-umsatz.js) für genau diese Region — z.B. wenn der Gebietsleiter
+// den Welo-Zugriff für diese Region verloren hat, aber andere Regionen davon
+// unberührt bleiben sollen (Auftrag t.duong 01.11.2026). regions/{slug}.
+// weloSyncPaused=true, von den Automation-Skripten direkt gelesen.
+var REGION_WELO_PAUSED={};
 function regionLoadLabels(){
   return fbDb.collection('regions').get().then(function(snap){
     snap.forEach(function(doc){
@@ -5670,10 +5685,31 @@ function regionLoadLabels(){
       if(d.label) REGION_LABELS[doc.id]=d.label;
       if(d.syncUrl) REGION_SYNC_URL[doc.id]=d.syncUrl;
       REGION_URLAUB_RULES[doc.id]=Object.assign({}, URLAUB_RULES_DEFAULT, d.urlaubRules||{});
+      REGION_WELO_PAUSED[doc.id]=!!d.weloSyncPaused;
     });
   }).catch(function(e){ console.warn('regions labels', e.message); });
 }
 function urRulesForRegion(region){ return REGION_URLAUB_RULES[region] || URLAUB_RULES_DEFAULT; }
+function wsRenderToggle(){
+  if(!activeRegion) return;
+  var badge=document.getElementById('ws-region-badge'); if(badge) badge.textContent=REGION_LABELS[activeRegion]||activeRegion;
+  var cb=document.getElementById('ws-paused'); if(cb) cb.checked=!!REGION_WELO_PAUSED[activeRegion];
+  var stat=document.getElementById('ws-stat'); if(stat) stat.textContent='';
+}
+function wsSaveToggle(){
+  if(!fbReady||!fbDb||!fbManager||!activeRegion){ alert('Bitte zuerst als Manager anmelden.'); return; }
+  var paused=document.getElementById('ws-paused').checked;
+  var stat=document.getElementById('ws-stat');
+  stat.textContent='⏳ Speichere…'; stat.style.color='#6B6860';
+  fbDb.collection('regions').doc(activeRegion).set({weloSyncPaused:paused},{merge:true})
+    .then(function(){
+      REGION_WELO_PAUSED[activeRegion]=paused;
+      stat.textContent=paused?'⏸️ Pausiert — Welo-Daten werden für diese Region nicht mehr automatisch aktualisiert.':'✓ Aktiv — automatische Aktualisierung läuft wieder.';
+      stat.style.color=paused?'#B7860B':'#1E8449';
+      toast(paused?'⏸️ Welo-Sync pausiert':'✓ Welo-Sync aktiv');
+    })
+    .catch(function(e){ stat.textContent='⚠️ Fehler: '+e.message; stat.style.color='#C0392B'; document.getElementById('ws-paused').checked=!paused; });
+}
 function urRenderBlackoutList(){
   var box=document.getElementById('ur-blackout-list'); if(!box) return;
   if(!urBlackoutDraft.length){ box.innerHTML='<div style="font-size:12px;color:var(--mut)">Keine Sperrzeiten.</div>'; return; }
@@ -5774,6 +5810,7 @@ function regionRenderSwitcher(){
   if(kpiCard){ kpiCard.style.display=(activeRegion==='ost'||activeRegion==='west')?'block':'none'; if(kpiCard.style.display==='block' && typeof kpiDraftsRender==='function') kpiDraftsRender(); }
   if(typeof weekWeloBindRegion==='function') weekWeloBindRegion();
   if(typeof urRulesRender==='function') urRulesRender();
+  if(typeof wsRenderToggle==='function') wsRenderToggle();
   if(typeof schwanBindRegion==='function') schwanBindRegion();
   var wrap=document.getElementById('region-switcher-wrap');
   var label=document.getElementById('region-switcher-label');
