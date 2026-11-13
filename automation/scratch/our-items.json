@@ -1,0 +1,1227 @@
+[
+  {
+    "id": "80191",
+    "cat": "sonstige",
+    "unit": "Stueck",
+    "de": "Bambusmatte groß 27×27cm",
+    "vi": "Mành tre lớn 27×27cm"
+  },
+  {
+    "id": "99315",
+    "cat": "sonstige",
+    "unit": "Stueck",
+    "de": "Bambusmatte 24×24cm (SC)",
+    "vi": "Mành tre 24×24cm"
+  },
+  {
+    "id": "80024",
+    "cat": "sauce",
+    "unit": "Stueck",
+    "de": "Chilipulver Shichimi Togarashi",
+    "vi": "Bột ớt Shichimi Togarashi"
+  },
+  {
+    "id": "98009",
+    "cat": "sauce",
+    "unit": "Stueck",
+    "de": "Chilisauce (4,5l Kanister)",
+    "vi": "Sốt ớt (can 4,5l)"
+  },
+  {
+    "id": "99143",
+    "cat": "sonstige",
+    "unit": "Stueck",
+    "de": "Essstäbchen Bambus 23cm",
+    "vi": "Đũa tre 23cm"
+  },
+  {
+    "id": "80318",
+    "cat": "sauce",
+    "unit": "Stueck",
+    "de": "Furikake (Nori-Würzmischung)",
+    "vi": "Furikake (gia vị rắc cơm)"
+  },
+  {
+    "id": "80028",
+    "cat": "tk",
+    "unit": "Stueck",
+    "de": "Wakame getrocknet",
+    "vi": "Rong wakame khô"
+  },
+  {
+    "id": "98044",
+    "cat": "sauce",
+    "unit": "KG",
+    "de": "Sesam schwarz geröstet (1kg)",
+    "vi": "Mè đen rang (1kg)"
+  },
+  {
+    "id": "98043",
+    "cat": "sauce",
+    "unit": "KG",
+    "de": "Sesam weiß geröstet (1kg)",
+    "vi": "Mè trắng rang (1kg)"
+  },
+  {
+    "id": "98060",
+    "cat": "reis",
+    "unit": "Stueck",
+    "de": "Nori Gold halbe Blätter",
+    "vi": "Nori Gold lá nửa"
+  },
+  {
+    "id": "98061",
+    "cat": "reis",
+    "unit": "Stueck",
+    "de": "Nori Gold ganze Blätter",
+    "vi": "Nori Gold lá nguyên"
+  },
+  {
+    "id": "98101",
+    "cat": "sauce",
+    "unit": "Stueck",
+    "de": "Ingwer Gari eingelegt (1kg)",
+    "vi": "Gừng Gari ngâm (1kg)"
+  },
+  {
+    "id": "80178",
+    "cat": "gemuese",
+    "unit": "Stueck",
+    "de": "Röstzwiebeln",
+    "vi": "Hành phi"
+  },
+  {
+    "id": "80264",
+    "cat": "reis",
+    "unit": "Stueck",
+    "de": "Reispapier rund 22cm",
+    "vi": "Bánh tráng tròn 22cm"
+  },
+  {
+    "id": "4939",
+    "cat": "sauce",
+    "unit": "Stueck",
+    "de": "Wasabi Paste",
+    "vi": "Mù tạt Wasabi"
+  },
+  {
+    "id": "80132",
+    "cat": "sauce",
+    "unit": "Stueck",
+    "de": "Mayo japanese style",
+    "vi": "Sốt Mayo kiểu Nhật"
+  },
+  {
+    "id": "80127",
+    "cat": "sauce",
+    "unit": "Stueck",
+    "de": "Sesam-Sauce Goma Dare (1l)",
+    "vi": "Sốt mè Goma Dare (1l)"
+  },
+  {
+    "id": "80267",
+    "cat": "reis",
+    "unit": "Stueck",
+    "de": "Reisnudeln 400g",
+    "vi": "Bún gạo 400g"
+  },
+  {
+    "id": "98019",
+    "cat": "sauce",
+    "unit": "Stueck",
+    "de": "Unagi-Sauce (Aalsauce, 1,8l)",
+    "vi": "Sốt lươn Unagi (1,8l)"
+  },
+  {
+    "id": "99309",
+    "cat": "sauce",
+    "unit": "Stueck",
+    "de": "Sushi Ingwer im Glas (SC)",
+    "vi": "Gừng sushi lọ thủy tinh"
+  },
+  {
+    "id": "80020",
+    "cat": "sauce",
+    "unit": "Stueck",
+    "de": "Sesamöl 100% (1,8l)",
+    "vi": "Dầu mè 100% (1,8l)"
+  },
+  {
+    "id": "80316",
+    "cat": "sauce",
+    "unit": "Stueck",
+    "de": "Sushi-Su Marinade (10l)",
+    "vi": "Giấm trộn cơm Sushi-Su (10l)"
+  },
+  {
+    "id": "80003",
+    "cat": "reis",
+    "unit": "Packung",
+    "de": "Sushireis (Sack 10kg)",
+    "vi": "Gạo sushi (bao 10kg)"
+  },
+  {
+    "id": "4857",
+    "cat": "tk",
+    "unit": "Stueck",
+    "de": "Mochi Cheesecake 192g (TK)",
+    "vi": "Mochi phô mai 192g (đông lạnh)"
+  },
+  {
+    "id": "4854",
+    "cat": "tk",
+    "unit": "Stueck",
+    "de": "Mochi Kakao 192g (TK)",
+    "vi": "Mochi ca cao 192g (đông lạnh)"
+  },
+  {
+    "id": "4852",
+    "cat": "tk",
+    "unit": "Stueck",
+    "de": "Mochi Kokosnuss 192g (TK)",
+    "vi": "Mochi dừa 192g (đông lạnh)"
+  },
+  {
+    "id": "4853",
+    "cat": "tk",
+    "unit": "Stueck",
+    "de": "Mochi Mango 192g (TK)",
+    "vi": "Mochi xoài 192g (đông lạnh)"
+  },
+  {
+    "id": "4858",
+    "cat": "tk",
+    "unit": "Stueck",
+    "de": "Mochi Vanille 192g (TK)",
+    "vi": "Mochi vani 192g (đông lạnh)"
+  },
+  {
+    "id": "91580",
+    "cat": "fisch",
+    "unit": "Stueck",
+    "de": "Masago Orange 450g (TK)",
+    "vi": "Trứng cá Masago cam 450g"
+  },
+  {
+    "id": "1599",
+    "cat": "tk",
+    "unit": "KG",
+    "de": "Goma Wakame Salat (TK)",
+    "vi": "Gỏi rong biển Goma Wakame"
+  },
+  {
+    "id": "4978",
+    "cat": "tk",
+    "unit": "Stueck",
+    "de": "Inariage Sojataschen 900g (TK)",
+    "vi": "Túi đậu Inari 900g (đông lạnh)"
+  },
+  {
+    "id": "4807",
+    "cat": "tk",
+    "unit": "Stueck",
+    "de": "Edamame geschält 500g (TK)",
+    "vi": "Đậu nành Edamame 500g (đông lạnh)"
+  },
+  {
+    "id": "4980",
+    "cat": "fisch",
+    "unit": "KG",
+    "de": "Surimi Maki Sticks 1kg (TK)",
+    "vi": "Thanh cua Surimi 1kg (đông lạnh)"
+  },
+  {
+    "id": "4912",
+    "cat": "tk",
+    "unit": "Stueck",
+    "de": "Gyoza Seafood 500g (TK)",
+    "vi": "Gyoza hải sản 500g (đông lạnh)"
+  },
+  {
+    "id": "4910",
+    "cat": "tk",
+    "unit": "Stueck",
+    "de": "Gyoza vegetarisch 500g (TK)",
+    "vi": "Gyoza chay 500g (đông lạnh)"
+  },
+  {
+    "id": "4899",
+    "cat": "tk",
+    "unit": "Stueck",
+    "de": "Gebratene Nudeln mit Gemüse (TK)",
+    "vi": "Mì xào rau (đông lạnh)"
+  },
+  {
+    "id": "4985",
+    "cat": "tk",
+    "unit": "Stueck",
+    "de": "Tamago Ei-Omelett Block 600g (TK)",
+    "vi": "Trứng cuộn Tamago 600g (đông lạnh)"
+  },
+  {
+    "id": "1114",
+    "cat": "fisch",
+    "unit": "Stueck",
+    "de": "Sushi Ebi 3L (gekochte Garnele)",
+    "vi": "Tôm sushi Ebi 3L (đã luộc)"
+  },
+  {
+    "id": "1110",
+    "cat": "fisch",
+    "unit": "Stueck",
+    "de": "Garnelen für Gunkan",
+    "vi": "Tôm cho Gunkan"
+  },
+  {
+    "id": "2850",
+    "cat": "fisch",
+    "unit": "KG",
+    "de": "Thunfisch Big Eye Saku (TK, kg)",
+    "vi": "Cá ngừ Big Eye Saku (đông lạnh)"
+  },
+  {
+    "id": "2855",
+    "cat": "fisch",
+    "unit": "KG",
+    "de": "Thunfisch Big Eye Saku semi (TK)",
+    "vi": "Cá ngừ Big Eye Saku nhỏ (đông lạnh)"
+  },
+  {
+    "id": "2851",
+    "cat": "fisch",
+    "unit": "KG",
+    "de": "Thunfisch Yellowfin Loins (TK)",
+    "vi": "Cá ngừ Yellowfin phi lê (đông lạnh)"
+  },
+  {
+    "id": "1639",
+    "cat": "fleisch",
+    "unit": "KG",
+    "de": "Yakitori-Spieße 40g (Hähnchen, TK)",
+    "vi": "Xiên gà Yakitori 40g (đông lạnh)"
+  },
+  {
+    "id": "80735",
+    "cat": "verpackung",
+    "unit": "Stueck",
+    "de": "Plastik Party Box M",
+    "vi": "Hộp tiệc nhựa M"
+  },
+  {
+    "id": "80736",
+    "cat": "verpackung",
+    "unit": "Stueck",
+    "de": "Plastik Party Box L",
+    "vi": "Hộp tiệc nhựa L"
+  },
+  {
+    "id": "80734",
+    "cat": "verpackung",
+    "unit": "Stueck",
+    "de": "Plastik Party Box S",
+    "vi": "Hộp tiệc nhựa S"
+  },
+  {
+    "id": "99338",
+    "cat": "fisch",
+    "unit": "KG",
+    "de": "Lachsfilet (SC, kg)",
+    "vi": "Phi lê cá hồi (kg)"
+  },
+  {
+    "id": "4913",
+    "cat": "fleisch",
+    "unit": "Packung",
+    "de": "Gyoza Huhn & Gemüse (TK)",
+    "vi": "Gyoza gà & rau (đông lạnh)"
+  },
+  {
+    "id": "80051-A",
+    "cat": "sauce",
+    "unit": "Packung",
+    "de": "Chilipaste",
+    "vi": "Tương ớt"
+  },
+  {
+    "id": "98118",
+    "cat": "sauce",
+    "unit": "Packung",
+    "de": "Sojasauce",
+    "vi": "Nước tương"
+  },
+  {
+    "id": "1649",
+    "cat": "fleisch",
+    "unit": "KG",
+    "de": "Chicken Katsu (TK, kg)",
+    "vi": "Gà Katsu (đông lạnh)"
+  },
+  {
+    "id": "80161",
+    "cat": "sauce",
+    "unit": "Packung",
+    "de": "Golden Curry Currypaste (1kg)",
+    "vi": "Cà ri Golden Curry (1kg)"
+  },
+  {
+    "id": "4804",
+    "cat": "tk",
+    "unit": "Packung",
+    "de": "Udonnudeln (TK)",
+    "vi": "Mì Udon (đông lạnh)"
+  },
+  {
+    "id": "4675",
+    "cat": "fleisch",
+    "unit": "KGM",
+    "de": "Hähnchenbrust gegrillt 90-110g (TK)",
+    "vi": "Ức gà nướng 90-110g (đông lạnh)"
+  },
+  {
+    "id": "307",
+    "cat": "fisch",
+    "unit": "",
+    "de": "Garnelen 41/50 Black Tiger (TK)",
+    "vi": "Tôm Black Tiger 41/50 (đông lạnh)"
+  },
+  {
+    "id": "1648",
+    "cat": "fleisch",
+    "unit": "",
+    "de": "Chicken Tatsutaage (TK)",
+    "vi": "Gà Tatsutaage (đông lạnh)"
+  },
+  {
+    "id": "D7524333",
+    "cat": "reinigung",
+    "unit": "Stueck",
+    "de": "Papierhandtücher Z-Fold",
+    "vi": "Khăn giấy gấp Z"
+  },
+  {
+    "id": "100953747",
+    "cat": "reinigung",
+    "unit": "Flasche",
+    "de": "Suma QuickDes D4.12 Desinfektion",
+    "vi": "Suma QuickDes D4.12 khử trùng"
+  },
+  {
+    "id": "7511933",
+    "cat": "reinigung",
+    "unit": "Flasche",
+    "de": "Suma Light D1.2 Spülmittel",
+    "vi": "Suma Light D1.2 nước rửa chén"
+  },
+  {
+    "id": "7010025",
+    "cat": "reinigung",
+    "unit": "Flasche",
+    "de": "Suma Multi D2 Reiniger",
+    "vi": "Suma Multi D2 chất tẩy rửa"
+  },
+  {
+    "id": "7516437",
+    "cat": "reinigung",
+    "unit": "Flasche",
+    "de": "Suma Cit D5.8 Entkalker",
+    "vi": "Suma Cit D5.8 tẩy cặn vôi"
+  },
+  {
+    "id": "7517445",
+    "cat": "reinigung",
+    "unit": "Stück",
+    "de": "Suma Lavette Green Tücher",
+    "vi": "Khăn lau Suma Lavette Green"
+  },
+  {
+    "id": "100875238",
+    "cat": "reinigung",
+    "unit": "Flasche",
+    "de": "Soft Care Sensisept Handseife",
+    "vi": "Soft Care Sensisept xà phòng tay"
+  },
+  {
+    "id": "7513050",
+    "cat": "reinigung",
+    "unit": "Flasche",
+    "de": "TASKI Sprint Glasreiniger",
+    "vi": "TASKI Sprint lau kính"
+  },
+  {
+    "id": "101103807",
+    "cat": "reinigung",
+    "unit": "Flasche",
+    "de": "Soft Care Des E H5 Desinfektion",
+    "vi": "Soft Care Des E H5 khử trùng"
+  },
+  {
+    "id": "100959758",
+    "cat": "reinigung",
+    "unit": "Flasche",
+    "de": "SURE Antibac Handwaschmittel",
+    "vi": "SURE Antibac rửa tay"
+  },
+  {
+    "id": "100953625",
+    "cat": "reinigung",
+    "unit": "Packung",
+    "de": "Soft Care Aquagard H72",
+    "vi": "Soft Care Aquagard H72"
+  },
+  {
+    "id": "7010097",
+    "cat": "reinigung",
+    "unit": "Kanister",
+    "de": "Suma Lima L3 Spülmaschine (10l)",
+    "vi": "Suma Lima L3 máy rửa chén (10l)"
+  },
+  {
+    "id": "7010130",
+    "cat": "reinigung",
+    "unit": "Kanister",
+    "de": "Suma Rinse A5 Klarspüler (10l)",
+    "vi": "Suma Rinse A5 nước làm bóng (10l)"
+  },
+  {
+    "id": "100848994",
+    "cat": "reinigung",
+    "unit": "Packung",
+    "de": "Sun PF Spülmaschinensalz",
+    "vi": "Sun PF muối máy rửa chén"
+  },
+  {
+    "id": "100892014",
+    "cat": "reinigung",
+    "unit": "Flasche",
+    "de": "SURE Descaler Entkalker",
+    "vi": "SURE Descaler tẩy cặn vôi"
+  },
+  {
+    "id": "AF10000",
+    "cat": "gemuese",
+    "unit": "Stueck",
+    "de": "Avocados (Ready to Eat)",
+    "vi": "Bơ (chín sẵn)"
+  },
+  {
+    "id": "AF10001",
+    "cat": "gemuese",
+    "unit": "Stueck",
+    "de": "Salatgurken 400-500g",
+    "vi": "Dưa leo 400-500g"
+  },
+  {
+    "id": "AF10003",
+    "cat": "gemuese",
+    "unit": "Stueck",
+    "de": "Paprika rot (lose)",
+    "vi": "Ớt chuông đỏ"
+  },
+  {
+    "id": "AF10007",
+    "cat": "gemuese",
+    "unit": "Kiste",
+    "de": "Rucola 100g Bund",
+    "vi": "Rau Rucola bó 100g"
+  },
+  {
+    "id": "AF10018",
+    "cat": "gemuese",
+    "unit": "Schale",
+    "de": "Rucola 100g Schale",
+    "vi": "Rau Rucola khay 100g"
+  },
+  {
+    "id": "AF10010",
+    "cat": "gemuese",
+    "unit": "Bund",
+    "de": "Schnittlauch 100g Bund",
+    "vi": "Hẹ tây bó 100g"
+  },
+  {
+    "id": "AF10006",
+    "cat": "gemuese",
+    "unit": "Stueck",
+    "de": "Mango (Ready to Eat)",
+    "vi": "Xoài (chín sẵn)"
+  },
+  {
+    "id": "AF10008",
+    "cat": "gemuese",
+    "unit": "Schale",
+    "de": "Dill (lose)",
+    "vi": "Thì là"
+  },
+  {
+    "id": "AF10005",
+    "cat": "gemuese",
+    "unit": "Stueck",
+    "de": "Eisbergsalat (lose)",
+    "vi": "Xà lách Mỹ"
+  },
+  {
+    "id": "AF10012",
+    "cat": "gemuese",
+    "unit": "Beutel",
+    "de": "Koriander 100g",
+    "vi": "Ngò rí 100g"
+  },
+  {
+    "id": "AF10011",
+    "cat": "gemuese",
+    "unit": "Beutel",
+    "de": "Minze 100g",
+    "vi": "Bạc hà 100g"
+  },
+  {
+    "id": "AF10009",
+    "cat": "gemuese",
+    "unit": "Stueck",
+    "de": "Basilikum 40g",
+    "vi": "Húng quế 40g"
+  },
+  {
+    "id": "AF10046",
+    "cat": "gemuese",
+    "unit": "KG",
+    "de": "Zwiebeln rot 1kg",
+    "vi": "Hành tím 1kg"
+  },
+  {
+    "id": "AF10039",
+    "cat": "gemuese",
+    "unit": "KG",
+    "de": "Karotten 1kg",
+    "vi": "Cà rốt 1kg"
+  },
+  {
+    "id": "AF10004",
+    "cat": "gemuese",
+    "unit": "Stueck",
+    "de": "Zitronen (Stück)",
+    "vi": "Chanh vàng (quả)"
+  },
+  {
+    "id": "AF10056",
+    "cat": "gemuese",
+    "unit": "Packung",
+    "de": "Broccoli 500g",
+    "vi": "Bông cải xanh 500g"
+  },
+  {
+    "id": "AF10610",
+    "cat": "gemuese",
+    "unit": "Stueck",
+    "de": "Rotkohl 720ml Glas",
+    "vi": "Bắp cải tím lọ 720ml"
+  },
+  {
+    "id": "AF10216",
+    "cat": "sonstige",
+    "unit": "Packung",
+    "de": "Speisesalz 500g",
+    "vi": "Muối ăn 500g"
+  },
+  {
+    "id": "AF10217",
+    "cat": "sonstige",
+    "unit": "Stueck",
+    "de": "Exquisa Frischkäse 200g",
+    "vi": "Phô mai Exquisa 200g"
+  },
+  {
+    "id": "AF11201",
+    "cat": "sonstige",
+    "unit": "Packung",
+    "de": "Rote Bete Saft 0,5l",
+    "vi": "Nước củ dền 0,5l"
+  },
+  {
+    "id": "AF10201",
+    "cat": "sonstige",
+    "unit": "Flasche",
+    "de": "Rapsöl 1l",
+    "vi": "Dầu cải 1l"
+  },
+  {
+    "id": "AF12001",
+    "cat": "fisch",
+    "unit": "Stück",
+    "de": "Thunfisch im eigenen Saft 500g",
+    "vi": "Cá ngừ ngâm 500g"
+  },
+  {
+    "id": "AF10701",
+    "cat": "sauce",
+    "unit": "Flasche",
+    "de": "Sriracha Chilisauce 0,73l",
+    "vi": "Tương ớt Sriracha 0,73l"
+  },
+  {
+    "id": "AF10710",
+    "cat": "sauce",
+    "unit": "Flasche",
+    "de": "Okonomi Sauce 1,8l",
+    "vi": "Sốt Okonomi 1,8l"
+  },
+  {
+    "id": "AF10705",
+    "cat": "sauce",
+    "unit": "Kanister",
+    "de": "Teriyaki Sauce 2,2l",
+    "vi": "Sốt Teriyaki 2,2l"
+  },
+  {
+    "id": "AF10104",
+    "cat": "hygiene",
+    "unit": "Packung",
+    "de": "Nitril-Handschuhe blau S",
+    "vi": "Găng nitril xanh size S"
+  },
+  {
+    "id": "AF10106",
+    "cat": "hygiene",
+    "unit": "Packung",
+    "de": "Nitril-Handschuhe blau L",
+    "vi": "Găng nitril xanh size L"
+  },
+  {
+    "id": "AF10105",
+    "cat": "hygiene",
+    "unit": "Packung",
+    "de": "Nitril-Handschuhe blau M",
+    "vi": "Găng nitril xanh size M"
+  },
+  {
+    "id": "AF10107",
+    "cat": "hygiene",
+    "unit": "Packung",
+    "de": "Nitril-Handschuhe blau XL",
+    "vi": "Găng nitril xanh size XL"
+  },
+  {
+    "id": "AF10100",
+    "cat": "hygiene",
+    "unit": "Packung",
+    "de": "TPE-Handschuhe schwarz S",
+    "vi": "Găng TPE đen size S"
+  },
+  {
+    "id": "AF10101",
+    "cat": "hygiene",
+    "unit": "Packung",
+    "de": "TPE-Handschuhe schwarz M",
+    "vi": "Găng TPE đen size M"
+  },
+  {
+    "id": "AF10102",
+    "cat": "hygiene",
+    "unit": "Packung",
+    "de": "TPE-Handschuhe schwarz L",
+    "vi": "Găng TPE đen size L"
+  },
+  {
+    "id": "AF10103",
+    "cat": "hygiene",
+    "unit": "Packung",
+    "de": "TPE-Handschuhe schwarz XL",
+    "vi": "Găng TPE đen size XL"
+  },
+  {
+    "id": "AF11100",
+    "cat": "verpackung",
+    "unit": "Packung",
+    "de": "Verkaufsetiketten Circle (10 Rollen)",
+    "vi": "Nhãn bán hàng Circle (10 cuộn)"
+  },
+  {
+    "id": "AF10108",
+    "cat": "verpackung",
+    "unit": "Stück",
+    "de": "Küchenrolle 3-lagig (4er)",
+    "vi": "Khăn giấy bếp 3 lớp (4 cuộn)"
+  },
+  {
+    "id": "AF10109",
+    "cat": "verpackung",
+    "unit": "Stück",
+    "de": "Frischhaltefolie 45cm",
+    "vi": "Màng bọc thực phẩm 45cm"
+  },
+  {
+    "id": "AF10112",
+    "cat": "verpackung",
+    "unit": "Stück",
+    "de": "Müllbeutel 120l blau",
+    "vi": "Túi rác 120l xanh"
+  },
+  {
+    "id": "AF10318",
+    "cat": "verpackung",
+    "unit": "Stück",
+    "de": "Spritzbeutel 128",
+    "vi": "Túi bắt kem 128"
+  },
+  {
+    "id": "AF10320",
+    "cat": "hygiene",
+    "unit": "Stück",
+    "de": "Flüssiggas-Kartuschen 227g (4er)",
+    "vi": "Bình gas mini 227g (4 cái)"
+  },
+  {
+    "id": "AF10321",
+    "cat": "hygiene",
+    "unit": "Stück",
+    "de": "Flambierbrenner mit Kartusche",
+    "vi": "Đèn khò + bình gas"
+  },
+  {
+    "id": "AF10110",
+    "cat": "hygiene",
+    "unit": "Stück",
+    "de": "Handdesinfektion Spray 0,5l",
+    "vi": "Xịt sát khuẩn tay 0,5l"
+  },
+  {
+    "id": "AF10204",
+    "cat": "sauce",
+    "unit": "Stück",
+    "de": "Essig 5% Säure 5l",
+    "vi": "Giấm 5% 5l"
+  },
+  {
+    "id": "AF10504",
+    "cat": "reis",
+    "unit": "Stück",
+    "de": "Kokosraspeln 200g",
+    "vi": "Dừa nạo 200g"
+  },
+  {
+    "id": "AF10505",
+    "cat": "dessert",
+    "unit": "Stück",
+    "de": "Lotus Biscoff Kekse 200g",
+    "vi": "Bánh quy Lotus Biscoff 200g"
+  },
+  {
+    "id": "AF10506",
+    "cat": "dessert",
+    "unit": "Stück",
+    "de": "Vanille-Extrakt Ruf 77g",
+    "vi": "Tinh chất vani Ruf 77g"
+  },
+  {
+    "id": "AF10508",
+    "cat": "dessert",
+    "unit": "Stück",
+    "de": "Gezuckerte Kondensmilch 150g",
+    "vi": "Sữa đặc 150g"
+  },
+  {
+    "id": "AF10507",
+    "cat": "dessert",
+    "unit": "Stück",
+    "de": "Puderzucker 250g",
+    "vi": "Đường bột 250g"
+  },
+  {
+    "id": "AF11117",
+    "cat": "verpackung",
+    "unit": "Rolle",
+    "de": "Dekoetikett \"Aktion\" 30mm",
+    "vi": "Nhãn \"Aktion\" 30mm"
+  },
+  {
+    "id": "AF11120",
+    "cat": "verpackung",
+    "unit": "Rolle",
+    "de": "Dekoetikett \"Neu\" 30mm",
+    "vi": "Nhãn \"Neu\" (mới) 30mm"
+  },
+  {
+    "id": "AF11118",
+    "cat": "verpackung",
+    "unit": "Rolle",
+    "de": "Dekoetikett \"Protein\" 30mm",
+    "vi": "Nhãn \"Protein\" 30mm"
+  },
+  {
+    "id": "AF11119",
+    "cat": "verpackung",
+    "unit": "Rolle",
+    "de": "Dekoetikett \"Temperatur\" 30mm",
+    "vi": "Nhãn \"Temperatur\" 30mm"
+  },
+  {
+    "id": "AF11121",
+    "cat": "verpackung",
+    "unit": "Rolle",
+    "de": "Dekoetikett \"Favoriten\" 30mm",
+    "vi": "Nhãn \"Favoriten\" 30mm"
+  },
+  {
+    "id": "AF11111",
+    "cat": "verpackung",
+    "unit": "Rolle",
+    "de": "Schmucketikett \"Fisch & Meer\"",
+    "vi": "Nhãn trang trí \"Cá & Biển\""
+  },
+  {
+    "id": "AF11112",
+    "cat": "verpackung",
+    "unit": "Rolle",
+    "de": "Schmucketikett \"Veggie\"",
+    "vi": "Nhãn trang trí \"Chay\""
+  },
+  {
+    "id": "AF11113",
+    "cat": "fisch",
+    "unit": "Rolle",
+    "de": "Schmucketikett \"Lachs\"",
+    "vi": "Nhãn trang trí \"Cá hồi\""
+  },
+  {
+    "id": "AF11114",
+    "cat": "verpackung",
+    "unit": "Rolle",
+    "de": "Schmucketikett \"Hühnchen\"",
+    "vi": "Nhãn trang trí \"Gà\""
+  },
+  {
+    "id": "AF11115",
+    "cat": "fisch",
+    "unit": "Rolle",
+    "de": "Schmucketikett \"Thunfisch\"",
+    "vi": "Nhãn trang trí \"Cá ngừ\""
+  },
+  {
+    "id": "AF11116",
+    "cat": "verpackung",
+    "unit": "Rolle",
+    "de": "Schmucketikett \"Dessert\"",
+    "vi": "Nhãn trang trí \"Tráng miệng\""
+  },
+  {
+    "id": "AF11147",
+    "cat": "verpackung",
+    "unit": "",
+    "de": "Verkaufsetiketten endlos Termo",
+    "vi": "Nhãn bán hàng cuộn (nhiệt)"
+  },
+  {
+    "id": "AF10400",
+    "cat": "sauce",
+    "unit": "Stueck",
+    "de": "Saucenbecher 30ml (50 Stk)",
+    "vi": "Cốc đựng sốt 30ml (50 cái)"
+  },
+  {
+    "id": "AF10465",
+    "cat": "verpackung",
+    "unit": "Stück",
+    "de": "Sushi Box S (540 Stk)",
+    "vi": "Hộp sushi S (540 cái)"
+  },
+  {
+    "id": "AF10471",
+    "cat": "verpackung",
+    "unit": "Stück",
+    "de": "Sushi Box Slim (280 Stk)",
+    "vi": "Hộp sushi Slim (280 cái)"
+  },
+  {
+    "id": "AF10474",
+    "cat": "tk",
+    "unit": "",
+    "de": "Sushi Box Mochi (630 Stk)",
+    "vi": "Hộp sushi Mochi (630 cái)"
+  },
+  {
+    "id": "AF 10480",
+    "cat": "verpackung",
+    "unit": "Stück",
+    "de": "Sushi Box L (220 Stk)",
+    "vi": "Hộp sushi L (220 cái)"
+  },
+  {
+    "id": "AF10457",
+    "cat": "verpackung",
+    "unit": "Stueck",
+    "de": "Sushi Box XL Papier (160 Stk)",
+    "vi": "Hộp sushi XL giấy (160 cái)"
+  },
+  {
+    "id": "AF10472",
+    "cat": "verpackung",
+    "unit": "Stück",
+    "de": "Sushi Box Family 2 (140 Stk)",
+    "vi": "Hộp sushi Family 2 (140 cái)"
+  },
+  {
+    "id": "AF12206",
+    "cat": "verpackung",
+    "unit": "Stück",
+    "de": "Poke Bowl 750ml (200 Stk)",
+    "vi": "Tô Poke 750ml (200 cái)"
+  },
+  {
+    "id": "AF10491",
+    "cat": "verpackung",
+    "unit": "",
+    "de": "Sushi Box Party rund L + Deckel",
+    "vi": "Hộp sushi tiệc tròn L + nắp"
+  },
+  {
+    "id": "AF10499",
+    "cat": "verpackung",
+    "unit": "Stück",
+    "de": "Papiertragetaschen groß",
+    "vi": "Túi giấy lớn"
+  },
+  {
+    "id": "AF12275",
+    "cat": "verpackung",
+    "unit": "",
+    "de": "Papiertragetasche flach 32×22×24",
+    "vi": "Túi giấy quai dẹt 32×22×24"
+  },
+  {
+    "id": "AF10489",
+    "cat": "verpackung",
+    "unit": "Stück",
+    "de": "Sushi Box Slim (400 Stk)",
+    "vi": "Hộp sushi Slim (400 cái)"
+  },
+  {
+    "id": "AF10450",
+    "cat": "verpackung",
+    "unit": "Stück",
+    "de": "Sushi Box S (400 Stk)",
+    "vi": "Hộp sushi S (400 cái)"
+  },
+  {
+    "id": "AF10488",
+    "cat": "verpackung",
+    "unit": "Stück",
+    "de": "Sushi Box L (400 Stk)",
+    "vi": "Hộp sushi L (400 cái)"
+  },
+  {
+    "id": "AF12205",
+    "cat": "reis",
+    "unit": "Packung",
+    "de": "Kokosmilch Aroy-D 1l",
+    "vi": "Nước cốt dừa Aroy-D 1l"
+  },
+  {
+    "id": "AF10322",
+    "cat": "verpackung",
+    "unit": "",
+    "de": "Gefrierbeutel 1l (20 Stk)",
+    "vi": "Túi đông lạnh 1l (20 cái)"
+  },
+  {
+    "id": "AF12255",
+    "cat": "sauce",
+    "unit": "",
+    "de": "Kimchi Original 1kg",
+    "vi": "Kimchi nguyên bản 1kg"
+  },
+  {
+    "id": "AF12276",
+    "cat": "sonstige",
+    "unit": "",
+    "de": "Vegan Brioche Sandwich 375g",
+    "vi": "Bánh mì Brioche chay 375g"
+  },
+  {
+    "id": "AF12277",
+    "cat": "sauce",
+    "unit": "",
+    "de": "Senf mittelscharf 200g",
+    "vi": "Mù tạt vàng vừa cay 200g"
+  },
+  {
+    "id": "AF12286",
+    "cat": "verpackung",
+    "unit": "Stück",
+    "de": "Donutverpackung Grab & Go (100 Stk)",
+    "vi": "Hộp donut Grab & Go (100 cái)"
+  },
+  {
+    "id": "AF12080",
+    "cat": "sauce",
+    "unit": "",
+    "de": "Yakisoba Sauce 1,8l",
+    "vi": "Sốt Yakisoba 1,8l"
+  },
+  {
+    "id": "AF12354",
+    "cat": "dessert",
+    "unit": "Stück",
+    "de": "Jin Ramen Spicy (Otoki)",
+    "vi": "Mì Jin Ramen cay"
+  },
+  {
+    "id": "AF12355",
+    "cat": "dessert",
+    "unit": "Stück",
+    "de": "Jin Ramen Mild (Otoki)",
+    "vi": "Mì Jin Ramen nhẹ"
+  },
+  {
+    "id": "AF12399",
+    "cat": "dessert",
+    "unit": "Packung",
+    "de": "Tortilla Chips mit Salz 300g",
+    "vi": "Bánh Tortilla muối 300g"
+  },
+  {
+    "id": "AF12356",
+    "cat": "tk",
+    "unit": "Stück",
+    "de": "Kaludon Kimchi (Korean Street)",
+    "vi": "Kimchi Kaludon"
+  },
+  {
+    "id": "AF12357",
+    "cat": "sonstige",
+    "unit": "Stück",
+    "de": "Crispy Seaweed Gochujang",
+    "vi": "Rong biển giòn Gochujang"
+  },
+  {
+    "id": "AF12358",
+    "cat": "sauce",
+    "unit": "Stück",
+    "de": "Teriyaki Chips (Koikeya)",
+    "vi": "Snack Teriyaki"
+  },
+  {
+    "id": "AF12359",
+    "cat": "dessert",
+    "unit": "Stück",
+    "de": "Teokbokki Spicy (Haitai)",
+    "vi": "Bánh gạo cay Teokbokki"
+  },
+  {
+    "id": "AF10054",
+    "cat": "gemuese",
+    "unit": "Stück",
+    "de": "Limetten (Stück)",
+    "vi": "Chanh xanh (quả)"
+  },
+  {
+    "id": "AF12027",
+    "cat": "sauce",
+    "unit": "Flasche",
+    "de": "Shoda Sojasauce 1L",
+    "vi": "Nước tương Shoda 1L"
+  },
+  {
+    "id": "AF12386",
+    "cat": "verpackung",
+    "unit": "Stück",
+    "de": "Sushi Push-Up mit Logo",
+    "vi": "Hộp Push-Up có logo"
+  },
+  {
+    "id": "AF12396",
+    "cat": "reis",
+    "unit": "Packung",
+    "de": "Japonica Reis (Zensho) 10kg",
+    "vi": "Gạo Japonica (Zensho) 10kg"
+  },
+  {
+    "id": "AF12447",
+    "cat": "sauce",
+    "unit": "Packung",
+    "de": "Kimchi Original + Verpackung 1kg",
+    "vi": "Kimchi nguyên bản + bao bì 1kg"
+  },
+  {
+    "id": "AF12183",
+    "cat": "verpackung",
+    "unit": "Stück",
+    "de": "Sushi Box XL + Deckel (540 Stk)",
+    "vi": "Hộp sushi XL + nắp (540 cái)"
+  },
+  {
+    "id": "AF10467",
+    "cat": "verpackung",
+    "unit": "Stück",
+    "de": "Sushi Box S",
+    "vi": "Hộp sushi S"
+  },
+  {
+    "id": "AF12114",
+    "cat": "verpackung",
+    "unit": "Stück",
+    "de": "Sushi Box L",
+    "vi": "Hộp sushi L"
+  },
+  {
+    "id": "AF12120",
+    "cat": "reinigung",
+    "unit": "Beutel",
+    "de": "Spülmaschinensalz Diversey Sun Pro (2kg)",
+    "vi": "Muối máy rửa chén Diversey Sun Pro (2kg)"
+  },
+  {
+    "id": "80737",
+    "cat": "verpackung",
+    "unit": "Stueck",
+    "de": "Plastik Party Box XL",
+    "vi": "Hộp tiệc nhựa XL"
+  },
+  {
+    "id": "AF12509",
+    "cat": "sauce",
+    "unit": "Beutel",
+    "de": "Ingwer Gari Take-Out Portionen (200×5g)",
+    "vi": "Gừng Gari phần mang đi (200×5g)"
+  },
+  {
+    "id": "AF12512",
+    "cat": "sauce",
+    "unit": "Packung",
+    "de": "Ramen-Suppenkonzentrat Tonkotsu (500g)",
+    "vi": "Nước cốt súp Ramen Tonkotsu (500g)"
+  },
+  {
+    "id": "AF12444",
+    "cat": "sauce",
+    "unit": "Beutel",
+    "de": "Ramen-Suppenbasis Tonkotsu-Style (500ml)",
+    "vi": "Nước dùng Ramen kiểu Tonkotsu (500ml)"
+  },
+  {
+    "id": "AF12513",
+    "cat": "tk",
+    "unit": "Beutel",
+    "de": "Ramennudeln (TK, 5×250g)",
+    "vi": "Mì Ramen (đông lạnh, 5×250g)"
+  },
+  {
+    "id": "AF12443",
+    "cat": "gemuese",
+    "unit": "Stueck",
+    "de": "Pak Choi",
+    "vi": "Cải thìa"
+  },
+  {
+    "id": "AF12222",
+    "cat": "sauce",
+    "unit": "Stueck",
+    "de": "Chiliöl Lao Gan Ma (210g)",
+    "vi": "Dầu ớt Lao Gan Ma (210g)"
+  },
+  {
+    "id": "AF12405",
+    "cat": "fleisch",
+    "unit": "Packung",
+    "de": "Char-Siu Scheiben (TK, 150g)",
+    "vi": "Xá xíu thái lát (đông lạnh, 150g)"
+  }
+]

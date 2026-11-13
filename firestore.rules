@@ -303,6 +303,29 @@ service cloud.firestore {
     }
 
     // ══════════════════════════════════════════════════════════
+    // INSPEKTIONEN (Mitti/SafetyCulture-Anbindung, "Option B": Fotos laufen
+    // komplett über die App, der Gebietsleiter öffnet die passende Mitti-
+    // Inspektion per Deep-Link und trägt Fotos dort manuell ein — Mitti hat
+    // keine öffentliche Upload-API für Fotos. Lesen bewusst breit (isAuthed,
+    // wie bei news/regions) — keine personenbezogenen Daten, nur Filial-
+    // Zustand/Fotos. Schreiben bleibt eng: Fotos nur durch die eigene
+    // Personalnummer, Status/Mitti-Link nur durch den Gebietsleiter.
+    // ══════════════════════════════════════════════════════════
+    match /inspektionen/{i} {
+      allow get, list: if isAuthed();
+      allow create: if isOwnEmp(request.resource.data.empId)
+        || isManagerForRegion(request.resource.data.region);
+      allow update: if isManagerForRegion(docRegion(resource.data));
+      allow delete: if isManagerForRegion(docRegion(resource.data));
+    }
+    match /inspektion_fotos/{f} {
+      allow get, list: if isAuthed();
+      allow create: if isOwnEmp(request.resource.data.empId);
+      allow update: if false;
+      allow delete: if isManagerForRegion(docRegion(resource.data)) || isOwnEmp(resource.data.empId);
+    }
+
+    // ══════════════════════════════════════════════════════════
     // INVENTUR
     // config/photos/storemap = geteilter Produktkatalog (165 Artikel, Kategorien,
     // Fotos, Markt-Nr.->Name-Verzeichnis) — bewusst regionsübergreifend, dieselben
@@ -444,6 +467,18 @@ service cloud.firestore {
     match /emp_welo/{docId} {
       allow get: if isAuthed();
       allow list: if isManagerForRegion(resource.data.region);
+      allow write: if false;
+    }
+    // Reine Urlaubstage-Liste aus Welo (Icon-Auswertung), getrennt von
+    // emp_welo oben: enthält NICHTS Sensibles (keine Stunden/Soll/Gehalt),
+    // deshalb breiter lesbar — das ganze Filial-Team soll im Kalender sehen
+    // können, welche Tage laut Welo bei wem als Urlaub eingetragen sind,
+    // genau wie bei den App-Anträgen in filialen/*/urlaub. list() per
+    // .where('filiale','==',...) aus mitarbeiter.html (Auftrag t.duong
+    // 13.11.2026). Nur vom sync-welo-personal.js-Skript per Admin-SDK
+    // beschrieben.
+    match /emp_welo_urlaub_tage/{docId} {
+      allow get, list: if isAuthed();
       allow write: if false;
     }
     match /tagesziel/{docId} {

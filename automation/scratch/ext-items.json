@@ -1,0 +1,764 @@
+[
+  {
+    "cat": "Tiefkühl / Thực phẩm đông lạnh",
+    "af": "AF12453",
+    "de": "Sushi Circle - Lachsfilet, Trim E, 1 Karton à 12 x 1-1,5 kg (TK)",
+    "vi": "Sushi Circle - Phi lê cá hồi, Trim E, 1 thùng gồm 12 x 1-1,5 kg (Đông lạnh)"
+  },
+  {
+    "cat": "Tiefkühl / Thực phẩm đông lạnh",
+    "af": "AF12492",
+    "de": "Seafood Market – Thunfisch Big Eye Saku, 2 Stück, 400–700 g, 1 Karton à 5 kg (TK)",
+    "vi": "Seafood Market – Cá ngừ mắt to Big Eye Saku, 2 miếng, 400–700 g, 1 thùng 5 kg (Đông lạnh)"
+  },
+  {
+    "cat": "Tiefkühl / Thực phẩm đông lạnh",
+    "af": "AF12501",
+    "de": "Seafood Market – Thunfisch Big Eye Saku Semi Format, 300–500 g, 1 Karton à 5 kg (TK)",
+    "vi": "Seafood Market – Cá ngừ mắt to Big Eye Saku Semi Format, 300–500 g, 1 thùng 5 kg (Đông lạnh)"
+  },
+  {
+    "cat": "Tiefkühl / Thực phẩm đông lạnh",
+    "af": "AF12506",
+    "de": "Seafood Market – Thunfisch Yellowfin Block, Loinsrückenfilet 1,5–3 kg, 1 Karton à 10 kg (TK)",
+    "vi": "Seafood Market – Cá ngừ vây vàng khối, thăn lưng fillet 1,5–3 kg, 1 thùng 10 kg (đông lạnh)"
+  },
+  {
+    "cat": "Tiefkühl / Thực phẩm đông lạnh",
+    "af": "AF12495",
+    "de": "Seafood Market – MSC Surimi Maki Sticks, 26 Stück, 1 Beutel à 1 kg (TK)",
+    "vi": "Seafood Market – Thanh cua MSC Surimi Maki Sticks, 26 cái, 1 túi 1 kg (đông lạnh)"
+  },
+  {
+    "cat": "Tiefkühl / Thực phẩm đông lạnh",
+    "af": "AF12497",
+    "de": "Seafood Market – Garnelen 100/150 extra rot, 1 Packung à 1,8 kg Abtropfgewicht (TK)",
+    "vi": "Seafood Market – Tôm 100/150 siêu đỏ, 1 gói 1,8 kg khối lượng ráo nước (đông lạnh)"
+  },
+  {
+    "cat": "Tiefkühl / Thực phẩm đông lạnh",
+    "af": "AF12526",
+    "de": "Hähnchenbrust, 1 Karton à 4 x 2,5 kg (TK)",
+    "vi": "Ức gà, 1 thùng gồm 4 x 2,5 kg (đông lạnh)"
+  },
+  {
+    "cat": "Tiefkühl / Thực phẩm đông lạnh",
+    "af": "AF12479",
+    "de": "Yumka – Chicken Tatsutaage, 1 Karton à 10 x 600 g (TK)",
+    "vi": "Yumka – Gà Tatsutaage, 1 thùng gồm 10 x 600 g (Đông lạnh)"
+  },
+  {
+    "cat": "Tiefkühl / Thực phẩm đông lạnh",
+    "af": "AF12528",
+    "de": "Yumka - Yakitori Spieße, 1 Karton à 4 x 1,6 kg (TK)",
+    "vi": "Yumka - Xiên gà Yakitori, 1 thùng gồm 4 x 1,6 kg (đông lạnh)"
+  },
+  {
+    "cat": "Tiefkühl / Thực phẩm đông lạnh",
+    "af": "AF12482",
+    "de": "Gyoza mit Huhn und Gemüse, 1 Karton à 10 x 600 g (TK)",
+    "vi": "Gyoza nhân gà và rau củ, 1 thùng 10 x 600 g (đông lạnh)"
+  },
+  {
+    "cat": "Tiefkühl / Thực phẩm đông lạnh",
+    "af": "AF12405",
+    "de": "NH Foods - Char-Siu Scheiben, 1 Packung à 150 g (TK)",
+    "vi": "NH Foods - Thịt xá xíu thái lát, 1 gói gồm 150 g (đông lạnh)"
+  },
+  {
+    "cat": "Tiefkühl / Thực phẩm đông lạnh",
+    "af": "AF12481",
+    "de": "Globe Gourmet – Udonnudeln, 8 x 5 x 230 g Karton (TK)",
+    "vi": "Globe Gourmet – Mì Udon, thùng 8 x 5 x 230 g (Đông lạnh)"
+  },
+  {
+    "cat": "Tiefkühl / Thực phẩm đông lạnh",
+    "af": "AF12484",
+    "de": "Seafood Market – Goma Wakame Select, 1 Pack a 1kg",
+    "vi": "Seafood Market – Goma Wakame Select, 1 thùng gồm 12 x 1 kg (đông lạnh)"
+  },
+  {
+    "cat": "Tiefkühl / Thực phẩm đông lạnh",
+    "af": "AF12489",
+    "de": "Seafood Market – Edamame Kerne, blanchiert, 1 Beutel à 500 g (TK)",
+    "vi": "Seafood Market – Đậu nành Nhật Edamame bóc hạt, chần sơ, 1 túi 500 g (đông lạnh)"
+  },
+  {
+    "cat": "Tiefkühl / Thực phẩm đông lạnh",
+    "af": "AF12485",
+    "de": "Mochi Queen – Mango, 6 Stück, 1 Karton à 10 x 192 g (TK)",
+    "vi": "Mochi Queen – Xoài, 6 cái, 1 thùng 10 x 192 g (đông lạnh)"
+  },
+  {
+    "cat": "Tiefkühl / Thực phẩm đông lạnh",
+    "af": "AF12487",
+    "de": "Mochi Queen – Kakao, 6 Stück, 1 Karton à 10 x 192 g (TK)",
+    "vi": "Mochi Queen – Ca cao, 6 cái, 1 thùng 10 x 192 g (đông lạnh)"
+  },
+  {
+    "cat": "Tiefkühl / Thực phẩm đông lạnh",
+    "af": "AF12513",
+    "de": "Seafood Market – Ramennudeln, 1 Beutel à 5 x 250 g (TK)",
+    "vi": "Seafood Market – Mì Ramen, 1 túi 5 x 250 g (Đông lạnh)"
+  },
+  {
+    "cat": "Tiefkühl / Thực phẩm đông lạnh",
+    "af": "AF12488",
+    "de": "Mochi Queen – Cheesecake, 6 Stück, 1 Karton à 10 x 192 g (TK)",
+    "vi": "Mochi Queen – Cheesecake, 6 cái, 1 thùng 10 x 192 g (đông lạnh)"
+  },
+  {
+    "cat": "Gemüse & gekühlte Lebensmittel / Rau củ & thực phẩm lạnh",
+    "af": "AF10000",
+    "de": "Avocados Ready to Eat - 1 x 1 Karton à 16 Stück",
+    "vi": "Bơ chín ăn liền - 1 x 1 thùng 16 quả"
+  },
+  {
+    "cat": "Gemüse & gekühlte Lebensmittel / Rau củ & thực phẩm lạnh",
+    "af": "AF10001",
+    "de": "Salatgurken 400/500g - 1 x 1 Karton à 12 Stück",
+    "vi": "Dưa chuột salad 400/500g - 1 x 1 thùng 12 quả"
+  },
+  {
+    "cat": "Gemüse & gekühlte Lebensmittel / Rau củ & thực phẩm lạnh",
+    "af": "AF10003",
+    "de": "Paprika rot lose - 1 x 1 Stück",
+    "vi": "Ớt chuông đỏ rời - 1 x 1 quả"
+  },
+  {
+    "cat": "Gemüse & gekühlte Lebensmittel / Rau củ & thực phẩm lạnh",
+    "af": "AF10039",
+    "de": "Karotten 1 x 1 kg Schale",
+    "vi": "Cà rốt khay 1 x 1 kg"
+  },
+  {
+    "cat": "Gemüse & gekühlte Lebensmittel / Rau củ & thực phẩm lạnh",
+    "af": "AF10005",
+    "de": "Eisberg lose - 1 x 1 Stück",
+    "vi": "Xà lách búp Mỹ rời - 1 x 1 cái"
+  },
+  {
+    "cat": "Gemüse & gekühlte Lebensmittel / Rau củ & thực phẩm lạnh",
+    "af": "AF10006",
+    "de": "Mango Ready to eat - 1 x 1 Stück",
+    "vi": "Xoài chín ăn liền - 1 x 1 quả"
+  },
+  {
+    "cat": "Gemüse & gekühlte Lebensmittel / Rau củ & thực phẩm lạnh",
+    "af": "AF10008",
+    "de": "Dill Lose - 1 x 40 g Schale",
+    "vi": "Thì là rời - khay 1 x 40 g"
+  },
+  {
+    "cat": "Gemüse & gekühlte Lebensmittel / Rau củ & thực phẩm lạnh",
+    "af": "AF10009",
+    "de": "Basilikum - 1 x 40 g Schale",
+    "vi": "Húng quế tây - 1 x 40 g hộp"
+  },
+  {
+    "cat": "Gemüse & gekühlte Lebensmittel / Rau củ & thực phẩm lạnh",
+    "af": "AF10010",
+    "de": "Schnittlauch - 1 x 100 g Bund",
+    "vi": "Hẹ tây - 1 x 100 g bó"
+  },
+  {
+    "cat": "Gemüse & gekühlte Lebensmittel / Rau củ & thực phẩm lạnh",
+    "af": "AF10011",
+    "de": "Minze - 1 x 100 g Beutel",
+    "vi": "Bạc hà - 1 x 100 g túi"
+  },
+  {
+    "cat": "Gemüse & gekühlte Lebensmittel / Rau củ & thực phẩm lạnh",
+    "af": "AF10012",
+    "de": "Koriander - 1 x 100 g Beutel",
+    "vi": "Ngò rí - 1 x 100 g túi"
+  },
+  {
+    "cat": "Gemüse & gekühlte Lebensmittel / Rau củ & thực phẩm lạnh",
+    "af": "AF10046",
+    "de": "Zwiebel Rot - 1 x 1 kg Netz",
+    "vi": "Hành tây đỏ - lưới 1 x 1 kg"
+  },
+  {
+    "cat": "Gemüse & gekühlte Lebensmittel / Rau củ & thực phẩm lạnh",
+    "af": "AF10056",
+    "de": "Broccoli - 1 x 500 g",
+    "vi": "Bông cải xanh - 1 x 500 g"
+  },
+  {
+    "cat": "Gemüse & gekühlte Lebensmittel / Rau củ & thực phẩm lạnh",
+    "af": "AF10060",
+    "de": "Rucola 125g Schale - 1 Schale à 125g",
+    "vi": "Xà lách rocket khay 125g - 1 khay 125g"
+  },
+  {
+    "cat": "Gemüse & gekühlte Lebensmittel / Rau củ & thực phẩm lạnh",
+    "af": "AF12252",
+    "de": "Schlichting - Rotkohl, 1 x 500 g Beutel",
+    "vi": "Schlichting - Bắp cải tím, 1 x 500 g túi"
+  },
+  {
+    "cat": "Gemüse & gekühlte Lebensmittel / Rau củ & thực phẩm lạnh",
+    "af": "AF12443",
+    "de": "Pak Choi, 1 x 1 Stück",
+    "vi": "Cải thìa (Pak Choi), 1 x 1 cây"
+  },
+  {
+    "cat": "Gemüse & gekühlte Lebensmittel / Rau củ & thực phẩm lạnh",
+    "af": "AF10217",
+    "de": "Exquisa 200g 70% - 1 x 10 x 200g Karton",
+    "vi": "Exquisa 200g 70% - 1 x 10 x 200g thùng"
+  },
+  {
+    "cat": "Gemüse & gekühlte Lebensmittel / Rau củ & thực phẩm lạnh",
+    "af": "AF12480",
+    "de": "Globe Gourmet – Ingwer Gari weiß, 1 Karton à 10 x 1 kg Abtropfgewicht",
+    "vi": "Globe Gourmet – Gừng Gari trắng, 1 thùng 10 x 1 kg khối lượng ráo nước"
+  },
+  {
+    "cat": "Gemüse & gekühlte Lebensmittel / Rau củ & thực phẩm lạnh",
+    "af": "AF12547",
+    "de": "Sushi Circle – Ingwer Gari Take-Out, 5 g, 1 Karton à 5 Beutel à 200 x 5 g",
+    "vi": "Sushi Circle – Gừng ngâm Gari mang đi, 5 g, 1 thùng 5 túi x 200 x 5 g"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12396",
+    "de": "Sushi Circle - Sushireis, 1 x 10 kg Sack",
+    "vi": "Sushi Circle - Gạo sushi, 1 x 10 kg bao"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12490",
+    "de": "Globe Gourmet – Sushi Su Würzmarinade, 1 Kanister à 10 Liter",
+    "vi": "Globe Gourmet – Giấm trộn cơm sushi Sushi Su, 1 can 10 lít"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12498",
+    "de": "Cock – Chilisauce for Chicken, 1 Kanister à 4,5 Liter",
+    "vi": "Cock – Sốt ớt cho gà (Chilisauce for Chicken), 1 can 4,5 lít"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF10701",
+    "de": "Chili Sauce Sriracha, Flying Goose, - 1 x 0,73 Liter Flasche",
+    "vi": "Tương ớt Sriracha, Flying Goose, - 1 x 0,73 lít chai"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12080",
+    "de": "Otafuku - Yakisoba Sauce, 1 x 2,15 kg Flasche",
+    "vi": "Otafuku - Sốt Yakisoba, chai 1 x 2,15 kg"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF10201",
+    "de": "Raps-Öl, 1 x 1 Liter PET Flasche",
+    "vi": "Dầu hạt cải, 1 x 1 lít chai PET"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12505",
+    "de": "Kadoya – Sesamöl, 1 Dose à 1,65 Liter",
+    "vi": "Kadoya – Dầu mè, 1 lon 1,65 lít"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12496",
+    "de": "Kewpie – Sesamsauce Goma Dare, 1 Flasche à 1 Liter",
+    "vi": "Kewpie – Sốt mè rang Goma Dare, 1 chai 1 lít"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12277",
+    "de": "Bautzen - Senf, mittelscharf, 1 x 200 g Tube",
+    "vi": "Bautzen - Mù tạt, cay vừa, 1 x 200 g tuýp"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF10204",
+    "de": "Essig 5% Säure - 1 x 5 Liter Kanister",
+    "vi": "Giấm độ axit 5% - can 1 x 5 lít"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF10216",
+    "de": "Speisesalz - 1 x 500g Pack",
+    "vi": "Muối ăn - 1 x 500g gói"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12000",
+    "de": "Thunfisch im eigenen Saft, 1 x 1 kg Beutel",
+    "vi": "Cá ngừ ngâm nước muối tự nhiên, túi 1 x 1 kg"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12222",
+    "de": "Lao Gan Ma - Crispy Chilli-Öl, 1 x 210 g Glas",
+    "vi": "Lao Gan Ma - Dầu ớt giòn cay, 1 x 210 g hũ thủy tinh"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12300",
+    "de": "Aroy D - Kokosmilch, 1 x 0,5 Liter Pack",
+    "vi": "Aroy D - Nước cốt dừa, 1 x 0,5 lít hộp"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12354",
+    "de": "Otoki - Jin Ramen Spicy, 1 Karton á 6 x 65 g Stück",
+    "vi": "Otoki - Jin Ramen Spicy, 1 thùng 6 x 65 g gói"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12355",
+    "de": "Otoki - Jin Ramen Mild, 1 Karton á 6 x 65 g Stück",
+    "vi": "Otoki - Jin Ramen Mild, 1 thùng 6 x 65 g gói"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12357",
+    "de": "Crispy Seaweed mit Gochujang, 1 Karton á 24 x 32 g Stück",
+    "vi": "Crispy Seaweed vị Gochujang, 1 thùng gồm 24 x 32 g gói"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12358",
+    "de": "Koikeya - Teriyaki Chips, 1 Karton á 12 x 100 g Stück",
+    "vi": "Koikeya - Snack khoai tây Teriyaki Chips, 1 thùng 12 x 100 g gói"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12456",
+    "de": "Lee Kum Kee - Teriyaki Sauce, 2 x 1,8 L Karton",
+    "vi": "Lee Kum Kee - Sốt Teriyaki, thùng 2 x 1,8 L"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12483",
+    "de": "Globe Gourmet – Mayo Japanese Style, 1 Flasche à 500 ml",
+    "vi": "Globe Gourmet – Mayo Japanese Style, 1 chai 500 ml"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12493",
+    "de": "Globe Gourmet – Nori Gold ganz, 1 Karton à 10 x 230 g",
+    "vi": "Globe Gourmet – Rong biển Nori Gold nguyên lá, 1 thùng gồm 10 x 230 g"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12486",
+    "de": "Globe Gourmet – Nori Gold halb, 1 Karton à 10 x 230 g",
+    "vi": "Globe Gourmet – Rong biển Nori Gold nửa lá, 1 thùng 10 x 230 g"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12491",
+    "de": "Kinjirushi – Wasabi Take-Out, 1 Beutel à 200 x 2,5 g",
+    "vi": "Kinjirushi – Wasabi mang đi, 1 túi 200 x 2,5 g"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12499",
+    "de": "Globe Gourmet – Sojasauce Take-Out 8 ml, 1 Karton à 10 x 100 x 8 ml",
+    "vi": "Globe Gourmet – Nước tương mang đi 8 ml, 1 thùng 10 x 100 x 8 ml"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12502",
+    "de": "S&B – Chilipulver Shichimi Togarashi, 1 Beutel à 300 g",
+    "vi": "S&B – Bột ớt Shichimi Togarashi, 1 túi 300 g"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12503",
+    "de": "Globe Gourmet – Sesam schwarz geröstet, 1 Beutel à 1 kg",
+    "vi": "Globe Gourmet – Mè đen rang, 1 túi 1 kg"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12494",
+    "de": "Globe Gourmet – Sesam weiß geröstet, 1 Beutel à 1 kg",
+    "vi": "Globe Gourmet – Mè trắng rang, 1 túi 1 kg"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12500",
+    "de": "Kühne – Frittierte Röstzwiebeln, 1 Karton à 6 x 1 kg",
+    "vi": "Kühne – Hành phi chiên giòn, 1 thùng gồm 6 x 1 kg"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12504",
+    "de": "Sempio – Chilipaste Gochujang, 1 Packung à 1 kg",
+    "vi": "Sempio – Tương ớt Gochujang, 1 hộp 1 kg"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12115",
+    "de": "Denree - Rote Bete Saft, 1 x 0,5 l Packung",
+    "vi": "Denree - Nước ép củ dền, hộp 1 x 0,5 l"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF10321",
+    "de": "Flambierbrenner mit Kartusche - 1 Stück + 1 x Kartusche",
+    "vi": "Đầu khò lửa kèm bình gas - 1 cái + 1 x bình gas"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF10320",
+    "de": "Flüssiggas-Kartuschen 227 g, 1 x 4 Stück",
+    "vi": "Bình gas mini 227 g, 1 x 4 cái"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12508",
+    "de": "Globe Gourmet – Bambusmatte groß, 27 x 27 cm, 1 Beutel à 10 Stück",
+    "vi": "Globe Gourmet – Mành tre lớn, 27 x 27 cm, 1 túi 10 cái"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12511",
+    "de": "Globe Gourmet – Bambusmatte klein, 24 x 24 cm, 1 Beutel à 10 Stück",
+    "vi": "Globe Gourmet – Mành tre nhỏ, 24 x 24 cm, 1 túi 10 cái"
+  },
+  {
+    "cat": "Trockenware / Đồ khô",
+    "af": "AF12512",
+    "de": "Globe Gourmet – Ramensuppe-Konzentrat Tonkotsu, 1 Packung à 500 g",
+    "vi": "Globe Gourmet – Cốt súp ramen Tonkotsu, 1 gói 500 g"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF10457",
+    "de": "4.0 Sushi Box XL Einteiler - 1 x 160 Stück Karton",
+    "vi": "4.0 Sushi Box XL một ngăn - 1 x 160 cái thùng"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF10465",
+    "de": "4.0 Sushi Box S, Einteiler, - 1 x 540 Stück",
+    "vi": "4.0 Sushi Box S, một ngăn, - 1 x 540 cái"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF10471",
+    "de": "4.0 Sushi Box Slim, Einteiler, - 1 x 280 Stück",
+    "vi": "4.0 Sushi Box Slim, một ngăn, - 1 x 280 cái"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF10472",
+    "de": "4.0 Sushi Box Family 2, Einteiler- 1 x 140 Stück",
+    "vi": "4.0 Hộp Sushi Family 2, 1 ngăn - 1 x 140 chiếc"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF10474",
+    "de": "4.0 Sushi Box Mochi, Einteiler, 1 Karton à 630 Stück",
+    "vi": "4.0 Hộp Sushi Mochi, 1 ngăn, 1 thùng gồm 630 chiếc"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF10480",
+    "de": "4.0 Sushi Box L, Einteiler, 1 Karton à 220 Stück",
+    "vi": "4.0 Hộp Sushi L, 1 ngăn, 1 thùng gồm 220 chiếc"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF10491",
+    "de": "Sushi Box Party Rund L + Deckel - 1 x 50 Stück",
+    "vi": "Sushi Box Party tròn L + nắp - 1 x 50 cái"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF12384",
+    "de": "Poke Bowl 750ml, Boden & Deckel, 1 Karton à 200 Stück",
+    "vi": "Tô Poke 750ml, đáy & nắp, 1 thùng 200 cái"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF12386",
+    "de": "Sushi Circle - Sushi Push-Up, mit Logo, 1 Karton à 150 Stück (EW)",
+    "vi": "Sushi Circle - Sushi Push-Up, có logo, 1 thùng 150 chiếc (EW)"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF12286",
+    "de": "Donutverpackung, Grab & Go, 1 Karton à 100 Stück",
+    "vi": "Hộp đựng donut, Grab & Go, 1 thùng 100 cái"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF10400",
+    "de": "Saucen Becher 30 ml PlastikTransparent - 1 x 50 Stück Pack",
+    "vi": "Hộp đựng sốt 30 ml nhựa trong suốt - 1 x 50 cái gói"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF12421",
+    "de": "4.0 Verkaufsetiketten Circle endlos Termo Top 56 x 80 m - 1 Rolle (EW) Paid",
+    "vi": "4.0 Tem bán hàng Circle liên tục Termo Top 56 x 80 m - 1 cuộn (EW) Paid"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF11111",
+    "de": "Schmucketiketten, Art: Fisch & Meer, 1 x 1 Rolle à 1000 Etiketten",
+    "vi": "Nhãn dán trang trí, Loại: Cá & hải sản, 1 x 1 cuộn 1000 nhãn"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF11112",
+    "de": "Schmucketiketten, Art:Veggie, 1 x 1 Rolle à 1000 Etiketten",
+    "vi": "Nhãn dán trang trí, Loại: Chay (Veggie), 1 x 1 cuộn 1000 nhãn"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF11113",
+    "de": "Schmucketiketten, Art:Lachs, Größe: 1 x 1 Rolle à 1000 Etiketten",
+    "vi": "Nhãn dán trang trí, Loại: Cá hồi, Kích thước: 1 x 1 cuộn 1000 nhãn"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF11114",
+    "de": "Schmucketiketten, Art:Hühnchen, 1 x 1 Rolle à 1000 Etiketten",
+    "vi": "Nhãn dán trang trí, Loại: Gà, 1 x 1 cuộn 1000 nhãn"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF11115",
+    "de": "Schmucketiketten, Art:Thunfisch, 1 x 1 Rolle à 1000 Etiketten",
+    "vi": "Nhãn dán trang trí, Loại: Cá ngừ, 1 x 1 cuộn 1000 nhãn"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF11116",
+    "de": "Schmucketiketten, Art:Dessert, 1 x 1 Rolle à 1000 Etiketten",
+    "vi": "Nhãn dán trang trí, Loại: Món tráng miệng, 1 x 1 cuộn 1000 nhãn"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF11117",
+    "de": "Dekoetiketten Rund, Art: Aktion, Größe: 30 mm - 1 x 1 Rolle à 1000 Etiketten",
+    "vi": "Nhãn trang trí tròn, loại: Khuyến mãi (Aktion), kích thước: 30 mm - 1 x 1 cuộn 1000 nhãn"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF11118",
+    "de": "Dekoetiketten Rund, Art: Protein, Größe: 30 mm - 1 x 1 Rolle à 1000 Etiketten",
+    "vi": "Nhãn dán trang trí tròn, Loại: Protein, Kích thước: 30 mm - 1 x 1 cuộn 1000 nhãn"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF11119",
+    "de": "Dekoetiketten Rund, Art: Temperatur, Größe: 30 mm - 1 x 1 Rolle à 1000 Etiketten",
+    "vi": "Nhãn dán trang trí tròn, Loại: Nhiệt độ, Kích thước: 30 mm - 1 x 1 cuộn 1000 nhãn"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF11120",
+    "de": "Dekoetiketten Rund, Art: Neu, Größe: 30 mm - 1 x 1 Rolle à 1000 Etiketten",
+    "vi": "Nhãn dán trang trí tròn, Loại: Mới, Kích thước: 30 mm - 1 x 1 cuộn 1000 nhãn"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF11121",
+    "de": "Dekoetiketten Rund, Art: Favoriten, Größe: 30 mm - 1 x 1 Rolle à 1000 Etiketten",
+    "vi": "Nhãn trang trí tròn, Loại: Favorites, Kích thước: 30 mm - 1 x 1 cuộn 1000 nhãn"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF12240",
+    "de": "Dekoetiketten Rund, Art: Geschmack dieser Saison, Größe: 30 mm - 1 x 1 Rolle à 1000 Etiketten",
+    "vi": "Nhãn dán trang trí tròn, Loại: Hương vị mùa này, Kích thước: 30 mm - 1 x 1 cuộn 1000 nhãn"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF12275",
+    "de": "Papiertragetasche Flachhenkel, 32 x 22 x 24 cm, Braun, 1 Karton à 50 Stück",
+    "vi": "Túi giấy quai dẹp, 32 x 22 x 24 cm, Nâu, 1 thùng 50 chiếc"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF12364",
+    "de": "Schmucketiketten, Art:Wundertüte, 1 x 1 Rolle à 500 Etiketten",
+    "vi": "Nhãn dán trang trí, Loại: Túi bất ngờ, 1 x 1 cuộn 500 nhãn"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF10499",
+    "de": "Papiertragetaschen Groß, 32 x 22 x 24 cm, mit Logo, 1 Karton à 50 Stück",
+    "vi": "Túi giấy lớn, 32 x 22 x 24 cm, có logo, 1 thùng 50 chiếc"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF12507",
+    "de": "Sosei – Sushi Circle Essstäbchen Bambus, 23 cm, 3/4 Hülle, 1 Karton à 30 x 100 Stück",
+    "vi": "Sosei – Đũa tre Sushi Circle, 23 cm, bọc 3/4, 1 thùng 30 x 100 đôi"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF10322",
+    "de": "Gefrierbeutel 1 L, 20 Stk. , 19,6 x 19 x 3 cm",
+    "vi": "Túi đông lạnh 1 L, 20 cái, 19,6 x 19 x 3 cm"
+  },
+  {
+    "cat": "Verpackungen & Etiketten / Bao bì & nhãn",
+    "af": "AF10109",
+    "de": "Frischhaltefolie, Transparent - 1 x 1 Box 45 cm",
+    "vi": "Màng bọc thực phẩm, Trong suốt - 1 x 1 hộp 45 cm"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF12124",
+    "de": "Diversey - Suma Lavette, Küchenhygienetuch, gelb, 1 x 25 Stück Beutel",
+    "vi": "Diversey - Suma Lavette, khăn lau vệ sinh nhà bếp, vàng, 1 x 25 cái túi"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF10100",
+    "de": "TPE Einmal-Handschuhe, Farbe: Schwarz, Größe: S - 1 x 1 Karton à 10 x 200 Stück",
+    "vi": "Găng tay dùng một lần TPE, màu: đen, cỡ: S - 1 x 1 thùng gồm 10 x 200 chiếc"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF10101",
+    "de": "TPE Einmal-Handschuhe, Farbe: Schwarz, Größe: M -1 x 1 Karton à 10 x 200 Stück",
+    "vi": "Găng tay dùng một lần TPE, màu: đen, cỡ: M - 1 x 1 thùng gồm 10 x 200 chiếc"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF10102",
+    "de": "TPE Einmal-Handschuhe, Farbe: Schwarz, Größe: L - 1 Karton à 10 x 200 Stück",
+    "vi": "Găng tay dùng một lần TPE, màu: đen, cỡ: L - 1 thùng gồm 10 x 200 chiếc"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF10103",
+    "de": "TPE Einmal-Handschuhe, Farbe: Schwarz, Größe: XL - 1 Karton à 10 x 200 Stück",
+    "vi": "Găng tay dùng một lần TPE, màu: đen, cỡ: XL - 1 thùng gồm 10 x 200 chiếc"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF12085",
+    "de": "Nitril-Hygienehandschuhe, Farbe: blau, Größe: XS, 1 Karton à 10 x 100 Stück",
+    "vi": "Găng tay vệ sinh nitrile, màu: xanh dương, cỡ: XS, 1 thùng gồm 10 x 100 chiếc"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF10104",
+    "de": "Nitril-Hygienehandschuhe, Farbe: blau, Größe: S, 1 Karton à 10 x 100 Stück",
+    "vi": "Găng tay vệ sinh nitrile, màu: xanh lam, cỡ: S, 1 thùng 10 x 100 cái"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF10105",
+    "de": "Nitril-Hygienehandschuhe, Farbe: blau, Größe: M, 1 Karton à 10 x 100 Stück",
+    "vi": "Găng tay vệ sinh nitrile, Màu: xanh dương, Cỡ: M, 1 thùng 10 x 100 cái"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF10106",
+    "de": "Nitril-Hygienehandschuhe, Farbe: blau, Größe: L, 1 Karton à 10 x 100 Stück",
+    "vi": "Găng tay vệ sinh Nitrile, Màu sắc: xanh dương, Kích thước: L, 1 thùng 10 x 100 chiếc"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF10107",
+    "de": "Nitril-Hygienehandschuhe, Farbe: blau, Größe: XL, 1 Karton à 10 x 100 Stück",
+    "vi": "Găng tay vệ sinh nitrile, màu: xanh dương, cỡ: XL, 1 thùng gồm 10 x 100 chiếc"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF10108",
+    "de": "Küchenrolle 3 lagig - 1 x 4er Pack à 45 Blatt",
+    "vi": "Giấy cuộn nhà bếp 3 lớp - 1 x lốc 4 cuộn 45 tờ"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF10110",
+    "de": "Diversey - Soft Care Spray, Handdesinfektion, 1 x 0,5 Liter Flasche",
+    "vi": "Diversey - Soft Care Spray, xịt sát khuẩn tay, chai 1 x 0,5 lít"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF12094",
+    "de": "Diversey - Suma Lima, 1 x 10 Liter Kanister",
+    "vi": "Diversey - Suma Lima, 1 x 10 lít can"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF12097",
+    "de": "Diversey - Suma Rinse A5, 1 x 10 Liter Kanister",
+    "vi": "Diversey - Suma Rinse A5, can 1 x 10 lít"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF12098",
+    "de": "Diversey - Falthandtücher, -Z-Fold, 20 x 250 Stk. Karton",
+    "vi": "Diversey - Khăn giấy gấp, -Z-Fold, 20 x 250 cái thùng"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF12116",
+    "de": "Diversey - Suma Lavette, Küchenhygienetuch, grün, 1 x 25 Stück Beutel",
+    "vi": "Diversey - Suma Lavette, khăn lau vệ sinh nhà bếp, xanh lá, 1 x 25 cái túi"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF12117",
+    "de": "Diversey - Suma QuickDes D4.12, 1 x 0,75 Liter Flasche",
+    "vi": "Diversey - Suma QuickDes D4.12, 1 x 0,75 lít chai"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF12118",
+    "de": "Diversey - Suma Light D1.2, Handgeschirrspülmittel, 1 x 1,0 Liter Flasche",
+    "vi": "Diversey - Suma Light D1.2, nước rửa chén bằng tay, chai 1 x 1,0 lít"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF12119",
+    "de": "Diversey - Suma Lavette, Küchenhygienetuch, blau, 1 x 25 Stück Beutel",
+    "vi": "Diversey - Suma Lavette, khăn lau vệ sinh nhà bếp, xanh dương, túi 1 x 25 cái"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF12120",
+    "de": "Diversey - Sun Pro Formula, Geschirrspülsalz, 1 x 2 kg Beutel",
+    "vi": "Diversey - Sun Pro Formula, Muối rửa chén, 1 x 2 kg túi"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF12122",
+    "de": "Diversey - Suma Multi D2, Universalreiniger, 1 x 2 Liter Flasche",
+    "vi": "Diversey - Suma Multi D2, chất tẩy rửa đa năng, chai 1 x 2 lít"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF12123",
+    "de": "Diversey - Taski Sprint Glass E3c, Glas- und Allzweckreiniger, 1 x 0,75 Liter Flasche",
+    "vi": "Diversey - Taski Sprint Glass E3c, nước lau kính và đa năng, chai 1 x 0,75 lít"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF12125",
+    "de": "Diversey - Antimic Hand Wash, Handwaschlotion, 1 x 1,3 Liter Flasche",
+    "vi": "Diversey - Antimic Hand Wash, sữa rửa tay, chai 1 x 1,3 lít"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF12126",
+    "de": "Diversey - SURE Descaler, 1 x 1,0 Liter Flasche",
+    "vi": "Diversey - SURE Descaler, chai 1 x 1,0 lít"
+  },
+  {
+    "cat": "Reinigungsmittel / Chất tẩy rửa",
+    "af": "AF12189",
+    "de": "Bunzl - Müllbeutel 120L, Farbe: blau, 63µm,1 Rolle à 25 Stück",
+    "vi": "Bunzl - Túi rác 120L, màu: xanh lam, 63µm, 1 cuộn 25 cái"
+  }
+]

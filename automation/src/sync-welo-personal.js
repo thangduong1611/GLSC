@@ -95,6 +95,7 @@ const { chromium } = require('playwright');
 const { getDb, admin } = require('./firestore-client');
 const { MARKTNR_ALIASES, MARKTNR_REGION, resolveRegion } = require('./branches');
 const { withWeloLock } = require('./sync-lock');
+const { ICON_KATEGORIE } = require('./welo-jahresansicht');
 
 const BASE_URL = process.env.WELO_BASE_URL || 'https://welo.sushi-circle.de';
 const USER = process.env.WELO_USER;
@@ -128,6 +129,13 @@ const UMSATZ_MIN_PLAUSIBEL = parseFloat(process.env.WELO_UMSATZ_MIN_PLAUSIBEL ||
 // effektive Faktor beim nächsten Lauf entsprechend langsam nach.
 const WACHSTUM_DAEMPFUNG = parseFloat(process.env.WELO_WACHSTUM_DAEMPFUNG || '0.10');
 const EMP_COLLECTION = 'emp_welo';
+// Eigene, schlanke Collection statt eines weiteren Felds auf emp_welo: emp_welo
+// enthält sensible Daten (Stundenkonto, Soll-Std., Krank-Tage) und ist
+// deshalb nur dem jeweiligen Mitarbeiter selbst lesbar — die Urlaubstage
+// sollen aber vom ganzen Filial-Team im Kalender gesehen werden (genauso wie
+// bei den App-Anträgen in filialen/*/urlaub, nicht sensibler als die dortige
+// Sichtbarkeit), ohne dafür emp_welo komplett zu öffnen.
+const URLAUB_TAGE_COLLECTION = 'emp_welo_urlaub_tage';
 const ZIEL_COLLECTION = 'tagesziel';
 const EMPS_COLLECTION = 'emps'; // index.html's echte Mitarbeiter-Stammdaten (region-gefiltert)
 
@@ -361,16 +369,31 @@ async function getJahresansichtData(page, sessionBase, ids, year, heute) {
         const date = el.getAttribute('_r');
         const bo = el.querySelector('.bo');
         if (!date || !bo || date in out) return;
-        out[date] = { val: bo.textContent.trim(), special: el.classList.contains('tgd') };
+        // img.ma-Icon pro Tag (x10.gif=Urlaub, x6/x7.gif=Krank, siehe
+        // ICON_KATEGORIE in welo-jahresansicht.js) — dieselbe Seite, kein
+        // zusätzlicher Seitenaufruf nötig, nur ein zusätzliches Feld aus dem
+        // ohnehin schon besuchten DOM.
+        const img = el.querySelector('img.ma');
+        const src = img ? (img.getAttribute('src') || '') : '';
+        out[date] = { val: bo.textContent.trim(), special: el.classList.contains('tgd'), icon: src.slice(src.lastIndexOf('/') + 1) };
       });
       return out;
     });
+    // Tage, an denen Welo laut Icon "Urlaub" zeigt (ISO, aufsteigend sortiert)
+    // — Grundlage für die Welo-Übersicht im Mitarbeiter-Kalender (Auftrag
+    // t.duong 13.11.2026): zeigt Urlaub, den HR direkt in Welo eingetragen
+    // hat, auch wenn dafür nie ein App-Antrag existierte.
+    const urlaubTage = Object.keys(daily)
+      .filter((r) => ICON_KATEGORIE[daily[r].icon] === 'Urlaub')
+      .map((r) => `${r.slice(0, 4)}-${r.slice(4, 6)}-${r.slice(6, 8)}`)
+      .sort();
     merged[id] = {
       urlaubOffen: parseGermanNumber(extractLabelValue(html, 'Offen:')),
       urlaubGenommen: parseGermanNumber(extractLabelValue(html, 'Genommen:')),
       urlaubAnspruch: parseGermanNumber(extractLabelValue(html, 'Jahr:')),
       krankTage: krankRaw ? parseGermanNumber(krankRaw.replace(/Tage/i, '')) : null,
-      dailyIst: daily, // {"20260902": {val:"7,03", special:false}, ...} — special=true bei Krank/Urlaub/Feiertag usw.
+      dailyIst: daily, // {"20260902": {val:"7,03", special:false, icon:"x10.gif"}, ...} — special=true bei Krank/Urlaub/Feiertag usw.
+      urlaubTage, // ["2026-11-02", ...] — reine Welo-Sicht, unabhängig von App-Anträgen
       azKonto: extractAzKonto(html, heute), // null = kein AZ-Konto oder Vormonat noch ohne Endstand
     };
   }
@@ -678,6 +701,25 @@ async function syncAll() {
     }
     await empBatch.commit();
     console.log(`✓ ${empCount} Mitarbeiter-Datensätze in "${EMP_COLLECTION}" geschrieben.`);
+
+    // Welo-Urlaubstage separat (siehe Kommentar bei URLAUB_TAGE_COLLECTION
+    // oben) — nur für Mitarbeiter mit mind. 1 Urlaubstag laut Welo, damit die
+    // Collection nicht mit leeren Dokumenten vollläuft.
+    const urlaubTageBatch = db.batch();
+    let urlaubTageCount = 0;
+    for (const [id, p] of Object.entries(personal)) {
+      const uk = jahresdaten[id] || {};
+      const dates = uk.urlaubTage || [];
+      const ref = db.collection(URLAUB_TAGE_COLLECTION).doc(id);
+      if (!dates.length) { urlaubTageBatch.delete(ref); continue; }
+      urlaubTageBatch.set(ref, {
+        empId: id, name: p.name, filiale: p.marktname, region: resolveRegion(p.marktNr),
+        year: heute.getFullYear(), dates, updatedAt: now,
+      });
+      urlaubTageCount++;
+    }
+    await urlaubTageBatch.commit();
+    console.log(`✓ ${urlaubTageCount} Mitarbeiter mit Welo-Urlaubstagen in "${URLAUB_TAGE_COLLECTION}" geschrieben.`);
 
     // emps-Sync (siehe Doc-Kommentar oben, Punkt 4): ersetzt die manuelle
     // CSV-Import+Veröffentlichen-Runde für Neuzugänge/Abgänge.

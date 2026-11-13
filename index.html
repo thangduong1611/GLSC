@@ -311,6 +311,9 @@ window.onerror=function(msg,src,line){
     <button class="app-ico" onclick="sw('ug',this)">
       <span class="ico-e">🔄</span><span class="ico-l">Umlagerung</span>
     </button>
+    <button class="app-ico" onclick="sw('inspektion',this)">
+      <span class="ico-e">🔍</span><span class="ico-l">Inspektionen</span>
+    </button>
     <button class="app-ico" onclick="sw('urlaub',this)">
       <span class="ico-e">🌴</span><span class="ico-l">Urlaubs&shy;antrag</span>
     </button>
@@ -470,6 +473,24 @@ window.onerror=function(msg,src,line){
     style="position:absolute;top:14px;right:14px;width:46px;height:46px;border-radius:50%;background:#fff;color:#1A1A18;border:none;font-size:22px;line-height:46px;text-align:center;cursor:pointer;font-weight:700;z-index:2;padding:0">✕</button>
   <img id="we-img-modal-img" onclick="event.stopPropagation()" style="max-width:100%;max-height:68vh;border-radius:8px;object-fit:contain;position:relative;z-index:1">
   <div id="we-img-modal-label" style="color:#fff;font-size:13px;margin-top:12px;text-align:center;position:relative;z-index:2"></div>
+</div>
+
+<!-- ===== INSPEKTIONEN (Mitti/SafetyCulture-Anbindung) ===== -->
+<div id="panel-inspektion" class="panel">
+  <div class="card">
+    <div class="card-title">🔍 Inspektionen <span class="badge badge-red" id="is-live-count">0</span></div>
+    <div class="info">Mitarbeiter laden Fotos direkt in der Mitarbeiter-App hoch — eine Runde pro Filiale/Tag wird dort automatisch angelegt. Trage hier die passende Mitti-Inspektion-ID ein (aus der URL, z.B. <code>audit_abc123</code>, oder einfach den ganzen Link einfügen) und öffne sie direkt — die Fotos trägst du dort von Hand ein, da Mitti dafür keine öffentliche Upload-API anbietet.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0">
+      <select id="is-filter-fil" onchange="isRenderAdmin()" style="flex:1;min-width:160px"><option value="">Alle Filialen</option></select>
+      <select id="is-filter-status" onchange="isRenderAdmin()" style="flex:1;min-width:160px">
+        <option value="">Alle Status</option>
+        <option value="offen">Offen</option>
+        <option value="abgeschlossen">Abgeschlossen</option>
+      </select>
+    </div>
+    <div id="is-live-status" style="font-size:13px;margin-bottom:8px;font-weight:600;display:none"></div>
+    <div id="is-live-list"></div>
+  </div>
 </div>
 
 <!-- ===== UMLAGERUNG ===== -->
@@ -1687,6 +1708,7 @@ checkFirstStart();
   if(id==='stunden'){stdPopulateFilialeSelect();}
   if(id==='dienstplan'){ovRenderMonthsHint();}
   if(id==='inventur'){invOnShow();}
+  if(id==='inspektion'){ isRenderAdmin(); }
   if(id==='belege'){blPopulateFilFilter();blRenderAdmin();}
   if(id==='we'){wePopulateFilFilter();weRenderAdmin();}
   if(id==='ug'){ugPopulateFilters();ugRenderCurrent();ugmOnShow();}
@@ -5613,7 +5635,7 @@ function fbBootStatus(){
     fbPendingCardShow('⚠️ Firebase-Bibliothek nicht geladen. Internet/Adblocker prüfen und Seite neu laden.', '#C0392B');
     return;
   }
-  fbInit(function(){ authGateHide(); checkFirstStart(); fbStartPending(); nwStartListener(); nwReadsStartListener(); krStartListener(); anStartListener(); blStartListener(); avStartListener(); weStartListener(); ugStartListener(); empsSyncListener(); filialenSyncListener(); });
+  fbInit(function(){ authGateHide(); checkFirstStart(); fbStartPending(); nwStartListener(); nwReadsStartListener(); krStartListener(); anStartListener(); blStartListener(); avStartListener(); weStartListener(); ugStartListener(); isStartListener(); empsSyncListener(); filialenSyncListener(); });
 }
 function fbSlug(f){ return (''+f).replace(/\s+/g,'_').toLowerCase(); }
 function fbInit(onReady){
@@ -5841,6 +5863,7 @@ function regionRebindListeners(){
   avStartListener();
   weStartListener();
   ugStartListener();
+  isStartListener();
   if(typeof empsSyncListener==='function') empsSyncListener();
   if(typeof filialenSyncListener==='function') filialenSyncListener();
 }
@@ -8465,6 +8488,122 @@ function ugCopySummary(btn){
     lines.push(cells.join('\t'));
   });
   blCopyPay(lines.join('\n'), btn);
+}
+
+// ════════ INSPEKTIONEN (Mitti/SafetyCulture-Anbindung, "Option B") ════════
+// Mitti (vormals SafetyCulture) hat keine öffentliche API zum Hochladen von
+// Fotos auf eine Inspektion — Mitarbeiter laden Fotos deshalb direkt in
+// mitarbeiter.html hoch (inspektionen/inspektion_fotos, eine Runde pro
+// Filiale/Tag, dort automatisch angelegt). Hier wird nur die passende
+// Mitti-Inspektion-ID hinterlegt und per Deep-Link geöffnet
+// (https://app.<domain>/inspection/{id}, offiziell dokumentiert) — die
+// Fotos trägt der Gebietsleiter drüben von Hand ein. Auftrag t.duong
+// 12.11.2026.
+// MITTI_WEB_BASE: bislang bestätigte, tatsächlich im Account genutzte
+// Domain. app.mitti.com soll laut offizieller Doku denselben Deep-Link-Pfad
+// unterstützen, wurde aber noch nicht gegen den echten Sushi-Circle-Account
+// getestet — bei Bedarf hier einfach umstellen, der Rest des Codes bleibt
+// unverändert.
+var MITTI_WEB_BASE='https://app.eu.safetyculture.com';
+var fbInspektionen=[], fbInspektionFotos=[], isUnsub=null, isFotosUnsub=null;
+function isShowStatus(msg,color){ fbSpinStatus(document.getElementById('is-live-status'), msg, color); }
+function isStartListener(){
+  if(!fbReady||!fbDb||!activeRegion) return;
+  if(isUnsub){ try{isUnsub();}catch(e){} }
+  if(isFotosUnsub){ try{isFotosUnsub();}catch(e){} }
+  isShowStatus('🔄 Verbinde…','#6B6860');
+  isUnsub=fbDb.collection('inspektionen').where('region','==',activeRegion).onSnapshot(function(snap){
+    var raw=[]; snap.forEach(function(doc){ raw.push({docId:doc.id, ref:doc.ref, d:doc.data()||{}}); });
+    fbInspektionen=raw.sort(function(a,b){ return (a.d.datum||'')<(b.d.datum||'')?1:-1; });
+    isShowStatus('','');
+    isPopulateFilFilter();
+    if(document.getElementById('panel-inspektion') && document.getElementById('panel-inspektion').classList.contains('active')) isRenderAdmin();
+  }, function(err){
+    console.warn('FB inspektionen', err);
+    isShowStatus('⚠️ Kein Zugriff auf Inspektionen ('+err.code+'). In den Firestore-Regeln fehlt vermutlich der Block für „inspektionen" — bitte Regeln ergänzen und neu veröffentlichen.','#C0392B');
+  });
+  isFotosUnsub=fbDb.collection('inspektion_fotos').where('region','==',activeRegion).onSnapshot(function(snap){
+    var raw=[]; snap.forEach(function(doc){ raw.push({docId:doc.id, ref:doc.ref, d:doc.data()||{}}); });
+    fbInspektionFotos=raw;
+    if(document.getElementById('panel-inspektion') && document.getElementById('panel-inspektion').classList.contains('active')) isRenderAdmin();
+  }, function(err){ console.warn('FB inspektion_fotos', err); });
+}
+function isPopulateFilFilter(){
+  var sel=document.getElementById('is-filter-fil'); if(!sel) return;
+  var cur=sel.value;
+  var set={}; fbInspektionen.forEach(function(w){ if(w.d.filiale) set[w.d.filiale]=1; });
+  var fils=Object.keys(set).sort();
+  sel.innerHTML='<option value="">Alle Filialen</option>'+fils.map(function(f){return '<option value="'+f+'">'+f+'</option>';}).join('');
+  if(cur && set[cur]) sel.value=cur;
+}
+function isFind(id){ return fbInspektionen.find(function(x){return x.docId===id;}); }
+// Akzeptiert sowohl eine rohe Mitti-Inspektion-ID als auch einen kompletten
+// Link (z.B. https://app.eu.safetyculture.com/inspection/audit_abc123?item=…)
+// — spart dem Gebietsleiter das manuelle Heraussuchen der ID aus der URL.
+function isExtractMittiId(raw){
+  raw=(raw||'').trim();
+  if(!raw) return '';
+  var m=raw.match(/\/inspection\/([A-Za-z0-9_\-]+)/);
+  return m ? m[1] : raw.replace(/[?#].*$/,'');
+}
+function isRenderAdmin(){
+  var list=document.getElementById('is-live-list'), cnt=document.getElementById('is-live-count');
+  if(!list) return;
+  var fFil=(document.getElementById('is-filter-fil')||{}).value||'';
+  var fSt=(document.getElementById('is-filter-status')||{}).value||'';
+  var items=fbInspektionen.filter(function(w){
+    if(fFil && w.d.filiale!==fFil) return false;
+    if(fSt && w.d.status!==fSt) return false;
+    return true;
+  });
+  var openCount=fbInspektionen.filter(function(w){return w.d.status==='offen';}).length;
+  if(cnt) cnt.textContent=openCount;
+  if(!items.length){ list.innerHTML='<div style="color:#6B6860;font-size:13px;padding:6px 0">Keine Inspektionen für diesen Filter.</div>'; return; }
+  list.innerHTML=items.map(function(w){
+    var d=w.d, offen=d.status!=='abgeschlossen';
+    var m=offen?{c:'#B7791F',bg:'#FFF7E6',txt:'Offen'}:{c:'#1E8449',bg:'#EAFAF1',txt:'Abgeschlossen'};
+    var fotos=fbInspektionFotos.filter(function(f){ return f.d.inspektionId===w.docId; });
+    var thumbs=fotos.map(function(f){
+      var safeSrc=(f.d.img||'').replace(/'/g,"\\'");
+      return '<img src="'+f.d.img+'" style="width:56px;height:56px;object-fit:cover;border-radius:6px;border:1px solid #E8E4E0;cursor:pointer;margin-right:4px" onclick="weOpenImg(\''+safeSrc+'\',\'Inspektion '+fmtDate(d.datum)+'\')">';
+    }).join('');
+    var mittiId=d.mittiInspectionId||'';
+    var mittiUrl=mittiId?(MITTI_WEB_BASE+'/inspection/'+encodeURIComponent(mittiId)):'';
+    return '<div style="padding:12px;border:1px solid #E8E4E0;border-left:4px solid '+m.c+';border-radius:6px;margin-bottom:10px">'
+      +'<div style="margin-bottom:8px"><strong>'+(d.filiale||'')+'</strong> · '+fmtDate(d.datum)
+      +'<br><span style="font-size:11px;font-weight:700;padding:1px 7px;border-radius:8px;background:'+m.bg+';color:'+m.c+'">'+m.txt+'</span>'
+      +' <span style="font-size:12px;color:#6B6860">· '+fotos.length+' Foto(s) · zuletzt von '+(d.empName||'?')+'</span></div>'
+      +(fotos.length?('<div style="margin-bottom:8px">'+thumbs+'</div>'):'<div style="font-size:12.5px;color:#B0AAA0;margin-bottom:8px">Noch keine Fotos.</div>')
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px">'
+      +'<input type="text" id="is-mitti-'+w.docId+'" value="'+mittiId.replace(/"/g,'&quot;')+'" placeholder="Mitti Inspection-ID oder Link einfügen" style="flex:1;min-width:220px">'
+      +'<button class="btn btn-sm" onclick="isSaveMittiId(\''+w.docId+'\')">💾 Speichern</button>'
+      +'</div>'
+      +'<div class="btn-row">'
+      +(mittiUrl?('<a class="btn btn-sm" href="'+mittiUrl+'" target="_blank" rel="noopener" style="background:#6C3483;color:#fff;border-color:#6C3483">➡️ In Mitti öffnen</a>'):'<span class="btn btn-sm" style="opacity:.5">➡️ In Mitti öffnen</span>')
+      +(offen?('<button class="btn btn-sm" style="background:#1E8449;color:#fff;border-color:#1E8449" onclick="isSetStatus(\''+w.docId+'\',\'abgeschlossen\')">✓ Als abgeschlossen markieren</button>')
+             :('<button class="btn btn-sm" onclick="isSetStatus(\''+w.docId+'\',\'offen\')">↺ Wieder öffnen</button>'))
+      +'<button class="btn btn-sm" onclick="isDelete(\''+w.docId+'\')">🗑 Löschen</button>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+}
+function isSaveMittiId(id){
+  var w=isFind(id); if(!w) return;
+  var inp=document.getElementById('is-mitti-'+id); if(!inp) return;
+  var mittiId=isExtractMittiId(inp.value);
+  w.ref.update({mittiInspectionId:mittiId}).then(function(){ toast(mittiId?'✓ Mitti-ID gespeichert':'✓ Mitti-ID entfernt'); }).catch(function(e){ alert('Fehler: '+e.message); });
+}
+function isSetStatus(id,status){
+  var w=isFind(id); if(!w) return;
+  w.ref.update({status:status}).then(function(){ toast('✓ Status aktualisiert'); }).catch(function(e){ alert('Fehler: '+e.message); });
+}
+function isDelete(id){
+  var w=isFind(id); if(!w) return;
+  if(!confirm('Inspektion für '+(w.d.filiale||'?')+' am '+fmtDate(w.d.datum)+' wirklich löschen? Die zugehörigen Fotos werden ebenfalls entfernt.')) return;
+  var fotos=fbInspektionFotos.filter(function(f){ return f.d.inspektionId===id; });
+  Promise.all(fotos.map(function(f){ return f.ref.delete(); })).then(function(){
+    return w.ref.delete();
+  }).then(function(){ toast('🗑 Gelöscht'); }).catch(function(e){ alert('Fehler: '+e.message); });
 }
 
 // ════════ FILIAL-VERTEILUNG (Haupt + Zweitfilialen) ════════

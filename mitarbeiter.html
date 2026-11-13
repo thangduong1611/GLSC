@@ -134,7 +134,7 @@ td.c-krank{background:var(--red-l);color:var(--red-d);font-weight:700;}
 .legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:14px;font-size:13.5px;font-weight:600;}
 .legend span{display:inline-flex;align-items:center;gap:6px;}
 .dot{width:16px;height:16px;border-radius:5px;display:inline-block;}
-.dot.g{background:var(--grn);}.dot.o{background:var(--org);}.dot.r{background:var(--red);}
+.dot.g{background:var(--grn);}.dot.o{background:var(--org);}.dot.r{background:var(--red);}.dot.w{background:#6C3483;}
 .mon-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
 .mon-nav button{background:var(--surf);border:1.5px solid var(--brd);border-radius:50%;width:40px;height:40px;font-size:20px;cursor:pointer;}
 .mon-nav .mtitle{font-size:17px;font-weight:700;}
@@ -145,7 +145,7 @@ td.c-krank{background:var(--red-l);color:var(--red-d);font-weight:700;}
 .cal-cell .dn{font-weight:700;font-size:12px;color:var(--mut);}
 .cal-cell.today .dn{color:var(--red);}
 .cal-uv{display:block;border-radius:4px;padding:1px 3px;margin-top:2px;font-size:10px;font-weight:700;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.cal-uv.g{background:var(--grn);}.cal-uv.o{background:var(--org);}.cal-uv.r{background:var(--red);text-decoration:line-through;}
+.cal-uv.g{background:var(--grn);}.cal-uv.o{background:var(--org);}.cal-uv.r{background:var(--red);text-decoration:line-through;}.cal-uv.w{background:#6C3483;}
 .ul-list-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--brd);border-left-width:5px;border-radius:var(--rs);margin-bottom:8px;background:var(--surf);}
 .ul-list-item.g{border-left-color:var(--grn);}
 .ul-list-item.o{border-left-color:var(--org);}
@@ -279,6 +279,7 @@ window.onerror=function(msg,src,line){
     <button class="app-ico" id="ico-bl" onclick="maNav('bl')"><span class="nw-dot" id="bl-dot" style="display:none"></span><span class="ico-e">🧾</span><span class="ico-l" data-i18n="nav_bl">Belege</span></button>
     <button class="app-ico" id="ico-we" onclick="maNav('we')"><span class="ico-e">🚚</span><span class="ico-l" data-i18n="nav_we">Wareneingang</span></button>
     <button class="app-ico" id="ico-ug" onclick="maNav('ug')"><span class="ico-e">🔄</span><span class="ico-l" data-i18n="nav_ug">Umlagerung</span></button>
+    <button class="app-ico" id="ico-is" onclick="maNav('is')"><span class="ico-e">🔍</span><span class="ico-l" data-i18n="nav_is">Inspektion</span></button>
 
     <button class="app-ico" id="ico-nw" onclick="maNav('nw')"><span class="nw-dot" id="nw-dot"></span><span class="ico-e">📢</span><span class="ico-l" data-i18n="nav_nw">Infos</span></button>
     <button class="app-ico" id="ico-sl" onclick="maNav('sl')" style="display:none"><span class="ico-e">📋</span><span class="ico-l" data-i18n="nav_sl">Planung</span></button>
@@ -356,6 +357,7 @@ window.onerror=function(msg,src,line){
         <span><span class="dot g"></span><span data-i18n="leg_ok">Genehmigt</span></span>
         <span><span class="dot o"></span><span data-i18n="leg_wait">Wartet auf Freigabe</span></span>
         <span><span class="dot r"></span><span data-i18n="leg_no">Abgelehnt</span></span>
+        <span><span class="dot w"></span><span data-i18n="leg_welo">Laut Welo (ggf. ohne App-Antrag)</span></span>
       </div>
       <div class="mon-nav">
         <button onclick="maCalMove(-1)">‹</button>
@@ -570,6 +572,20 @@ window.onerror=function(msg,src,line){
       <div class="btn-row">
         <button class="btn btn-grn" onclick="ugSubmit()" data-i18n="btn_ug_submit">📤 Umlagerung melden</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ── INSPEKTION-FOTOS (Mitti/SafetyCulture-Anbindung) ── -->
+  <div class="panel" id="p-is">
+    <div class="card">
+      <div class="card-title" data-i18n="is_title">🔍 Inspektion-Fotos</div>
+      <div class="info" data-i18n="is_info"></div>
+      <div id="is-status" style="font-size:13px;color:var(--mut);margin-bottom:10px;font-weight:600"></div>
+      <div class="drop" id="is-drop" onclick="document.getElementById('is-file').click()">
+        <div class="drop-icon">📷</div><span data-i18n="drop_txt">Foto hochladen oder Kamera öffnen</span>
+        <input type="file" id="is-file" accept="image/*" capture="environment" style="display:none" onchange="isPhoto(event)">
+      </div>
+      <div id="is-list" style="margin-top:14px"></div>
     </div>
   </div>
 
@@ -1865,6 +1881,23 @@ function weloLoadSelf(){
     if(typeof maRenderUlRulesBox==='function') maRenderUlRulesBox();
   }).catch(function(e){ console.warn('weloLoadSelf', e); });
 }
+// Urlaubstage laut Welo fürs GANZE Filial-Team (emp_welo_urlaub_tage, von
+// sync-welo-personal.js per Icon-Auswertung geschrieben) — zeigt im Kalender
+// auch Urlaub, den HR direkt in Welo eingetragen hat, ohne dass je ein
+// App-Antrag existierte (Auftrag t.duong 13.11.2026). {empId:{name,dates:Set}}
+var maWeloUrlaubTage={};
+function maLoadWeloUrlaubOverlay(){
+  var sess=maSession(); if(!sess||!sess.filiale||!fbReady||!fbDb) return;
+  fbDb.collection('emp_welo_urlaub_tage').where('filiale','==',sess.filiale).get().then(function(snap){
+    var out={};
+    snap.forEach(function(doc){
+      var d=doc.data()||{};
+      out[doc.id]={name:d.name||'', dates:new Set(d.dates||[])};
+    });
+    maWeloUrlaubTage=out;
+    maRenderCal();
+  }).catch(function(e){ console.warn('maLoadWeloUrlaubOverlay', e); });
+}
 // Tagesziel der (Haupt-)Filiale — unten auf der Dienstplan-Seite, unter der
 // "Ganze Filiale"-Übersicht, NICHT mehr im Urlaub-Tab (Auftrag t.duong
 // 03.09.2026: gehört inhaltlich zur Filiale/zum Dienstplan, nicht zu den
@@ -2514,7 +2547,7 @@ de:{_name:'Deutsch',
  dp_not_pub:'Der Dienstplan für {m} wurde noch nicht veröffentlicht.',dp_loading:'⏳ Lade Dienstplan…',dp_load_err:'Fehler beim Laden: ',
  my_shifts:'👤 Meine Schichten',dp_pdf:'PDF laden',dp_pdf_none:'Kein PDF vorhanden.',whole_store:'🏪 Ganze Filiale',th_emp:'Mitarbeiter',no_entries:'Keine Einträge für dich in diesem Monat.',
  v_frei:'Frei',v_url:'Urlaub',v_krank:'Krank',
- ul_title:'🌴 Urlaub – Filiale',leg_ok:'Genehmigt',leg_wait:'Wartet auf Freigabe',leg_no:'Abgelehnt',st_wait:'Wartet',ul_gl_tag:'Vorschlag Gebietsleiter',ul_welo_tag:'Aus Welo übernommen',
+ ul_title:'🌴 Urlaub – Filiale',leg_ok:'Genehmigt',leg_wait:'Wartet auf Freigabe',leg_no:'Abgelehnt',leg_welo:'Laut Welo (ggf. ohne App-Antrag)',st_wait:'Wartet',ul_gl_tag:'Vorschlag Gebietsleiter',ul_welo_tag:'Aus Welo übernommen',
  ul_withdraw_btn:'↺ Zurückziehen',ul_withdraw_confirm:'Diesen Antrag wirklich zurückziehen?',ul_withdraw_ok:'✓ Antrag zurückgezogen',
  update_avail:'Neue Version verfügbar.',update_btn:'Jetzt aktualisieren',
  ul_year:'📋 Urlaub dieses Jahr',ul_none:'Noch kein Urlaub für {y} eingetragen.',
@@ -2610,6 +2643,8 @@ de:{_name:'Deutsch',
  we_photo_budget_txt:'{kb} KB von {max} KB Fotos verwendet',we_photo_too_big:'Foto zu groß – Fotos in diesem Bericht zusammen: {kb} KB von {max} KB erlaubt. Bitte ein anderes Foto entfernen oder erneut aufnehmen.',
  nav_ug:'Umlagerung',ug_title:'🔄 Umlagerung',
  ug_info:'Hast du Ware informell aus einer anderen Filiale mitgenommen (z.B. weil dort etwas fehlte)? Bitte hier melden, damit nichts vergessen wird — dein Gebietsleiter überträgt es monatlich in die Umlagerungsliste.',
+ nav_is:'Inspektion',is_title:'🔍 Inspektion-Fotos',is_info:'Fotos für die nächste Inspektion (Mitti/SafetyCulture) direkt hier hochladen — dein Gebietsleiter trägt sie dann drüben ein. Fotos desselben Tages landen automatisch zusammen.',
+ is_status_open:'Heute offen: {n} Foto(s) hochgeladen.',is_status_none:'Noch keine Inspektion heute — das erste Foto startet sie automatisch.',is_photo_ok:'✓ Foto hochgeladen',is_del_confirm:'Dieses Foto wirklich löschen?',is_fail:'Fehler: ',
  lbl_ug_von:'Woher wurde die Ware geholt?',ug_von_placeholder:'— Filiale wählen —',lbl_ug_datum:'Datum',
  ug_cart_title:'🛒 Deine Auswahl',ug_cart_empty:'Noch keine Artikel ausgewählt. Oben suchen oder Kategorie wählen und antippen.',
  btn_ug_submit:'📤 Umlagerung melden',ug_sent:'✓ Umlagerung gemeldet – danke!',ug_fail:'Fehler: ',
@@ -2659,7 +2694,7 @@ vi:{_name:'Tiếng Việt',
  dp_not_pub:'Lịch làm tháng {m} chưa được công bố.',dp_loading:'⏳ Đang tải lịch…',dp_load_err:'Lỗi khi tải: ',
  my_shifts:'👤 Ca của tôi',dp_pdf:'Tải PDF',dp_pdf_none:'Chưa có file PDF.',whole_store:'🏪 Cả cửa hàng',th_emp:'Nhân viên',no_entries:'Tháng này bạn chưa có ca nào.',
  v_frei:'Nghỉ',v_url:'Nghỉ phép',v_krank:'Ốm',
- ul_title:'🌴 Nghỉ phép – Cửa hàng',leg_ok:'Đã duyệt',leg_wait:'Chờ duyệt',leg_no:'Từ chối',st_wait:'Chờ',ul_gl_tag:'GL đề xuất',ul_welo_tag:'Lấy từ Welo',
+ ul_title:'🌴 Nghỉ phép – Cửa hàng',leg_ok:'Đã duyệt',leg_wait:'Chờ duyệt',leg_no:'Từ chối',leg_welo:'Theo Welo (có thể chưa đăng ký qua app)',st_wait:'Chờ',ul_gl_tag:'GL đề xuất',ul_welo_tag:'Lấy từ Welo',
  ul_withdraw_btn:'↺ Thu hồi',ul_withdraw_confirm:'Bạn có chắc muốn thu hồi đơn này?',ul_withdraw_ok:'✓ Đã thu hồi đơn',
  update_avail:'Có phiên bản mới.',update_btn:'Cập nhật ngay',
  ul_year:'📋 Nghỉ phép năm nay',ul_none:'Chưa có nghỉ phép nào trong năm {y}.',
@@ -2754,6 +2789,8 @@ vi:{_name:'Tiếng Việt',
  we_need_ganze_beschreibung:'Vui lòng mô tả ngắn gọn chuyện gì đã xảy ra.',
  we_photo_budget_txt:'Đã dùng {kb} KB / {max} KB cho ảnh',we_photo_too_big:'Ảnh quá lớn – tổng dung lượng ảnh trong báo cáo này: {kb} KB / {max} KB cho phép. Vui lòng xóa bớt ảnh hoặc chụp lại.',
  nav_ug:'Chuyển hàng',ug_title:'🔄 Chuyển hàng giữa tiệm',
+ nav_is:'Kiểm tra',is_title:'🔍 Ảnh kiểm tra (Inspektion)',is_info:'Tải ảnh cho đợt kiểm tra (Mitti/SafetyCulture) ngay tại đây - Gebietsleiter sẽ nhập vào bên đó sau. Ảnh chụp cùng ngày sẽ tự gộp vào cùng 1 đợt.',
+ is_status_open:'Hôm nay đang mở: đã tải {n} ảnh.',is_status_none:'Hôm nay chưa có đợt kiểm tra nào - ảnh đầu tiên sẽ tự tạo đợt mới.',is_photo_ok:'✓ Đã tải ảnh lên',is_del_confirm:'Bạn có chắc muốn xóa ảnh này?',is_fail:'Lỗi: ',
  ug_info:'Bạn đã lấy hàng tạm từ tiệm khác (vd vì tiệm mình thiếu)? Hãy báo ở đây để không bị quên — quản lý khu vực sẽ tổng hợp vào báo cáo Umlagerungsliste hàng tháng.',
  lbl_ug_von:'Đã lấy hàng từ tiệm nào?',ug_von_placeholder:'— Chọn tiệm —',lbl_ug_datum:'Ngày',
  ug_cart_title:'🛒 Danh sách đã chọn',ug_cart_empty:'Chưa chọn mặt hàng nào. Tìm kiếm hoặc chọn danh mục ở trên rồi bấm vào.',
@@ -2804,7 +2841,7 @@ en:{_name:'English',
  dp_not_pub:'The schedule for {m} has not been published yet.',dp_loading:'⏳ Loading schedule…',dp_load_err:'Error loading: ',
  my_shifts:'👤 My shifts',dp_pdf:'Get PDF',dp_pdf_none:'No PDF available.',whole_store:'🏪 Whole store',th_emp:'Employee',no_entries:'No entries for you this month.',
  v_frei:'Off',v_url:'Vacation',v_krank:'Sick',
- ul_title:'🌴 Vacation – Store',leg_ok:'Approved',leg_wait:'Pending approval',leg_no:'Rejected',st_wait:'Pending',ul_gl_tag:'Manager proposal',ul_welo_tag:'Imported from Welo',
+ ul_title:'🌴 Vacation – Store',leg_ok:'Approved',leg_wait:'Pending approval',leg_no:'Rejected',leg_welo:'Per Welo (may not have an app request)',st_wait:'Pending',ul_gl_tag:'Manager proposal',ul_welo_tag:'Imported from Welo',
  ul_withdraw_btn:'↺ Withdraw',ul_withdraw_confirm:'Really withdraw this request?',ul_withdraw_ok:'✓ Request withdrawn',
  update_avail:'A new version is available.',update_btn:'Update now',
  ul_year:'📋 Vacation this year',ul_none:'No vacation entered for {y} yet.',
@@ -2899,6 +2936,8 @@ en:{_name:'English',
  we_need_ganze_beschreibung:'Please briefly describe what happened.',
  we_photo_budget_txt:'{kb} KB of {max} KB used for photos',we_photo_too_big:'Photo too big – total photos in this report: {kb} KB of {max} KB allowed. Please remove a photo or retake it.',
  nav_ug:'Stock Transfer',ug_title:'🔄 Stock Transfer',
+ nav_is:'Inspection',is_title:'🔍 Inspection photos',is_info:'Upload photos for the next inspection (Mitti/SafetyCulture) right here — your area manager enters them over there afterwards. Photos from the same day are grouped together automatically.',
+ is_status_open:'Open today: {n} photo(s) uploaded.',is_status_none:'No inspection started today yet — the first photo starts one automatically.',is_photo_ok:'✓ Photo uploaded',is_del_confirm:'Really delete this photo?',is_fail:'Error: ',
  ug_info:'Did you informally take stock from another store (e.g. because yours was short)? Report it here so it doesn’t get forgotten — your area manager will add it to the monthly Umlagerungsliste.',
  lbl_ug_von:'Which store did you take it from?',ug_von_placeholder:'— Select store —',lbl_ug_datum:'Date',
  ug_cart_title:'🛒 Your selection',ug_cart_empty:'No items selected yet. Search or pick a category above and tap an item.',
@@ -2949,7 +2988,7 @@ th:{_name:'ไทย',
  dp_not_pub:'ตารางงานเดือน {m} ยังไม่ประกาศ',dp_loading:'⏳ กำลังโหลด…',dp_load_err:'โหลดไม่สำเร็จ: ',
  my_shifts:'👤 กะของฉัน',dp_pdf:'ดาวน์โหลด PDF',dp_pdf_none:'ไม่มีไฟล์ PDF',whole_store:'🏪 ทั้งสาขา',th_emp:'พนักงาน',no_entries:'เดือนนี้คุณยังไม่มีกะงาน',
  v_frei:'หยุด',v_url:'ลาพักร้อน',v_krank:'ป่วย',
- ul_title:'🌴 วันลา – สาขา',leg_ok:'อนุมัติแล้ว',leg_wait:'รออนุมัติ',leg_no:'ถูกปฏิเสธ',st_wait:'รอ',ul_gl_tag:'ผู้จัดการเขตเสนอ',ul_welo_tag:'นำเข้าจาก Welo',
+ ul_title:'🌴 วันลา – สาขา',leg_ok:'อนุมัติแล้ว',leg_wait:'รออนุมัติ',leg_no:'ถูกปฏิเสธ',leg_welo:'ตาม Welo (อาจยังไม่ได้ยื่นผ่านแอป)',st_wait:'รอ',ul_gl_tag:'ผู้จัดการเขตเสนอ',ul_welo_tag:'นำเข้าจาก Welo',
  ul_withdraw_btn:'↺ ถอนคำขอ',ul_withdraw_confirm:'ต้องการถอนคำขอนี้จริงหรือไม่?',ul_withdraw_ok:'✓ ถอนคำขอแล้ว',
  update_avail:'มีเวอร์ชันใหม่',update_btn:'อัปเดตตอนนี้',
  ul_year:'📋 วันลาปีนี้',ul_none:'ยังไม่มีวันลาสำหรับปี {y}',
@@ -3044,6 +3083,8 @@ th:{_name:'ไทย',
  we_need_ganze_beschreibung:'กรุณาอธิบายสั้นๆ ว่าเกิดอะไรขึ้น',
  we_photo_budget_txt:'ใช้ไปแล้ว {kb} KB จาก {max} KB สำหรับรูปภาพ',we_photo_too_big:'รูปใหญ่เกินไป – รูปทั้งหมดในรายงานนี้: {kb} KB จาก {max} KB ที่อนุญาต กรุณาลบรูปหรือถ่ายใหม่',
  nav_ug:'โอนย้ายสินค้า',ug_title:'🔄 โอนย้ายสินค้าระหว่างสาขา',
+ nav_is:'ตรวจสอบ',is_title:'🔍 รูปถ่ายตรวจสอบ',is_info:'อัปโหลดรูปถ่ายสำหรับการตรวจสอบครั้งถัดไป (Mitti/SafetyCulture) ได้ที่นี่เลย - Gebietsleiter จะนำไปกรอกในระบบนั้นภายหลัง รูปที่ถ่ายวันเดียวกันจะถูกรวมเข้าด้วยกันอัตโนมัติ',
+ is_status_open:'วันนี้เปิดอยู่: อัปโหลดแล้ว {n} รูป',is_status_none:'วันนี้ยังไม่มีการตรวจสอบ - รูปแรกจะเริ่มสร้างรอบใหม่ให้อัตโนมัติ',is_photo_ok:'✓ อัปโหลดรูปแล้ว',is_del_confirm:'ต้องการลบรูปนี้จริงหรือไม่?',is_fail:'ข้อผิดพลาด: ',
  ug_info:'คุณหยิบสินค้าจากสาขาอื่นแบบไม่เป็นทางการหรือไม่ (เช่น เพราะสาขาคุณขาดของ)? กรุณาแจ้งที่นี่เพื่อไม่ให้ลืม — ผู้จัดการเขตจะรวมเข้ารายงาน Umlagerungsliste ประจำเดือน',
  lbl_ug_von:'หยิบสินค้ามาจากสาขาไหน?',ug_von_placeholder:'— เลือกสาขา —',lbl_ug_datum:'วันที่',
  ug_cart_title:'🛒 รายการที่เลือก',ug_cart_empty:'ยังไม่ได้เลือกสินค้า ค้นหาหรือเลือกหมวดหมู่ด้านบนแล้วแตะเพื่อเพิ่ม',
@@ -3094,7 +3135,7 @@ zh:{_name:'中文',
  dp_not_pub:'{m}的排班表尚未发布。',dp_loading:'⏳ 正在加载排班表…',dp_load_err:'加载失败：',
  my_shifts:'👤 我的班次',dp_pdf:'下载PDF',dp_pdf_none:'暂无PDF文件。',whole_store:'🏪 整个门店',th_emp:'员工',no_entries:'本月您还没有排班。',
  v_frei:'休息',v_url:'休假',v_krank:'病假',
- ul_title:'🌴 休假 – 门店',leg_ok:'已批准',leg_wait:'等待批准',leg_no:'已拒绝',st_wait:'等待中',ul_gl_tag:'区域经理提议',ul_welo_tag:'从Welo导入',
+ ul_title:'🌴 休假 – 门店',leg_ok:'已批准',leg_wait:'等待批准',leg_no:'已拒绝',leg_welo:'根据Welo（可能尚未通过App申请）',st_wait:'等待中',ul_gl_tag:'区域经理提议',ul_welo_tag:'从Welo导入',
  ul_withdraw_btn:'↺ 撤回',ul_withdraw_confirm:'确定要撤回此申请吗？',ul_withdraw_ok:'✓ 已撤回申请',
  update_avail:'有新版本可用。',update_btn:'立即更新',
  ul_year:'📋 今年的休假',ul_none:'{y}年还没有休假记录。',
@@ -3189,6 +3230,8 @@ zh:{_name:'中文',
  we_need_ganze_beschreibung:'请简单描述发生了什么。',
  we_photo_budget_txt:'照片已使用 {kb} KB / {max} KB',we_photo_too_big:'照片过大 – 本次报告中的照片总大小：{kb} KB / 允许{max} KB。请删除一张照片或重新拍摄。',
  nav_ug:'调货',ug_title:'🔄 门店间调货',
+ nav_is:'检查',is_title:'🔍 检查照片',is_info:'在这里直接上传下次检查（Mitti/SafetyCulture）用的照片 - 区域经理之后会录入到那边系统。同一天拍的照片会自动归为一组。',
+ is_status_open:'今天进行中：已上传 {n} 张照片。',is_status_none:'今天还没有检查记录 - 第一张照片会自动开始一个新的记录。',is_photo_ok:'✓ 照片已上传',is_del_confirm:'确定要删除这张照片吗？',is_fail:'错误：',
  ug_info:'您是否非正式地从其他门店拿了货物（例如因为本店缺货）？请在此报告以免遗漏——区域经理会每月汇总到调货清单中。',
  lbl_ug_von:'从哪个门店取的货？',ug_von_placeholder:'— 选择门店 —',lbl_ug_datum:'日期',
  ug_cart_title:'🛒 已选商品',ug_cart_empty:'尚未选择任何商品。请在上方搜索或选择分类，然后点击添加。',
@@ -3377,20 +3420,26 @@ function maUrlaubDaySpan(fromStr,toStr){
   if(!f||!t)return 0;
   return Math.round((t-f)/86400000)+1;
 }
-// Resturlaub (emp_welo.urlaubOffen) abzüglich der eigenen, noch in der
-// Zukunft liegenden, nicht abgelehnten Anträge — dieselbe Rechnung wie in
-// den Urlaubsplan-Skripten (automation/src/plan-urlaub-ost|west.js:
-// "urlaubOffen abzüglich bereits gebuchter Urlaub"). Nur zukünftige
-// Einträge werden abgezogen: vergangene Tage hat Welo beim täglichen Sync
-// bereits selbst aus "Offen" herausgerechnet, die nochmal abzuziehen würde
-// doppelt zählen. skipDocId = der Antrag, der gerade bearbeitet wird (zählt
-// nicht gegen sich selbst). null = noch kein emp_welo-Eintrag vorhanden
-// (z.B. ganz neuer Mitarbeiter) -> keine Sperre.
+// Resturlaub (emp_welo.urlaubOffen) abzüglich der eigenen, noch nicht
+// begonnenen, nicht abgelehnten Anträge — dieselbe Grundidee wie in den
+// Urlaubsplan-Skripten (automation/src/plan-urlaub-ost|west.js: "urlaubOffen
+// abzüglich bereits gebuchter Urlaub"), aber mit korrigierter Grenze (Bug
+// gefunden 13.11.2026, echter Fall: Mitarbeiterin mit urlaubOffen=3 in Welo
+// sah in der App "0 Tage übrig", weil ein bereits laufender/abgeschlossener
+// Antrag [02.–13.11., "heute" war der 13.11.] zusätzlich abgezogen wurde).
+// Nur Anträge, die noch gar nicht BEGONNEN haben (from>today), zählen als
+// "Welo weiß noch nichts davon" — die Personalabteilung trägt einen Antrag
+// erfahrungsgemäß VOR seinem Beginn in Welo ein, nie erst danach. Ein Antrag,
+// der schon läuft oder vorbei ist, gilt deshalb als in Welo bereits erfasst;
+// ihn hier nochmal abzuziehen würde doppelt zählen (genau der Bug oben).
+// skipDocId = der Antrag, der gerade bearbeitet wird (zählt nicht gegen sich
+// selbst). null = noch kein emp_welo-Eintrag vorhanden (z.B. ganz neuer
+// Mitarbeiter) -> keine Sperre.
 function maUrlaubRemaining(sess,skipDocId){
   if(weloSelfUrlaubOffen==null||!sess)return null;
   var today=maTodayISO();
   var used=maFilialeUrlaub(sess.filiale).filter(function(e){
-    return ''+e.id===''+sess.id && e.status!=='rejected' && e.to>=today && (!skipDocId||e.docId!==skipDocId);
+    return ''+e.id===''+sess.id && e.status!=='rejected' && e.from>today && (!skipDocId||e.docId!==skipDocId);
   }).reduce(function(sum,e){ return sum+maUrlaubDaySpan(e.from,e.to); },0);
   return Math.max(0, weloSelfUrlaubOffen-used);
 }
@@ -3567,7 +3616,7 @@ function maShowApp(sess){
   // Firebase realtime (falls konfiguriert)
   if(fbEnabled()){
     var afterFbReady=function(){
-      maStartFbUrlaub(sess); maStartFbNews(); maRefreshProfile(); weloLoadSelf(); maLoadUrlaubRules(sess);
+      maStartFbUrlaub(sess); maStartFbNews(); maRefreshProfile(); weloLoadSelf(); maLoadWeloUrlaubOverlay(); maLoadUrlaubRules(sess);
       // WICHTIG: Nach erfolgreichem Firebase-Login die Ansichten EINMAL neu rendern.
       // Beim ersten maShowApp() war fbReady noch false → Dienstplan blieb auf
       // "noch nicht veröffentlicht" stehen, bis der Nutzer den Monat manuell wechselte.
@@ -3580,20 +3629,21 @@ function maShowApp(sess){
       krStartListener();
       avEStartListener();
       ulhrStartListener();
+      isStartListener();
     };
     if(fbReady){ afterFbReady(); }
     else fbInit(afterFbReady);
   }
 }
 function maNav(t){
-  ['dp','ul','kr','bl','av','nw','sl','im','iv','we','ug'].forEach(function(x){
+  ['dp','ul','kr','bl','av','nw','sl','im','iv','we','ug','is'].forEach(function(x){
     var p=document.getElementById('p-'+x);
     var ic=document.getElementById('ico-'+x);
     if(p) p.classList.toggle('active',x===t);
     if(ic) ic.classList.toggle('active',x===t);
   });
   if(t==='dp'){maRefreshProfile();}
-  if(t==='ul'){maRenderCal();maRenderUlList();weloLoadSelf();ulhrRender();}
+  if(t==='ul'){maRenderCal();maRenderUlList();weloLoadSelf();maLoadWeloUrlaubOverlay();ulhrRender();}
   if(t==='kr'){krRender();}
   if(t==='bl'){blRender();blPayLoad();}
   if(t==='av'){avERender();}
@@ -3603,6 +3653,7 @@ function maNav(t){
   if(t==='iv'){ivRender();}
   if(t==='we'){weRenderItems();weUpdateBudget();}
   if(t==='ug'){ugOnShow();}
+  if(t==='is'){isRender();}
 }
 
 /* ════════════════════════════════════════════════
@@ -4064,6 +4115,102 @@ function ugResetForm(){
 }
 
 /* ════════════════════════════════════════════════
+   INSPEKTION-FOTOS (Mitti/SafetyCulture-Anbindung, "Option B")
+   Fotos laufen komplett über die App (Firestore, wie bei Krankmeldung/
+   Wareneingang als Data-URL) — Mitti selbst hat keine öffentliche Upload-
+   API für Fotos. Der Gebietsleiter öffnet die passende Mitti-Inspektion
+   später per Deep-Link (index.html) und trägt die Fotos dort von Hand ein.
+   Eine "Runde" (inspektionen-Doc) ist pro Filiale+Tag automatisch offen —
+   das erste Foto des Tages legt sie an, alle weiteren Fotos derselben
+   Filiale/desselben Tages hängen sich automatisch dran (Auftrag t.duong
+   12.11.2026).
+   ════════════════════════════════════════════════ */
+var isRounds=[], isPhotos=[], isRoundsUnsub=null, isPhotosUnsub=null, isCurRoundId=null;
+function isStartListener(){
+  var sess=maSession();
+  if(!fbReady||!fbDb||!sess||!sess.filiale) return;
+  if(isRoundsUnsub){ try{isRoundsUnsub();}catch(e){} }
+  isRoundsUnsub=fbDb.collection('inspektionen').where('filiale','==',sess.filiale).onSnapshot(function(snap){
+    var raw=[]; snap.forEach(function(doc){ raw.push({docId:doc.id, ref:doc.ref, d:doc.data()||{}}); });
+    isRounds=raw;
+    isBindCurrentRound();
+  }, function(err){ console.warn('FB inspektionen (eigene Filiale)', err); });
+}
+function isBindCurrentRound(){
+  var today=maTodayISO();
+  var found=isRounds.find(function(r){ return r.d.datum===today && r.d.status==='offen'; });
+  var newId=found?found.docId:null;
+  if(newId===isCurRoundId && isPhotosUnsub) { isRender(); return; }
+  isCurRoundId=newId;
+  if(isPhotosUnsub){ try{isPhotosUnsub();}catch(e){} isPhotosUnsub=null; }
+  isPhotos=[];
+  if(isCurRoundId){
+    isPhotosUnsub=fbDb.collection('inspektion_fotos').where('inspektionId','==',isCurRoundId).onSnapshot(function(snap){
+      var raw=[]; snap.forEach(function(doc){ raw.push({docId:doc.id, ref:doc.ref, d:doc.data()||{}}); });
+      isPhotos=raw.sort(function(a,b){ return (a.d.createdAt||'')<(b.d.createdAt||'')?1:-1; });
+      isRender();
+    }, function(err){ console.warn('FB inspektion_fotos', err); });
+  }
+  isRender();
+}
+function isRender(){
+  var statusBox=document.getElementById('is-status');
+  if(statusBox) statusBox.textContent = isCurRoundId ? t('is_status_open',{n:isPhotos.length}) : t('is_status_none');
+  var box=document.getElementById('is-list'); if(!box) return;
+  box.innerHTML=isPhotos.map(function(p){
+    return '<div style="position:relative;display:inline-block;margin:0 8px 8px 0">'
+      +'<img src="'+p.d.img+'" style="width:84px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--brd)">'
+      +'<button onclick="isDeletePhoto(\''+p.docId+'\')" style="position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:#C0392B;color:#fff;border:none;font-size:13px;line-height:1;cursor:pointer">×</button>'
+      +'</div>';
+  }).join('');
+}
+function isEnsureRound(sess){
+  if(isCurRoundId) return Promise.resolve(isCurRoundId);
+  var doc={ empId:''+sess.id, empName:sess.name, filiale:sess.filiale||'', region:sess.region||'',
+    datum:maTodayISO(), note:'', status:'offen', mittiInspectionId:'', mittiLink:'',
+    createdAt:new Date().toISOString() };
+  return fbDb.collection('inspektionen').add(doc).then(function(ref){ isCurRoundId=ref.id; return ref.id; });
+}
+function isPhoto(ev){
+  var f=ev.target.files[0]; if(!f) return;
+  var sess=maSession(); if(!sess) return;
+  if(!fbReady||!fbDb){ toast(t('is_fail')+'offline',true); return; }
+  maBusy('is-drop');
+  var r=new FileReader();
+  r.onload=function(e){
+    var img=new Image();
+    img.onload=function(){
+      var maxW=1100, sc=Math.min(1, maxW/img.width);
+      var cv=document.createElement('canvas');
+      cv.width=Math.round(img.width*sc); cv.height=Math.round(img.height*sc);
+      cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+      var data=cv.toDataURL('image/jpeg',0.75);
+      if(data.length>900000){ // zu groß → stärker komprimieren
+        data=cv.toDataURL('image/jpeg',0.5);
+      }
+      isEnsureRound(sess).then(function(roundId){
+        return fbDb.collection('inspektion_fotos').add({
+          inspektionId:roundId, empId:''+sess.id, empName:sess.name,
+          filiale:sess.filiale||'', region:sess.region||'',
+          img:data, createdAt:new Date().toISOString()
+        });
+      }).then(function(){
+        maUnbusy('is-drop');
+        toast(t('is_photo_ok'));
+      }).catch(function(e){ maUnbusy('is-drop'); toast(t('is_fail')+e.message,true); });
+    };
+    img.src=e.target.result;
+  };
+  r.readAsDataURL(f);
+  ev.target.value='';
+}
+function isDeletePhoto(id){
+  var p=isPhotos.find(function(x){return x.docId===id;}); if(!p) return;
+  if(!confirm(t('is_del_confirm'))) return;
+  p.ref.delete().catch(function(e){ toast(t('is_fail')+e.message,true); });
+}
+
+/* ════════════════════════════════════════════════
    IMPORT
    ════════════════════════════════════════════════ */
 function maOpenImport(){document.getElementById('import-modal').classList.add('open');}
@@ -4417,6 +4564,19 @@ function maRenderCal(){
       cell+='<span class="cal-uv '+maStatusClass(e.status)+'" title="'+e.name+'">'+nm+'</span>';
     });
     if(entries.length>3)cell+='<span class="cal-uv o" style="background:#999">+'+(entries.length-3)+'</span>';
+    // Zusätzlich: Urlaub, der laut Welo an diesem Tag eingetragen ist — eigene
+    // Farbe (lila, wie die bestehenden Welo-Knöpfe in index.html), bewusst
+    // UNABHÄNGIG von den App-Anträgen oben gerendert (auch wenn es für
+    // dieselbe Person/denselben Tag schon einen grünen Antrag gibt — genau
+    // DANN zeigt die lila Markierung "ja, ist auch wirklich in Welo
+    // angekommen"; fehlt sie bei einem grünen Antrag, ist das der Hinweis,
+    // dass HR es noch nicht in Welo nachgetragen hat).
+    var weloIds=Object.keys(maWeloUrlaubTage).filter(function(id){ return maWeloUrlaubTage[id].dates.has(iso); });
+    weloIds.slice(0,3).forEach(function(id){
+      var nm=(maWeloUrlaubTage[id].name||'').split(' ')[0];
+      cell+='<span class="cal-uv w" title="Laut Welo: '+maWeloUrlaubTage[id].name+'">'+nm+'</span>';
+    });
+    if(weloIds.length>3)cell+='<span class="cal-uv w" style="background:#999">+'+(weloIds.length-3)+'</span>';
     cell+='</div>';
     html+=cell;
   }
