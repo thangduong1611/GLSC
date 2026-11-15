@@ -638,6 +638,11 @@ window.onerror=function(msg,src,line){
         <span style="display:inline-flex;align-items:center;gap:5px"><span style="width:11px;height:11px;border-radius:3px;background:#fff;box-shadow:inset 0 0 0 2px #C0392B"></span><span data-i18n="sl_leg_clash">Doppelbelegung · 🏪 arbeitet auch woanders</span></span>
       </div>
       <div id="sl-grid" style="overflow-x:auto"></div>
+      <div class="btn-row" style="margin-top:14px">
+        <button class="btn btn-red" onclick="slExportPDF()" style="flex:1;justify-content:center" data-i18n="sl_pdf_download">⬇ PDF herunterladen</button>
+        <button class="btn btn-grn" onclick="slSharePDF()" data-i18n="sl_pdf_share">📤 WhatsApp</button>
+        <button class="btn" onclick="slPublishPDF()" style="border-color:#185FA5;color:#185FA5" data-i18n="sl_pdf_publish">📲 An Mitarbeiter</button>
+      </div>
     </div>
   </div>
 
@@ -1508,7 +1513,7 @@ function ivSubmit(){
    Erlaubt: Schichten bearbeiten + pro Woche veröffentlichen.
    Nicht erlaubt: Mitarbeiter hinzufügen/löschen, Urlaub genehmigen.
    ════════════════════════════════════════════════ */
-var slEmps=[], slShifts={}, slPlanLoaded=false, slPlanUnsub=null, slPlanDocId=null, slWeekMeta={}, slDirty=false;
+var slEmps=[], slShifts={}, slPlanLoaded=false, slPlanUnsub=null, slPlanDocId=null, slWeekMeta={}, slDirty=false, slLastDoc=null, slLastFname='';
 var slSollStdCache={}; // PersonalNr -> Vertragsstunden/Woche (emp_welo.sollStd) - siehe slLoadSollStd()
 
 /* Hilfsfunktionen (identisch mit dpISO/dpParse/dpGetKW in index.html) */
@@ -2449,6 +2454,99 @@ function slPublishWeek(wi){
   });
 }
 
+// ── PDF für Shopleiter: herunterladen / teilen / für Mitarbeiter sichtbar
+// machen (Auftrag t.duong 15.11.2026: "sau khi làm lịch xong cũng có thể tải
+// về và gửi cho các nhân viên trong tiệm") — Gegenstück zu dpBuildPDFDoc()/
+// dpExportPDF()/dpSharePDF()/dpPublishPDF() in index.html, gleiches Layout und
+// dieselbe "plan_pdf"-Collection, die mitarbeiter.html über maEnsurePlanPdf()/
+// maDownloadPlanPdf() schon beobachtet — ein von hier veröffentlichtes PDF
+// erscheint für die Mitarbeiter also automatisch, ohne weitere Änderung nötig.
+function slBuildPDFDoc(){
+  var sess=maSession(); if(!slIsPlanner(sess)) return null;
+  slSaveFromDOM();
+  var m=document.getElementById('sl-month').value, f=slCurFiliale();
+  if(!f||!m) return null;
+  if(!slEmps.length){ toast(t('sl_no_emps'),true); return null; }
+  if(typeof window.jspdf==='undefined'&&typeof window.jsPDF==='undefined'){ return {retry:true}; }
+  var jsPDF=(window.jspdf||window.jsPDF).jsPDF, doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+  var ML=8,MT=8,PW=194,CE=36,CD=(PW-CE)/6,RKW=7,RH=12,RE=7.5,pH=280,y=MT;
+  var DAYS=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+  var slOv=maUrlaubOverlay(); // genehmigter Urlaub, gleiche Quelle wie slRenderGrid()
+  doc.setFontSize(13);doc.setFont('helvetica','bold');
+  doc.text('Arbeitsplan – '+f,ML+PW/2,y+5.5,{align:'center'});y+=10;
+  slGetWeeks(m).forEach(function(wk){
+    if(y+RKW+RH+slEmps.length*RE+4>pH){doc.addPage();y=MT;}
+    doc.setFillColor(238,232,224);doc.rect(ML,y,PW,RKW,'F');doc.setDrawColor(200,195,188);doc.rect(ML,y,PW,RKW,'S');
+    doc.setFontSize(8);doc.setFont('helvetica','bold');doc.text('KW: '+wk.kw,ML+3,y+4.8);
+    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.text('Pause (Pflicht)  >6h: 30min    >9h: 45min',ML+22,y+4.8);
+    doc.setFont('helvetica','bold');doc.setFontSize(8);doc.text(String(slParse(wk.dates[0]).getFullYear()),ML+PW-3,y+4.8,{align:'right'});
+    y+=RKW;
+    doc.setFillColor(248,244,240);doc.rect(ML,y,CE,RH,'F');doc.setDrawColor(200,195,188);doc.rect(ML,y,CE,RH,'S');
+    doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.text('Mitarbeiter',ML+CE/2,y+4.5,{align:'center'});
+    wk.dates.forEach(function(dt,di){var x=ML+CE+di*CD,d=slParse(dt),ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});doc.setFillColor(248,244,240);doc.rect(x,y,CD,RH,'F');doc.setDrawColor(200,195,188);doc.rect(x,y,CD,RH,'S');doc.setFontSize(7.5);doc.setFont('helvetica','bold');doc.text(DAYS[di].substring(0,2),x+CD/2,y+4.2,{align:'center'});doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.text(ds,x+CD/2,y+8.4,{align:'center'});});
+    y+=RH;
+    slEmps.forEach(function(emp){
+      if(y+RE>pH){doc.addPage();y=MT;}
+      var ek=slResolveEmpKey(slShifts,emp), eid=''+(emp.id||'');
+      doc.setFillColor(250,248,245);doc.rect(ML,y,CE,RE,'F');doc.setDrawColor(200,195,188);doc.rect(ML,y,CE,RE,'S');
+      doc.setFontSize(7.5);doc.setFont('helvetica','bold');
+      doc.text(emp.name.length>18?emp.name.substring(0,17)+'…':emp.name,ML+2,y+RE/2+2.5);
+      wk.dates.forEach(function(dt,di){var x=ML+CE+di*CD;
+        var ovVal=slOv[eid]&&slOv[eid][dt];
+        var val=ovVal?'Urlaub':((slShifts[ek]&&slShifts[ek][dt])||'');
+        if(val==='Krank')doc.setFillColor(253,222,219);else if(val==='Urlaub')doc.setFillColor(212,239,223);else if(val==='Frei')doc.setFillColor(245,243,240);else doc.setFillColor(255,255,255);
+        doc.rect(x,y,CD,RE,'F');doc.setDrawColor(200,195,188);doc.rect(x,y,CD,RE,'S');
+        if(val){doc.setFontSize(val.length>10?5.6:7);doc.setFont('helvetica',val==='Frei'?'normal':'bold');doc.text(val,x+CD/2,y+RE/2+2.5,{align:'center'});}
+      });
+      y+=RE;
+    });
+    y+=4;
+  });
+  var fname='Dienstplan_'+f.replace(/\s+/g,'_')+'_'+m+'.pdf';
+  return {doc:doc, fname:fname, f:f, m:m};
+}
+function slExportPDF(){
+  var st=document.getElementById('sl-status');
+  var r=slBuildPDFDoc();
+  if(!r) return;
+  if(r.retry){ if(st)st.textContent='jsPDF lädt…'; setTimeout(slExportPDF,1200); return; }
+  r.doc.save(r.fname); slLastDoc=r.doc; slLastFname=r.fname;
+  if(st) st.textContent='✅ PDF: '+r.fname;
+  toast('📄 PDF erstellt!');
+}
+// PDF erstellen + in "plan_pdf" veröffentlichen — Mitarbeiter sehen es automatisch
+// über maEnsurePlanPdf()/maDownloadPlanPdf() im eigenen Dienstplan-Tab.
+function slPublishPDF(){
+  var st=document.getElementById('sl-status');
+  if(!fbReady||!fbDb){ toast(t('err_net'),true); return; }
+  var r=slBuildPDFDoc();
+  if(!r) return;
+  if(r.retry){ if(st)st.textContent='jsPDF lädt…'; setTimeout(slPublishPDF,1200); return; }
+  var dataUri;
+  try{ dataUri=r.doc.output('datauristring'); }catch(e){ if(st) st.textContent='Fehler: '+e.message; return; }
+  var approxKB=Math.round(dataUri.length*0.75/1024);
+  if(dataUri.length>950000){ if(st) st.textContent='⚠️ PDF zu groß ('+approxKB+' KB).'; return; }
+  var sess=maSession();
+  fbDb.collection('plan_pdf').doc(slFbSlug(r.f)+'__'+r.m).set({
+    filiale:r.f, month:r.m, fileName:r.fname, pdf:dataUri,
+    uploadedAt:new Date().toISOString(), by:(sess&&sess.name)||'Shopleiter'
+  }).then(function(){
+    slLastDoc=r.doc; slLastFname=r.fname;
+    if(st) st.textContent='✅ PDF für Mitarbeiter veröffentlicht ('+approxKB+' KB).';
+    toast('📲 PDF für Mitarbeiter sichtbar');
+  }).catch(function(e){ if(st) st.textContent='Fehler: '+e.message; });
+}
+async function slSharePDF(){
+  slSaveFromDOM();
+  if(!slLastDoc){ slExportPDF(); return; }
+  var m=document.getElementById('sl-month').value, f=slCurFiliale(), mStr=slFmtMonth(m);
+  var blob=new Blob([slLastDoc.output('arraybuffer')],{type:'application/pdf'}), file=new File([blob],slLastFname,{type:'application/pdf'});
+  var sd={title:'Dienstplan '+f+' – '+mStr, text:'Dienstplan '+f+' – '+mStr};
+  if(navigator.canShare&&navigator.canShare({files:[file]})) sd.files=[file];
+  if(navigator.share){ try{ await navigator.share(sd); }catch(err){ if(err.name!=='AbortError') toast('Fehler beim Teilen'); } }
+  else toast('Bitte PDF herunterladen');
+}
+
 /* ════════════════════════════════════════════════
    PUSH-BENACHRICHTIGUNGEN (Firebase Cloud Messaging)
    Voraussetzungen (einmalig in fb-config.js / Firebase-Console):
@@ -2662,7 +2760,7 @@ de:{_name:'Deutsch',
  push_info:'🔔 Aktiviere Push-Benachrichtigungen, um sofort informiert zu werden, sobald eine neue Info hochgeladen wird – auch wenn die App geschlossen ist.',push_btn:'🔔 Benachrichtigungen aktivieren',push_on:'✓ Benachrichtigungen aktiv',push_denied:'Benachrichtigungen wurden im Browser blockiert. Bitte in den Browser-Einstellungen erlauben.',push_unsupported:'Push-Benachrichtigungen werden auf diesem Gerät/Browser nicht unterstützt.',push_newinfo:'📢 Neue Info vom Gebietsleiter',
  nw_read_btn:'✓ Gelesen – bestätigen',nw_read_done:'✓ Als gelesen bestätigt',nw_read_toast:'✓ Lesebestätigung gesendet',
  nw_pdf_open:'In neuem Tab öffnen',nw_pdf_hint:'falls das PDF oben nicht angezeigt wird',
- nav_iv:'📦 Inventur',iv_title:'📦 Inventur',iv_progress:'Fortschritt',iv_save:'💾 Entwurf speichern',iv_submit:'✓ An HR senden',iv_saved:'✓ Entwurf gespeichert',iv_sent:'✓ An HR gesendet – danke!',iv_none:'Aktuell läuft keine Inventur.',iv_active:'🟢 Inventur aktiv',iv_count:'Bitte alle Artikel zählen und Menge eintragen.',iv_search:'Suchen…',nav_sl:'📋 Planung',sl_title:'📋 Dienstplan-Planung',sl_loading:'⏳ Lade Dienstplan…',sl_empty:'Noch kein Dienstplan für diesen Monat.',sl_pub_ok:'✓ KW {kw} veröffentlicht',sl_pub_err:'Fehler beim Veröffentlichen',sl_empty_week_confirm:'⚠️ KW {kw} ist für alle Mitarbeiter komplett leer (keine einzige Schicht eingetragen).\n\nTrotzdem veröffentlichen? Eine vergangene Woche kann danach NICHT mehr geändert werden.',sl_pub_btn:'☁️ KW {kw} veröffentlichen',sl_cloud_update_msg:'🔄 Neue Cloud-Version verfügbar (z.B. weil gerade eine andere KW veröffentlicht wurde). Eigene, noch nicht veröffentlichte Eingaben bleiben erhalten, bis hier geklickt wird.',sl_reload_link:'Neu laden',sl_no_emps:'Keine Mitarbeiter in dieser Filiale. Bitte HR kontaktieren.',err_net:'Keine Verbindung – bitte erneut versuchen.',
+ nav_iv:'📦 Inventur',iv_title:'📦 Inventur',iv_progress:'Fortschritt',iv_save:'💾 Entwurf speichern',iv_submit:'✓ An HR senden',iv_saved:'✓ Entwurf gespeichert',iv_sent:'✓ An HR gesendet – danke!',iv_none:'Aktuell läuft keine Inventur.',iv_active:'🟢 Inventur aktiv',iv_count:'Bitte alle Artikel zählen und Menge eintragen.',iv_search:'Suchen…',nav_sl:'📋 Planung',sl_title:'📋 Dienstplan-Planung',sl_loading:'⏳ Lade Dienstplan…',sl_empty:'Noch kein Dienstplan für diesen Monat.',sl_pub_ok:'✓ KW {kw} veröffentlicht',sl_pub_err:'Fehler beim Veröffentlichen',sl_empty_week_confirm:'⚠️ KW {kw} ist für alle Mitarbeiter komplett leer (keine einzige Schicht eingetragen).\n\nTrotzdem veröffentlichen? Eine vergangene Woche kann danach NICHT mehr geändert werden.',sl_pub_btn:'☁️ KW {kw} veröffentlichen',sl_pdf_download:'⬇ PDF herunterladen',sl_pdf_share:'📤 WhatsApp',sl_pdf_publish:'📲 An Mitarbeiter',sl_cloud_update_msg:'🔄 Neue Cloud-Version verfügbar (z.B. weil gerade eine andere KW veröffentlicht wurde). Eigene, noch nicht veröffentlichte Eingaben bleiben erhalten, bis hier geklickt wird.',sl_reload_link:'Neu laden',sl_no_emps:'Keine Mitarbeiter in dieser Filiale. Bitte HR kontaktieren.',err_net:'Keine Verbindung – bitte erneut versuchen.',
  sl_suggest:'💡 Vorschlag aus Vormonat',sl_pend:'beantragt',
  sl_tip_pend:'Urlaubsantrag offen (noch nicht entschieden)',sl_tip_clash:'Doppelbelegung – arbeitet am selben Tag auch in',
  sl_clash_toast:'{d}: arbeitet auch in {fil}',
@@ -2809,7 +2907,7 @@ vi:{_name:'Tiếng Việt',
  push_info:'🔔 Bật thông báo đẩy để nhận tin ngay khi có thông tin mới được tải lên – kể cả khi đã đóng app.',push_btn:'🔔 Bật thông báo',push_on:'✓ Đã bật thông báo',push_denied:'Thông báo đã bị chặn trong trình duyệt. Vui lòng cho phép trong cài đặt trình duyệt.',push_unsupported:'Thiết bị/trình duyệt này không hỗ trợ thông báo đẩy.',push_newinfo:'📢 Thông báo mới từ Gebietsleiter',
  nw_read_btn:'✓ Đã đọc – xác nhận',nw_read_done:'✓ Đã xác nhận đã đọc',nw_read_toast:'✓ Đã gửi xác nhận đã đọc',
  nw_pdf_open:'Mở trong tab mới',nw_pdf_hint:'nếu PDF ở trên không hiển thị',
- nav_iv:'📦 Kiểm kê',iv_title:'📦 Kiểm kê kho',iv_progress:'Tiến độ',iv_save:'💾 Lưu nháp',iv_submit:'✓ Gửi cho HR',iv_saved:'✓ Đã lưu nháp',iv_sent:'✓ Đã gửi cho HR – cảm ơn!',iv_none:'Hiện không có đợt kiểm kê nào.',iv_active:'🟢 Đang kiểm kê',iv_count:'Vui lòng đếm và nhập số lượng từng món.',iv_search:'Tìm kiếm…',nav_sl:'📋 Lập lịch',sl_title:'📋 Lập lịch làm việc',sl_loading:'⏳ Đang tải lịch…',sl_empty:'Chưa có lịch làm cho tháng này.',sl_pub_ok:'✓ Đã đăng tuần {kw}',sl_pub_err:'Lỗi khi đăng lịch',sl_empty_week_confirm:'⚠️ Tuần KW {kw} đang hoàn toàn trống (chưa có ca làm nào) cho tất cả nhân viên.\n\nVẫn muốn đăng? Tuần đã qua sẽ KHÔNG thể sửa lại được nữa sau khi đăng.',sl_pub_btn:'☁️ Đăng tuần {kw}',sl_cloud_update_msg:'🔄 Có bản cập nhật mới trên cloud (ví dụ vừa có tuần khác được đăng). Dữ liệu chưa đăng của bạn vẫn được giữ nguyên cho đến khi bấm vào đây.',sl_reload_link:'Tải lại',sl_no_emps:'Chưa có nhân viên ở tiệm này. Vui lòng liên hệ HR.',err_net:'Mất kết nối – vui lòng thử lại.',
+ nav_iv:'📦 Kiểm kê',iv_title:'📦 Kiểm kê kho',iv_progress:'Tiến độ',iv_save:'💾 Lưu nháp',iv_submit:'✓ Gửi cho HR',iv_saved:'✓ Đã lưu nháp',iv_sent:'✓ Đã gửi cho HR – cảm ơn!',iv_none:'Hiện không có đợt kiểm kê nào.',iv_active:'🟢 Đang kiểm kê',iv_count:'Vui lòng đếm và nhập số lượng từng món.',iv_search:'Tìm kiếm…',nav_sl:'📋 Lập lịch',sl_title:'📋 Lập lịch làm việc',sl_loading:'⏳ Đang tải lịch…',sl_empty:'Chưa có lịch làm cho tháng này.',sl_pub_ok:'✓ Đã đăng tuần {kw}',sl_pub_err:'Lỗi khi đăng lịch',sl_empty_week_confirm:'⚠️ Tuần KW {kw} đang hoàn toàn trống (chưa có ca làm nào) cho tất cả nhân viên.\n\nVẫn muốn đăng? Tuần đã qua sẽ KHÔNG thể sửa lại được nữa sau khi đăng.',sl_pub_btn:'☁️ Đăng tuần {kw}',sl_pdf_download:'⬇ Tải PDF về',sl_pdf_share:'📤 WhatsApp',sl_pdf_publish:'📲 Gửi cho nhân viên',sl_cloud_update_msg:'🔄 Có bản cập nhật mới trên cloud (ví dụ vừa có tuần khác được đăng). Dữ liệu chưa đăng của bạn vẫn được giữ nguyên cho đến khi bấm vào đây.',sl_reload_link:'Tải lại',sl_no_emps:'Chưa có nhân viên ở tiệm này. Vui lòng liên hệ HR.',err_net:'Mất kết nối – vui lòng thử lại.',
  sl_suggest:'💡 Lấy mẫu từ tháng trước',sl_pend:'đã xin',
  sl_tip_pend:'Đơn xin nghỉ đang chờ duyệt',sl_tip_clash:'Trùng lịch – cùng ngày còn làm ở',
  sl_clash_toast:'{d}: còn làm ở {fil}',
@@ -2956,7 +3054,7 @@ en:{_name:'English',
  push_info:'🔔 Enable push notifications to be informed instantly when new info is uploaded – even when the app is closed.',push_btn:'🔔 Enable notifications',push_on:'✓ Notifications enabled',push_denied:'Notifications are blocked in the browser. Please allow them in the browser settings.',push_unsupported:'Push notifications are not supported on this device/browser.',push_newinfo:'📢 New info from the area manager',
  nw_read_btn:'✓ Mark as read',nw_read_done:'✓ Confirmed as read',nw_read_toast:'✓ Read receipt sent',
  nw_pdf_open:'Open in new tab',nw_pdf_hint:'if the PDF above doesn\'t show',
- nav_iv:'📦 Inventory',iv_title:'📦 Inventory count',iv_progress:'Progress',iv_save:'💾 Save draft',iv_submit:'✓ Send to HR',iv_saved:'✓ Draft saved',iv_sent:'✓ Sent to HR – thank you!',iv_none:'No inventory is currently running.',iv_active:'🟢 Inventory active',iv_count:'Please count and enter the quantity for each item.',iv_search:'Search…',nav_sl:'📋 Planning',sl_title:'📋 Schedule Planning',sl_loading:'⏳ Loading schedule…',sl_empty:'No schedule published for this month yet.',sl_pub_ok:'✓ Week {kw} published',sl_pub_err:'Error publishing',sl_empty_week_confirm:'⚠️ Week {kw} is completely empty for all employees (no shift entered at all).\n\nPublish anyway? A past week can NOT be changed again afterward.',sl_pub_btn:'☁️ Publish week {kw}',sl_cloud_update_msg:'🔄 New cloud version available (e.g. another week was just published). Your own not-yet-published entries stay as they are until you click here.',sl_reload_link:'Reload',sl_no_emps:'No employees in this store. Please contact HR.',err_net:'No connection – please try again.',
+ nav_iv:'📦 Inventory',iv_title:'📦 Inventory count',iv_progress:'Progress',iv_save:'💾 Save draft',iv_submit:'✓ Send to HR',iv_saved:'✓ Draft saved',iv_sent:'✓ Sent to HR – thank you!',iv_none:'No inventory is currently running.',iv_active:'🟢 Inventory active',iv_count:'Please count and enter the quantity for each item.',iv_search:'Search…',nav_sl:'📋 Planning',sl_title:'📋 Schedule Planning',sl_loading:'⏳ Loading schedule…',sl_empty:'No schedule published for this month yet.',sl_pub_ok:'✓ Week {kw} published',sl_pub_err:'Error publishing',sl_empty_week_confirm:'⚠️ Week {kw} is completely empty for all employees (no shift entered at all).\n\nPublish anyway? A past week can NOT be changed again afterward.',sl_pub_btn:'☁️ Publish week {kw}',sl_pdf_download:'⬇ Download PDF',sl_pdf_share:'📤 WhatsApp',sl_pdf_publish:'📲 Send to employees',sl_cloud_update_msg:'🔄 New cloud version available (e.g. another week was just published). Your own not-yet-published entries stay as they are until you click here.',sl_reload_link:'Reload',sl_no_emps:'No employees in this store. Please contact HR.',err_net:'No connection – please try again.',
  sl_suggest:'💡 Suggest from last month',sl_pend:'requested',
  sl_tip_pend:'Vacation request still open (not yet decided)',sl_tip_clash:'Double booking – also works the same day at',
  sl_clash_toast:'{d}: also works at {fil}',
@@ -3103,7 +3201,7 @@ th:{_name:'ไทย',
  push_info:'🔔 เปิดการแจ้งเตือนแบบพุช เพื่อรับข่าวทันทีเมื่อมีข้อมูลใหม่ – แม้ปิดแอปอยู่',push_btn:'🔔 เปิดการแจ้งเตือน',push_on:'✓ เปิดการแจ้งเตือนแล้ว',push_denied:'การแจ้งเตือนถูกบล็อกในเบราว์เซอร์ กรุณาอนุญาตในการตั้งค่าเบราว์เซอร์',push_unsupported:'อุปกรณ์/เบราว์เซอร์นี้ไม่รองรับการแจ้งเตือนแบบพุช',push_newinfo:'📢 ข้อมูลใหม่จากผู้จัดการเขต',
  nw_read_btn:'✓ อ่านแล้ว – ยืนยัน',nw_read_done:'✓ ยืนยันว่าอ่านแล้ว',nw_read_toast:'✓ ส่งการยืนยันการอ่านแล้ว',
  nw_pdf_open:'เปิดในแท็บใหม่',nw_pdf_hint:'หากไม่เห็น PDF ด้านบน',
- nav_iv:'📦 สต็อก',iv_title:'📦 ตรวจนับสต็อก',iv_progress:'ความคืบหน้า',iv_save:'💾 บันทึกร่าง',iv_submit:'✓ ส่งให้ HR',iv_saved:'✓ บันทึกร่างแล้ว',iv_sent:'✓ ส่งให้ HR แล้ว – ขอบคุณ!',iv_none:'ขณะนี้ไม่มีการตรวจนับ',iv_active:'🟢 กำลังตรวจนับ',iv_count:'กรุณานับและกรอกจำนวนของแต่ละรายการ',iv_search:'ค้นหา…',nav_sl:'📋 วางแผน',sl_title:'📋 วางแผนตารางงาน',sl_loading:'⏳ กำลังโหลดตาราง…',sl_empty:'ยังไม่มีตารางงานสำหรับเดือนนี้',sl_pub_ok:'✓ เผยแพร่สัปดาห์ {kw} แล้ว',sl_pub_err:'เกิดข้อผิดพลาดขึ้น',sl_empty_week_confirm:'⚠️ สัปดาห์ KW {kw} ว่างเปล่าทั้งหมดสำหรับพนักงานทุกคน (ยังไม่มีการลงกะเลย)\n\nยืนยันเผยแพร่หรือไม่? สัปดาห์ที่ผ่านไปแล้วจะไม่สามารถแก้ไขได้อีก',sl_pub_btn:'☁️ เผยแพร่สัปดาห์ {kw}',sl_cloud_update_msg:'🔄 มีข้อมูลคลาวด์เวอร์ชันใหม่ (เช่น มีสัปดาห์อื่นถูกเผยแพร่ไปเมื่อสักครู่) ข้อมูลที่ยังไม่เผยแพร่ของคุณจะยังอยู่จนกว่าจะกดที่นี่',sl_reload_link:'โหลดใหม่',sl_no_emps:'ไม่มีพนักงานในสาขานี้ กรุณาติดต่อ HR',err_net:'ไม่มีการเชื่อมต่อ กรุณาลองใหม่',
+ nav_iv:'📦 สต็อก',iv_title:'📦 ตรวจนับสต็อก',iv_progress:'ความคืบหน้า',iv_save:'💾 บันทึกร่าง',iv_submit:'✓ ส่งให้ HR',iv_saved:'✓ บันทึกร่างแล้ว',iv_sent:'✓ ส่งให้ HR แล้ว – ขอบคุณ!',iv_none:'ขณะนี้ไม่มีการตรวจนับ',iv_active:'🟢 กำลังตรวจนับ',iv_count:'กรุณานับและกรอกจำนวนของแต่ละรายการ',iv_search:'ค้นหา…',nav_sl:'📋 วางแผน',sl_title:'📋 วางแผนตารางงาน',sl_loading:'⏳ กำลังโหลดตาราง…',sl_empty:'ยังไม่มีตารางงานสำหรับเดือนนี้',sl_pub_ok:'✓ เผยแพร่สัปดาห์ {kw} แล้ว',sl_pub_err:'เกิดข้อผิดพลาดขึ้น',sl_empty_week_confirm:'⚠️ สัปดาห์ KW {kw} ว่างเปล่าทั้งหมดสำหรับพนักงานทุกคน (ยังไม่มีการลงกะเลย)\n\nยืนยันเผยแพร่หรือไม่? สัปดาห์ที่ผ่านไปแล้วจะไม่สามารถแก้ไขได้อีก',sl_pub_btn:'☁️ เผยแพร่สัปดาห์ {kw}',sl_pdf_download:'⬇ ดาวน์โหลด PDF',sl_pdf_share:'📤 WhatsApp',sl_pdf_publish:'📲 ส่งให้พนักงาน',sl_cloud_update_msg:'🔄 มีข้อมูลคลาวด์เวอร์ชันใหม่ (เช่น มีสัปดาห์อื่นถูกเผยแพร่ไปเมื่อสักครู่) ข้อมูลที่ยังไม่เผยแพร่ของคุณจะยังอยู่จนกว่าจะกดที่นี่',sl_reload_link:'โหลดใหม่',sl_no_emps:'ไม่มีพนักงานในสาขานี้ กรุณาติดต่อ HR',err_net:'ไม่มีการเชื่อมต่อ กรุณาลองใหม่',
  sl_suggest:'💡 ใช้รูปแบบเดือนก่อน',sl_pend:'ยื่นแล้ว',
  sl_tip_pend:'คำขอลาที่ยังรออนุมัติ',sl_tip_clash:'ซ้ำซ้อน – วันเดียวกันยังทำงานที่',
  sl_clash_toast:'{d}: ยังทำงานที่ {fil}',
@@ -3250,7 +3348,7 @@ zh:{_name:'中文',
  push_info:'🔔 开启推送通知，即使应用已关闭，也能在有新通知时立即收到提醒。',push_btn:'🔔 开启通知',push_on:'✓ 通知已开启',push_denied:'通知已在浏览器中被屏蔽，请在浏览器设置中允许通知。',push_unsupported:'此设备/浏览器不支持推送通知。',push_newinfo:'📢 区域经理发布了新通知',
  nw_read_btn:'✓ 已读 – 确认',nw_read_done:'✓ 已确认阅读',nw_read_toast:'✓ 已读确认已发送',
  nw_pdf_open:'在新标签页中打开',nw_pdf_hint:'如果上方的 PDF 未显示',
- nav_iv:'📦 盘点',iv_title:'📦 库存盘点',iv_progress:'进度',iv_save:'💾 保存草稿',iv_submit:'✓ 发送给HR',iv_saved:'✓ 草稿已保存',iv_sent:'✓ 已发送给HR – 谢谢！',iv_none:'目前没有正在进行的盘点。',iv_active:'🟢 盘点进行中',iv_count:'请清点并填写每件商品的数量。',iv_search:'搜索…',nav_sl:'📋 排班管理',sl_title:'📋 排班表管理',sl_loading:'⏳ 正在加载排班表…',sl_empty:'本月还没有发布排班表。',sl_pub_ok:'✓ 第{kw}周已发布',sl_pub_err:'发布时出错',sl_empty_week_confirm:'⚠️ 第{kw}周所有员工都完全没有排班。\n\n仍要发布吗？过去的周发布后将无法再修改。',sl_pub_btn:'☁️ 发布第{kw}周',sl_cloud_update_msg:'🔄 云端有新版本（例如刚发布了另一周）。您尚未发布的内容会保留，直到点击此处。',sl_reload_link:'重新加载',sl_no_emps:'此门店没有员工，请联系HR。',err_net:'无网络连接 – 请重试。',
+ nav_iv:'📦 盘点',iv_title:'📦 库存盘点',iv_progress:'进度',iv_save:'💾 保存草稿',iv_submit:'✓ 发送给HR',iv_saved:'✓ 草稿已保存',iv_sent:'✓ 已发送给HR – 谢谢！',iv_none:'目前没有正在进行的盘点。',iv_active:'🟢 盘点进行中',iv_count:'请清点并填写每件商品的数量。',iv_search:'搜索…',nav_sl:'📋 排班管理',sl_title:'📋 排班表管理',sl_loading:'⏳ 正在加载排班表…',sl_empty:'本月还没有发布排班表。',sl_pub_ok:'✓ 第{kw}周已发布',sl_pub_err:'发布时出错',sl_empty_week_confirm:'⚠️ 第{kw}周所有员工都完全没有排班。\n\n仍要发布吗？过去的周发布后将无法再修改。',sl_pub_btn:'☁️ 发布第{kw}周',sl_pdf_download:'⬇ 下载PDF',sl_pdf_share:'📤 WhatsApp',sl_pdf_publish:'📲 发送给员工',sl_cloud_update_msg:'🔄 云端有新版本（例如刚发布了另一周）。您尚未发布的内容会保留，直到点击此处。',sl_reload_link:'重新加载',sl_no_emps:'此门店没有员工，请联系HR。',err_net:'无网络连接 – 请重试。',
  sl_suggest:'💡 参考上月排班',sl_pend:'已申请',
  sl_tip_pend:'休假申请尚未审批',sl_tip_clash:'重复排班 – 同一天还在以下门店工作',
  sl_clash_toast:'{d}：同时还在 {fil} 工作',
