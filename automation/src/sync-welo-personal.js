@@ -725,26 +725,49 @@ async function syncAll() {
     // CSV-Import+Veröffentlichen-Runde für Neuzugänge/Abgänge.
     console.log('Synchronisiere "emps" (Mitarbeiter-Stammdaten für die HR-App)…');
     const empsSnap = await db.collection(EMPS_COLLECTION).get();
-    const bestehendeRegion = {}, bestehendAktiv = new Set();
+    const bestehendeRegion = {}, bestehendAktiv = new Set(), bestehendeFiliale = {}, bestehendeZweit = {};
     empsSnap.forEach((doc) => {
       const d = doc.data() || {};
       if (d.region) bestehendeRegion[doc.id] = d.region;
       if (d.active !== false) bestehendAktiv.add(doc.id);
+      bestehendeFiliale[doc.id] = d.filiale || '';
+      bestehendeZweit[doc.id] = d.zweit || [];
     });
 
     const empsBatch = db.batch();
-    let empsCount = 0, empsOhneRegion = 0;
+    let empsCount = 0, empsOhneRegion = 0, einsatzAlsZweitBelassen = 0;
     for (const [id, p] of Object.entries(personal)) {
       const region = bestehendeRegion[id] || resolveRegion(p.marktNr);
       if (!region) empsOhneRegion++;
+      // BUG gefunden 15.11.2026 (t.duong, live bestätigt bei 340910/Hai Nguyen):
+      // Welo kennt pro Person nur EINEN "Ort" — wird jemand für ein paar Tage
+      // an eine bereits als Zweitfiliale (emps.zweit, rein GLSC-eigenes Feld,
+      // s.o.) eingetragene Filiale abgeordnet, zeigt Welo für diese Tage genau
+      // diese Filiale als "Ort", und der Sync übernahm das bisher ungeprüft in
+      // emps.filiale (die Stammfiliale) — die Person verlor dadurch den Zugriff
+      // auf den eigenen Dienstplan ihrer echten Stammfiliale in der App, sobald
+      // sie sich dort einloggte, weil sess.filiale nun fälschlich die
+      // Zweitfiliale war. Schutz: weicht der von Welo gemeldete Ort vom
+      // bisherigen emps.filiale ab UND steht er bereits in der (von Welo nie
+      // berührten) Zweitfiliale-Liste dieser Person, ist das ein befristeter
+      // Einsatz, keine echte Versetzung — filiale/filialeNr bleiben unangetastet.
+      const altFiliale = bestehendeFiliale[id];
+      const istBekannteZweitfiliale = altFiliale && p.marktname !== altFiliale &&
+        (bestehendeZweit[id] || []).indexOf(p.marktname) >= 0;
       const payload = {
-        name: reformatWeloName(p.name), filiale: p.marktname, filialeNr: p.marktNr,
+        name: reformatWeloName(p.name),
         active: true, updatedAt: now,
         // Markierung von einer früheren Deaktivierung entfernen (Wiedereinstellung) —
         // no-op falls nie gesetzt. Siehe cleanup-departed-employees.js: inactiveSince
         // ist die Grundlage für die automatische Datenlöschung nach Austritt.
         inactiveSince: admin.firestore.FieldValue.delete(),
       };
+      if (istBekannteZweitfiliale) {
+        einsatzAlsZweitBelassen++;
+      } else {
+        payload.filiale = p.marktname;
+        payload.filialeNr = p.marktNr;
+      }
       if (region) payload.region = region; // nie ein leeres/falsches region-Feld schreiben
       empsBatch.set(db.collection(EMPS_COLLECTION).doc(id), payload, { merge: true });
       empsCount++;
@@ -790,6 +813,7 @@ async function syncAll() {
     await empsBatch.commit();
     console.log(`✓ ${empsCount} Mitarbeiter in "${EMPS_COLLECTION}" aktualisiert, ${deaktiviert} als ausgeschieden markiert.`
       + (empsOhneRegion ? ` ⚠️ ${empsOhneRegion} ohne Region (MARKTNR_REGION in branches.js prüfen).` : '')
+      + (einsatzAlsZweitBelassen ? ` 🔄 ${einsatzAlsZweitBelassen}× befristeter Einsatz an bekannter Zweitfiliale erkannt, Stammfiliale unangetastet gelassen.` : '')
       + (uebersprungenVize ? ` (${uebersprungenVize} Vize/Springer-ID(s) mit "5..." bewusst übersprungen.)` : ''));
 
     // Tagesziel: heute + robuste Vorjahres-Basis (geglättet / 2-Jahre-Fallback,
