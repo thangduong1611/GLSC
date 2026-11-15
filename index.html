@@ -4089,7 +4089,22 @@ function dpLoadAdjacentPlan(f,m){
 function dpApplyBoundaryMerge(){
   var adjShifts=dpAdjPlan.shifts||{};
   Object.keys(adjShifts).forEach(function(ek){
-    var cur=dpShifts[ek]||(dpShifts[ek]={});
+    // ek kommt aus dem NACHBAR-Monat und kann ein anderes Namensformat tragen
+    // als der aktuelle Monat (sync-welo-personal.js formatiert "emps"-Namen
+    // täglich um, z.B. "Frau Nachname, Vorname" -> "Vorname Nachname") — zuerst
+    // die ID herausziehen und über dpResolveEmpKey() gegen den SCHON
+    // VORHANDENEN Schlüssel in dpShifts auflösen. Ohne das legt der direkte
+    // dpShifts[ek]-Zugriff unten einen ZWEITEN, parallelen Schlüssel unter dem
+    // alten Namensformat an — der dann (weil er exakt dpEmpKey() des aktuellen
+    // Mitarbeiters trifft) von dpResolveEmpKey() als "exakter Treffer" VOR dem
+    // echten, schichten-gefüllten Schlüssel gefunden wird und dessen Daten für
+    // die Anzeige komplett verdeckt (Bug gefunden 15.11.2026, live bei Hilden:
+    // KW45/46 zeigten für alle Mitarbeiter leer, obwohl die echten Schichten
+    // unter einem anders formatierten Schlüssel im selben Dokument standen).
+    var dash=ek.indexOf('-'); var idPart=dash>=0?ek.slice(0,dash):ek;
+    var emp=dpEmployees.find(function(e){ return ''+(e.id||'x')===idPart; });
+    var targetKey=emp?dpResolveEmpKey(dpShifts,emp):ek;
+    var cur=dpShifts[targetKey]||(dpShifts[targetKey]={});
     Object.keys(adjShifts[ek]).forEach(function(dt){
       if(!cur[dt]) cur[dt]=adjShifts[ek][dt];
     });
@@ -4287,7 +4302,14 @@ function dpFmtClashToast(inp,clash){
 function dpAutofillFeiertage(){
   var hol=dpMonthHolidays();
   dpEmployees.forEach(function(emp){
-    var ek=dpEmpKey(emp);
+    // dpResolveEmpKey() statt dem nackten dpEmpKey() — sonst legt diese
+    // Funktion (läuft bei JEDEM dpRenderWeeks()-Aufruf als Erstes) bei
+    // abweichendem Namensformat einen zweiten, leeren Schlüssel unter dem
+    // AKTUELLEN Namen an, der danach als "exakter Treffer" den echten,
+    // schichten-gefüllten Schlüssel für die gesamte restliche Anzeige
+    // verdeckt (Bug gefunden 15.11.2026, live bei Hilden — siehe
+    // dpApplyBoundaryMerge()-Kommentar für die ausführliche Herleitung).
+    var ek=dpResolveEmpKey(dpShifts,emp);
     if(!dpShifts[ek])dpShifts[ek]={};
     Object.keys(hol).forEach(function(iso){
       if(dpShifts[ek][iso]===undefined)dpShifts[ek][iso]='Frei';
@@ -4548,7 +4570,7 @@ function dpCopyWeek(wi){
   var wk=dpGetWeeks(m)[wi]; if(!wk) return;
   var pattern={};
   dpEmployees.forEach(function(emp){
-    var ek=dpEmpKey(emp);
+    var ek=dpResolveEmpKey(dpShifts,emp);
     pattern[ek]=wk.dates.map(function(dt){ return (dpShifts[ek]&&dpShifts[ek][dt])||''; });
   });
   dpCopiedWeek={kw:wk.kw, srcIndex:wi, pattern:pattern};
@@ -4567,7 +4589,7 @@ function dpClearCopiedWeek(){ dpCopiedWeek=null; dpRenderWeeks(); }
 function dpApplyPasteToWeek(wk,abs){
   var filled=0, skipped=0;
   dpEmployees.forEach(function(emp){
-    var ek=dpEmpKey(emp), eid=''+(emp.id||'');
+    var ek=dpResolveEmpKey(dpShifts,emp), eid=''+(emp.id||'');
     var pat=dpCopiedWeek.pattern[ek]; if(!pat) return;
     if(!dpShifts[ek]) dpShifts[ek]={};
     wk.dates.forEach(function(dt,di){
@@ -4668,6 +4690,16 @@ function dpPublishWeekCore(f,m,wi){
     return Promise.all(jobs);
   }).then(function(){ return wk; });
 }
+// Prüft, ob für KEINEN Mitarbeiter irgendeine Schicht in dieser KW steht —
+// Schutz gegen genau den Homberg-Vorfall vom 04.11.2026 (Chutikan Gimpel
+// veröffentlichte KW45 komplett leer, die Woche war danach als "vergangen"
+// für immer gesperrt, ohne dass je echte Stunden drinstanden).
+function dpWeekIsEmpty(wk){
+  return dpEmployees.every(function(emp){
+    var k=dpResolveEmpKey(dpShifts,emp);
+    return wk.dates.every(function(dt){ return !(dpShifts[k]&&dpShifts[k][dt]); });
+  });
+}
 // Nur EINE Woche veröffentlichen — überschreibt per Merge nur die Tage dieser KW
 function dpPublishWeek(wi){
   if(typeof fbReady==='undefined'||!fbReady||!fbDb||!fbManager){alert('Bitte zuerst als Manager anmelden (Einstellungen → ☁️ Cloud).');return;}
@@ -4676,6 +4708,7 @@ function dpPublishWeek(wi){
   dpSaveFromDOM();dpStoreLS(dpKey(),{employees:dpEmployees,shifts:dpShifts});
   var st=document.getElementById('dp-status');
   var weeks=dpGetWeeks(m),wk=weeks[wi];if(!wk)return;
+  if(dpWeekIsEmpty(wk) && !confirm('⚠️ KW '+wk.kw+' ist für alle Mitarbeiter komplett leer (keine einzige Schicht eingetragen).\n\nTrotzdem veröffentlichen? Eine vergangene Woche kann danach NICHT mehr geändert werden.')) return;
   if(st)st.textContent='⏳ KW '+wk.kw+' wird veröffentlicht…';
   dpPublishWeekCore(f,m,wi).then(function(){dpDirty=false;if(st)st.textContent='✓ KW '+wk.kw+' veröffentlicht ('+f+')';toast('☁️ KW '+wk.kw+' veröffentlicht');})
     .catch(function(e){if(st)st.textContent='⚠️ '+e.message;alert('Fehler: '+e.message);});
@@ -4694,8 +4727,10 @@ function dpPublishMonth(){
   var f=dpGetFiliale(),m=document.getElementById('dp-month').value;
   if(!f||!m){alert('Bitte Filiale und Monat wählen.');return;}
   dpSaveFromDOM();dpStoreLS(dpKey(),{employees:dpEmployees,shifts:dpShifts});
-  var st=document.getElementById('dp-status');if(st)st.textContent='⏳ '+f+' · '+m+' wird veröffentlicht…';
   var weeks=dpGetWeeks(m);
+  var emptyWeeks=weeks.filter(dpWeekIsEmpty).map(function(wk){return wk.kw;});
+  if(emptyWeeks.length && !confirm('⚠️ Diese KW(s) sind komplett leer (keine einzige Schicht eingetragen): '+emptyWeeks.join(', ')+'.\n\nTrotzdem den ganzen Monat veröffentlichen? Vergangene Wochen können danach NICHT mehr geändert werden.')) return;
+  var st=document.getElementById('dp-status');if(st)st.textContent='⏳ '+f+' · '+m+' wird veröffentlicht…';
   var chain=Promise.resolve();
   weeks.forEach(function(w,wi){
     chain=chain.then(function(){
@@ -4733,7 +4768,7 @@ function dpBuildPDFDoc(){
     y+=RH;
     dpEmployees.forEach(function(emp){
       if(y+RE>pH){doc.addPage();y=MT;}
-      var ek=dpEmpKey(emp);
+      var ek=dpResolveEmpKey(dpShifts,emp);
       doc.setFillColor(250,248,245);doc.rect(ML,y,CE,RE,'F');doc.setDrawColor(200,195,188);doc.rect(ML,y,CE,RE,'S');
       doc.setFontSize(7.5);doc.setFont('helvetica','bold');
       doc.text(emp.name.length>18?emp.name.substring(0,17)+'\u2026':emp.name,ML+2,y+RE/2+2.5);
@@ -4823,7 +4858,7 @@ function dpApplyWeloSuggest(){
   var abs=dpAbsenceFor();
   var weeks=dpGetWeeks(m);
   dpEmployees.forEach(function(emp){
-    var ek=dpEmpKey(emp), eid=''+(emp.id||'');
+    var ek=dpResolveEmpKey(dpShifts,emp), eid=''+(emp.id||'');
     var days=dpWeloCache[eid]; if(!days) return;
     weeks.forEach(function(wk){
       wk.dates.forEach(function(dt){
@@ -4963,22 +4998,30 @@ function dpSuggest(){
     var filled=0, skippedUrlaub=0, skippedFilled=0, noPattern=0;
 
     dpEmployees.forEach(function(emp){
-      var ek=dpEmpKey(emp), eid=''+(emp.id||'');
-      if(!pat[ek]){ noPattern++; return; }
+      // Gegen pat auflösen (nicht dpShifts!) — pat ist 1:1 aus den rohen
+      // Schlüsseln des VORMONATS gebaut (dpBuildPattern), die bei
+      // abweichendem Namensformat anders lauten können als dpEmpKey(emp)
+      // heute. Ohne dpResolveEmpKey() würde der Vorschlag für genau diese
+      // Mitarbeiter fälschlich "kein Muster" melden, obwohl der Vormonat
+      // echte Schichten hatte. patKey (gegen pat) und shiftKey (gegen
+      // dpShifts) bewusst GETRENNT aufgelöst — Vormonat und aktueller Monat
+      // können unterschiedliche Namensformate im Schlüssel tragen.
+      var patKey=dpResolveEmpKey(pat,emp), shiftKey=dpResolveEmpKey(dpShifts,emp), eid=''+(emp.id||'');
+      if(!pat[patKey]){ noPattern++; return; }
       weeks.forEach(function(wk){
         wk.dates.forEach(function(dt){
           if(dt.slice(0,7)!==m) return;               // nur Tage dieses Monats
           // 1) Urlaub/Krank NIE überschreiben
           if(abs[eid] && abs[eid][dt]){ skippedUrlaub++; return; }
-          var cur=(dpShifts[ek]&&dpShifts[ek][dt])||'';
+          var cur=(dpShifts[shiftKey]&&dpShifts[shiftKey][dt])||'';
           if(cur==='Urlaub'||cur==='Krank'){ skippedUrlaub++; return; }
           // 2) bereits ausgefüllte Zellen nicht überschreiben
           if(cur.trim()!==''){ skippedFilled++; return; }
           var wd=dpParse(dt).getDay();
-          var v=pat[ek][wd];
+          var v=pat[patKey][wd];
           if(!v) return;
-          if(!dpShifts[ek]) dpShifts[ek]={};
-          dpShifts[ek][dt]=v;
+          if(!dpShifts[shiftKey]) dpShifts[shiftKey]={};
+          dpShifts[shiftKey][dt]=v;
           filled++;
         });
       });
@@ -5202,7 +5245,7 @@ function ovExportCSV(){
         var emps=(pd && pd.employees)||[];
         if(!emps.length){ rows.push([f,'(kein Plan hinterlegt)']); return; }
         emps.forEach(function(emp){
-          var ek=dpEmpKey(emp), eid=''+(emp.id||'');
+          var ek=dpResolveEmpKey(pd.shifts,emp), eid=''+(emp.id||'');
           var line=[f, emp.name];
           dates.forEach(function(dt){
             var u=D.urlaub[eid]&&D.urlaub[eid][dt];
@@ -5288,7 +5331,7 @@ function ovExportPDF(){
       }
       emps.forEach(function(emp){
         needSpace(6.2, 'Gesamtübersicht — '+ovMonthLabel(m), 'Stand: '+avTodayDE());
-        var ek=dpEmpKey(emp), eid=''+(emp.id||'');
+        var ek=dpResolveEmpKey(pd.shifts,emp), eid=''+(emp.id||'');
         var RH=5.6;
         doc.setFontSize(7.2); doc.setFont('helvetica','normal');
         var nm=emp.name.length>26?emp.name.substring(0,25)+'…':emp.name;
